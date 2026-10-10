@@ -179,7 +179,8 @@ npm run fetch-audio       # opcional: sem o pacote, o jogo usa sons sintetizados
 npm run dev               # http://localhost:4321 — o jogo está em /
 ```
 
-Use Node `>=22.12.0` e npm `>=9.6.5`, conforme `engines` do Astro no `package-lock.json`.
+Use Node/npm compatíveis com os `engines` do `package-lock.json`, incluindo Astro e
+suas dependências. A instalação foi conferida em 10/10/2026 com Node `23.6.0` e npm `11.6.0`.
 Confira `node --version` e `npm --version` no mesmo terminal antes de instalar.
 
 Build e preview:
