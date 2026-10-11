@@ -249,20 +249,20 @@ O registro, gerado do `MAPS` de `public/js/maps.js`:
 | Id | Nome no menu | Abre em | Arquivo em `public/js/` | Linhas |
 |---|---|---|---|---:|
 | `campomorro` | Campinho do Morro | **captura** | `map_campomorro.js` | 816 |
-| `mansao` | Mansão do Joá | **captura** | `map_mansao.js` | 1.399 |
-| `amazonia` | Treta na Amazônia | **captura** | `map_amazonia.js` | 1.265 |
-| `escadao` | Escadão (Morro) | **captura** | `map_escadao.js` | 1.410 |
-| `praca_poderes` | Praça dos Três Poderes | rodadas | `map_brasilia.js` | 1.987 |
+| `mansao` | Mansão do Joá | **captura** | `map_mansao.js` | 1.398 |
+| `amazonia` | Treta na Amazônia | **captura** | `map_amazonia.js` | 1.266 |
+| `escadao` | Escadão (Morro) | **captura** | `map_escadao.js` | 1.411 |
+| `praca_poderes` | Praça dos Três Poderes | rodadas | `map_brasilia.js` | 1.989 |
 | `piscina_treta` | Piscina da Treta | rodadas | `map_piscina.js` | 1.201 |
-| `loja_h` | Loja H (Estacionamento) | **captura** | `map_havan.js` | 2.061 |
-| `ferro_velho` | Ferro Velho do Zé | **captura** | `map_ferrovelho.js` | 2.031 |
+| `loja_h` | Loja H (Estacionamento) | **captura** | `map_havan.js` | 2.062 |
+| `ferro_velho` | Ferro Velho do Zé | **captura** | `map_ferrovelho.js` | 2.032 |
 | `quebrada` | Quebrada (Rua do Baile) | **captura** | `map_quebrada.js` | 1.709 |
-| `corrego` | Córrego (Favela de SP) | **captura** | `map_corrego.js` | 1.812 |
+| `corrego` | Córrego (Favela de SP) | **captura** | `map_corrego.js` | 1.813 |
 | `lajes` | Lajes (Comunidade) | **captura** | `map_lajes_authored.js` | 420 |
-| `posto_treta` | Posto da Treta | **captura** | `map_posto.js` | 757 |
+| `posto_treta` | Posto da Treta | **captura** | `map_posto.js` | 758 |
 | `upa_24h` | UPA 24h da Treta | **captura** | `map_upa.js` | 383 |
 | `obras_prefeitura` | Obras da Prefeitura | **captura** | `map_obras.js` | 491 |
-| `atacadao_treta` | Atacadão da Treta | **captura** | `map_atacadao.js` | 793 |
+| `atacadao_treta` | Atacadão da Treta | **captura** | `map_atacadao.js` | 797 |
 | `parque_treta` | Parque da Treta | **captura** | `map_parque.js` | 991 |
 | `velho_oeste` | Sertão da Treta | **captura** | `map_velho_oeste.js` | 1.071 |
 | `penitenciaria` | CARANDIRU | **captura** | `map_penitenciaria.js` | 1.009 |

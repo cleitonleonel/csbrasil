@@ -69,17 +69,16 @@ export function buildMansao(scene, T) {
     return m;
   };
   const texturaLaje = (base,junta,rx,ry) => {
-    // Placas de grande formato com junta fina e variação mínima. O antigo 4×4
-    // alternava quadrados e lia como o mesmo xadrez provisório do galpão.
-    const S=16, data=new Uint8Array(S*S*4), rgb=(hex)=>[hex>>16&255,hex>>8&255,hex&255];
+    const S=256, data=new Uint8Array(S*S*4), rgb=(hex)=>[hex>>16&255,hex>>8&255,hex&255];
     const baseRgb=rgb(base), juntaRgb=rgb(junta);
     for(let y=0;y<S;y++) for(let x=0;x<S;x++) {
-      const grout=x===0 || y===0 || x===8 || y===8;
-      const variation=((x*13+y*7)%5)-2;
-      const c=(grout?juntaRgb:baseRgb).map((v)=>Math.max(0,Math.min(255,v+(grout?0:variation))));
+      const grout=x%128===0 || y%128===0;
+      const grain=(((Math.imul(x ^ (y * 373),1597334677)>>>16)%9)-4)*.35;
+      const vein=Math.sin(x*.038+y*.013+Math.sin(y*.025)*1.4)*1.8;
+      const c=(grout?juntaRgb:baseRgb).map(v=>Math.max(0,Math.min(255,Math.round(v+(grout?0:grain+vein)))));
       data.set([...c,255],(y*S+x)*4);
     }
-    const tex=new THREE.DataTexture(data,S,S,THREE.RGBAFormat); tex.colorSpace=THREE.SRGBColorSpace;
+    const tex=new THREE.DataTexture(data,S,S,THREE.RGBAFormat); tex.name='mansao-mineral-slab'; tex.colorSpace=THREE.SRGBColorSpace;
     tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(rx,ry); tex.needsUpdate=true; return tex;
   };
   /* Hardscape do jardim (crítico v2.1: cor chapada = Minecraft): texturas DataTexture

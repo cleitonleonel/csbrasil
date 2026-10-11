@@ -1,6 +1,7 @@
 // ESCADÃO (escadao) — spec plans/12-ESCADAO.md. Invariante CTF2: os dois becos laterais
 // têm escada própria rua → patamar 1, separados ≥ 6 m do eixo central (2+ rotas spawn→bandeira).
 import * as THREE from 'three';
+import { paintedPanel } from './map_surface_finish.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp, InstBatch } from './mapprops.js';
 import { decalIds } from './map_decals.js';
@@ -651,7 +652,7 @@ export function buildEscadao(scene, T) {
   const MAT_PNEU = lam({ color: 0x1a1a1a, roughness: 0.95 });
   propAt('pilha_pneus', -1.3, P1.z1-.75, 0.9, 1.6, 1.2, MAT_PNEU, 0, RISE);
   // base: portão arrancado
-  addBox(2.5, 1.2, 0.8, lam({ color: 0x4a4a3a, roughness: 0.8 }), 1.5, 0, 14.5);
+  addBox(2.5, 1.2, 0.8, lam({ map: paintedPanel('#ffffff'), color: 0x4a4a3a, roughness: 0.8 }), 1.5, 0, 14.5);
 
   /* ===================== BASE (rua) ====================== */
   /* Bar e mercadinho viram DUAS geminadas cada um: 6 m de frente com um molde só

@@ -7,6 +7,7 @@
 // W no miolo do beco. ?beco=0 restaura o layout antigo. Props otimizados de /Users/ruben/glb
 // (tools/optimize-static.mjs).
 import * as THREE from 'three';
+import { soilSurface } from './map_surface_finish.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp } from './mapprops.js';
 import { VAO_BANDS, aoBoxGeo, aoMatFactory, ContactSkirt, BASE_FLOATING, onGround } from './vao.js';
@@ -397,7 +398,7 @@ function pixacaoTex(seed = 555) {
 /* ===== VEGETAÇÃO INVASORA — o contraste que DEFINE o mapa =====
    BAR §4.4: "o verde vivo e saturado do mato contra o laranja da ferrugem é o contraste
    cromático que define este mapa (complementares diretos). Um ferro velho sem mato lê
-   como cenário de estúdio." Por isso o verde aqui é MAIS saturado que o T.grass padrão. */
+   como cenário de estúdio." O acabamento oliva preserva esse contraste sem virar verde-lima. */
 function bladeTex(seed = 401, tall = false) {
   const S = 128, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -405,11 +406,11 @@ function bladeTex(seed = 401, tall = false) {
   const n = tall ? 30 : 24;
   for (let i = 0; i < n; i++) {
     const px = 6 + rnd() * (S - 12), h = (tall ? 0.62 : 0.42) * S + rnd() * S * 0.36;
-    // verde SATURADO (capim-colonião ao sol) com algumas folhas secas amareladas
+    // Verde oliva e palha seca preservam a massa dos tufos sem dominar a sucata.
     const dry = rnd() > 0.82;
     x.strokeStyle = dry
-      ? `rgba(${170 + rnd() * 40 | 0},${150 + rnd() * 40 | 0},${60 + rnd() * 30 | 0},0.95)`
-      : `rgba(${44 + rnd() * 54 | 0},${132 + rnd() * 74 | 0},${28 + rnd() * 34 | 0},0.96)`;
+      ? `rgba(${143 + rnd() * 32 | 0},${132 + rnd() * 32 | 0},${78 + rnd() * 24 | 0},0.95)`
+      : `rgba(${67 + rnd() * 27 | 0},${91 + rnd() * 37 | 0},${45 + rnd() * 23 | 0},0.96)`;
     x.lineWidth = 1.6 + rnd() * 2.4; x.lineCap = 'round';
     x.beginPath(); x.moveTo(px, S);
     x.quadraticCurveTo(px + (rnd() - 0.5) * 22, S - h * 0.55, px + (rnd() - 0.5) * 40, S - h);
@@ -516,7 +517,7 @@ export function buildFerroVelho(scene, T) {
        como terra batida brasileira é o hue, não a saturação. */
     dirt: lam({ map: FERRO_SAT_HOT
       ? noiseTex('#6b5a44', [['#584a38', 60, 8, 26, 0.5], ['#7a6a52', 50, 6, 20, 0.4], ['#3a3230', 14, 5, 14, 0.45], ['#8a4a2a', 26, 2, 6, 0.4], ['#4a3f30', 34, 2, 7, 0.4]], 46, 52, { pebbles: '#8a7a62', pebbleN: 620, seed: 11 })
-      : noiseTex('#786d5f', [['#585046', 60, 8, 26, 0.5], ['#7a7163', 50, 6, 20, 0.4], ['#3a3331', 14, 5, 14, 0.45], ['#946c59', 26, 2, 6, 0.4], ['#4a443b', 34, 2, 7, 0.4]], 46, 52, { pebbles: '#8a7d69', pebbleN: 620, seed: 11 }) }),
+      : soilSurface(46, 52) }),
     wall: lam({ map: noiseTex('#7d7468', [['#6a6258', 40, 10, 30, 0.5], ['#8d8478', 30, 8, 22, 0.4], ['#4a443c', 10, 6, 16, 0.4]], 6, 2, { cracks: '#55504a', seed: 23 }) }),
     /* ESPECULARES — R9. O BAR §4.4 pede nominalmente "o specular correndo pelas chapas
        onduladas" com o sol rasante, e o mapa entregava ZERO pixel acima de L* 97 em 24

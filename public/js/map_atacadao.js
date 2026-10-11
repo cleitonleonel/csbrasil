@@ -1,6 +1,7 @@
 // Atacadão da Treta: ARMAZÉM DE CLUBE DE ATAQUE — labirinto de rack de pallet, não
 // átrio de loja. Projeto, lattice e medidas: docs/mapa-atacadao.md. Régua: eval:atacadao.
 import * as THREE from 'three';
+import { paintedPanel } from './map_surface_finish.js';
 import { detailFor } from './textures.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp, PropBatch } from './mapprops.js';
@@ -79,8 +80,11 @@ const pisoLojaTex = (rx, ry) => canvasTex(512, 512, (x, W, H) => {
   x.fillStyle = '#cfc6b2'; x.fillRect(0, 0, W, H);
   salpico(x, W, H, 6000, ['#a89678', '#e8e1cf', '#8d7f66', '#c3b79c', '#6f6455'], 9311, 1, 3.2);
   const r = rng(4177);
-  x.globalAlpha = 0.35;                                     // polimento/tráfego
-  for (let i = 0; i < 30; i++) { x.fillStyle = '#b6ab93'; x.beginPath(); x.arc(r() * W, r() * H, 16 + r() * 44, 0, 6.2832); x.fill(); }
+  for (let i = 0; i < 5; i++) {
+    const p = r() * W, g = x.createLinearGradient(p - 45, 0, p + 45, 0);
+    g.addColorStop(0, 'rgba(160,149,125,0)'); g.addColorStop(.5, 'rgba(160,149,125,.08)'); g.addColorStop(1, 'rgba(160,149,125,0)');
+    x.fillStyle = g; x.fillRect(p - 45, 0, 90, H);
+  }
   x.globalAlpha = 1;
   x.strokeStyle = '#8e836c'; x.lineWidth = 3;               // junta serrada
   for (let i = 0; i <= 2; i++) { const p = (i * W) / 2; x.beginPath(); x.moveTo(p, 0); x.lineTo(p, H); x.moveTo(0, p); x.lineTo(W, p); x.stroke(); }
@@ -150,7 +154,7 @@ export function buildAtacadao(scene, T) {
   const MAT = {
     piso: lam({ map: TX.piso }), parede: lam({ map: TX.parede }), metal: lam({ color: 0x9aa0a6 }),
     pilar: lam({ map: TX.pilar }), pilarBase: lam({ color: 0xc9b168 }), prat: lam({ color: 0x8a9096 }),
-    caixa: lam({ color: 0x496c7e }), esteira: lam({ color: 0x2a2d31 }), faixa: lam({ color: 0xe0b83a }),
+    caixa: lam({ map: paintedPanel('#ffffff'), color: 0x496c7e }), esteira: lam({ color: 0x2a2d31 }), faixa: lam({ color: 0xe0b83a }),
     asfalto: lam((T && T.asphalt) ? { map: T.asphalt } : { map: docaTex(14, 12) }),
     muro: lam({ map: TX.muro }), vidro: lam({ color: 0x9fd0e6, transparent: true, opacity: 0.45 }),
     predio: lam({ color: 0xa7a29a }), janela: lam({ color: 0x35404e }), faixaRua: lam({ color: 0xd8b83a }),

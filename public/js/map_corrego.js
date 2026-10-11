@@ -1,6 +1,7 @@
 // CÓRREGO (corrego) — spec em plans/13-CORREGO.md. Planta: eixo longo = z, norte = −z;
 // córrego em x ∈ [−3, 3] (água rasa), margens em ±[3, 24], pontes em z = −22, 0, 22.
 import * as THREE from 'three';
+import { directedMasonry } from './map_surface_finish.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp, hasProp, PropBatch, StaticBatch, InstBatch } from './mapprops.js';
 import { decalIds } from './map_decals.js';
@@ -169,9 +170,9 @@ export function buildCorrego(scene, T) {
   /* ── ALVENARIA: favela_wall.webp já era consumida por escadão/campomorro/lajes, menos
      aqui. Uma fonte só variando por tinta e repeat; cores das fotos (foto_001/005/040/012). */
   const _srcTijolo = TEX.tijolo.map;
-  const tijoloTex = (rx, ry) => {
+  const tijoloTex = (rx, ry, variant = 0, raw = false) => {
     if (!_srcTijolo) return null;
-    const t = _srcTijolo.clone(); t.needsUpdate = true;
+    const t = directedMasonry(rx, ry, variant, raw); t.needsUpdate = true;
     t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry);
     return t;
   };
@@ -180,9 +181,9 @@ export function buildCorrego(scene, T) {
      foto_040/foto_012. `0xffffff` = a textura crua, sem tinta. */
   const CORES_ALVENARIA = [0xffffff, 0xe6d4b4, 0xc9a883, 0xb9c9b4, 0xd9c78e, 0xa9c2c6, 0xd8b3a2, 0xcdc4ae];
   const MURO = CORES_ALVENARIA.map((color, i) =>
-    lam({ map: tijoloTex(1.6 + (i % 3) * 0.4, 1.6 + (i % 2) * 0.5) || T.dirt, color, roughness: 0.97 }));
+    lam({ map: tijoloTex(1.6 + (i % 3) * 0.4, 1.6 + (i % 2) * 0.5, i) || T.dirt, color, roughness: 0.97 }));
   // Pavimento de cima sem reboco nenhum: tijolo cru, mais vermelho e mais miúdo.
-  const matTijoloCru = lam({ map: tijoloTex(2.4, 2.0) || T.dirt, color: 0xc98a63, roughness: 1 });
+  const matTijoloCru = lam({ map: tijoloTex(2.4, 2.0, 0, true) || T.dirt, color: 0xc98a63, roughness: 1 });
   // Reboco liso: o embasamento de concreto que sobe da água (foto_001) e as platibandas.
   const matReboco = lam({ map: TEX.concrete.map || T.concrete, color: 0xb4ada0, roughness: 0.96 });
   const matRebocoSujo = lam({ map: TEX.concrete.map || T.concrete, color: 0x8d8579, roughness: 0.98 });

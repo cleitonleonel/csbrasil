@@ -4,6 +4,7 @@
 // cover, colliders) is procedural; the landmarks are real GLB models placed and
 // collidered from their actual bounds. Same contract as buildWorld().
 import * as THREE from 'three';
+import { planterLeaves } from './map_surface_finish.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp } from './mapprops.js';
 import { VAO_BANDS, aoBoxGeo, aoMatFactory, ContactSkirt, BASE_FLOATING, onGround } from './vao.js';
@@ -1421,7 +1422,8 @@ export function buildBrasilia(scene, T) {
   // parecia ~1.4m de cobertura mas só bloqueava 0.9m (a base), então agachado (olho ~1m) a
   // cabeça ficava exposta e tomava tiro "atrás do muro". Agora o topo também bloqueia
   // bala/visão → a cobertura visível = a cobertura real (agachado protege).
-  const jardTex = lam({ map: ctex(cerradoTex(), 2, 1) });
+  cerradoTex(); // Preserve a sequência RNG usada pelos props e pelo terreno.
+  const jardTex = lam({ map: planterLeaves(2, 1) });
   for (const [px, pz] of [[-9, 8], [9, -8], [0, -20], [0, 16], [-16, 30], [16, 26], [-14, -46], [14, -50]]) {
     if (!freeSpot(px, pz, 2.2)) continue;
     addBox(3.4, 0.9, 1.3, MAT.concBranco, px, 0, pz);

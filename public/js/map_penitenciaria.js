@@ -264,7 +264,7 @@ export function buildPenitenciaria(scene, T) {
     arame: new THREE.MeshStandardMaterial({ map: tex.arame, color: 0x9a7a5c, metalness: .55, roughness: .6 }),
     grade: new THREE.MeshStandardMaterial({ map: tex.grade, color: 0xaab2b6, metalness: .6, roughness: .5 }),
     tijolo: new THREE.MeshStandardMaterial({ map: tex.tijolo, bumpMap: tex.tijolo, bumpScale: .05, color: 0xbd9e88, roughness: .92 }),
-    poca: new THREE.MeshStandardMaterial({ map: tex.poca, color: 0x39434e, metalness: .4, roughness: .07 }),
+    poca: new THREE.MeshStandardMaterial({ map: tex.poca, color: 0x39434e, metalness: .04, roughness: .34 }),
     caixaDagua: new THREE.MeshStandardMaterial({ map: tex.caixaDagua, bumpMap: tex.caixaDagua, bumpScale: .03, color: 0x9fb2bd, metalness: .35, roughness: .6 }),
     mesa: new THREE.MeshStandardMaterial({ map: tex.mesa, bumpMap: tex.mesa, bumpScale: .015, color: 0xc4c9cc, metalness: .7, roughness: .38 }),
   };

@@ -1,6 +1,7 @@
 // AMAZONIA — comunidade fictícia de várzea brasileira na vazante.
 // Direção e limites verificáveis: plans/AMAZONIA-VISUAL.md.
 import * as THREE from 'three';
+import { forestLeafLitter } from './map_surface_finish.js';
 import { placeProp, hasProp, PropBatch, StaticBatch } from './mapprops.js';
 import { applyLook } from './map_sky.js';
 import { createWater } from './water.js';
@@ -784,7 +785,7 @@ export function buildAmazonia(scene, T) {
   /* ── CHÃO DE MATA (r3): serapilheira sob o bosque, raiz de sustentação nos
       troncos e tora fina no chão — o piso de terra vira chão de floresta. */
   const SBS = new StaticBatch({ name: 'chao-de-mata' });
-  const matSerapilheira = lam({ map: texDe(TEX.serragem, 5, 4) || T.dirt, color: 0x76604a, roughness: 1 });
+  const matSerapilheira = lam({ map: forestLeafLitter(5, 4), color: 0x76604a, roughness: 1 });
   const geoRaiz = new THREE.CylinderGeometry(0.5, 0.22, 1, 6).rotateZ(Math.PI / 2);
   const raiz = (x, z, ry, len) => {
     // topo ≤ 0,28 m: raiz é degrau de tornozelo, não sólido (MAP1 mede raycast, não collider)

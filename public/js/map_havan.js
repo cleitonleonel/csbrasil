@@ -6,6 +6,7 @@
 // no ESTACIONAMENTO (carros GLB texturizados + Estátua da Liberdade). 3 bandeiras:
 // estacionamento, estátua, gôndolas. Contrato buildWorld + A*. Props de /Users/ruben/glb.
 import * as THREE from 'three';
+import { commercialSlab } from './map_surface_finish.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp, PropBatch, StaticBatch, PROP_BATCH } from './mapprops.js';
 import { VAO_BANDS, aoBoxGeo, aoMatFactory, ContactSkirt, BASE_FLOATING, onGround } from './vao.js';
@@ -437,7 +438,7 @@ export function buildHavan(scene, T) {
     lot: lam({ map: asfaltoTex(13, 11) }),   // v4: asfalto com brita+recape (as "bolhas" sumiram)
     // piso da loja: porcelanato POLIDO — roughness baixa dá o brilho de espelho sob a
     // fluorescente, que é metade da leitura "estou dentro de uma loja" (contra o sol fosco)
-    floor: lam({ map: noiseTex('#c9cfd6', [['#b2b9c0', 40, 8, 22, 0.45], ['#dde2e7', 30, 6, 18, 0.35], ['#8a929a', 14, 4, 12, 0.4]], 16, 16, { cracks: '#9aa2aa', pebbles: '#eef1f4', seed: 9 }), roughness: 0.22, metalness: 0.10, envMapIntensity: 1.6 }),
+    floor: lam({ map: commercialSlab(16, 16), roughness: 0.52, metalness: 0, envMapIntensity: 0.8 }),
     wall: lam({ map: acmTex(8, 2) }),                                    // painel ACM azul c/ emendas
     trim: lam({ color: 0xf4c020, map: reTile(GESSO_TEX, 3, 3) }),   // TEX1: amarelo Havan com desgaste
     shelf: lam({ color: 0xb9bec4 }), goods: lam({ color: 0xe07a3a }), rack: lam({ color: 0x3a3f45 }),
