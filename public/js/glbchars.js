@@ -167,6 +167,34 @@ const loadGLB = (url) => new Promise((res, rej) => loader.load(url, res, undefin
 let _clips = null;                 // { idle: AnimationClip, ... } shared fallback
 const _clipsByChar = {};           // id -> per-character retargeted clip set (fallback to _clips)
 const _base = new Map();           // id -> THREE.Object3D template scene
+const _skins = new Map(), _skinRequests = new Map();
+let _skinManifest = null;
+export async function preloadCosmeticAssets(ids = []) {
+  if (!ids.some(Boolean)) return;
+  if (!_skinManifest) _skinManifest = fetch('/models/skins/manifest.json').then(r => { if (!r.ok) throw new Error('skin_manifest'); return r.json(); }).catch(() => ({skins:{}}));
+  const manifest = await _skinManifest;
+  await Promise.all([...new Set(ids.filter(Boolean))].map(async id => {
+    const entry = manifest.skins?.[id];
+    if (!entry?.approved || !GLB_CHARS.has(entry.character) || !/^\/models\/skins\/[a-z0-9-]+\.glb$/.test(entry.model || '')) return;
+    if (_skins.has(id)) return;
+    if (_skinRequests.has(id)) return _skinRequests.get(id);
+    const request = (async () => {
+      const g = await loadGLB(entry.model); let rigged = false;
+      g.scene.traverse(o => { if (o.isSkinnedMesh && o.skeleton) rigged = true; });
+      if (!rigged) throw new Error('skin_requires_rig');
+      const clips = {};
+      for (const name of [...STATES, ...OPT_STATES]) {
+        const clip = g.animations.find(c => c.name === (entry.animationNames?.[name] || name));
+        if (clip) clips[name] = clip;
+      }
+      const compatible = entry.rigCompatibleWith === entry.character;
+      if (!compatible && !STATES.every(name => clips[name])) throw new Error('skin_requires_animations');
+      _skins.set(id, {character:entry.character, model:g.scene, clips:compatible?null:clips});
+    })().catch(e => console.warn(`[skins] ${id}: ${e.message}`)).finally(() => _skinRequests.delete(id));
+    _skinRequests.set(id, request); return request;
+  }));
+}
+
 
 export function hasModel(id) { return _base.has(id); }
 // Acesso ao template já carregado (fparms.js clona daqui p/ os braços de 1ª pessoa)
@@ -368,7 +396,9 @@ const _ikTgt = new THREE.Vector3();
 // result ({ group, parts }) plus animation control (isGLB, mixer, ctrl). Returns null
 // if the character has no model loaded.
 export function buildCharacterModel(def, opts = {}) {
-  const template = _base.get(def.id);
+  const cosmetic = _skins.get(def.skinId);
+  const skin = cosmetic?.character === def.id ? cosmetic : null;
+  const template = skin?.model || _base.get(def.id);
   if (!template || !_clips) return null;
   const withWeapon = opts.weapon !== false; // menu showcase passes weapon:false
 
@@ -475,7 +505,7 @@ export function buildCharacterModel(def, opts = {}) {
 
   const mixer = new THREE.AnimationMixer(model);
   const actions = {};
-  const clips = _clipsByChar[def.id] || _clips;   // clipes retargetados por personagem
+  const clips = skin?.clips || _clipsByChar[def.id] || _clips;   // clipes retargetados por personagem
   for (const name of [...STATES, ...OPT_STATES]) if (clips[name]) actions[name] = mixer.clipAction(clips[name]);
 
   const ctrl = new CharController(mixer, actions, group, headBone, head, def.id, model);

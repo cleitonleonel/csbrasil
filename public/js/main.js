@@ -1,9 +1,10 @@
 // Boot, menus, settings, logo, main loop.
 import * as THREE from 'three';
 import {initAccountEntry} from './account-entry.js';
+import {initTretaStore,equippedTretaSkin} from './treta-store.js';
 import { initTextures } from './textures.js';
 import { CHARACTERS, buildCharacter, charWeapon, ladosDe, podeNoLado } from './characters.js';
-import { preloadCharacterAssets, buildCharacterModel, hasModel, GLB_CHARS } from './glbchars.js';
+import { preloadCharacterAssets, preloadCosmeticAssets, buildCharacterModel, hasModel, GLB_CHARS } from './glbchars.js';
 import { preloadFPArms } from './fparms.js';
 import { preloadMapProps } from './mapprops.js';
 import { preloadAmbientLife } from './ambientlife.js';   // fauna do mapa (MAPS[id].ambience)
@@ -1509,6 +1510,10 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
      cada jogador da mesma sala ver bonecos diferentes, e o nome do killfeed não bateria com o
      rosto que apareceu na tela. Fora do multiplayer, sorteio normal. */
   const matchRoster = sessao ? rosterDoServidor(side, charId) : pickMatchRoster(faction, enemyFac, tamanhoTime, charId);
+  const playerSkinId = sessao
+    ? sessao.net.meta.roster.find(r=>r.id===sessao.net.yourEnt)?.skinId || null
+    : equippedTretaSkin(charId);
+  const matchSkins = [playerSkinId, ...matchRoster.allyDefs.map(d=>d.skinId), ...matchRoster.enemyDefs.map(d=>d.skinId)];
   const _rosterGlb = [charId, ...matchRoster.allyDefs, ...matchRoster.enemyDefs]
     .map((d) => (typeof d === 'string' ? d : d.id))
     .filter((id, i, a) => GLB_CHARS.has(id) && a.indexOf(id) === i);
@@ -1528,6 +1533,7 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
     if (!navOnly) {
       await Promise.all([
         preloadCharacterAssets(_charsToLoad, { weapons: _armasDaPartida }),
+        preloadCosmeticAssets(matchSkins),
         sfx.preloadWeaponSamples(_armasDaPartida),
         preloadMapProps([...MAP_PROPS, ...((MAPS[currentMap] && MAPS[currentMap].props) || [])]),   // + props do mapa (Havan: carros/estátua)
         /* fauna: sem esta linha o mapa constrói, o `ambience` existe e TODO bicho cai
@@ -1550,7 +1556,7 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
   game = new Game({
     renderer, textures, sfx,
     settings: sessao ? { ...settings, bots: tamanhoTime } : settings,
-    playerCharId: charId, playerTeam: side, playerFaction: faction, enemyFaction: enemyFac, mapId: currentMap,
+    playerCharId: charId, playerSkinId, playerTeam: side, playerFaction: faction, enemyFaction: enemyFac, mapId: currentMap,
     nickname: $('nick-input').value, testMode, mobile: TOUCH, matchRoster, matchWeapons,
     ctf: matchMode === 'ctf',   // o modo agora é 100% escolha do jogador (ctfMode só define o PADRÃO ao trocar de mapa)
     /* `mpFactory`+`net` ligam a autoridade do servidor. Espectador roda `dedicated`, senão
@@ -2024,10 +2030,11 @@ if (HUB_ENABLED) {
   $('mp-quick').after($('mp-amigos'));   // nas duas abas (pública e privada), logo no topo
   $('mp-panel').querySelector('.mp-corpo').appendChild($('mp-panel').querySelector('.mp-criar'));
   const tabs = [...document.querySelectorAll('.hub-tabs [data-hub-tab]')];
-  const panes = { jogar: $('hub-play'), ranking: $('hub-ranking'), comunidade: $('hub-community'), sobre: $('hub-about'), feedback: $('hub-feedback'), apoie: $('hub-support') };
+  const panes = { jogar: $('hub-play'), loja: $('hub-shop'), ranking: $('hub-ranking'), comunidade: $('hub-community'), sobre: $('hub-about'), feedback: $('hub-feedback'), apoie: $('hub-support') };
   const updateHubTip = () => {
     const tab = $('main-menu').dataset.hubTab;
     const tips = {
+      loja: 'Junte TRETA$, escolha uma skin e vista sua próxima treta.',
       comunidade: 'Encontre sua turma, compare o placar e combine a próxima treta.',
       ranking: 'Acompanhe suas partidas e consulte a disponibilidade do placar global.',
       sobre: 'Conheça as facções, os mapas e as últimas novidades do jogo.',
@@ -2052,6 +2059,7 @@ if (HUB_ENABLED) {
     mpPanel.classList.toggle('hidden', tab !== 'jogar' || $('main-menu').dataset.hubNet !== 'mp');
     if (tab === 'ranking') void renderHubRanking();
     if (tab === 'comunidade') document.dispatchEvent(new CustomEvent('cs-community-open'));
+    if (tab === 'loja') document.dispatchEvent(new CustomEvent('cs-shop-open'));
     if (tab === 'jogar') {
       syncHomeCharacter();
       if ($('main-menu').dataset.hubNet === 'mp') void abrirMultiplayer();
@@ -3000,6 +3008,7 @@ function loadStats() {
     JSON.parse(localStorage.getItem(STATS_KEY) || '{}'));
 }
 async function recordMatchStats(s) {
+  document.dispatchEvent(new CustomEvent('cs-match-end'));
   submitted = true;
   sendTelemetry();   // ANTES do guard de nick lá embaixo: telemetria cobre quem não registrou
   sendMatchEvent(s?.won ? 'won' : 'lost');   // evento rico anônimo (feat/telemetria, 016)
@@ -3637,7 +3646,7 @@ async function openInspectionScreen(target) {
 function rosterDoServidor(lado, charId) {
   const roster = mpSessao.net.meta.roster || [];
   const meu = mpSessao.net.yourEnt;
-  const def = (r) => CHARACTERS.find((c) => c.id === r.char) || CHARACTERS[0];
+  const def = (r) => ({...(CHARACTERS.find((c) => c.id === r.char) || CHARACTERS[0]), skinId:r.skinId || null});
   return {
     allyDefs: roster.filter((r) => r.team === lado && r.id !== meu).map(def),
     enemyDefs: roster.filter((r) => r.team !== lado).map(def),
@@ -4029,6 +4038,31 @@ async function mpEntrarPorConvite(txt) {
 }
 window.__mpConvite = mpEntrarPorConvite;
 
+// Rewarded solo uses the same authoritative simulation and signed identity as MP.
+// Local practice remains accessible from JOGAR.
+let tretaSoloStarting = false;
+document.addEventListener('cs-treta-solo', async () => {
+  if (mpConectando || tretaSoloStarting) return;
+  tretaSoloStarting = true;
+  show('mp-panel');
+  mpEstado('conectando', 'PREPARANDO SUA PARTIDA SOLO…');
+  try {
+    mpNos = ordenarNos(await sondarNos(NOS));
+    const no = mpNos.find(n => n.online && n.soloVerified);
+    if (!no) return mpErro('Nenhum servidor de partidas solo premiadas está disponível agora. Você pode jogar no menu JOGAR.');
+    mpSelecionarNo(no);
+    const ticket = await obterMpTicket('create');
+    const senha = crypto.randomUUID();
+    const sala = await createRoom(no.http, {
+      name: 'SOLO TRETA$', solo: true, private: true, password: senha,
+      mapId: currentMap, mapas: [currentMap], ctf: matchMode === 'ctf',
+      teamSize: Math.max(2, settings.bots || 4), creatorNick: (nickEl.value || '').trim(),
+    }, ticket);
+    await mpEntrar({...sala, id: sala.room || sala.id}, 'E', senha);
+  } catch { mpErro('Não deu para abrir a partida solo agora. Tente novamente em instantes.'); }
+  finally { tretaSoloStarting = false; }
+});
+
 function mpMontarFormulario() {
   const priv = mpEl('mp-privada'), wrap = mpEl('mp-senha-wrap');
   if (priv && wrap) priv.onchange = () => { wrap.hidden = !priv.checked; };
@@ -4390,6 +4424,7 @@ if (HUB_ENABLED) {
 window.__CS_MAIN_READY__ = true;
 window.__gameLaunch?.ready('boot');
 void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}renderPlayerPlate();}});
+initTretaStore({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onEquipped:skin=>{currentChar=skin.character;syncHomeCharacter();}});
 if (inspectionScreen) {
   openInspectionScreen(inspectionScreen).catch((error) => window.__gameLaunch?.fail(error, 'screen-query'));
 } else if (testMode && params.get('auto')) {

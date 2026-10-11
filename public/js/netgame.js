@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { poseCharacter, byId } from './characters.js';
 import { WEAPONS, supDeCod, anguloDeDisparo } from './game.js';
 import { frase } from './i18n.js';
+import { preloadCosmeticAssets } from './glbchars.js';
 
 export function makeNetcode(game, net) { return new Netcode(game, net); }
 
@@ -72,7 +73,11 @@ class Netcode {
     this._onPersonagem = (m) => {
       const def = byId(m.char);
       const alvo = m.ent === net.yourEnt && !this.espectador ? this.game.player : this._netMap.get(m.ent);
-      if (def && alvo) this.game._trocarPersonagem(alvo, def);
+      if (def && alvo) {
+        const revision = (alvo._cosmeticRevision || 0) + 1; alvo._cosmeticRevision = revision;
+        const apply = () => { if (alvo._cosmeticRevision === revision && net.onPersonagem === this._onPersonagem) this.game._trocarPersonagem(alvo, {...def,skinId:m.skinId || null}); };
+        if (m.skinId) void preloadCosmeticAssets([m.skinId]).then(apply); else apply();
+      }
       this._prevOnPersonagem?.(m);
     };
     net.onPersonagem = this._onPersonagem;
@@ -308,6 +313,8 @@ class Netcode {
       const bot = pega(e.team, e.id);
       if (!bot) continue;
       bot._remote = e.id; bot._netId = e.id;
+      const row = (net.meta.roster || []).find(r=>r.id===e.id);
+      if (row && byId(row.char)) game._trocarPersonagem(bot,{...byId(row.char),skinId:row.skinId || null});
       bot.team = e.team;                      // o lado do corpo passa a ser o do servidor
       bot.name = e.bot ? `[BOT] ${e.name}` : e.name; bot._nomeServidor = e.name;
       bot.pos.set(e.x, e.y, e.z); bot.yaw = e.yaw;
