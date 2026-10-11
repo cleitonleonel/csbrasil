@@ -27,6 +27,7 @@
 // Same buildWorld contract as map.js.
 import * as THREE from 'three';
 import { decalIds, paredeAtras } from './map_decals.js';
+import { superficieGrafitavel } from './graffiti_surface.js';
 import { grafitar, esconderSeFaltar } from './graffiti_pass.js';   // cobertura medida, não coordenada à mão
 import { setMapSky } from './map_sky.js';
 import { createWater } from './water.js';
@@ -267,7 +268,8 @@ export function buildPoolDay(scene, T) {
     for (const mesh of [...root.children]) {
       if (!mesh.isMesh || !mesh.userData?.piscinaStaticBox || Array.isArray(mesh.material)) continue;
       const key = [mesh.geometry.uuid, mesh.material.uuid, mesh.castShadow ? 1 : 0,
-        mesh.receiveShadow ? 1 : 0, mesh.renderOrder || 0].join(':');
+        mesh.receiveShadow ? 1 : 0, mesh.renderOrder || 0, mesh.visible ? 1 : 0,
+        superficieGrafitavel(mesh) ? 1 : 0].join(':');
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(mesh);
     }
@@ -281,6 +283,10 @@ export function buildPoolDay(scene, T) {
       batch.receiveShadow = first.receiveShadow;
       batch.renderOrder = first.renderOrder;
       batch.name = 'piscina:static-batch';
+      batch.visible = first.visible;
+      // The batch name loses each member's exclusion by name/ancestor. Keep
+      // painting eligibility separately, without changing physical collision.
+      batch.userData.graffitiSupportExcluded = !superficieGrafitavel(first);
       list.forEach((mesh, i) => {
         mesh.updateMatrix();
         batch.setMatrixAt(i, mesh.matrix);
@@ -1112,6 +1118,9 @@ export function buildPoolDay(scene, T) {
      A passada acha parede por raio a partir dos waypoints e pinta o que achar, então
      armário, pilastra, bloco de partida e mureta entram sem ninguém escrever
      coordenada. Ver `public/js/graffiti_pass.js` pro porquê de ser assado. */
+  // Instance matrices are Float32 and may change exact seams by micrometers.
+  // Placement must validate the same triangles that remain in the final scene.
+  batchStaticBoxes();
   grafitar({
     id: 'piscina_treta',
     root, T, waypoints: nodes, seed: 7717, passo: 0.9, alcance: 9, cobre: 0.06, minLarg: 0.3,
@@ -1151,15 +1160,14 @@ export function buildPoolDay(scene, T) {
     ],
   });
 
-  /* A passada viva precisa enxergar cada parede/armário como malha separada. O lote entra
-     somente depois dela: preserva o bake e troca N caixas repetidas por uma chamada. */
+  /* References retain the authored dimensions; graffiti has already measured
+     the final batched geometry used by rendering and hitscan. */
   root.userData.piscinaTrimContract = {
     layout: trimLayout,
     constructionMutant: trimConstructionMutant,
     evidence: trimEvidence,
     references: trimReferenceEvidence,
   };
-  batchStaticBoxes();
 
   return {
     ambience,

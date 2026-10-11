@@ -9,7 +9,7 @@ const fixtures = spawnSync(process.execPath, [fixtureFile], { encoding: 'utf8', 
 process.stdout.write(fixtures.stdout || '');
 process.stderr.write(fixtures.stderr || '');
 assert.equal(fixtures.status, 0, 'independent serialized-function fixtures must pass');
-assert.match(fixtures.stdout, /Area audit: 18 serialized-function fixtures passed/);
+assert.match(fixtures.stdout, /Area audit: 21 serialized-function fixtures passed/);
 
 const piece = { x: 0, y: 2, z: .13, ry: 0, w: 2, h: 2 };
 function scene(plantZ) {
@@ -30,4 +30,4 @@ for (const [name, plantZ, expected] of [
   assert.equal(criarSuporteGrafite(scene(plantZ))(piece), expected, name);
   console.log(`PASS production: ${name}`);
 }
-console.log('Area audit integration: 18 serialized fixtures + 3 current-production controls passed');
+console.log('Area audit integration: 21 serialized fixtures + 3 current-production controls passed');

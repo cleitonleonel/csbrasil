@@ -4,7 +4,8 @@ export async function measureGraffitiArea(root, piece, THREE, predicate) {
   const { x, y, z, ry, w, h } = piece;
   if (![x, y, z, ry, w, h].every(Number.isFinite) || w <= 0 || h <= 0)
     return { supported: false, uncoveredArea: Infinity, reason: 'invalid-piece' };
-  const tolerance = Math.max(1, w * h) * 1e-11;
+  // Mesmo orçamento numérico por quad do contrato; o algoritmo de medição continua independente.
+  const tolerance = Math.max(1, w * h) * 1e-10;
   const polygonArea = polygon => {
     let sum = 0;
     for (let i = 0; i < polygon.length; i++) {
@@ -61,7 +62,7 @@ export async function measureGraffitiArea(root, piece, THREE, predicate) {
   root.updateMatrixWorld(true);
   const meshes = [];
   root.traverse(mesh => {
-    if (!mesh.isMesh || !mesh.geometry?.attributes?.position || !mesh.material) return;
+    if (!mesh.isMesh || !mesh.geometry?.attributes?.position || !mesh.material || !(mesh.layers.mask & 1)) return;
     for (let ancestor = mesh; ancestor; ancestor = ancestor.parent)
       if (!ancestor.visible || /^(decal:|mural:)/.test(ancestor.name || '')) return;
     if (new THREE.Box3().setFromObject(mesh).intersectsBox(query)) meshes.push(mesh);
@@ -212,5 +213,21 @@ if (typeof process !== 'undefined' && process.argv[1] && import.meta.url === new
   const densePlant = new THREE.Mesh(new THREE.PlaneGeometry(.001, .001, 40, 40), new THREE.MeshLambertMaterial());
   densePlant.position.set(.25, 2.25, .115); densePlant.name = 'plant'; densePlant.userData.nonSolidSurface = true;
   await check('tessellated foreground accumulates whole area', root(panel(-2, 2), densePlant), piece, false);
+  const narrowWall = new THREE.Mesh(new THREE.BoxGeometry(.4, 2, .2), new THREE.MeshLambertMaterial());
+  narrowWall.position.set(40, 1, 0);
+  const narrowPiece = { x: 40, y: 1, z: .13, ry: 0, w: .4, h: 2 };
+  await check('nominal rectangle before Float32 widening', root(narrowWall), narrowPiece, true);
+  const drawnGeometry = new THREE.PlaneGeometry(.4, 2).translate(40, 1, .13);
+  const positions = drawnGeometry.attributes.position;
+  const left = new THREE.Vector3().fromBufferAttribute(positions, 0);
+  const right = new THREE.Vector3().fromBufferAttribute(positions, 1);
+  const bottom = new THREE.Vector3().fromBufferAttribute(positions, 3);
+  const actual = { x: (left.x + bottom.x) / 2, y: (left.y + bottom.y) / 2,
+    z: left.z, ry: 0, w: right.x - left.x, h: left.y - bottom.y };
+  assert.ok(actual.w > narrowPiece.w, 'actual vertices reproduce Float32 expansion');
+  await check('actual Float32 rectangle overhang is rejected', root(narrowWall), actual, false);
+  drawnGeometry.dispose();
+  const hiddenBridge = panel(.2, .200001); hiddenBridge.layers.set(1);
+  await check('hidden render layer cannot bridge unsampled slit', root(panel(-2, .2), panel(.200001, 2), hiddenBridge), piece, false);
   console.log(`Area audit: ${count} serialized-function fixtures passed`);
 }

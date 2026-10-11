@@ -89,6 +89,51 @@ import { criarSuporteGrafite, superficieGrafitavel } from './graffiti_surface.js
    Math.random faria duas corridas do MESMO commit divergirem. */
 const r3 = (v) => Math.round(v * 1000) / 1000;
 
+// Mede os vértices Float32 realmente desenhados, inclusive a transformação do mural.
+export function retanguloGrafiteDesenhado(geometry, matrix) {
+  const position = geometry?.attributes?.position;
+  const index = geometry?.index, pattern = [0, 2, 1, 2, 3, 1];
+  if (position?.count !== 4 || index?.count !== 6 || geometry.drawRange.start !== 0
+    || geometry.drawRange.count < 6 || geometry.groups.length
+    || pattern.some((value, i) => index.getX(i) !== value)) return null;
+  const points = Array.from({ length: 4 }, (_, i) => {
+    const point = new THREE.Vector3().fromBufferAttribute(position, i);
+    return matrix ? point.applyMatrix4(matrix) : point;
+  });
+  const right = points[1].clone().sub(points[0]), down = points[2].clone().sub(points[0]);
+  if (Math.abs(right.y) > 1e-8 || Math.hypot(down.x, down.z) > 1e-8 || down.y >= 0
+    || points[3].distanceTo(points[0].clone().add(right).add(down)) > 1e-8) return null;
+  const center = points[0].clone().add(points[3]).multiplyScalar(.5);
+  return { x: center.x, y: center.y, z: center.z, ry: Math.atan2(-right.z, right.x), w: right.length(), h: -down.y };
+}
+
+function grafiteRenderizado(piece, local) {
+  const geometry = new THREE.PlaneGeometry(piece.w, piece.h);
+  let matrix;
+  if (local) {
+    matrix = new THREE.Matrix4().makeRotationY(piece.ry);
+    matrix.setPosition(piece.x, piece.y, piece.z);
+  } else {
+    geometry.rotateY(piece.ry); geometry.translate(piece.x, piece.y, piece.z);
+  }
+  const drawn = retanguloGrafiteDesenhado(geometry, matrix);
+  geometry.dispose();
+  return drawn;
+}
+
+// Assar e desenhar usam os mesmos números; a margem também cobre arredondamento Float32.
+export function quantizarGrafite(piece, suporte, local = false) {
+  if (!suporte(piece)) return null;
+  const rounded = Object.fromEntries(['x', 'y', 'z', 'ry', 'w', 'h'].map(key => [key, r3(piece[key])]));
+  for (const inset of [0, .002, .004, .01, .02]) {
+    const quad = { ...rounded, w: r3(rounded.w - inset), h: r3(rounded.h - inset) };
+    if (!(quad.w > 0 && quad.h > 0) || !suporte(quad)) continue;
+    const drawn = grafiteRenderizado(quad, local);
+    if (drawn && suporte(drawn)) return quad;
+  }
+  return null;
+}
+
 /* ── NORMAL DE MUNDO, INCLUSIVE EM InstancedMesh ─────────────────────────────
    `h.face.normal` vem no espaço da GEOMETRIA. Pra malha comum, `matrixWorld` basta.
    Pra InstancedMesh não: o three devolve `object = a InstancedMesh` e a matriz da
@@ -188,13 +233,10 @@ function revisarGrafiteManual(root) {
     if (!mesh.isMesh || !/^(decal:|mural:)/.test(mesh.name) || mesh.userData.pecas) return;
     const params = mesh.geometry.parameters;
     if (!params?.width || !params?.height) return;
-    const position = mesh.getWorldPosition(new THREE.Vector3());
     const normal = new THREE.Vector3(0, 0, 1).applyNormalMatrix(new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld));
     const up = new THREE.Vector3(0, 1, 0).transformDirection(mesh.matrixWorld);
-    const scale = mesh.getWorldScale(new THREE.Vector3());
-    const piece = { x: position.x, y: position.y, z: position.z, ry: Math.atan2(normal.x, normal.z),
-      w: params.width * Math.abs(scale.x), h: params.height * Math.abs(scale.y) };
-    if (Math.abs(normal.y) > 0.001 || Math.abs(up.y) < 1 - 1e-6 || !suporte(piece)) pieces.push(mesh);
+    const piece = retanguloGrafiteDesenhado(mesh.geometry, mesh.matrixWorld);
+    if (Array.isArray(mesh.material) || !piece || Math.abs(normal.y) > 0.001 || Math.abs(up.y) < 1 - 1e-6 || !suporte(piece)) pieces.push(mesh);
   });
   for (const mesh of pieces) {
     mesh.removeFromParent(); mesh.geometry.dispose();
@@ -458,12 +500,13 @@ export function pintarParedes(opts) {
         if (recuo === null) { rec.semParede++; continue; }
         const ax = A.x + Math.cos(A.ry) * du, az = A.z - Math.sin(A.ry) * du;
         const px = ax - Math.sin(A.ry) * recuo, pz = az - Math.cos(A.ry) * recuo;
-        if (!suporte({ x: px, y: yc, z: pz, ry: A.ry, w, h })) { rec.semParede++; continue; }
-        if (_cobreDemais(postas, px, yc, pz, A.ry, w, h, cobre)) { rec.cobria++; continue; }
-        if (exigeChao && B.exigeChao !== false && !_temChao(amostra, du, w, yc - h / 2)) { rec.noAr++; continue; }
-        postas.push({ i, cartaz, x: px, y: yc, z: pz, ry: A.ry, hw: w / 2, hh: h / 2, quem: A.quem });
-        const g = new THREE.PlaneGeometry(w, h);
-        g.rotateY(A.ry); g.translate(px, yc, pz);
+        const quad = quantizarGrafite({ x: px, y: yc, z: pz, ry: A.ry, w, h }, suporte);
+        if (!quad) { rec.semParede++; continue; }
+        if (_cobreDemais(postas, quad.x, quad.y, quad.z, quad.ry, quad.w, quad.h, cobre)) { rec.cobria++; continue; }
+        if (exigeChao && B.exigeChao !== false && !_temChao(amostra, du, quad.w, quad.y - quad.h / 2)) { rec.noAr++; continue; }
+        postas.push({ i, cartaz, x: quad.x, y: quad.y, z: quad.z, ry: quad.ry, hw: quad.w / 2, hh: quad.h / 2, quem: A.quem });
+        const g = new THREE.PlaneGeometry(quad.w, quad.h);
+        g.rotateY(quad.ry); g.translate(quad.x, quad.y, quad.z);
         const chave = (cartaz ? 'p' : 'd') + i;
         if (!porArquivo.has(chave)) porArquivo.set(chave, []);
         porArquivo.get(chave).push(g);
@@ -543,6 +586,8 @@ export function aplicarGrafite(root, T, layout, muraisTex) {
     if (i === undefined) { console.warn('[grafite] layout cita "' + nome + '", que saiu do pacote'); continue; }
     const g = new THREE.PlaneGeometry(w, h);
     g.rotateY(ry); g.translate(x, y, z);
+    const drawn = retanguloGrafiteDesenhado(g);
+    if (!drawn || !suporte(drawn)) { g.dispose(); continue; }
     const chave = (cartaz ? 'p' : 'd') + i;
     if (!porArquivo.has(chave)) porArquivo.set(chave, []);
     porArquivo.get(chave).push(g);
@@ -552,7 +597,9 @@ export function aplicarGrafite(root, T, layout, muraisTex) {
 
   let murais = 0;
   for (const [nome, x, y, z, ry, w, h] of (layout.murais || [])) {
-    if (!suporte({ x, y, z, ry, w, h })) continue;
+    const nominal = { x, y, z, ry, w, h };
+    const drawn = grafiteRenderizado(nominal, true);
+    if (!suporte(nominal) || !drawn || !suporte(drawn)) continue;
     const t = muraisTex && muraisTex[nome];
     if (!t) continue;
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshLambertMaterial({
@@ -756,17 +803,18 @@ export function pendurarMurais(opts) {
     if (rec === null) continue;
     if (!_temChao(am, 0, w, yc - h / 2)) continue;
     const px = c.A.x - Math.sin(c.A.ry) * rec, pz = c.A.z - Math.cos(c.A.ry) * rec;
-    if (!suporte({ x: px, y: yc, z: pz, ry: c.A.ry, w, h })) continue;
+    const quad = quantizarGrafite({ x: px, y: yc, z: pz, ry: c.A.ry, w, h }, suporte, true);
+    if (!quad) continue;
     const i = feitos.length;
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshLambertMaterial({
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(quad.w, quad.h), new THREE.MeshLambertMaterial({
       map: texturas[i], polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -5,
     }));
-    mesh.position.set(px, yc, pz); mesh.rotation.y = c.A.ry;
+    mesh.position.set(quad.x, quad.y, quad.z); mesh.rotation.y = quad.ry;
     mesh.renderOrder = 2; mesh.receiveShadow = true;
     mesh.name = 'mural:' + (nomes[i] || ('homenagem-' + i));
     root.add(mesh);
-    postas.push({ x: px, z: pz });
-    feitos.push([nomes[i] || ('homenagem-' + i), r3(px), r3(yc), r3(pz), r3(c.A.ry), r3(w), r3(h)]);
+    postas.push({ x: quad.x, z: quad.z });
+    feitos.push([nomes[i] || ('homenagem-' + i), quad.x, quad.y, quad.z, quad.ry, quad.w, quad.h]);
   }
   return { murais: feitos.length, vagas: notas.length, layout: feitos };
 }

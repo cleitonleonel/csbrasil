@@ -48,6 +48,36 @@ function suite(api, quiet = false) {
     });
   }
   baked('wall retains baked paint', () => grouped(box()), row, 1);
+  test('quantized live quad survives baked roundtrip on narrow real wall', 'live', () => {
+    const raw = { x: 0, y: 2, z: .13, ry: 0, w: 1.0006, h: 1.2 };
+    const makeRoot = () => grouped(box(1.0007));
+    const root = makeRoot(), support = criarSuporteGrafite(root, production.gradeEspacial);
+    assert.equal(support(raw), true, 'unrounded artwork has complete support');
+    const roundedRow = [0, 0, 2, .13, 0, 1.001, 1.2];
+    assert.equal(api.aplicarGrafite(makeRoot(), T, { arquivos: ['fixture.png'], pecas: [roundedRow] }).pecas, 0,
+      'old three-decimal persistence loses support');
+    const quad = api.quantizarGrafite(raw, support);
+    assert.ok(quad && quad.w >= raw.w - .002 && quad.w < 1.001, 'millimetric inset preserves artwork');
+    const fixedRow = [0, ...['x', 'y', 'z', 'ry', 'w', 'h'].map(key => quad[key])];
+    assert.equal(api.aplicarGrafite(makeRoot(), T, { arquivos: ['fixture.png'], pecas: [fixedRow] }).pecas, 1,
+      'the exact persisted rectangle renders with complete support');
+  });
+  test('Float32 drawn quad cannot overhang a wall at x40', 'live', () => {
+    const makeRoot = () => { const wall = box(.4, 2); wall.position.x = 40; return grouped(wall); };
+    const support = criarSuporteGrafite(makeRoot(), api.gradeEspacial);
+    const raw = { x: 40, y: 1, z: .13, ry: 0, w: .4, h: 2 };
+    assert.equal(support(raw), true, 'nominal rectangle fits');
+    const geometry = new THREE.PlaneGeometry(raw.w, raw.h).translate(raw.x, raw.y, raw.z);
+    const drawn = api.retanguloGrafiteDesenhado(geometry); geometry.dispose();
+    assert.ok(drawn.w > raw.w, 'Float32 vertices reproduce widening');
+    assert.equal(support(drawn), false, 'actual overhang is rejected');
+    const oldRow = [0, ...['x', 'y', 'z', 'ry', 'w', 'h'].map(k => raw[k])];
+    assert.equal(api.aplicarGrafite(makeRoot(), T, { arquivos: ['fixture.png'], pecas: [oldRow] }).pecas, 0);
+    const quad = api.quantizarGrafite(raw, support);
+    assert.ok(quad && quad.w < raw.w, 'live generation takes a supported margin');
+    const goodRow = [0, ...['x', 'y', 'z', 'ry', 'w', 'h'].map(k => quad[k])];
+    assert.equal(api.aplicarGrafite(makeRoot(), T, { arquivos: ['fixture.png'], pecas: [goodRow] }).pecas, 1);
+  });
   baked('empty air rejects baked paint', () => grouped(), row, 0);
   const wallRect = (x0, x1, y0 = 0, y1 = 4, z = .1, name = 'concrete-wall') => {
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, y1 - y0), new THREE.MeshLambertMaterial());
@@ -159,6 +189,19 @@ function suite(api, quiet = false) {
   }
   manual('manual unsupported decal is pruned before live placement', () => { const art = plane(.13, 'decal:fixture'); return { root: grouped(art), art }; }, false);
   manual('manual supported decal is preserved', () => { const art = plane(.13, 'decal:fixture', undefined, 2, 2); return { root: grouped(box(), art), art }; }, true);
+  for (const kind of ['empty-range', 'one-triangle', 'reversed-index']) {
+    manual(`manual ${kind} cannot claim a complete drawn quad`, () => {
+      const art = plane(.13, 'mural:fixture', undefined, 2, 2);
+      if (kind === 'empty-range') art.geometry.setDrawRange(0, 0);
+      if (kind === 'one-triangle') art.geometry.setIndex([0, 2, 1]);
+      if (kind === 'reversed-index') art.geometry.setIndex([0, 1, 2, 2, 1, 3]);
+      return { root: grouped(box(), art), art };
+    }, false);
+  }
+  manual('manual material array without groups is not a drawn quad', () => {
+    const art = plane(.13, 'mural:fixture', undefined, 2, 2); art.material = [art.material];
+    return { root: grouped(box(), art), art };
+  }, false);
   manual('rolled manual quad cannot claim an upright footprint', () => {
     const art = plane(.13, 'decal:fixture', undefined, 2, 2); art.rotation.z = Math.PI / 4;
     return { root: grouped(box(2.1, 2.1), art), art };

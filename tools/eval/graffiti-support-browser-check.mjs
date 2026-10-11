@@ -59,7 +59,15 @@ const measure = async ({ limits, areaSource, graffitiMapIds }) => {
   const meshes = [], allowed = [], pieces = [], unclassifiedArt = [];
   let batchMeshPieces = 0, realDrawnBatches = 0;
   const drawnBounds = new THREE.Box3(), batchVisibility = [], artworkPaths = new Set();
-  const batchGeometryVerdicts = new WeakMap();
+  // Independente da produção: mede a largura/altura pelos quatro vértices do desenho.
+  const drawnRectangle = points => {
+    const right = points[1].clone().sub(points[0]), down = points[2].clone().sub(points[0]);
+    if (Math.abs(right.y) > 1e-8 || Math.hypot(down.x, down.z) > 1e-8 || down.y >= 0
+      || points[3].distanceTo(points[0].clone().add(right).add(down)) > 1e-8) return null;
+    const center = points[0].clone().add(points[3]).multiplyScalar(.5);
+    return { x: center.x, y: center.y, z: center.z, ry: Math.atan2(-right.z, right.x), w: right.length(), h: -down.y };
+  };
+  const batchGeometryVerdicts = new WeakMap(), renderedQuads = new WeakMap();
   const drawableBatch = (mesh, expected) => {
     if (batchGeometryVerdicts.has(mesh)) return batchGeometryVerdicts.get(mesh);
     const verdict = reason => { batchGeometryVerdicts.set(mesh, reason); return reason; };
@@ -77,6 +85,9 @@ const measure = async ({ limits, areaSource, graffitiMapIds }) => {
         .map(([u, v]) => new THREE.Vector3(p.x + ux * u * p.w, p.y + v * p.h, p.z + uz * u * p.w));
       const found = actual.findIndex(points => corners.every((corner, k) => corner.distanceToSquared(points[k]) < 1e-8));
       if (found < 0) return verdict('batch-quad-missing-or-moved');
+      const drawn = drawnRectangle(actual[found]);
+      if (!drawn) return verdict('batch-nonrectangular-quad');
+      renderedQuads.set(p, drawn);
       actual.splice(found, 1);
     }
     return verdict(null);
@@ -84,6 +95,13 @@ const measure = async ({ limits, areaSource, graffitiMapIds }) => {
   const visibleArtwork = mesh => {
     if (!mesh?.isMesh || !visible(mesh)) return 'hidden-or-missing-mesh';
     if (!mesh.geometry?.attributes?.position?.count) return 'missing-drawable-geometry';
+    if (!(mesh.layers.mask & 1)) return 'hidden-artwork-layer';
+    if (Array.isArray(mesh.material)) return 'artwork-material-array-without-groups';
+    if (!mesh.userData?.pecas) {
+      const g = mesh.geometry, pattern = [0, 2, 1, 2, 3, 1];
+      if (g.attributes.position.count !== 4 || g.index?.count !== 6 || g.drawRange.start !== 0
+        || g.drawRange.count < 6 || g.groups.length || pattern.some((v, i) => g.index.getX(i) !== v)) return 'manual-incomplete-draw';
+    }
     const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     if (!materials.length) return 'missing-material';
     for (const material of materials) {
@@ -112,7 +130,7 @@ const measure = async ({ limits, areaSource, graffitiMapIds }) => {
         const artVisibilityReason = matching.length === 1
           ? visibleArtwork(matching[0]) || drawableBatch(matching[0], o.userData.graffitiPecas.filter(q => q.f === p.f))
           : 'missing-or-ambiguous-batch-mesh';
-        pieces.push({ ...p, owner: o.name || '(group)', source: 'batch', visible: !artVisibilityReason, artVisibilityReason });
+        pieces.push({ ...p, rendered: renderedQuads.get(p), owner: o.name || '(group)', source: 'batch', visible: !artVisibilityReason, artVisibilityReason });
       }
     }
     if (o.isMesh && /^(decal:|mural:)/.test(o.name || '') && o.userData?.pecas) {
@@ -139,7 +157,9 @@ const measure = async ({ limits, areaSource, graffitiMapIds }) => {
     const n = new THREE.Vector3(0, 0, 1).applyNormalMatrix(new THREE.Matrix3().getNormalMatrix(o.matrixWorld));
     const up = new THREE.Vector3(0, 1, 0).transformDirection(o.matrixWorld);
     const scale = o.getWorldScale(new THREE.Vector3());
-    pieces.push({ x: pos.x, y: pos.y, z: pos.z, ry: Math.atan2(n.x, n.z),
+    const position = o.geometry.attributes.position;
+    const rendered = position?.count === 4 ? drawnRectangle(Array.from({ length: 4 }, (_, k) => new THREE.Vector3().fromBufferAttribute(position, k).applyMatrix4(o.matrixWorld))) : null;
+    pieces.push({ rendered, x: pos.x, y: pos.y, z: pos.z, ry: Math.atan2(n.x, n.z),
       w: params.width * Math.abs(scale.x), h: params.height * Math.abs(scale.y),
       f: o.name, owner: o.parent?.name || '(group)', source: 'manual', visible: !visibleArtwork(o), artVisibilityReason: visibleArtwork(o), vertical: Math.abs(n.y) < .001 && Math.abs(up.y) >= 1 - 1e-6 });
     if (!visibleArtwork(o)) drawnBounds.union(new THREE.Box3().setFromObject(o));
@@ -171,10 +191,10 @@ const measure = async ({ limits, areaSource, graffitiMapIds }) => {
   const worldNormal = new THREE.Vector3();
   const inspected = [], failures = [], byReason = {}, supportedBy = {};
   for (let index = 0; index < pieces.length; index++) {
-    const p = pieces[index], failedSamples = [];
+    const inventory = pieces[index], p = { ...inventory, ...inventory.rendered }, failedSamples = [];
     const numeric = ['x', 'y', 'z', 'ry', 'w', 'h'].every(k => Number.isFinite(p[k])) && p.w > 0 && p.h > 0;
-    if (!numeric || p.vertical === false || !p.visible) {
-      const reason = !numeric ? 'invalid-piece-metadata' : p.vertical === false ? 'nonvertical-art-plane' : 'visible-art';
+    if (!numeric || !inventory.rendered || p.vertical === false || !p.visible) {
+      const reason = !numeric ? 'invalid-piece-metadata' : !inventory.rendered ? 'missing-drawn-rectangle' : p.vertical === false ? 'nonvertical-art-plane' : 'visible-art';
       byReason[reason] = (byReason[reason] || 0) + 1;
       failures.push({ ...p, index, failedSamples: [{ reason }], failed: 25 });
       continue;
@@ -224,7 +244,7 @@ const measure = async ({ limits, areaSource, graffitiMapIds }) => {
       const reason = `area:${area.reason}`;
       byReason[reason] = (byReason[reason] || 0) + 1;
     }
-    const entry = { ...p, index, samples: 25, failed: failedSamples.length, maxDepth, minNormalDot, area };
+    const entry = { ...p, nominal: Object.fromEntries(['x', 'y', 'z', 'ry', 'w', 'h'].map(k => [k, inventory[k]])), index, samples: 25, failed: failedSamples.length, maxDepth, minNormalDot, area };
     inspected.push(entry);
     if (failedSamples.length || (area && !area.supported)) failures.push({ ...entry, failedSamples });
   }
@@ -285,7 +305,7 @@ try {
   receipt.registry = registry; receipt.requestedMaps = ids;
   save();
   for (const id of ids) {
-    const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+    const page = await browser.newPage({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: 1 });
     const errors = [], failedRequests = [];
     page.on('pageerror', e => errors.push(e.message));
     page.on('response', r => { if (r.status() >= 400) failedRequests.push({ status: r.status(), url: r.url() }); });
