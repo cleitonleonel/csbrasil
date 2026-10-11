@@ -27,6 +27,9 @@ const out = resolve(option('out', '/tmp/graffiti-support'));
 const photos = Number(option('fotos', '3'));
 if (!Number.isInteger(photos) || photos < 0 || photos > 30) throw Error('--fotos must be an integer from 0 to 30');
 const requested = option('maps', '').split(',').map(s => s.trim()).filter(Boolean);
+const selfTest = args.includes('--self-test');
+const quality = option('quality', 'med');
+if (!['med', 'low'].includes(quality)) throw Error('--quality must be med or low');
 const limits = { samplesPerPiece: 25, halfQuadFraction: .49, originOffset: .02, supportDepth: .05, normalDot: .98 };
 mkdirSync(out, { recursive: true });
 const sourcePaths = ['public/js/maps.js', 'public/js/graffiti_pass.js', 'public/js/graffiti_layout.js', 'public/js/graffiti_surface.js', 'public/js/graffiti_coverage.js', 'tools/eval/graffiti-area-audit.mjs', 'tools/eval/graffiti-fingerprint.mjs', ...Object.values(MAP_SOURCES)];
@@ -34,7 +37,7 @@ const sources = Object.fromEntries(sourcePaths.map(file => {
   try { return [file, createHash('sha256').update(readFileSync(file)).digest('hex')]; }
   catch { return [file, null]; }
 }));
-const receipt = { generatedAt: new Date().toISOString(), base, sources, limits, maps: {}, status: 'running' };
+const receipt = { generatedAt: new Date().toISOString(), base, sources, limits, maps: {}, quality, status: 'running', selfTests: [] };
 const save = () => writeFileSync(`${out}/receipt.json`, JSON.stringify(receipt, null, 2));
 
 // Serialized into the browser. Only the paintability predicate is shared; the
@@ -306,6 +309,7 @@ try {
   save();
   for (const id of ids) {
     const page = await browser.newPage({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: 1 });
+    await page.addInitScript(quality => localStorage.setItem('awpbr_settings', JSON.stringify({ quality })), quality);
     const errors = [], failedRequests = [];
     page.on('pageerror', e => errors.push(e.message));
     page.on('response', r => { if (r.status() >= 400) failedRequests.push({ status: r.status(), url: r.url() }); });
@@ -324,6 +328,44 @@ try {
         && result.rejected === 0 && errors.length === 0 && result.unclassifiedArt.length === 0
         && result.batchMeshPieces === result.inventoriedBatchPieces
         && result.relevantFailedRequests.length === 0 && result.unloadedTemplates.length === 0;
+      if (selfTest && result.ok) {
+        for (const mode of ['batch-empty-range', 'batch-index-missing-quad', 'manual-partial-range', 'manual-material-array']) {
+          if (receipt.selfTests.some(test => test.mode === mode)) continue;
+          const applied = await page.evaluate(mode => {
+            let mesh;
+            window.__scene.traverse(o => {
+              if (!mesh && o.isMesh && /^(decal:|mural:)/.test(o.name || '')
+                && (mode.startsWith('batch-') ? !!o.userData?.pecas : !o.userData?.pecas)) mesh = o;
+            });
+            if (!mesh) return false;
+            const g = mesh.geometry;
+            window.__mapAuditMutation = { mesh, material: mesh.material, index: g.index,
+              start: g.drawRange.start, count: g.drawRange.count };
+            if (mode === 'batch-index-missing-quad') {
+              g.setIndex(g.index.clone()); g.index.setX(0, g.index.getX(0) + 1);
+            } else if (mode === 'manual-material-array') mesh.material = [mesh.material];
+            else g.setDrawRange(0, mode === 'manual-partial-range' ? 3 : 0);
+            return true;
+          }, mode);
+          if (!applied) continue;
+          let mutant;
+          try {
+            mutant = await page.evaluate(measure, { limits, areaSource: measureGraffitiArea.toString(), graffitiMapIds: Object.keys(MAP_SOURCES) });
+          } finally {
+            await page.evaluate(() => {
+              const saved = window.__mapAuditMutation;
+              saved.mesh.material = saved.material; saved.mesh.geometry.setIndex(saved.index);
+              saved.mesh.geometry.setDrawRange(saved.start, saved.count);
+              delete window.__mapAuditMutation;
+            });
+          }
+          const detected = !mutant.bakeApplied || mutant.rejected > 0 || mutant.batchMeshPieces !== mutant.inventoriedBatchPieces;
+          receipt.selfTests.push({ map: id, mode, detected, rejected: mutant.rejected,
+            bakeApplied: mutant.bakeApplied, reasons: mutant.byReason });
+          if (!detected) throw Error(`Auditor missed actual drawing mutation: ${mode}`);
+          console.log(JSON.stringify({ selfTest: mode, map: id, detected, rejected: mutant.rejected }));
+        }
+      }
       receipt.maps[id] = result;
       writeFileSync(`${dir}/report.json`, JSON.stringify(result, null, 2)); save();
       const overview = `${dir}/overview.png`;
@@ -350,7 +392,9 @@ try {
       console.error(JSON.stringify({ map: id, ok: false, error: error.message.split('\n')[0] }));
     } finally { save(); await page.close(); }
   }
-  receipt.status = Object.values(receipt.maps).every(r => r.ok) ? 'passed' : 'failed';
+  const mutationsComplete = !selfTest || receipt.selfTests.length === 4 && receipt.selfTests.every(test => test.detected);
+  receipt.status = Object.values(receipt.maps).every(r => r.ok) && mutationsComplete ? 'passed' : 'failed';
+  if (!mutationsComplete) receipt.error = 'Requested drawing mutations were not all exercised';
 } catch (error) {
   receipt.status = 'failed'; receipt.error = error.message; console.error(error.message);
 } finally { await browser.close(); save(); }

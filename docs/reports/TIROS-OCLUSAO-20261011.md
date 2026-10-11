@@ -70,3 +70,9 @@ Memória: preload final 166 modelos / 80.183.112 bytes GLB. RSS ao fim do sweep 
 Todos os 166 modelos obrigatórios estão tracked no pin cliente e coincidem byte a byte por hash Git com os GLBs usados nas réguas: 80.183.112 bytes, missing/divergent vazios. `/tmp/client-shot-required-assets-tracked-pin.log` e `/tmp/client-shot-required-assets-tracked-pin-summary.json`.
 
 Próximo passo: crítica independente do pairing e medição de memória/tick em nós apropriados antes de promover. Docker só pode buscar esse pin após sua publicação pelo coordenador. Sem build Docker, merge, deploy, pixels alpha ou partida MP humana comprovados nesta frente. Grafites e validação de navegador ficam com o coordenador.
+
+## Pairing após finalizar a geometria da Piscina
+
+A validação de grafites foi movida após `batchStaticBoxes`, pois matrizes Float32 abrem microfrestas depois da conversão. A flag `graffitiSupportExcluded` só preserva elegibilidade de pintura nos lotes. O replay focused confirma colisores, spawns e pickups idênticos e0/800raios físicos antes/depois; o mutante que restaura a ordem antiga conserva uma peça que fica sem parede. Room real Piscina, seeds12345/777:0/576diferenças cliente/autoridade. Nenhuma outra semântica de tiros mudou desde o sweep18mapas/6912raios.
+
+Pin concreto atualizado: cliente `6fddd2c62a394501e6c527a6cbe6bdce93609b80`, backend `f7aa8958de1c42459bce941c4a588474b3a1c0e0`. Fonte Pool dos replays é byteidêntica ao pin;166props e mapprops.js permanecem iguais ao pin anterior. Evidências persistidas: `evidence/client-shot-piscina-batch-final.log` e `evidence/backend-shot-piscina-batch-final.log`. Sem buildDocker/push/merge/deploy ou partida humana MP.
