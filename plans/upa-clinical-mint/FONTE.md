@@ -28,6 +28,22 @@ reenviar como arte a transformar e não tratar o documento como licença dos GLB
 Prompts descrevem tipos funcionais genéricos e a direção própria do jogo.
 
 Projeto Mint criado pelo root: [CS BRASIL UPA props](https://mint.gg/project/zd7b0v30hn2xpc5yxfcg8t5sz18g34wt).
-Proveniência de cada geração pendente: asset/task ID, URL, prompt exato, modelo/preset,
-data, termos/licença, download original, hash e alterações offline. Sem GLB obtido
-não há asset concluído. Registro definitivo do asset deve acompanhar sua pasta.
+Gerações reais concluídas em 2026-10-11 com TRIPO_P1: packs
+`vd7282g59ghphv0qgcq4x5befn8g21wr` (maca/longarina) e
+`vd7btbbet2see334ne0555k8c18g31zh` (sete outros móveis), mais monitor e balcão R2.
+Os quatro prompts exatos observados na conversa estão em
+[GERACOES.json](GERACOES.json). IDs individuais não foram expostos pela UI;
+projeto/chat, packs, nomes e SHA-256 identificam os arquivos baixados.
+
+Registro dos nove candidatos derivados em
+[upa-mint-assets.json](../../public/models/props/upa-mint-assets.json), com hashes
+originais/finais, dimensões, processamento e estado de revisão. Originais,
+rejeições e renders estão preservados em
+`launch-media/2026-10-11-mapas/mint/` fora do Git. Os GLBs derivados só são
+liberados à integração após revisão independente; aprovação isolada não comprova
+colisões, rotas nem desempenho do mapa.
+
+A geração ocorreu na conta existente do usuário. Termos/licença de publicação
+não foram confirmados nesta sessão; não declarar CC0 ou atribuir a licença das
+referências aos GLBs. Não houve compra de plano, nova aceitação de termos ou
+incorporação de pixels das referências nos modelos.

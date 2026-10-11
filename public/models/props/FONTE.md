@@ -287,3 +287,16 @@ mantém metal), albedo WebP 512/256 e simplificação meshopt. Registro: `mint-a
 
 Os colisores continuam sendo as caixas de sempre (`map_piscina.js`, material `OCULTO`);
 o GLB só substitui a imagem e é esticado para caber exatamente na caixa.
+
+
+## UPA 24h: mobiliário clínico Mint (11/10/2026)
+
+Nove props gerados por prompts próprios na conta Mint do usuário, TRIPO_P1:
+maca, longarina, monitor, soro, oxigênio, biombo, cadeira de rodas, armário e
+balcão modular. Projeto, packs, prompts e fontes documentados em
+[UPA — procedência](../../../plans/upa-clinical-mint/FONTE.md); hashes dos originais
+e derivados, dimensões e tratamento offline em [upa-mint-assets.json](upa-mint-assets.json).
+GLBs autocontidos, normalizados antes da integração para escala runtime1.
+Estado de revisão registrado no manifesto; renders/originais/rejeições preservados
+fora do Git. A procedência confirma geração e download, não uma concessão de
+licença: termos de publicação não confirmados nesta sessão; não declarar CC0.
