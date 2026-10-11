@@ -104,3 +104,7 @@ Mint Run Animate abriu Animation Catalog, Basic Movement(6) seleciona Idle, Casu
 ## Marco: Bolsonaro rigado e seis clipes Mint concluídos
 
 Animation batch w574pr4pn17n7yvb002spj1ds58g2m61 concluído; visualizador enumera seis clipes. Link Download Idle GLB funciona via downloadMedia, ao contrário de botões de download. Arquivo real privado bolsonaro-drip-idle.glb salvo(3.892.872B), JSON GLB confirma skin Armature24joints e clip Armature|Idle|baselayer66channels,4,033333s. SHA no MINT-JOBS.json. Caminhada selecionada no visualizador mas screenshot foi capturado durante Loading; não usar como evidência de movimento. Botão Download caminhada não gerou arquivo observável nem evento; seis clipes disponíveis no Mint, apenas Idle local. Prévias corrigidas Lula/Janja aprovadas pelo crítico e Generate acionado uma vez para cada. Senador recebeu ajuste correntes pesadas preservando rosto/roupa; aguarda prévia. Próximo: conferir modelos revisados e completar animações restantes.
+
+## Marco: Lula corrigido aceito visualmente no3D
+
+Novo asset p978szcm8y7h62zwzaq86a2w6h8g2gq2(4.812faces/3.504v/3MB). Close da malha em lula-model-grillz-corrected.jpg confirma dourado; crítico aprovou grillz e direção preservada. Não é apenas prévia. BasicMovement6 Apply acionado uma vez nesse asset corrigido; card Animating confirmado. Próximo: completar Janja/Senador revisados, salvar GLBs rigados e confirmar seis clipes dos cinco no Mint.

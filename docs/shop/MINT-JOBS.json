@@ -26,12 +26,20 @@
       "generationProvider": "TRIPO_P1",
       "finalReview": "Close confirms teeth stayed white/gray; gold grillz need material correction before visual acceptance",
       "finishRevision": {
-        "status": "corrected_model_generating",
+        "status": "corrected_model_completed_in_mint",
         "target": "gold grillz",
         "sourceAssetId": "p973vsch5wvrxhzqgs84d7bxa98g2fr3",
         "requestedAt": "2026-10-11T12:10:00+01:00",
         "previewAssetId": "p9747dtjtqhak9fa3dnt3ay6yn8g26qb",
-        "previewReview": "Independent critic approved visible gold grillz and preserved beard/braids/outfit"
+        "previewReview": "Independent critic approved visible gold grillz and preserved beard/braids/outfit",
+        "assetId": "p978szcm8y7h62zwzaq86a2w6h8g2gq2",
+        "modelName": "Burgundy Goldbraid Boss",
+        "mintInfo": {
+          "faces": 4812,
+          "vertices": 3504,
+          "fileSize": "3 MB"
+        },
+        "proof": "private-assets/treta-store/mint/lula-model-grillz-corrected.jpg"
       }
     },
     {
