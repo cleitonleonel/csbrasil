@@ -73,7 +73,7 @@
     {
       "slug": "lula-na-regua",
       "name": "Lula na Régua",
-      "status": "six_animations_completed_download_pending",
+      "status": "six_animations_completed_idle_exported",
       "references": [
         {
           "number": 1,
@@ -108,12 +108,21 @@
       "previewPathSha256": "f4d91c302bc0012f19c66bca011198ff87199688ddbafe7781f1dee993546300",
       "proofPathSha256": "443c2e5c90ca3c7501e3e69700cd8fefa14c3835ee1928e3f747a15bccf3dfaa",
       "modelProofPathSha256": "ad59efa9bd72595e8bce3985d00bcac234a5820211ad90e8455f342996dc378a",
-      "animationProofPathSha256": "d549b8f3d9e45554f48a1e194bda6ea5bb521a9dd306cfefd8a27f1a773a06b3"
+      "animationProofPathSha256": "d549b8f3d9e45554f48a1e194bda6ea5bb521a9dd306cfefd8a27f1a773a06b3",
+      "localExport": {
+        "path": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/glb/lula-na-regua-idle.glb",
+        "bytes": 3312944,
+        "sha256": "91a1f6a9ba1a4fef5ba23be85b79a6e66458fb730df4534259ba395c3a40413c",
+        "animationNames": [
+          "Armature|Idle|baselayer"
+        ],
+        "joints": 24
+      }
     },
     {
       "slug": "lula-cyborg",
       "name": "Lula Cyborg",
-      "status": "six_animations_completed_download_pending",
+      "status": "six_animations_completed_idle_exported",
       "references": [
         {
           "number": 2,
@@ -154,12 +163,21 @@
       "previewPathSha256": "dece230085914970c305e8881be839efb452eccb35e526b7980e506f5737fff5",
       "proofPathSha256": "2af1c53018aa54b5dcc0965e2097060a3062ff2aec9e6dc28908ee6e82302882",
       "modelProofPathSha256": "56b59c4213ea7b0d7d5ce11b9d3a11546bd29d77ea26f1fd007858df9a00ef20",
-      "animationProofPathSha256": "2fe9c7a84d7d28e7b268d435242bad872b1aff3b4f02a78f41709668d1f580e0"
+      "animationProofPathSha256": "2fe9c7a84d7d28e7b268d435242bad872b1aff3b4f02a78f41709668d1f580e0",
+      "localExport": {
+        "path": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/glb/lula-cyborg-idle.glb",
+        "bytes": 4009960,
+        "sha256": "541bcd7c149c3c7b4ee51db12ac6ebac31b706dab597d6d4de73727fd82268fd",
+        "animationNames": [
+          "Armature|Idle|baselayer"
+        ],
+        "joints": 24
+      }
     },
     {
       "slug": "bolsonaro-cyborg",
       "name": "Bolsonaro Cyborg",
-      "status": "six_animations_completed_download_pending",
+      "status": "six_animations_completed_idle_exported",
       "references": [
         {
           "number": 3,
@@ -194,12 +212,21 @@
       "previewPathSha256": "1edd15107ad3a9e951b5c63e277085d681b513b78a17a793721b5220b2438591",
       "proofPathSha256": "1edd15107ad3a9e951b5c63e277085d681b513b78a17a793721b5220b2438591",
       "modelProofPathSha256": "15ddf1c3584260343cc5f12b67b75413e36a6282cf18b37be489b3f62aecf0ef",
-      "animationProofPathSha256": "fe5e550ccaf3afdf2cb609f7693e170ba3d73c6b5a58b42429f3604e44191a23"
+      "animationProofPathSha256": "fe5e550ccaf3afdf2cb609f7693e170ba3d73c6b5a58b42429f3604e44191a23",
+      "localExport": {
+        "path": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/glb/bolsonaro-cyborg-idle.glb",
+        "bytes": 3401484,
+        "sha256": "267862859a058d71742fb2f751304f2e7883785317e96c770358654d1031c679",
+        "animationNames": [
+          "Armature|Idle|baselayer"
+        ],
+        "joints": 24
+      }
     },
     {
       "slug": "aljuiz-toga-mandrake",
       "name": "Aljuiz da Toga Mandrake",
-      "status": "six_animations_completed_download_pending",
+      "status": "six_animations_completed_idle_exported",
       "references": [
         {
           "number": 5,
@@ -236,12 +263,21 @@
       "proofPathSha256": "7cc36215e4bd20d2419b06e270688bd1e1e0f440396ab253c7904e8a144a00c9",
       "modelProofPathSha256": "d2b39bd808cce01044f9ff21e8d0bb332e56f59c9c8275aef25b648998e92d4f",
       "correctedPreviewPathSha256": "b1dd6b12c55ec17ff67102e2a50e55b5fb97d7decc92e9bcbdd164824d67cf0c",
-      "animationProofPathSha256": "698ebd9a899ae38b5fdc0e29f18ae68248fb5d5543e73b5d63a37cf11e8eca38"
+      "animationProofPathSha256": "698ebd9a899ae38b5fdc0e29f18ae68248fb5d5543e73b5d63a37cf11e8eca38",
+      "localExport": {
+        "path": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/glb/aljuiz-toga-mandrake-idle.glb",
+        "bytes": 3589272,
+        "sha256": "953a43b33547f9f1738b5c2b1cff78f7464fb91b980b05f8fa7a4e38a482dd74",
+        "animationNames": [
+          "Armature|Idle|baselayer"
+        ],
+        "joints": 24
+      }
     },
     {
       "slug": "lula-mandrake",
       "name": "Lula Mandrake",
-      "status": "six_animations_completed_download_pending",
+      "status": "six_animations_completed_idle_exported",
       "references": [
         {
           "number": 6,
@@ -282,12 +318,21 @@
       "previewPathSha256": "cddfb2186c1ec1f33db3aff2fddfe39535260201987e2cbd62fed3154b5bbb7c",
       "proofPathSha256": "cddfb2186c1ec1f33db3aff2fddfe39535260201987e2cbd62fed3154b5bbb7c",
       "modelProofPathSha256": "25911c6e9e0f8e48ad6ee67ff08af54567fe74621640290cfcd92b12a0ac4f1f",
-      "animationProofPathSha256": "ae4dd14d4bce0744b7c4cf7fa04daacdc451d5290437e8214bc1bdc73818fcce"
+      "animationProofPathSha256": "ae4dd14d4bce0744b7c4cf7fa04daacdc451d5290437e8214bc1bdc73818fcce",
+      "localExport": {
+        "path": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/glb/lula-mandrake-idle.glb",
+        "bytes": 3612068,
+        "sha256": "ebef952f5e59bc971c1e2fd3d00aa56c7c3980ccbdda82d59fa50963e6c82a10",
+        "animationNames": [
+          "Armature|Idle|baselayer"
+        ],
+        "joints": 24
+      }
     },
     {
       "slug": "bolsonaro-mandrake",
       "name": "Bolsonaro Mandrake",
-      "status": "six_animations_completed_download_pending",
+      "status": "six_animations_completed_idle_exported",
       "references": [
         {
           "number": 7,
@@ -333,12 +378,21 @@
       "modelProofPathSha256": "61971c32075be9bb7ba97485167aa4d3568c72554ec5cd9f2a7cc9e93ba64e07",
       "correctedPreviewPathSha256": "faff8e98d26a13938ff6ab434364e0244ac6c80c87ac9cb5edebeae43e856f67",
       "correctedModelProofPathSha256": "911a7ace97a98acd7fda78acec3d7062ce90571f1375c33dc0533d1fbf19ead1",
-      "animationProofPathSha256": "d4fe9d82f7d4eb456f718a30f59e62c5aa8ea9e823e5293ebd5f586588be7858"
+      "animationProofPathSha256": "d4fe9d82f7d4eb456f718a30f59e62c5aa8ea9e823e5293ebd5f586588be7858",
+      "localExport": {
+        "path": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/glb/bolsonaro-mandrake-idle.glb",
+        "bytes": 4514952,
+        "sha256": "0aea95c67f8da82947cff19c3037ae4a28a3ebb2d46dc412bb9e74df8e116212",
+        "animationNames": [
+          "Armature|Idle|baselayer"
+        ],
+        "joints": 24
+      }
     },
     {
       "slug": "michelle-mandrake",
       "name": "Michelle Bolsonaro Mandrake",
-      "status": "six_animations_completed_download_pending",
+      "status": "six_animations_completed_idle_exported",
       "references": [
         {
           "number": 7,
@@ -373,12 +427,21 @@
       "previewPathSha256": "fa7ea07f6f9714b82a30bf96054860ce59e60c813453b24f0a35762361822f08",
       "proofPathSha256": "fa7ea07f6f9714b82a30bf96054860ce59e60c813453b24f0a35762361822f08",
       "modelProofPathSha256": "a562d895f60e28761bd13847e86753aa6ae8c2141dc89478f68763bc47cb8ec2",
-      "animationProofPathSha256": "d3654e280f3be5a79911227961ecfa6166cf08b4f1cdc592fc78e4d9bba49b72"
+      "animationProofPathSha256": "d3654e280f3be5a79911227961ecfa6166cf08b4f1cdc592fc78e4d9bba49b72",
+      "localExport": {
+        "path": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/glb/michelle-mandrake-idle.glb",
+        "bytes": 3213428,
+        "sha256": "7d69804a955cca5412959c3763f2ae6487059b558a557320abbc1827e1eed393",
+        "animationNames": [
+          "Armature|Idle|baselayer"
+        ],
+        "joints": 24
+      }
     },
     {
       "slug": "zero-um-mandrake",
       "name": "Zero Um Mandrake",
-      "status": "six_animations_completed_download_pending",
+      "status": "six_animations_completed_idle_exported",
       "references": [
         {
           "number": 11,
@@ -418,7 +481,16 @@
       "modelProofPathSha256": "97eba5043138f668d441ff0ea8be39415a5b731cf33e722996e99a26dd69ca33",
       "correctedPreviewPathSha256": "10b0c3475ca6a3db1eec79e3153741f93b141948041f1d482caaf9ddbd7bbec4",
       "correctedModelProofPathSha256": "fc46135cea240b36456904df71b48e7318ddd8c3ba1a3245d719b8eb28082158",
-      "animationProofPathSha256": "b2dec1aeba62ee80ca2921989efc39f53a4080ed2300efafa5a3dab57d81bfcf"
+      "animationProofPathSha256": "b2dec1aeba62ee80ca2921989efc39f53a4080ed2300efafa5a3dab57d81bfcf",
+      "localExport": {
+        "path": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/glb/zero-um-mandrake-idle.glb",
+        "bytes": 3807800,
+        "sha256": "34b1581e2c4942d4a2154c1341ded186c22e516d609902f8487abd39a635cb9d",
+        "animationNames": [
+          "Armature|Idle|baselayer"
+        ],
+        "joints": 24
+      }
     }
   ],
   "creditObservation": {
@@ -427,7 +499,11 @@
     "usage": 11365,
     "note": "Observed after 8 previews; account total, not per-skin cost"
   },
-  "downloadBlocker": "Chrome blocks automatic multiple downloads for mint.gg; permission question pending, no setting changed",
+  "downloadBlocker": {
+    "status": "resolved",
+    "reason": "Dono autorizou; Allow no prompt Chrome mint.gg múltiplos downloads; oito GLBs baixados pela UI",
+    "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/animations/eight-rigged-export-proof.jpg"
+  },
   "creditObservationFinal": {
     "available": 5532,
     "plan": 0,
@@ -435,5 +511,5 @@
     "note": "Global account balance after requests; no purchases or resubscription"
   },
   "mintGenerationStatus": "complete_8_models_48_clips",
-  "localExportStatus": "pending_Chrome_multiple_downloads_permission"
+  "localExportStatus": "eight_Idle_GLBs_exported_independent_binary_review_pending"
 }

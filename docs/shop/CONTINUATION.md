@@ -10,7 +10,7 @@ Entregar loja dentro do jogo, imediatamente depois de JOGAR, com direção visua
 - T$ 800 é preço da skin dentro do jogo, não orçamento de geração Mint.
 - Valores propostos, aguardando preferência opcional: email 200 (uma vez), indicação 100 após primeira partida válida, SP 10, MP 25; limite diário e janela de 30 dias configurada explicitamente no rollout.
 - Nenhuma alteração de saldo/inventário aceita do navegador. Partidas remuneradas precisam de evidência do nó autoritativo; o SP offline atual não possui essa evidência.
-- Sem pagamento em dinheiro real solicitado/configurado; skins usam T$ adquirido por atividade.
+- Pedido atualizado em 11/10: preparar packs de T$ comprados em BRL. 1.000 T$ = R$10 definido pelo dono; demais quantidades/preços em proposta na ficha UI-LOJA-TRETA.md. Cobrança real ainda não configurada/ativada.
 
 ## Checkpoint 2026-10-11
 
@@ -22,7 +22,7 @@ Entregar loja dentro do jogo, imediatamente depois de JOGAR, com direção visua
 
 ## Estado atual e próximo passo
 
-Implementação client em `f3cb79f2d`; backend em `48d2e35` (economia `5a790de`/`bd5df0e`). Sete moedas corrigidas e aprovadas na vista frontal, wallet/toasts WebGL validados em fixtures locais, contrato cosmético assinado e gates locais aprovados. O dono autorizou os créditos existentes e restringiu a etapa atual à geração Mint. As cinco direções visuais foram aprovadas pelo crítico independente após correção facial de Senador, Janja e Michelle; Lula B rejeitado sem barba. Os cinco modelos3D finais foram concluídos no Mint, com identificadores/URLs em MINT-JOBS.json. Próximo passo atual: registrar capturas/saldo e encerrar a entrega Mint; acabamento visual, rig e jogo ficam nas etapas posteriores. O objetivo amplo preserva rig/equipamento/vídeos como etapas posteriores. Campanha inativa até janela de lançamento; sem migration remota, merge/deploy ou publicação. Relatos abaixo preservam a evolução e os resultados rejeitados, e são superados pelo estado atual quando indicado.
+Implementação client em `f3cb79f2d`; backend em `48d2e35` (economia `5a790de`/`bd5df0e`). Sete moedas corrigidas e aprovadas na vista frontal, wallet/toasts WebGL validados em fixtures locais, contrato cosmético assinado e gates locais aprovados. Cinco skins Drip com rigs/30 clipes Mint e cinco Idle GLBs privados verificados. Oito skins do lote2 com rigs/48 clipes Mint completos; dono autorizou downloads e rig, exportação binária local em fechamento. Nova UI/loja mais limpa, proposta de packs BRL e acessórios delegados ao chat explicitamente solicitado, conforme marco abaixo. Retarget/equipamento real, performance/reverso das moedas, vídeos e expansão Trump/Vorcaro continuam objetivos pendentes. Campanha inativa até janela de lançamento; sem migration remota, merge/deploy ou publicação. Relatos históricos abaixo são superados por este estado e marcos mais recentes.
 
 ## Marco: carteira SQL validada
 
@@ -158,3 +158,13 @@ ZeroUm corrigido exibe6clips e Idle reproduzido. JSON7animationUrls, entrega atu
 Oito finais aprovados visualmente, oitoBasicMovement6concluídos noMint, Idle reproduzido/6enumerados emcada viewer. Jair corrigido agora concluído (reload da página expôs card pronto; não houve novoApply). JSON registra finalAssetId/animationBatchId, URLs finais e SHA256provas, entrega atualizada com8links. Capturas privadasanimations/*-six-clips.jpg, models/*model.jpg. AbaMint mantida como deliverable e viewerfinalpausado/fechado para reduzirGPU. Saldo5532globalaposrequests.
 
 A geração solicitada somenteMint está concluída. Exportação offline ainda NÃO concluída: Chromebloqueiamúltiplosdownloads, perguntaao dono sobre Alwaysallowmint.ggpendente, nenhuma configuraçãoalterada. Não há GLBs locais/ZIP/validaçãobinária novos. Próximo concretoparaexport: receberpermissãoseescolhida, habilitarviaUIChrome, downloadMediaIdleporcadachatURL, salvarglb/<slug>-idle.glb, criticarjuntas/pesos/movimento e criarZIPprivado. Se dono mantiverbloqueado, entrega pelos8linksMintjápronta. Objetivoamplo loja/economia/retarget/gameplay/vídeos/Trump/Vorcaro continua ledgeroriginal, semcodemutation/Blender/deployneste lote.
+
+## Marco: downloads autorizados e novo chat de UI/loja
+
+Dono autorizou permissão Mint múltiplos downloads e pediu rigs, nova UI inspirada em espaçamento/tipografia Fortnite mantendo identidade, loja, opinião sobre bonés e packs BRL. Allow aplicado no prompt nativo Chrome somente mint.gg; downloads GLB agora funcionam. Exportação dos oito Idle em andamento, sem novos pedidos Generate/Animate. Sete moedas conferidas nos arquivos reais public/models/treta: todas têm CoinSpin/PurchaseReveal.
+
+Ficha plans/UI-LOJA-TRETA.md checkpoint bea564e96. Novo chat solicitado criado: 01a12cc7-e78d-7ec1-b2e3-3210df5efd6b (local), título UI e loja TRETA com referência Fortnite, atividade confirmada por wait_threads. Instruído a criar lane própria baseada bea564e96, preservar esta lane/primary/backend original, UI primeiro e capturas desktop/mobile; três packs iniciais propostos e quarto futuro, apenas1000/R$10 preço definido pelo dono. Não há cobrança real ativa nem preços adicionais aprovados. Próximo nesta lane: completar oito exports, crítica binária independente e pacote privado; no chat novo: implementar e validar UI/loja conforme ficha.
+
+## Marco: oito Idle GLBs locais exportados
+
+Exportado um Idle GLB de cada asset final correto pela UI Mint/downloadMedia. Oito arquivos privados batch2-cyborg-mandrake/glb/<slug>-idle.glb, 3,21–4,51MB; headers glTF2/comprimentos/JSON conferidos e todos têm uma mesh, uma skin24juntas, osso Head e um clip Armature|Idle|baselayer. Paths/tamanhos/SHA256 no MINT-BATCH2-JOBS.json. Mesmo nome Mint GoldChainMandrake tratado com rename por slug antes de sobrescrever; Jair usa final corrigido p9796a1e30etp3xncgs1czbbg18g3wz0. Crítica binária independente do agente treta_coin_critic solicitada pela skill asset-review antes do aceite. Próximo: receber avaliação pesos/canais/tempos, registrar relatório e ZIP privado; gameplay/retarget ainda pendentes.
