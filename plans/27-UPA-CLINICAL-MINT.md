@@ -99,18 +99,34 @@ frente/costas dos assentos e enquadramento entre macas.
 
 ## Continuidade deste lote
 
-Branch: `codex/mapas-upa-tiros-grafites-20261011`; base acima. Pesquisa, referência
-oficial observada e prompts concluídos. Ficha validada e mutante rejeitado em
-2026-10-11. Root enviou o pedido dos pilotos maca e longarina; UI informou
-“Understanding request”. Evidência local comunicada pelo root:
-`/Volumes/Zenith/Projects/game/corosolto/csbrasil/launch-media/2026-10-11-mapas/mint/pilotos-pedido.jpg`.
-Isso comprova despacho, não GLB concluído. Nenhum asset aceito ou integrado por
-esta subtarefa. Próximo passo: root acompanhar os pilotos, registrar task/asset ID,
-baixar e revisar escala/material antes do restante do lote. Revisão visual,
-browser/gameplay e integração estão abertos.
+Branch: `codex/mapas-upa-tiros-grafites-20261011`. Geração e downloads reais
+concluídos no projeto [CS BRASIL UPA props](https://mint.gg/project/zd7b0v30hn2xpc5yxfcg8t5sz18g34wt).
+Prompts observados, packs, originais, transformações, hashes e estado de revisão
+ficam na [procedência](upa-clinical-mint/FONTE.md) e no registro canônico apontado
+por ela. Os nove GLBs selecionados estão públicos e integrados na UPA em escala
+uniforme. Originais e candidatos rejeitados permanecem fora do Git.
+
+A referência à etapa “Understanding request” era apenas o primeiro despacho e
+foi superada pelos downloads e pela integração. O monitor original e o balcão
+original foram rejeitados e substituídos por gerações R2. Maca, soro, cadeira e
+balcão receberam os tratamentos rastreáveis registrados no manifesto; não usar
+candidatos anteriores no runtime.
+
+Validações locais de carregamento, cobertura, circulação, spawn e hitscan foram
+executadas com os modelos reais e mutantes causais. A seleção pelo menu e a
+partida offline carregaram todos os arquivos clínicos públicos com os hashes
+canônicos. Revisão isolada e vistas integradas, incluindo monitor frontal e
+apoios dos pés, receberam crítica independente. O fluxo de browser conserva a
+dívida herdada de viewmodels privados; nenhum gate foi afrouxado para ocultá-la.
+
+A revisão ampliada de grafites cobre os 18 mapas em med/low. Recibos, capturas,
+vereditos, checkpoints e próximos passos ficam no ledger designado do repo
+`progress`: `docs/reports/MAPAS-UPA-TIROS-GRAFITES-20261011.md`.
+O estado canônico de aceite dos assets está nas entradas `upa_*` de
+[mint-assets.json](../mint-assets.json); a revisão humana e uma publicação
+continuam etapas distintas da validação local.
 
 Documentação rastreável em `plans/upa-clinical-mint/`. Imagem/PDF em
 `references/upa-clinical-mint/` são insumos locais ignorados; hashes no FONTE.
 Links locais `prompts/upa-clinical-mint.md` e `references/upa-clinical-mint/FONTE.md`
-apontam à documentação canônica. Projeto Mint criado pelo root:
-https://mint.gg/project/zd7b0v30hn2xpc5yxfcg8t5sz18g34wt — “CS BRASIL UPA props”.
+apontam à documentação canônica.
