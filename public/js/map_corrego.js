@@ -1700,10 +1700,8 @@ export function buildCorrego(scene, T) {
     occluders.push(c);
   }
 
-  /* Pixo de empena no muro externo: a caixa fina girada antiga atravessava o
-     muro perpendicularmente e pendurava três metros de pintura sobre o beco.
-     A tinta é um plano sem colisão, apoiado na alvenaria já montada; o muro
-     continua sendo a superfície física tanto para movimento quanto para tiro. */
+  // A pintura é um plano sem colisão; o muro preserva a superfície física.
+  // Montagem: tools/eval/corrego-graffiti-mount-check.mjs.
   if (TEX.pixo) {
     const suporte = criarSuporteGrafite(root);
     for (const [lado, z] of [[1, -28], [-1, 24], [1, 8], [-1, -12]]) {

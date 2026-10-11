@@ -12,9 +12,8 @@ const loader = new GLTFLoader();
 const loadGLB = (url) => new Promise((res, rej) => loader.load(url, res, undefined, rej));
 const _base = new Map(); // id -> template scene
 
-// Uma superfície opaca de ônibus, sucata ou móvel não vira parede para grafite.
-// Casas e edifícios preservam suas fachadas; nomes de peças dentro do GLB não
-// são uma classificação confiável, por isso a categoria acompanha o asset.
+// Fachadas elegíveis seguem a categoria do asset, não nomes internos do GLB.
+// Invariante: tools/eval/prop-graffiti-wall-check.mjs.
 const GRAFFITI_WALL_PROPS = new Set([
   'congresso', 'catedral', 'ministerio', 'palacio', 'container_escritorio',
   'casa_pedra', 'casa_geminada', 'casa_favela_azul', 'casa_favela_tijolo', 'fav_house',
