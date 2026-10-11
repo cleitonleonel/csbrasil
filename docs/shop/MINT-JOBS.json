@@ -12,19 +12,18 @@
       "selectedPreview": "Burgundy Goldbraid Boss Preview",
       "review": "Approved direction; second preview rejected: missing beard",
       "extraPreview": "Burgundy Braided Dripster Preview",
-      "assetId": "p973vsch5wvrxhzqgs84d7bxa98g2fr3",
-      "assetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7azn60zfk9j2amd87f06vhdd8g3kcv&panel=asset&assetId=p973vsch5wvrxhzqgs84d7bxa98g2fr3&variant=original",
+      "assetId": "p978szcm8y7h62zwzaq86a2w6h8g2gq2",
+      "assetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7azn60zfk9j2amd87f06vhdd8g3kcv&panel=asset&assetId=p978szcm8y7h62zwzaq86a2w6h8g2gq2&variant=original",
       "modelName": "Burgundy Goldbraid Boss",
       "mintInfo": {
-        "faces": 4642,
-        "vertices": 3610,
-        "fileSize": "2.8 MB",
-        "model": "TRIPO_P1"
+        "faces": 4812,
+        "vertices": 3504,
+        "fileSize": "3 MB"
       },
-      "localGlb": null,
-      "rigVerified": false,
+      "localGlb": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/lula-drip-idle.glb",
+      "rigVerified": true,
       "generationProvider": "TRIPO_P1",
-      "finalReview": "Close confirms teeth stayed white/gray; gold grillz need material correction before visual acceptance",
+      "finalReview": "Independent critic approved gold grillz in actual 3D, preserved direction",
       "finishRevision": {
         "status": "corrected_model_completed_in_mint",
         "target": "gold grillz",
@@ -40,6 +39,34 @@
           "fileSize": "3 MB"
         },
         "proof": "private-assets/treta-store/mint/lula-model-grillz-corrected.jpg"
+      },
+      "previousAssetId": "p973vsch5wvrxhzqgs84d7bxa98g2fr3",
+      "rigVerification": {
+        "file": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/lula-drip-idle.glb",
+        "bytes": 3458564,
+        "sha256": "40d9de728add08f1a0d13bb46c694e54c78b5758b8f7c5200ab09576ff6b3b35",
+        "joints": 24,
+        "clips": [
+          {
+            "name": "Armature|Idle|baselayer",
+            "channels": 66,
+            "duration": 4.0333333015441895
+          }
+        ]
+      },
+      "animationGeneration": {
+        "status": "six_clips_completed_in_mint",
+        "set": "Basic Movement (6)",
+        "batchId": "w571s7k33d0r0gvzqfjhxdbryn8g2716",
+        "idleClipId": "w97ceh82vmwn99w8fcrqrbjn618g217w",
+        "clips": [
+          "Idle",
+          "Casual Walk inplace",
+          "run fast 3 inplace",
+          "Regular Jump",
+          "Idle Turn Left",
+          "Idle Turn Right"
+        ]
       }
     },
     {
@@ -103,7 +130,15 @@
       "localGlb": null,
       "rigVerified": false,
       "generationProvider": "TRIPO_P1",
-      "finalReview": "General direction preserved; heavy-chain thickness needs closer inspection"
+      "finalReview": "General direction preserved; heavy-chain thickness needs closer inspection",
+      "finishRevision": {
+        "status": "corrected_model_generating",
+        "target": "heavy Cuban link chains and geometric pendant",
+        "sourceAssetId": "p97at9cp8yxbxmee0784t0ecys8g3y86",
+        "previewName": "Violet Chain Street Baron Preview",
+        "previewReview": "Independent critic approved visible heavy links and preserved face/outfit",
+        "proof": "private-assets/treta-store/mint/senador-preview-chains-corrected.jpg"
+      }
     },
     {
       "id": "janja",
@@ -116,19 +151,18 @@
       "reference": "https://commons.wikimedia.org/wiki/File:Janja_da_Silva_(cropped).jpg",
       "correctionPrompt": "Create a corrected 3D MODEL PREVIEW of JANJA / Rosangela Lula da Silva. The attached photograph by Pablo Valadares / Camara dos Deputados is the FACE identity reference. Keep original burgundy/cream jacket and modern trousers, modeled gold accessories and sneakers, but replace the generic young doll face. Portray her as a mature woman in her late fifties: match the reference cheek volume, natural mature eyes, own nose, mouth, chin and gentle smile lines. Reduce the oversized eyes, preserve recognizable adult facial identity. Add her signature glasses and long brown hair. Natural adult female proportions, original Fortnite-inspired stylized shooter art, neutral A-pose, full body head to soles, clean separated fingers, no weapon/logos/background geometry. Do not copy clothing or background from the photo. Generate the corrected model preview now using existing credits.",
       "referenceCredit": "Pablo Valadares/Câmara dos Deputados; CC BY 3.0",
-      "modelName": "Janja Mature Face Corrected",
-      "assetId": "p97bw80b5vw0qdbcmtcg29bx7h8g3ay2",
-      "assetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7cnh5y7g71netxwjajjyg2gh8g3fkx&panel=asset&assetId=p97bw80b5vw0qdbcmtcg29bx7h8g3ay2&variant=original",
+      "modelName": "Burgundy Hoop Executive",
+      "assetId": "p97f2vydpmmj5jkjtxpdp5p6a58g21pw",
+      "assetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7cnh5y7g71netxwjajjyg2gh8g3fkx&panel=asset&assetId=p97f2vydpmmj5jkjtxpdp5p6a58g21pw&variant=original",
       "mintInfo": {
-        "faces": 4986,
-        "vertices": 6717,
-        "fileSize": "2.7 MB",
-        "model": "TRIPO_P1"
+        "faces": 4813,
+        "vertices": 6595,
+        "fileSize": "2.6 MB"
       },
-      "localGlb": null,
-      "rigVerified": false,
+      "localGlb": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/janja-idle.glb",
+      "rigVerified": true,
       "generationProvider": "TRIPO_P1",
-      "finalReview": "Generated; glasses appear opaque/front reflection needs inspection before acceptance",
+      "finalReview": "Independent critic approved both eyes visible in actual 3D and preserved direction",
       "finishRevision": {
         "status": "corrected_model_completed_in_mint",
         "target": "transparent lenses and visible eyes",
@@ -145,6 +179,34 @@
         },
         "proof": "private-assets/treta-store/mint/janja-model-lenses-corrected.jpg",
         "review": "Independent critic approved both eyes visible in actual 3D and preserved direction"
+      },
+      "previousAssetId": "p97bw80b5vw0qdbcmtcg29bx7h8g3ay2",
+      "rigVerification": {
+        "file": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/janja-idle.glb",
+        "bytes": 3087108,
+        "sha256": "eee9a275085c60bd8db8b9695f6d7912ffa355c4ff1a846f33fc2223a67da55e",
+        "joints": 24,
+        "clips": [
+          {
+            "name": "Armature|Idle|baselayer",
+            "channels": 66,
+            "duration": 4.0333333015441895
+          }
+        ]
+      },
+      "animationGeneration": {
+        "status": "six_clips_completed_in_mint",
+        "set": "Basic Movement (6)",
+        "batchId": "w576q9tdf6rr8rad2b4m56gnzx8g21yw",
+        "idleClipId": "w97amxex7cjb77g0be1mbw72c58g311r",
+        "clips": [
+          "Idle",
+          "Casual Walk inplace",
+          "run fast 3 inplace",
+          "Regular Jump",
+          "Idle Turn Left",
+          "Idle Turn Right"
+        ]
       }
     },
     {
@@ -167,10 +229,37 @@
         "faces": 4862,
         "vertices": 6602
       },
-      "localGlb": null,
-      "rigVerified": false,
+      "localGlb": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/michelle-idle.glb",
+      "rigVerified": true,
       "generationProvider": "TRIPO_P1",
-      "finalReview": "General direction preserved; jewelry/facial details need close inspection; rig unverified"
+      "finalReview": "General direction preserved; jewelry/facial details need close inspection; rig unverified",
+      "rigVerification": {
+        "file": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/michelle-idle.glb",
+        "bytes": 3203000,
+        "sha256": "446032a287c4505003239dbdccdf66ae282d7e1c31313b61b67528419a9d486b",
+        "joints": 24,
+        "clips": [
+          {
+            "name": "Armature|Idle|baselayer",
+            "channels": 66,
+            "duration": 4.0333333015441895
+          }
+        ]
+      },
+      "animationGeneration": {
+        "status": "six_clips_completed_in_mint",
+        "set": "Basic Movement (6)",
+        "batchId": "w5763y5d7pn5cwfwc71bckz1hx8g3j8g",
+        "idleClipId": "w97bdrmcd62brd4kc6e3jpjre58g2vyy",
+        "clips": [
+          "Idle",
+          "Casual Walk inplace",
+          "run fast 3 inplace",
+          "Regular Jump",
+          "Idle Turn Left",
+          "Idle Turn Right"
+        ]
+      }
     }
   ],
   "finalObservedCredits": 18515,

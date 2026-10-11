@@ -112,3 +112,7 @@ Novo asset p978szcm8y7h62zwzaq86a2w6h8g2gq2(4.812faces/3.504v/3MB). Close da mal
 ## Marco: Janja corrigida aceita visualmente no3D
 
 Asset p97f2vydpmmj5jkjtxpdp5p6a58g21pw Burgundy Hoop Executive,4.813faces/6.595v/2,6MB. Crítico confirmou ambos os olhos visíveis, lentes opacas corrigidas, direção preservada. Prova janja-model-lenses-corrected.jpg. BasicMovement6 Apply acionado uma vez nesse asset. Senador prévia Violet Chain Street Baron aprovada como direção com três camadas de elos largos. Próximo: Generate Senador, completar os pacotes animados e salvar GLBs privados.
+
+## Marco: quatro pacotes animados concluídos
+
+Bolsonaro, Michelle, Lula corrigido e Janja corrigida têm seis clipes BasicMovement concluídos no Mint. Um GLB Idle local por skin, todos com Armature24joints,66channels e4,033333s; hashes e batches no JSON. Michelle e Lula reproduzidos no visualizador com playhead ativo e pose deformada preservada nas capturas *-animated-idle.jpg; gameplay não validado. Senador corrigido Generate acionado uma vez, em processamento. Próximo: finalizar revisão modeloSenador/Animate e fechar relatório com os cinco ativos corretos.
