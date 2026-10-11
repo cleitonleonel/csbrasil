@@ -1473,9 +1473,9 @@ export function buildBrasilia(scene, T) {
 
   /* ---------------- DENSIDADE: mobiliário urbano + vegetação (task 3) ---------------- */
   // Tudo aqui é InstancedMesh: o frame ganha detalhe secundário sem estourar draw call
-  // (≈14 draw calls no total pra ~500 objetos). ?props=0 desliga; quality low corta pela metade.
+  // (≈14 draw calls no total pra ~500 objetos). ?props=0 desliga; qualidade só reduz detalhes sem colisão.
   if (DETAIL > 0) {
-    const every = DETAIL === 1 ? 2 : 1;   // low: metade dos props
+    const every = 1;   // Postes colidentes conservam as mesmas posições em low.
     const Zs = [];
     for (let z = -64; z <= 64; z += 8 * every) Zs.push(z);
 
@@ -1537,17 +1537,17 @@ export function buildBrasilia(scene, T) {
     };
     for (const [gx, gz, gr] of [[-13, 34, 0], [-10.6, 34, 0], [13, 34, 0], [10.6, 34, 0],
       [-13, -30, 0], [13, -30, 0], [4, 20, 0], [-4, 20, 0], [8, -44, 0], [-8, -44, 0]])
-      if (DETAIL === 2 || gx > 0) gradeAt(gx, gz, gr);
+      gradeAt(gx, gz, gr);
     addInst(new THREE.BoxGeometry(0.08, 1.1, 0.08), MAT.aco, gPost, { occlude: true });
     addInst(new THREE.CylinderGeometry(0.045, 0.045, 2.2, 5), MAT.aco, gRail, { occlude: true, shadow: false });
 
     // Lixeiras + cones + jardineiras cilíndricas (props de escala humana perto do chão).
     const bins = [], cones = [], vasos = [];
     for (const [bx2, bz2] of [[7.2, 22], [-7.2, 6], [7.2, -18], [-7.2, -38], [7.2, 46], [-7.2, -56]])
-      if ((DETAIL === 2 || bz2 > 0) && freeSpot(bx2, bz2, 0.8)) { bins.push({ x: bx2, y: 0.5, z: bz2 }); col(bx2 - 0.4, bx2 + 0.4, 0, 1, bz2 - 0.4, bz2 + 0.4); }
+      if (freeSpot(bx2, bz2, 0.8)) { bins.push({ x: bx2, y: 0.5, z: bz2 }); col(bx2 - 0.4, bx2 + 0.4, 0, 1, bz2 - 0.4, bz2 + 0.4); }
     addInst(new THREE.CylinderGeometry(0.38, 0.30, 1.0, 8), lam({ color: 0x3f4a3f, roughness: 0.7 }), bins, { occlude: true });
     for (const [cx2, cz2] of [[3, -8], [4.2, -9], [-3, 12], [-4.2, 13], [1, 30], [10, -34], [-10, 42], [2.4, -52]])
-      if ((DETAIL === 2 || cx2 > 0) && freeSpot(cx2, cz2, 0.6)) {
+      if (freeSpot(cx2, cz2, 0.6)) {
         cones.push({ x: cx2, y: 0.35, z: cz2 });
         col(cx2 - 0.28, cx2 + 0.28, 0, 0.7, cz2 - 0.28, cz2 + 0.28);
       }
@@ -1567,8 +1567,8 @@ export function buildBrasilia(scene, T) {
     // tronco de 14 m com cor chapada também entrava no B6; triplanar em escala fina resolve
     const palmMat = triplanar(lam({ color: 0xa39d91, roughness: 0.88 }), TX_FORMA, 1.6);
     const leafMat = lam({ color: 0x3f5a2c, roughness: 0.9, side: THREE.DoubleSide });
-    for (const sx of [-1, 1]) for (let i = 0; i < (DETAIL === 2 ? 7 : 4); i++) {
-      const x = sx * 18, z = -52 + i * (DETAIL === 2 ? 18 : 32);
+    for (const sx of [-1, 1]) for (let i = 0; i < 7; i++) {
+      const x = sx * 18, z = -52 + i * 18;
       if (!freeSpot(x, z, 1.2)) continue;
       troncos.push({ x, y: 7, z }); col(x - 0.4, x + 0.4, 0, 14, z - 0.4, z + 0.4);
       for (let f = 0; f < 6; f++) {

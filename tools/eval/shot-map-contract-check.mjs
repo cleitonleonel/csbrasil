@@ -1,4 +1,6 @@
 /* Real geometry/actual hitscan contracts for quality, hidden proxies, mandatory asset retry. */
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { THREE, MAPS, initTextures, Game, seedRandom } from './harness.mjs';
 import { preloadPropGeometry } from './prop-geometry-fixture.mjs';
 import { COMMON_MAP_PROPS, preloadMapProps, hasProp, registerPropTemplate, placeProp } from '../../public/js/mapprops.js';
@@ -7,6 +9,10 @@ import { grafiteNoDedicado } from '../../public/js/graffiti_pass.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 let failures=0;
 const check=(ok,label)=>{console.log(`${ok?'PASS':'FAIL'} ${label}`);if(!ok)failures++;};
+if(process.argv.includes('--self-test')){
+ const file=fileURLToPath(import.meta.url),normal=spawnSync(process.execPath,[file],{stdio:'inherit'}),mutant=spawnSync(process.execPath,[file,'--mutante=proxy-piscina'],{stdio:'inherit'});
+ const pass=normal.status===0&&mutant.status===1;console.log(`Shot map contract self-test: ${pass?'PASS normal green, mutant red':'FAIL'}`);process.exit(pass?0:1);
+}
 await preloadPropGeometry([...new Set([...COMMON_MAP_PROPS,...MAPS.piscina_treta.props,...havan.havanPropsPool()])]);
 const textures=await initTextures();grafiteNoDedicado(true);
 const build=mod=>{seedRandom(12345);mod.setHavanCarSeed(76543);const world=mod.buildHavan(new THREE.Scene(),textures);world.root.updateMatrixWorld(true);return world;};
