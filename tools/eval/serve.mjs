@@ -4,6 +4,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { dev } from 'astro';
+import { moduleCacheManifest } from '../../scripts/module-cache.mjs';
 
 const PORT = parseInt(process.argv[2] || '8123', 10);
 const ROOT = 'public';
@@ -18,12 +19,30 @@ const CHARACTER_EVAL_SHELL = `<!doctype html>
 </script>`;
 
 // PR807: o parser parcial não executa componentes. Não simular HTML ou autenticação.
-const astro = await dev({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
+const startAstro = manifest => dev({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error', vite: { cacheDir: '.astro/eval-vite', define: { __MANIFESTO_JS__: JSON.stringify(manifest) } } });
+const initial = moduleCacheManifest();
+let revision = initial.revision;
+let astro = await startAstro(initial);
+let refresh = null;
+async function currentRenderer() {
+  if (refresh) await refresh;
+  const manifest = moduleCacheManifest();
+  if (manifest.revision !== revision) {
+    refresh = (async () => {
+      await astro.stop();
+      astro = await startAstro(manifest);
+      revision = manifest.revision;
+    })();
+    try { await refresh; } finally { refresh = null; }
+  }
+  return astro;
+}
 const server = http.createServer(async (req, res) => {
   try {
     const p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
     if (p === '/' || /^\/(?:@|src\/|node_modules\/)/.test(p)) {
-      astro.handle(req, res);
+      const renderer = await currentRenderer();
+      renderer.handle(req, res);
       return;
     }
     if (p === '/eval-character.html') {
@@ -47,6 +66,7 @@ async function stop() {
   if (stopping) return;
   stopping = true;
   server.close();
+  if (refresh) await refresh.catch(() => {});
   await astro.stop();
   process.exit(0);
 }

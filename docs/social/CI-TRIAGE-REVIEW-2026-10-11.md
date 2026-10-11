@@ -57,3 +57,29 @@ A régua B7 executa o trecho real contra um modelo estrito de modal. Ela valida 
 Nenhum produto, estado multiplayer, ranking, Auth real ou backend foi alterado pelo revisor ou pelo recorte examinado. O HTTP 404 social permanece observável. O patch não oferece sucesso para as telas de UI que dependem do rollout do backend.
 
 Próximo passo: executar o hook completo e obter CI no novo head; quando o slot de browser estiver disponível, repetir o portão browser e o smoke mantendo os limites e verificar a jornada física de convidado. Registrar separadamente os resultados de Node/HTTP/modelo e os resultados reais de browser.
+
+## Adendo: cache no mesmo processo e bloqueio SB7
+
+O hook de `e49962cce3cd7b7d8d12479a50a0c0a8017ef79b` detectou SB7 RED. A aprovação inicial acima cobria HTTP de entrada e B7; a edição de módulo durante a vida do servidor ainda não havia sido medida. Este adendo amplia o escopo para o cache e para `shader-budget-check.mjs`.
+
+O candidato inicial tinha uma regressão real de cache: Astro calculava o manifesto ao iniciar, enquanto o servidor anterior recalculava por request. A prova salva antes do conserto em `artifacts/social/ci-cache-baseline.log` registra `account-entry.js` com revisão antiga `f34077554ce6` após a fixture passar a exigir `748e22eb933e`. A inspeção confirmou o manifesto injetado uma vez no primeiro renderer. O gate preservou uma invariante necessária, embora sua implementação anterior também exigisse a forma textual do parser removido.
+
+O candidato final recalcula `moduleCacheManifest()` antes de encaminhar raiz e recursos Vite. Uma revisão diferente reinicia Astro com override de `vite.define.__MANIFESTO_JS__`; requests concorrentes aguardam a mesma promise de refresh. O shutdown aguarda esse refresh antes de parar o renderer. O override mantém o uso da configuração Astro existente, em vez de duplicar o HTML e os imports. Nenhum hash ou limite foi fixado para fazer a prova passar.
+
+A régua copia `src`, `public/js`, configuração e package para uma fixture própria em `artifacts/social`. Assets, scripts e dependências são consultados por symlink. A única edição de conteúdo é na cópia de `public/js/vao.js`. O cache Vite usa `.astro/eval-vite` dentro da fixture: o cache padrão de Astro em `node_modules/.vite` poderia escrever através do symlink, e esse risco de isolamento foi removido. O cleanup encerra o filho e remove a fixture.
+
+Provas próprias do revisor, executadas em Node 23, sem browser:
+
+| Prova | Resultado |
+|---|---|
+| `social-serve-check.mjs` ampliado | PASS: duas raízes concorrentes após edição entregam HTML igual e HTTP200, inventário exato de módulos publicados, revisão atual em todas as URLs, main e Community atualizados, bytes de vao iguais à cópia editada. Componentes, variáveis, import map, localhost, shell e ausência HTTP404 continuam medidos. |
+| `shader-budget-check.mjs` normal | Exit0, SB7 PASS; demais cláusulas normais também passam. |
+| `cache-antigo`, `cache-omitido`, `cache-constante`, `cache-podado`, `cache-entry-site` | Cinco execuções, todas exit1 com SB7 RED; nenhuma reprovação por mutação cega. |
+| `cache-serve-constante` | Exit1 com SB7 RED; delega ao mutante `cache-gele` da prova HTTP, que conserva a revisão antiga durante a edição isolada. |
+| Syntax de serve, prova HTTP e shader-budget; `git diff --check` | PASS. |
+
+A inspeção final do responsável identificou que `mkdtemp` pressupunha `artifacts/social` existente, condição satisfeita localmente e não garantida em CI limpo. O candidato passou a criar esse parent com `mkdir({ recursive: true })`. Uma prova adicional do revisor executou a régua em cwd isolado sem `artifacts/social`, usando fontes e assets consultados por symlink: exit0 e HTTP/cache PASS; o diretório privado foi removido ao final. `public/js/vao.js` vivo também foi comparado por hash com HEAD e permaneceu idêntico.
+
+SB7 agora combina a prova HTTP real com as verificações existentes de inventário, dependências alcançáveis, módulos podados, manifesto do build e URLs de index/Layout. As cláusulas SB1 a SB6 e os cinco mutantes de cache anteriores continuam presentes. A invocação HTTP passou a ocorrer por `eval:shaderbudget`; `check:deploy` remove a segunda invocação direta de `eval:social-serve`, preservando o script como comando independente e mantendo `eval:social-boot-guest` direto. `check:vercel` não foi ampliado.
+
+Aceito o recorte ampliado, sem P0/P1/P2 pendente identificado. A prova cobre duas requisições concorrentes após uma edição local e o cache de URLs em HTTP; não mede browser já aberto durante o restart, reconexão HMR/WebSocket, edição simultânea durante uma resposta em voo ou limites de desempenho do CI remoto. O hook completo e o CI do novo head continuam gates necessários. Smoke/UI anteriores permanecem RED e os limites de browser, infraestrutura e Auth real continuam os mesmos.
