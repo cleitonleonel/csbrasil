@@ -39,14 +39,35 @@ são uma etapa separada, pendente de autorização.
 - Build Astro passou; API smoke, mp-ticket-check e game/security-smoke passaram.
 - Crítico independente fechou blockers de JSON-LD/XSS, CSS dinâmico, hidden
   members, saída com contagem antiga e perfil com ranking desligado.
-- Em andamento: browser funcional/capturas e check:deploy completo.
+- Check:deploy: 47/48 passaram na rodada completa (609,8s); único vermelho
+  foi a lista de rotas do eval:geoproxy. Lista corrigida, rerun verde.
+  Rerun arch:check + docs:check + eval:geoproxy passou 3/3.
+- Gitleaks nos checkpoints de implementação: nenhum segredo encontrado.
+- Browser completo passou (cadastro, criação, convite, reload, membros, perfil SSR,
+  transferência, saída, placar e nome adversarial/JSON-LD) em 1536×1024.
+- Inspeção das capturas encontrou snapshot durante a transição: load agora bloqueia
+  controles até completar leituras. Repetição confirmou listas pública/privada com
+  2 membros; depois teve timeout de navegação durante build concorrente.
+  Próximo passo: completar build final e repetir browser em sequência.
+- O gate funcional usa o
+  fallback da página sem WebGL decorativo; artefatos de build ignorados pelo watcher.
+  Máquina com load91–351 atrasou Chromium/SwiftShader e a inicialização do Astro.
+
+## Checkpoints
+
+- Cliente: c5dc8fedb (UI/rotas), 13f93a1ac (perfil/placar), 5d7e6576e (índices),
+  4ba45f55d (controle de carregamento e checker SSR).
+- Backend: 963f52e (migration/API/MP), 0a38a97 (testes locais).
+- JSON-LD e eval:netcode passaram; checker SSR foi adaptado ao caminho do
+  handler em .vc-config.json e ao 404 com corpo da sala de exemplo inexistente.
+- Todos na branch feat/clans-v1-20261011; nenhum push/merge/deploy.
 
 ## Ambiente e reprodução
 
 Banco local: `csbr-clans-db-20261011`, PostgREST `csbr-clans-rest-20261011`,
 rede `csbr-clans-test-20261011`; somente REST exposto em 127.0.0.1:54329.
 Fixture `test/clans-bootstrap.sql` + migration 038 + migration 040; NÃO usar
-fixture em banco de produção. Tests integration truncam somente o banco dedicado.
+fixture em banco de produção. Tests integration/browser truncam somente o banco dedicado.
 
 Na worktree backend, com Node recente:
 
@@ -63,16 +84,17 @@ identidade do serviço antes de writes. Capturas em `artifacts/clans-v1/` no cli
 
 ## Ocorrência local e limites
 
-Uma tentativa MP/browser encontrou outro backend local na antiga porta fixa8096.
-Duas chamadas register sintéticas ocorreram naquele serviço antes do /api/clans404;
+Uma tentativa MP/browser encontrou outro backend local na antiga porta fixa 8096.
+Duas chamadas register sintéticas ocorreram naquele serviço antes do /api/clans 404;
 o browser anterior pode ter criado mais um perfil sintético. Serviço social-community
 preservado; não foram apagados perfis sem identificação exata. Testes corrigidos
 para portas livres + health/serverSha, reruns no banco dedicado passaram.
 
 ## Pendências e próximo passo
 
-Concluir browser/capturas/check:deploy e registrar SHAs do checkpoint.
-Depois revisar diff para release: aplicar040 antes de publicar API, publicar backend
+Concluir browser/capturas e registrar o checkpoint final.
+Depois revisar diff para release: aplicar 040 antes de publicar API, publicar backend
 HTTP e nós MP, então frontend. Merge/migration pública/deploy não autorizados.
-A aprovação visual do usuário e uma partida humana real permanecem pendentes.
+A aprovação visual do usuário, navegador com fundo 3D sob carga normal e
+uma partida humana real permanecem pendentes.
 Ranking de clãs e desafios fora desta v1.
