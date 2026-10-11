@@ -11,8 +11,9 @@ const SOCIAL_CHARACTERS=Object.fromEntries([...roster[1].matchAll(/\{\s*id:\s*'(
 const SOCIAL_PORTRAITS={};
 for(const id of Object.keys(SOCIAL_CHARACTERS)){
  if(!/^[a-z0-9_-]+$/.test(id))throw Error('ID de personagem inválido');
- const file=[`public/img/chars/${id}.webp`,`public/img/chars-hero/${id}.webp`,`public/img/social-chars/${id}.png`].find(existsSync);
- if(file)SOCIAL_PORTRAITS[id]='data:image/png;base64,'+(await sharp(readFileSync(file)).resize({width:300,height:365,fit:'inside',withoutEnlargement:true}).png().toBuffer()).toString('base64');
+ const file=`public/img/resultado/${id}-vitoria.webp`;
+ if(!existsSync(file))throw Error(`Arte vertical de personagem indisponível: ${id}`);
+ SOCIAL_PORTRAITS[id]='data:image/png;base64,'+(await sharp(readFileSync(file)).trim({threshold:1}).resize({height:630}).png().toBuffer()).toString('base64');
 }
 
 

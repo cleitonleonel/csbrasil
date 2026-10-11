@@ -45,7 +45,7 @@ contra bots, direto na aba. Sem download, sem instalação, sem cadastro.
 | Mapas no registro | 18 | objeto `MAPS` de `maps.js` |
 | Arnêses visuais em HTML | 22 | `git ls-files 'public/*.html' \| wc -l` |
 | Scripts do arnês | 648 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
-| Scripts de pipeline | 102 | `git ls-files 'tools/*.mjs' \| wc -l` |
+| Scripts de pipeline | 103 | `git ls-files 'tools/*.mjs' \| wc -l` |
 | Tarefas de entrada escritas | 26 | `git ls-files 'docs/issues/[0-9]*.md' \| wc -l` |
 | Versão | `2.1.0-alpha.67` | `public/js/version.js` e `package.json` (batem) |
 
