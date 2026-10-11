@@ -12,6 +12,21 @@ const loader = new GLTFLoader();
 const loadGLB = (url) => new Promise((res, rej) => loader.load(url, res, undefined, rej));
 const _base = new Map(); // id -> template scene
 
+// Uma superfície opaca de ônibus, sucata ou móvel não vira parede para grafite.
+// Casas e edifícios preservam suas fachadas; nomes de peças dentro do GLB não
+// são uma classificação confiável, por isso a categoria acompanha o asset.
+const GRAFFITI_WALL_PROPS = new Set([
+  'congresso', 'catedral', 'ministerio', 'palacio', 'justica', 'container_escritorio',
+  'casa_pedra', 'casa_geminada', 'casa_favela_azul', 'casa_favela_tijolo', 'fav_house',
+  'escadao_casa_r3', 'guarita_muro', 'portao_penitenciaria',
+  'lajes_casa_escada', 'lajes_casa_tijolo',
+  ...Array.from({ length: 7 }, (_, i) => `lajes_casa_0${i + 1}`),
+]);
+function classificarParedeProp(object, id) {
+  object.userData.mapPropId = id;
+  if (!GRAFFITI_WALL_PROPS.has(id)) object.userData.graffitiSupportExcluded = true;
+}
+
 export const COMMON_MAP_PROPS = ['congresso', 'catedral', 'ministerio', 'palacio', 'justica', 'tires', 'stall', 'tent', 'bus', 'drinkstand', 'urna', 'towner',
   'quiosque', 'skate_ramp', 'lifeguard_tower', 'guarda_sol', 'arquibancada',
   'churrasqueira', 'mesa_guardasol', 'cooler', 'boia', 'placa_piscina', 'caixa_som'];
@@ -64,6 +79,7 @@ export function placeProp(id, { x = 0, y = 0, z = 0, targetH = 2.4, targetLen = 
   const tpl = _base.get(id);
   if (!tpl) return null;
   const o = tpl.clone(true);
+  classificarParedeProp(o, id);
   o.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(o);
   const h = (box.max.y - box.min.y) || 1;
@@ -284,6 +300,7 @@ export class PropBatch {
       for (const items of buckets.values()) {
         for (const part of parts) {
           const im = new THREE.InstancedMesh(part.geo, part.mat, items.length);
+          classificarParedeProp(im, id);
           items.forEach((p, i) => {
             const s = p.targetLen ? Math.sqrt((p.targetLen / tlen) * (p.targetH / th)) : p.targetH / th;
             dummy.position.set(p.x, p.y - minY * s, p.z);
