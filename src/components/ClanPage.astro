@@ -1,0 +1,68 @@
+---
+import Layout from '../layouts/Layout.astro';
+const { clanId = '' } = Astro.props;
+---
+<Layout title="Clãs | CSBrasil" description="Monte sua turma, convide amigos e leve a tag do seu clã para a arena.">
+  <main id="clans-app" data-clan-id={clanId}>
+    <p class="eyebrow">SUA TURMA NA ARENA</p>
+    <h1>Clãs</h1>
+    <p>Junte os amigos e leve a tag do seu clã para o placar.</p>
+    <p id="clan-status" role="status" aria-live="polite">Carregando clãs…</p>
+    <button id="clan-retry" type="button" hidden>Tentar novamente</button>
+
+    <section id="clan-public" class="clan-card" hidden aria-label="Clã do convite"></section>
+    <section id="clan-guest" class="clan-card" hidden>
+      <h2>Seu perfil</h2>
+      <p>Use o mesmo navegador em que você joga. Seu clã fica vinculado ao seu perfil.</p>
+      <form id="clan-register">
+        <label>Seu nick <input name="nick" required minlength="2" maxlength="14" pattern="[A-Za-z0-9_.\-]{2,14}" autocomplete="nickname" /></label>
+        <button type="submit">Salvar perfil</button>
+      </form>
+    </section>
+
+    <fieldset id="clan-controls" hidden>
+      <section id="clan-mine" class="clan-card" hidden aria-label="Meu clã"></section>
+      <section id="clan-create-panel" class="clan-card" hidden>
+        <h2>Crie seu clã</h2>
+        <form id="clan-create">
+          <label>Nome <input name="name" required minlength="3" maxlength="40" placeholder="Bonde da Lan House" /></label>
+          <label>Tag <input name="tag" required minlength="2" maxlength="5" pattern="[A-Za-z0-9]{2,5}" placeholder="LAN" /></label>
+          <label>Descrição <textarea name="description" maxlength="240" rows="3" placeholder="Apresente sua turma"></textarea></label>
+          <button type="submit">Criar clã</button>
+        </form>
+      </section>
+      <section id="clan-join-panel" class="clan-card" hidden>
+        <h2>Você recebeu um convite</h2>
+        <p>Ao entrar, a tag do clã aparece no seu perfil e nas próximas partidas.</p>
+        <button id="clan-join" type="button">Entrar no clã</button>
+      </section>
+    </fieldset>
+
+    <section id="clan-invite-panel" class="clan-card" hidden>
+      <h2>Convide sua turma</h2>
+      <p>Quem tiver este link pode entrar. Gerar outro link revoga o anterior.</p>
+      <label>Link de convite <input id="clan-invite-link" readonly /></label>
+      <button id="clan-copy" type="button">Copiar link</button>
+    </section>
+    <section id="clan-directory" aria-label="Clãs recentes">
+      <h2>Clãs da comunidade</h2>
+      <div id="clan-list"></div>
+    </section>
+    <p><a href="/">Voltar ao jogo →</a></p>
+  </main>
+</Layout>
+<script type="module" is:inline>import '/js/clans.js';</script>
+<style is:global>
+  #clans-app{max-width:920px;margin:auto;padding:30px 0 60px}
+  #clans-app .eyebrow{color:var(--amber);letter-spacing:3px;font-size:12px}
+  #clans-app h1{font-size:clamp(40px,7vw,72px);margin:8px 0 14px}
+  #clans-app h2{font-size:22px;margin:0 0 14px}#clans-app p{line-height:1.6}
+  #clans-app fieldset{border:0;padding:0;margin:0;min-width:0}
+  #clans-app .clan-card{border:1px solid var(--line-hi);background:#12110e;padding:24px;margin:22px 0}
+  #clans-app label{display:block;margin:14px 0;font-size:13px}
+  #clans-app input,#clans-app textarea,#clans-app select{display:block;box-sizing:border-box;width:100%;max-width:540px;margin-top:7px;padding:12px;background:#090908;border:1px solid var(--line-hi);color:var(--bone);font:inherit}
+  #clans-app button{background:var(--amber);color:#111;border:0;padding:12px 18px;font:inherit;cursor:pointer;margin:6px 8px 6px 0}
+  #clans-app button:disabled{opacity:.5;cursor:wait}
+  #clans-app button:focus-visible,#clans-app input:focus-visible,#clans-app textarea:focus-visible,#clans-app select:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+  #clans-app [hidden]{display:none!important}#clan-status{min-height:26px;color:var(--amber)}
+</style>
