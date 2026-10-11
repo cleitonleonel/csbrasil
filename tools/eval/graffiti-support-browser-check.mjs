@@ -10,7 +10,7 @@
  */
 import { chromium } from 'playwright';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { measureGraffitiArea } from './graffiti-area-audit.mjs';
 import { MAP_SOURCES } from './graffiti-fingerprint.mjs';
@@ -40,7 +40,8 @@ const quality = option('quality', 'med');
 if (!['med', 'low'].includes(quality)) throw Error('--quality must be med or low');
 const limits = { samplesPerPiece: 25, halfQuadFraction: .49, originOffset: .02, supportDepth: .05, normalDot: .98 };
 mkdirSync(out, { recursive: true });
-const sourcePaths = ['public/js/maps.js', 'public/js/mapprops.js', 'public/js/textures.js', 'mint-assets.json', 'public/models/props/upa-mint-assets.json', 'public/js/graffiti_pass.js', 'public/js/graffiti_layout.js', 'public/js/graffiti_surface.js', 'public/js/graffiti_coverage.js', 'tools/eval/graffiti-area-audit.mjs', 'tools/eval/graffiti-fingerprint.mjs',
+const propSources = readdirSync('public/models/props').filter(file => file.endsWith('.glb')).sort().map(file => `public/models/props/${file}`);
+const sourcePaths = [...propSources, 'public/js/maps.js', 'public/js/mapprops.js', 'public/js/textures.js', 'public/js/graffiti_pass.js', 'public/js/graffiti_layout.js', 'public/js/graffiti_surface.js', 'public/js/graffiti_coverage.js', 'tools/eval/graffiti-area-audit.mjs', 'tools/eval/graffiti-fingerprint.mjs',
   'tools/eval/graffiti-support-browser-check.mjs', 'tools/eval/graffiti-art-inventory.mjs', ...Object.values(MAP_SOURCES)];
 const sources = Object.fromEntries(sourcePaths.map(file => {
   try { return [file, createHash('sha256').update(readFileSync(file)).digest('hex')]; }
