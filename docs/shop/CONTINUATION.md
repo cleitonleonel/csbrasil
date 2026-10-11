@@ -259,3 +259,15 @@ feedback do dono, refinamentos/otimizacao/bake/LOD, demais6personagens depois da
 direcao, integracao em lane apropriada e medicao jogo/mobile. Objetivo amplo
 skins/rigs/equipamentos/UI/loja/TRETA/recompensas/packs/videos/expansao preservado;
 UI segue no chat01a12cc7-e78d-7ec1-b2e3-3210df5efd6b. Sem outra lane/merge/deploy.
+
+## Retorno do dono e conferencia de disponibilidade
+
+Dono: "Ficou bem melhor" sobre a prova classica Saci/1; feedback positivo dessa
+direcao registrado, sem extrapolar para lote/produção. HEAD39a32c9c5 limpo.
+Conferencia atual:13GLBs de skins locais com24juntas e Idle,8/8hashes lote2
+conferidos; ambosZIPs presentes. Seisclipes/skin gerados noMint conforme entrega
+registrada (78total), so13Idle exportados. Sete moedas publicas anteriores tem
+CoinSpin/PurchaseReveal; novo visual classico existe apenas no Saci/1 privado,
+tambem com ambosclipes. Restam outros6perfis, demaisclipes locais e integracao/
+retarget/gameplay/mobile. Proximo concretopreservado: expandir direcao classica,
+refinar/otimizar antes integrar; UI/economia na lane propria.
