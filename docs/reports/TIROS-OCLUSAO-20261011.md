@@ -1,5 +1,8 @@
 # Tiros nos vãos entre objetos — 11/10/2026
 
+Pairing final da implementação: cliente `89b74eaef0b88d9cd35bca1eb102b3ee50a35fc5`, backend `d229c2c2ff3c99415b24d80056102e98cc401637`. O cliente recebe commits posteriores de ferramentas e documentação com os mesmos arquivos de runtime. Docker está pinado à fonte validada; nenhum pin foi publicado ou implantado.
+
+
 Objetivo: bala e linha de visão precisam seguir a massa visível do mapa. AABB de movimento não deve selar tiro no vazio. Definição de pronto local: `_fireHitscan` e autoridade `_scanHit` acertam alvo em vão real, bloqueiam massa real e têm regressão detectada por mutação. Multiplayer publicado exige pairing cliente/backend e observação numa partida real.
 
 Checkout client: `worktrees/mapas-upa-tiros-grafites-20261011`, frente compartilhada UPA/grafites. Backend separado: `/Volumes/Zenith/Projects/game/corosolto/csbrasil-backend/wt/map-shots-20261011`, branch `codex/mp-map-shot-geometry-20261011`, base d52ff5f (`origin/main`). Sem merge/deploy. Nenhuma alteração em `game.js`.
@@ -76,3 +79,9 @@ Próximo passo: crítica independente do pairing e medição de memória/tick em
 A validação de grafites foi movida após `batchStaticBoxes`, pois matrizes Float32 abrem microfrestas depois da conversão. A flag `graffitiSupportExcluded` só preserva elegibilidade de pintura nos lotes. O replay focused confirma colisores, spawns e pickups idênticos e0/800raios físicos antes/depois; o mutante que restaura a ordem antiga conserva uma peça que fica sem parede. Room real Piscina, seeds12345/777:0/576diferenças cliente/autoridade. Nenhuma outra semântica de tiros mudou desde o sweep18mapas/6912raios.
 
 Pin concreto atualizado: cliente `6fddd2c62a394501e6c527a6cbe6bdce93609b80`, backend `f7aa8958de1c42459bce941c4a588474b3a1c0e0`. Fonte Pool dos replays é byteidêntica ao pin;166props e mapprops.js permanecem iguais ao pin anterior. Evidências persistidas: `evidence/client-shot-piscina-batch-final.log` e `evidence/backend-shot-piscina-batch-final.log`. Sem buildDocker/push/merge/deploy ou partida humana MP.
+
+## Replay após estabilidade de decoração no Ferro
+
+Depois de estabilizar chapas, RNG do capim/cacos e mourões entre qualidades, o pin foi renovado para o pairing acima. Ferro Room real, seeds12345/777: zero/576 diferenças. Inventário completo fresh18×med/low: zero/5184 diferenças, colliders iguais e ausência de flags invisíveis nos occluders; replay focused Ferro zero/288,114/114colliders,266/266occluders.166GLBs e mapprops mantiveram bytes/hashes. GAP/cache/seed/rotação UPA continuaram verdes.
+
+Evidências externas: `launch-media/2026-10-11-mapas/evidence/backend-shot-ferro-posts-final.log`, `client-shot-quality-ferro-posts-final.log`, `shot-quality-r6-final.json` e proveniência focused. Sweep12mapas×2seeds anterior: zero/6912 diferenças; as alterações posteriores de decoração/ordem de batch tiveram replays específicos. Não afirmar nova partida multiplayer humana, capacidade de servidor, resolução de alpha por pixel ou build Docker.
