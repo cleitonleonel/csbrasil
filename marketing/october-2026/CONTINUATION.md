@@ -41,8 +41,14 @@ Checkpoints: fc1f6cad8 assets/fontes;7afec811d template/cards/tool;288dc8db2copy
 
 ## Entrega revisável e próxima ação
 
-PR draft #811: https://github.com/corosolto/client/pull/811. Head publicado6e4714f72, branch exclusiva no fork rubenmarcus/client. Pre-push completo passou em38s com Node23. Tentativa anterior com Node16 foi recusada, sem bypass; runtime explicitado na nova tentativa. Nenhum merge/deploy/publicação/envio/compra. Servidor local reiniciado em127.0.0.1:4417 eHTTP200; página/arquivo abertos no Codex com retorno queued, sem afirmar que foram vistos pelo dono.
+PR draft #811: https://github.com/corosolto/client/pull/811. Implementação publicada em 6e4714f72; checkpoint do ledger publicado em c57d4033c, confirmado tanto no PR quanto no ref do fork em 11/10. Branch exclusiva no fork rubenmarcus/client. Pre-push completo passou em 38s e novamente em 37s com Node 23. Tentativa anterior com Node 16 foi recusada, sem bypass; runtime explicitado na nova tentativa. Nenhum merge/deploy/publicação/envio/compra. Servidor local reiniciado em 127.0.0.1:4417 e HTTP 200; página/arquivo abertos no Codex com retorno queued, sem afirmar que foram vistos pelo dono.
 
 Fonte complementar da frente dev: /Volumes/Zenith/Projects/game/corosolto/csbrasil/worktrees/dev-community-progress-20261010/reports/growth-devs-2026-10/ATIVACAO.md (checkpoint6870db0, PRdraft810). Próximas pautas: quickstart, Game/arnês/Agent, SIM_HASH. Recortes54/327/296 exigem reconsulta de status/PRs e mantenedor antes de chamada; não anunciar instalação como partida validada. Reusar card04 do kit para esses desdobramentos.
 
 Milestone concluído: template,5peças/15exports,legendas/fila,15dias e4semanas,welcome e revisão independente. Pendente: revisão humana dos rascunhos/URLs e escolha do primeiro lote; vídeos pela mídia; UI no IAB, transporte welcome e plataformas sociais continuam não certificados. Próxima ação concreta: dono revisar três apoios prioritários na fila local e escolher lote/canais. Aprovação de conteúdo não concede merge/deploy/envio; cada publicação precisa do escopo explícito já previsto no plano. Manter worktree e exports locais para correções.
+
+## Snapshot remoto após entrega (11/10/2026)
+
+PR #811 OPEN / DRAFT / BLOCKED no head publicado c57d4033c. Vercel: FAILURE, preview remoto falho/indisponível. Build, classify e DCO ainda em execução na consulta; ratchet, bot-token e verificações de versão já SUCCESS. AutoMergeRequest é null. Estes estados são o snapshot consultado, não previsão do resultado final.
+
+O preview remoto não está verde. Revisão permanece nos arquivos/exportações e fila local, sem aprovação ou publicação inferidas. IAB pertence à mídia nesta rodada. Por direção da coordenação, gates locais já 48/48 não foram repetidos para este registro. Somente este ledger foi alterado e recebe checkpoint local; template/fila/arte permanecem no head publicado. A nota pode subir com a próxima alteração autorizada, mantendo o pre-push obrigatório, sem reexecutá-lo agora.
