@@ -81,3 +81,15 @@ Li o `generation-plan.json` produzido pela coordenação e verifiquei os 63 jobs
 Também conferi que o log HTTP402 sanitiza o ID da conta. A coordenação registrou `og-stylized-contract-final.log` PASS e `og-stylized-other-small.log` RED; são execuções dela, além do ensaio próprio acima. `git diff --check` passou na árvore observada.
 
 Estado final deste recorte: composição e seleção local aprovadas, sem P0/P1 confirmado; P2 de acabamento uniforme continua aberto pelo bloqueio de geração, P3 de nickname permanece documentado. Build/deploy, Linux/Vercel e aprovação humana não são promovidos por este adendo.
+
+## Retomada — envio bloqueado por SB7, causa não certificada
+
+Checkpoint observado `83937415acf9162fd521c1813a083d8bb9fe5e15`, mesma branch/lane. Primeiro hook completo terminou **RED48/49**, em257s segundo o registro da coordenação, e recusou o envio. `og-stylized-push.log` identifica SB7. O ensaio social-serve não obteve resposta no prazo de inicialização60s, com `exit=null`; esse resultado permanece como falha real do gate nessa execução.
+
+Li o caminho: `serve.mjs` aguarda `dev()` antes de abrir seu listener; carregar a config prepara os63 PNGs sequencialmente. Ao mudar módulos na fixture, o restart do renderer volta a carregar a config. Isso identifica trabalho na inicialização, mas não prova que o tempo da conversão/deflate causou a falha registrada.
+
+A coordenação reexecutou `social-serve-check` standalone no mesmo HEAD e sem mudar produto, limites ou contrato. `artifacts/social/og-stylized-serve-baseline.log` contém **PASS HTTP real: comunidade, hashes, variáveis, import map, assets, shell e cache após edição isolada**. Esse PASS posterior não apaga o RED do hook nem identifica sua causa. Não há regressão persistente de desempenho comprovada nesse material.
+
+Investiguei somente fonte e documentação; não executei benchmark, conversão de imagens, dev server ou build durante a triagem. A API instalada Sharp0.35.5 e a [documentação oficial de PNG](https://sharp.pixelplumbing.com/api-output/#png) confirmam compressionLevel6 por padrão, enquanto níveis menores reduzem esforço de zlib ao custo de bytes. Considerei `.png({compressionLevel:1})` como hipótese de teste lossless, preservando trim/resize/alpha. `quality`, `effort` e opções de paleta não seriam substitutos seguros: ativam quantização. Nenhuma dessas opções foi alterada ou medida, e não afirmo ganho de velocidade ou equivalência de bundle.
+
+Decisão atual da coordenação: repetir o hook completo nas mesmas condições, sem alteração especulativa de compressão nem concorrência com ensaios pesados. O resultado ainda precisa ser vinculado ao checkpoint; até lá, a causa do primeiro SB7 continua **UNKNOWN**. Aceite visual/pixels/privacidade e pendências P2/P3 acima permanecem preservados, sem promover esse PASS standalone a conclusão do envio ou deploy.
