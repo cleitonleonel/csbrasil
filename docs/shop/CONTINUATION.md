@@ -148,3 +148,7 @@ Lula naRegua, Lula Cyborg, Bolsonaro Cyborg, Aljuiz, Lula Mandrake e Michelle en
 ## Marco lote2: oito malhas finais aceitas, ultimos dois pacotes pedidos
 
 Jair corrigido p9796a1e30etp3xncgs1czbbg18g3wz0 e ZeroUm corrigido p978c5gpbzttzf0e62j2cm1bg18g3hks aceitos na critica3D, preservadas correntes e identidade. Modelproofs corrigidos privados,8/8aprovados visualmente. BasicMovement6Apply uma vez nos dois, Jair exibe AnimatingIdle+5. IDs/batches dos seis concluidos noJSON; entrega MINT-BATCH2-DELIVERY.md checkpointparcial. Proximo: aguardar2pacotes, confirmarenum6/playback, atualizarentrega; downloads dependem resposta permissao Chrome.
+
+## Marco lote2: sete pacotes concluidos, ultimo na fila
+
+ZeroUm corrigido exibe6clips e Idle reproduzido. JSON7animationUrls, entrega atualizada com provas3D e links finais. Jair corrigido continuaAnimatingset6, nao reacionarApply. Saldo5532globalaposrequests, nada comprado. ExportlocalbloqueadoporpermissionChromepergunta pendente. Proximo: aguardarJair, confirmar6/playback, entregargeracaoMint; exportbinario/pacoteoffline ainda dependem permissao e nao podemser afirmadosconcluidos.

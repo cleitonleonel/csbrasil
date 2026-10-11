@@ -317,7 +317,7 @@
     {
       "slug": "zero-um-mandrake",
       "name": "Zero Um Mandrake",
-      "status": "corrected_animation_requested",
+      "status": "six_animations_completed_download_pending",
       "references": [
         {
           "number": 11,
@@ -339,7 +339,16 @@
       },
       "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/zero-um-mandrake-model.jpg",
       "rejectedAssetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph75f4tvepjehrd2f5qfpmsey58g2wbb&panel=asset&assetId=p97c9w0a9mttqta4x5teb9njen8g2yd4&variant=original",
-      "correctedModelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/zero-um-mandrake-chains-corrected-model.jpg"
+      "correctedModelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/zero-um-mandrake-chains-corrected-model.jpg",
+      "animationUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph75f4tvepjehrd2f5qfpmsey58g2wbb&panel=asset&assetId=p978c5gpbzttzf0e62j2cm1bg18g3hks&animationBatchId=w573kpbjmgd8b4sb4w769mhped8g26q7&animationClipId=w9711qtsesjh66pts1v1j8php58g39ze",
+      "clips": [
+        "Idle",
+        "Casual Walk inplace",
+        "run fast 3 inplace",
+        "Regular Jump",
+        "Idle Turn Left",
+        "Idle Turn Right"
+      ]
     }
   ],
   "creditObservation": {
@@ -348,5 +357,11 @@
     "usage": 11365,
     "note": "Observed after 8 previews; account total, not per-skin cost"
   },
-  "downloadBlocker": "Chrome blocks automatic multiple downloads for mint.gg; permission question pending, no setting changed"
+  "downloadBlocker": "Chrome blocks automatic multiple downloads for mint.gg; permission question pending, no setting changed",
+  "creditObservationFinal": {
+    "available": 5532,
+    "plan": 0,
+    "usage": 5532,
+    "note": "Global account balance after requests; no purchases or resubscription"
+  }
 }
