@@ -1,0 +1,289 @@
+#!/usr/bin/env node
+/**
+ * Strict, independent support measurement against rendered map meshes.
+ * Run after eval:serve (Chrome is operated by the coordinating agent):
+ * node tools/eval/graffiti-support-browser-check.mjs --base=http://127.0.0.1:8166 \
+ *   --maps=ferro_velho,upa_24h --out=/tmp/graffiti-support-baseline --fotos=3
+ * Omitting --maps audits every MAP_IDS entry, including maps awaiting rework.
+ * No debt ceilings: every piece needs all 25 support samples. This script never
+ * calls suporteGrafite, rewrites layouts, or accepts a fallback to colliders.
+ */
+import { chromium } from 'playwright';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { measureGraffitiArea } from './graffiti-area-audit.mjs';
+
+const args = process.argv.slice(2);
+const option = (name, fallback) => {
+  const exact = args.indexOf(`--${name}`);
+  return args.find(a => a.startsWith(`--${name}=`))?.slice(name.length + 3)
+    ?? (exact >= 0 ? args[exact + 1] : undefined) ?? fallback;
+};
+if (args.some(a => a.startsWith('--repair-bake'))) throw Error('This auditor measures only; --repair-bake is not implemented.');
+const base = option('base', process.env.BASE || 'http://127.0.0.1:8166');
+const out = resolve(option('out', '/tmp/graffiti-support'));
+const photos = Number(option('fotos', '3'));
+if (!Number.isInteger(photos) || photos < 0 || photos > 30) throw Error('--fotos must be an integer from 0 to 30');
+const requested = option('maps', '').split(',').map(s => s.trim()).filter(Boolean);
+const limits = { samplesPerPiece: 25, halfQuadFraction: .49, originOffset: .02, supportDepth: .05, normalDot: .98 };
+mkdirSync(out, { recursive: true });
+const sourcePaths = ['public/js/maps.js', 'public/js/graffiti_pass.js', 'public/js/graffiti_layout.js', 'public/js/graffiti_surface.js', 'public/js/graffiti_coverage.js', 'tools/eval/graffiti-area-audit.mjs'];
+const sources = Object.fromEntries(sourcePaths.map(file => {
+  try { return [file, createHash('sha256').update(readFileSync(file)).digest('hex')]; }
+  catch { return [file, null]; }
+}));
+const receipt = { generatedAt: new Date().toISOString(), base, sources, limits, maps: {}, status: 'running' };
+const save = () => writeFileSync(`${out}/receipt.json`, JSON.stringify(receipt, null, 2));
+
+// Serialized into the browser. Only the paintability predicate is shared; the
+// sampling, spatial index, nearest-hit, normals and verdict code are independent.
+const measure = async ({ limits, areaSource }) => {
+  const areaAudit = new Function(`return (${areaSource})`)();
+  const THREE = await import('three');
+  const { superficieGrafitavel } = await import('./js/graffiti_surface.js');
+  const { MAPS } = await import('./js/maps.js');
+  const { GRAFITE } = await import('./js/graffiti_layout.js');
+  const { COMMON_MAP_PROPS, hasProp } = await import('./js/mapprops.js');
+  const scene = window.__scene;
+  scene.updateMatrixWorld(true);
+  const visible = o => {
+    for (let a = o; a; a = a.parent) if (!a.visible) return false;
+    return true;
+  };
+  const art = o => {
+    for (let a = o; a; a = a.parent) if (/^(decal:|mural:)/.test(a.name || '')) return true;
+    return false;
+  };
+  const meshes = [], allowed = [], pieces = [], unclassifiedArt = [];
+  let batchMeshPieces = 0, realDrawnBatches = 0;
+  const drawnBounds = new THREE.Box3(), batchVisibility = [], artworkPaths = new Set();
+  const visibleArtwork = mesh => {
+    if (!mesh?.isMesh || !visible(mesh)) return 'hidden-or-missing-mesh';
+    if (!mesh.geometry?.attributes?.position?.count) return 'missing-drawable-geometry';
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    if (!materials.length) return 'missing-material';
+    for (const material of materials) {
+      if (!material || material.visible === false || material.colorWrite === false || !(material.opacity > 0)) return 'hidden-material';
+      const texture = material.map, data = texture?.source?.data || texture?.image;
+      if (typeof data?.src === 'string') artworkPaths.add(new URL(data.src, location.href).pathname);
+      if (!texture || texture.userData?.faltou === true || !data) return 'missing-artwork-texture';
+      const width = data.naturalWidth ?? data.videoWidth ?? data.width;
+      const height = data.naturalHeight ?? data.videoHeight ?? data.height;
+      if (!(width >= 1 && height >= 1) || data.complete === false) return 'unloaded-artwork-texture';
+    }
+    return null;
+  };
+  scene.traverse(o => {
+    if (o.isMesh && o.geometry && o.material && visible(o) && !art(o)) {
+      const materials = Array.isArray(o.material) ? o.material : [o.material];
+      if (materials.some(m => m?.visible !== false && m?.colorWrite !== false && (m?.opacity ?? 1) > 0)) {
+        meshes.push(o);
+        if (superficieGrafitavel(o)) allowed.push(o);
+      }
+    }
+    if (Array.isArray(o.userData?.graffitiPecas)) {
+      for (const p of o.userData.graffitiPecas) {
+        if (typeof p.f === 'string') artworkPaths.add(new URL(p.f.startsWith('poster:') ? `posters/${p.f.slice(7)}` : `img/decals/${p.f}`, location.href).pathname);
+        const matching = o.children.filter(mesh => mesh.isMesh && mesh.name === `decal:${p.f}` && mesh.userData?.pecas);
+        const artVisibilityReason = matching.length === 1 ? visibleArtwork(matching[0]) : 'missing-or-ambiguous-batch-mesh';
+        pieces.push({ ...p, owner: o.name || '(group)', source: 'batch', visible: !artVisibilityReason, artVisibilityReason });
+      }
+    }
+    if (o.isMesh && /^(decal:|mural:)/.test(o.name || '') && o.userData?.pecas) {
+      batchMeshPieces += o.userData.pecas;
+      const reason = visibleArtwork(o), bounds = new THREE.Box3().setFromObject(o);
+      batchVisibility.push({ name: o.name, owner: o.parent?.name || '(group)', count: o.userData.pecas,
+        visible: !reason, reason, bbox: bounds.isEmpty() ? null : { min: bounds.min.toArray(), max: bounds.max.toArray() } });
+      if (!reason) { realDrawnBatches++; drawnBounds.union(bounds); }
+    }
+    if (o.isMesh && !art(o)) {
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      for (const material of mats) {
+        const image = material?.map?.source?.data || material?.map?.image;
+        const imageURL = typeof image?.src === 'string' ? image.src : '';
+        if (/\/img\/decals\//.test(imageURL)) unclassifiedArt.push({ name: o.name, imageURL, geometry: o.geometry?.type });
+      }
+    }
+  });
+  scene.traverse(o => {
+    if (!o.isMesh || !/^(decal:|mural:)/.test(o.name || '') || o.userData?.pecas) return;
+    const params = o.geometry?.parameters;
+    if (!params?.width || !params?.height) return;
+    const pos = o.getWorldPosition(new THREE.Vector3());
+    const n = new THREE.Vector3(0, 0, 1).applyNormalMatrix(new THREE.Matrix3().getNormalMatrix(o.matrixWorld));
+    const up = new THREE.Vector3(0, 1, 0).transformDirection(o.matrixWorld);
+    const scale = o.getWorldScale(new THREE.Vector3());
+    pieces.push({ x: pos.x, y: pos.y, z: pos.z, ry: Math.atan2(n.x, n.z),
+      w: params.width * Math.abs(scale.x), h: params.height * Math.abs(scale.y),
+      f: o.name, owner: o.parent?.name || '(group)', source: 'manual', visible: !visibleArtwork(o), artVisibilityReason: visibleArtwork(o), vertical: Math.abs(n.y) < .001 && Math.abs(up.y) >= 1 - 1e-6 });
+    if (!visibleArtwork(o)) drawnBounds.union(new THREE.Box3().setFromObject(o));
+  });
+
+  // Conservative independent index: a 7-cm ray cannot reach anything outside the
+  // 3x3 neighboring four-meter cells. Full AABBs include all InstancedMesh copies.
+  const cell = 4, grid = new Map(), box = new THREE.Box3();
+  for (const mesh of meshes) {
+    box.setFromObject(mesh);
+    if (box.isEmpty() || !Number.isFinite(box.min.x + box.max.x + box.min.z + box.max.z)) continue;
+    const x0 = Math.floor(box.min.x / cell), x1 = Math.floor(box.max.x / cell);
+    const z0 = Math.floor(box.min.z / cell), z1 = Math.floor(box.max.z / cell);
+    for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++) {
+      const key = `${x},${z}`;
+      if (!grid.has(key)) grid.set(key, []);
+      grid.get(key).push(mesh);
+    }
+  }
+  const nearby = (x, z) => {
+    const objects = new Set(), gx = Math.floor(x / cell), gz = Math.floor(z / cell);
+    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+      for (const o of grid.get(`${gx + dx},${gz + dz}`) || []) objects.add(o);
+    }
+    return [...objects];
+  };
+  const rc = new THREE.Raycaster(), origin = new THREE.Vector3(), direction = new THREE.Vector3();
+  const worldMatrix = new THREE.Matrix4(), instanceMatrix = new THREE.Matrix4(), normalMatrix = new THREE.Matrix3();
+  const worldNormal = new THREE.Vector3();
+  const inspected = [], failures = [], byReason = {}, supportedBy = {};
+  for (let index = 0; index < pieces.length; index++) {
+    const p = pieces[index], failedSamples = [];
+    const numeric = ['x', 'y', 'z', 'ry', 'w', 'h'].every(k => Number.isFinite(p[k])) && p.w > 0 && p.h > 0;
+    if (!numeric || p.vertical === false || !p.visible) {
+      const reason = !numeric ? 'invalid-piece-metadata' : p.vertical === false ? 'nonvertical-art-plane' : 'visible-art';
+      byReason[reason] = (byReason[reason] || 0) + 1;
+      failures.push({ ...p, index, failedSamples: [{ reason }], failed: 25 });
+      continue;
+    }
+    const nx = Math.sin(p.ry), nz = Math.cos(p.ry), ux = Math.cos(p.ry), uz = -Math.sin(p.ry);
+    let maxDepth = 0, minNormalDot = 1;
+    for (const su of [-.49, -.245, 0, .245, .49]) for (const sv of [-.49, -.245, 0, .245, .49]) {
+      const x = p.x + ux * su * p.w, y = p.y + sv * p.h, z = p.z + uz * su * p.w;
+      origin.set(x + nx * limits.originOffset, y, z + nz * limits.originOffset);
+      direction.set(-nx, 0, -nz);
+      rc.set(origin, direction); rc.near = 0; rc.far = limits.originOffset + limits.supportDepth + 1e-6;
+      const hit = rc.intersectObjects(nearby(x, z), false).find(h => {
+        const mats = Array.isArray(h.object.material) ? h.object.material : [h.object.material];
+        const material = mats[h.face?.materialIndex || 0];
+        return material && material.visible !== false && material.colorWrite !== false && (material.opacity ?? 1) > 0;
+      });
+      let reason = null, dot = null, depth = null;
+      if (!hit) reason = 'no-support-within-5cm';
+      else {
+        depth = hit.distance - limits.originOffset;
+        maxDepth = Math.max(maxDepth, depth);
+        const mats = Array.isArray(hit.object.material) ? hit.object.material : [hit.object.material];
+        const mat = mats[hit.face?.materialIndex || 0];
+        if (depth < -.001) reason = 'art-penetrates-foreground-surface';
+        else if (!superficieGrafitavel(hit.object) || !mat || mat.visible === false || mat.colorWrite === false || mat.transparent || mat.alphaTest > 0 || (mat.opacity ?? 1) < 1) reason = 'nearest-surface-not-paintable';
+        else if (!hit.face) reason = 'missing-geometric-normal';
+        else {
+          worldMatrix.copy(hit.object.matrixWorld);
+          if (hit.object.isInstancedMesh && hit.instanceId !== undefined) {
+            hit.object.getMatrixAt(hit.instanceId, instanceMatrix); worldMatrix.multiply(instanceMatrix);
+          }
+          normalMatrix.getNormalMatrix(worldMatrix);
+          worldNormal.copy(hit.face.normal).applyMatrix3(normalMatrix).normalize();
+          dot = worldNormal.x * nx + worldNormal.z * nz;
+          minNormalDot = Math.min(minNormalDot, dot);
+          if (dot < limits.normalDot) reason = 'wall-normal-mismatch';
+        }
+        if (!reason) supportedBy[hit.object.name || '(unnamed wall)'] = (supportedBy[hit.object.name || '(unnamed wall)'] || 0) + 1;
+      }
+      if (reason) {
+        byReason[reason] = (byReason[reason] || 0) + 1;
+        failedSamples.push({ su, sv, x, y, z, reason, hit: hit?.object.name || null, depth, normalDot: dot });
+      }
+    }
+    const area = failedSamples.length ? null : await areaAudit(scene, p, THREE, superficieGrafitavel);
+    if (area && !area.supported) {
+      const reason = `area:${area.reason}`;
+      byReason[reason] = (byReason[reason] || 0) + 1;
+    }
+    const entry = { ...p, index, samples: 25, failed: failedSamples.length, maxDepth, minNormalDot, area };
+    inspected.push(entry);
+    if (failedSamples.length || (area && !area.supported)) failures.push({ ...entry, failedSamples });
+  }
+  failures.sort((a, b) => b.failed - a.failed || a.index - b.index);
+  const declaredGraffiti = /\bgrafitar\s*\(\s*\{/.test(MAPS[window.__mapId].build.toString());
+  const runtime = window.__grafite || null;
+  const baked = runtime?.mapa ? GRAFITE[runtime.mapa] : null;
+  const totalArea = pieces.reduce((sum, p) => sum + (Number.isFinite(p.w * p.h) ? p.w * p.h : 0), 0);
+  const visibleArea = pieces.filter(p => p.visible).reduce((sum, p) => sum + (Number.isFinite(p.w * p.h) ? p.w * p.h : 0), 0);
+  const props = MAPS[window.__mapId].props;
+  const unloadedTemplates = [...new Set([...COMMON_MAP_PROPS, ...(typeof props === 'function' ? props() : props || [])])].filter(id => !hasProp(id));
+  const rejectedArea = failures.reduce((sum, p) => sum + (Number.isFinite(p.w * p.h) ? p.w * p.h : 0), 0);
+  return { actualMapId: window.__mapId, total: pieces.length, valid: pieces.length - failures.length,
+    rejected: failures.length, sampledPoints: inspected.length * 25, candidateMeshes: meshes.length,
+    declaredGraffiti, runtimeGraffiti: runtime, buildMs: window.__buildMs,
+    expectedBakedPieces: baked?.pecas?.length ?? null, expectedBakedMurals: baked?.murais?.length ?? null,
+    realDrawnBatches, visibleArea, usedArtworkPaths: [...artworkPaths], visiblePieces: pieces.filter(p => p.visible).length, batchVisibility, unloadedTemplates,
+    drawnBBox: drawnBounds.isEmpty() ? null : { min: drawnBounds.min.toArray(), max: drawnBounds.max.toArray() },
+    batchMeshPieces, inventoriedBatchPieces: pieces.filter(p => p.source === 'batch').length, unclassifiedArt,
+    totalArea, validArea: totalArea - rejectedArea, rejectedArea,
+    allowedWallMeshes: allowed.length, allowedWallNames: [...new Set(allowed.map(o => o.name || '(unnamed wall)'))],
+    byReason, supportedBy, pieces: inspected, failures, bounds: window.__world?.bounds || null };
+};
+
+const browser = await chromium.launch({ ...(process.env.CHROME_BIN ? { executablePath: process.env.CHROME_BIN } : { channel: 'chrome' }),
+  headless: true, args: ['--mute-audio'] });
+try {
+  const registryPage = await browser.newPage();
+  await registryPage.goto(`${base}/mapview.html?map=ferro_velho&capture=1&hud=0`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+  const registry = await registryPage.evaluate(async () => (await import('./js/maps.js')).MAP_IDS);
+  await registryPage.close();
+  if (!registry.length) throw Error('MAP_IDS is empty');
+  const ids = requested.length ? [...new Set(requested)] : registry;
+  for (const id of ids) if (!registry.includes(id)) throw Error(`Unknown map '${id}'; use canonical MAP_IDS`);
+  receipt.registry = registry; receipt.requestedMaps = ids;
+  save();
+  for (const id of ids) {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+    const errors = [], failedRequests = [];
+    page.on('pageerror', e => errors.push(e.message));
+    page.on('response', r => { if (r.status() >= 400) failedRequests.push({ status: r.status(), url: r.url() }); });
+    page.on('requestfailed', r => failedRequests.push({ status: null, url: r.url(), error: r.failure()?.errorText }));
+    const dir = `${out}/${id}`; mkdirSync(dir, { recursive: true });
+    try {
+      await page.goto(`${base}/mapview.html?map=${encodeURIComponent(id)}&capture=1&hud=0`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+      await page.waitForFunction(() => window.MAPEVAL?.ready === true && !!window.__scene, null, { timeout: 180000 });
+      await page.waitForLoadState('networkidle', { timeout: 30000 });
+      const result = await page.evaluate(measure, { limits, areaSource: measureGraffitiArea.toString() });
+      result.errors = errors; result.failedRequests = failedRequests; result.photos = [];
+      result.relevantFailedRequests = failedRequests.filter(r => /\/models\/props\//.test(r.url) || result.usedArtworkPaths.includes(new URL(r.url).pathname));
+      result.emptyIsAuthored = !result.declaredGraffiti && result.total === 0;
+      result.ok = result.actualMapId === id && (result.total > 0 || result.emptyIsAuthored)
+        && result.rejected === 0 && errors.length === 0 && result.unclassifiedArt.length === 0
+        && result.batchMeshPieces === result.inventoriedBatchPieces
+        && result.relevantFailedRequests.length === 0 && result.unloadedTemplates.length === 0;
+      receipt.maps[id] = result;
+      writeFileSync(`${dir}/report.json`, JSON.stringify(result, null, 2)); save();
+      const overview = `${dir}/overview.png`;
+      await page.screenshot({ path: overview, timeout: 30000 });
+      result.photos.push(overview);
+      for (let i = 0; i < Math.min(photos, result.failures.length); i++) {
+        const p = result.failures[i];
+        if (!['x', 'y', 'z', 'ry'].every(k => Number.isFinite(p[k]))) continue;
+        const nx = Math.sin(p.ry), nz = Math.cos(p.ry), distance = Math.max(3.2, p.w * .8, p.h * 1.2);
+        await page.evaluate(({ from, look }) => window.MAPEVAL.view(from, look),
+          { from: [p.x + nx * distance, p.y + .2, p.z + nz * distance], look: [p.x, p.y, p.z] });
+        const imagePath = `${dir}/failure-${String(i + 1).padStart(2, '0')}-piece-${p.index}.png`;
+        await page.screenshot({ path: imagePath, timeout: 30000 }); result.photos.push(imagePath);
+      }
+      receipt.maps[id] = result;
+      writeFileSync(`${dir}/report.json`, JSON.stringify(result, null, 2));
+      console.log(JSON.stringify({ map: id, ok: result.ok, total: result.total, rejected: result.rejected,
+        declaredGraffiti: result.declaredGraffiti, validArea: Math.round(result.validArea * 100) / 100,
+        buildMs: result.buildMs, allowedWallMeshes: result.allowedWallMeshes,
+        byReason: result.byReason, report: `${dir}/report.json` }));
+    } catch (error) {
+      receipt.maps[id] = { ...receipt.maps[id], ok: false, error: error.message, errors, failedRequests };
+      writeFileSync(`${dir}/report.json`, JSON.stringify(receipt.maps[id], null, 2));
+      console.error(JSON.stringify({ map: id, ok: false, error: error.message.split('\n')[0] }));
+    } finally { save(); await page.close(); }
+  }
+  receipt.status = Object.values(receipt.maps).every(r => r.ok) ? 'passed' : 'failed';
+} catch (error) {
+  receipt.status = 'failed'; receipt.error = error.message; console.error(error.message);
+} finally { await browser.close(); save(); }
+console.log(JSON.stringify({ status: receipt.status, auditedMaps: Object.keys(receipt.maps).length, receipt: `${out}/receipt.json` }));
+if (receipt.status !== 'passed') process.exitCode = 1;
