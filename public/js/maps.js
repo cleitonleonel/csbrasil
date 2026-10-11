@@ -106,7 +106,6 @@ export const MAPAS_PARADOS = new Set([
   'parque_treta',
   'campomorro',
   'obras_prefeitura',
-  'upa_24h',
   'atacadao_treta',
   'penitenciaria',
 ]);

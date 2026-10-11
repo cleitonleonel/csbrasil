@@ -184,7 +184,7 @@ export function buildUpa(scene, T) {
   const MTELA = lam({ color: 0x0d1722 }), GLOW_G = new THREE.MeshBasicMaterial({ color: 0x35e07a }), GLOW_R = new THREE.MeshBasicMaterial({ color: 0xff5555 }), MRODA = lam({ color: 0x15181c });
   const caster = (x, z, ry, w, d) => { for (const sx of [-1, 1]) for (const sz of [-1, 1]) addBox(0.1, 0.14, 0.1, MRODA, x + sx * w, 0, z + sz * d, { collide: false, ry, cast: false }); };
   // monitor de sinais vitais num carrinho (tela escura + traço de ECG verde)
-  const monitor = (x, z, ry = 0) => { addBox(0.42, 0.9, 0.42, MAT.aco, x, 0.14, z, { ry }); caster(x, z, ry, 0.16, 0.16); addBox(0.5, 0.42, 0.12, MTELA, x, 1.06, z, { collide: false, ry }); addBox(0.4, 0.04, 0.13, GLOW_G, x, 1.09, z, { collide: false, ry }); col(x, z, 0.24, 0.24, 1.3); };
+  const monitor = (x, z, ry = 0) => { addBox(0.42, 0.9, 0.42, MAT.aco, x, 0.14, z, { ry, name: 'upa-monitor' }); caster(x, z, ry, 0.16, 0.16); addBox(0.5, 0.42, 0.12, MTELA, x, 1.06, z, { collide: false, ry }); addBox(0.4, 0.04, 0.13, GLOW_G, x, 1.09, z, { collide: false, ry }); col(x, z, 0.24, 0.24, 1.3); };
   // respirador/ventilador (gabinete alto + tela + traqueia)
   const respirador = (x, z, ry = 0) => { addBox(0.55, 1.2, 0.5, MAT.armario, x, 0.14, z, { ry }); caster(x, z, ry, 0.22, 0.18); addBox(0.46, 0.3, 0.1, MTELA, x, 1.42, z, { collide: false, ry }); addBox(0.36, 0.04, 0.11, GLOW_G, x, 1.45, z, { collide: false, ry }); cyl(0.04, 0.7, MRODA, x + 0.28, 0.9, z, { rz: 1.1, cast: false }); col(x, z, 0.3, 0.28, 1.6); };
   // carrinho de emergência vermelho (gavetas) com desfibrilador em cima
@@ -226,7 +226,7 @@ export function buildUpa(scene, T) {
   addBox(2.0, 2.4, 1.4, MAT.armario, 24, 0, 8); addBox(1.4, 2.0, 0.9, MAT.aco, 22.2, 0, 8, { collide: false }); maca(16, 8, Math.PI / 2);   // raio-x
   negato(29.3, 2.1, 8, -Math.PI / 2); respirador(8, 11); biombo(19, 10); label('RAIO-X', 12, 12, -Math.PI / 2, '#e0902a'); planta(6, 8);
 
-  for (const mx of [8, 14, 20]) { maca(mx, 22, 0); soro(mx + 1.0, 20.6); monitor(mx - 1.2, 22); }   // macas + monitores de sinais vitais
+  for (const mx of [8, 14, 20]) { maca(mx, 22, 0); soro(mx + 1.0, 20.6); monitor(mx - 0.65, 22); }   // macas + monitores de sinais vitais
   crashCart(24, 22); respirador(4.6, 20); desfib(29.2, 1.7, 22, -Math.PI / 2);
   const bancadaEmergencia = addBox(4, 1.0, 1.5, MAT.armario, 27, 0, 18, { name: 'upa-clinical-emergencia' }); cover('bancada-emergencia', 27, 18, bancadaEmergencia); biombo(7, 26); armario(26, 16);
   cadeiraRodas(8, 27, 0);
@@ -292,7 +292,7 @@ export function buildUpa(scene, T) {
 
   const D_TAG = decalIds(T, ['tag-fina.png', 'tag-flop.png', 'tag-selvagem.png', 'or-graf-treta.png', 'or-graf-coro.png']);
   grafitar({
-    id: 'upa_treta', root, T, waypoints: nodes, seed: 7373, passo: 2.2, alcance: 6, cobre: 0.04, minLarg: 0.35,
+    id: 'upa_24h', root, T, waypoints: nodes, seed: 7373, passo: 2.2, alcance: 6, cobre: 0.04, minLarg: 0.35,
     bandas: [
       { y0: 0.6, y1: 2.6, larg: 2.2, alturas: [1.4, 1.0, 0.7], chance: 38, pool: D_TAG },
       { y0: 0.9, y1: 2.4, larg: 1.6, alturas: [1.2, 0.9], chance: 16, fonte: 'poster', pool: (T.posterFiles || []).map((_, i) => i) },

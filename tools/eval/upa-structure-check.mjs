@@ -1,10 +1,11 @@
 /* UPA: contrato clínico e de circulação medido na cena e nos colliders reais. */
 import { spawnSync } from 'node:child_process';
-import { THREE, MAPS, initTextures } from './harness.mjs';
+import { THREE, Game, MAPS, initTextures } from './harness.mjs';
+import { grafiteNoDedicado } from '../../public/js/graffiti_pass.js';
 
 const arg = process.argv.find(a => a.startsWith('--mutante='));
 const mut = arg ? arg.split('=')[1] : '';
-const mutantNames = ['reintroduz-loja', 'fecha-acesso', 'comprime-rotas', 'apaga-setor', 'remove-cover'];
+const mutantNames = ['reintroduz-loja', 'fecha-acesso', 'comprime-rotas', 'apaga-setor', 'remove-cover', 'monitor-solto'];
 if (mut && !mutantNames.includes(mut)) throw new Error(`mutante desconhecido: ${mut}`);
 if (process.argv.includes('--self-test')) {
   const expectedFailures = {
@@ -13,6 +14,7 @@ if (process.argv.includes('--self-test')) {
     'fecha-acesso': ['UPA3', 'UPA4'],
     'comprime-rotas': ['UPA4'],
     'remove-cover': ['UPA5'],
+    'monitor-solto': ['UPA6'],
   };
   let ok = true;
   for (const name of mutantNames) {
@@ -25,8 +27,17 @@ if (process.argv.includes('--self-test')) {
   process.exit(ok ? 0 : 1);
 }
 
+grafiteNoDedicado(true);
 const world = MAPS.upa_24h.build(new THREE.Scene(), await initTextures());
 world.root.updateMatrixWorld(true);
+
+if (mut === 'monitor-solto') {
+  let monitor;
+  world.root.traverse(o => { if (!monitor && o.name === 'upa-monitor' && o.position.x > 0 && Math.abs(o.position.z - 22) < .01) monitor = o; });
+  if (!monitor) throw new Error('MUTANTE NÃO APLICOU: monitor de emergência ausente');
+  for (const c of world.colliders) if (Math.abs((c.minX + c.maxX) / 2 - monitor.position.x) < .01 && Math.abs((c.minZ + c.maxZ) / 2 - monitor.position.z) < .01) { c.minX -= .55; c.maxX -= .55; }
+  monitor.position.x -= .55;
+}
 
 if (mut === 'reintroduz-loja') {
   const gondola = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.9, 1.1), new THREE.MeshBasicMaterial());
@@ -119,12 +130,32 @@ for (const mesh of physicalCovers) {
   coverBySector[sector]++;
 }
 
+const bedside = [];
+world.root.traverse(o => { if (o.name === 'upa-monitor' && o.position.x > 0 && Math.abs(o.position.z - 22) < .01) bedside.push(o); });
+const bedsideGaps = bedside.map(mesh => {
+  const physical = world.colliders.filter(c => Math.abs((c.minX + c.maxX) / 2 - mesh.position.x) < .01 && Math.abs((c.minZ + c.maxZ) / 2 - mesh.position.z) < .01);
+  if (!physical.length) return { gap: NaN, clear: false };
+  const maxX = Math.max(...physical.map(c => c.maxX));
+  const bed = coverColliders.filter(c => c.tag.startsWith('upa-cover-maca-') && c.minX > mesh.position.x && c.minZ < mesh.position.z && c.maxZ > mesh.position.z).sort((a,b) => a.minX - b.minX)[0];
+  if (!bed) return { gap: NaN, clear: false };
+  const gap = bed.minX - maxX;
+  if (gap <= 0) return { gap, clear: true };
+  const x = (maxX + bed.minX) / 2;
+  const clear = [-.2, 0, .2].every(dz => {
+    const pos = { x, y: 0, z: mesh.position.z + dz };
+    Game.prototype._collide.call({ world }, pos, .38);
+    return Math.hypot(pos.x - x, pos.z - mesh.position.z - dz) < 1e-6;
+  });
+  return { gap, clear };
+});
+
 const checks = [
   ['UPA1', forbidden.length === 0, `cena sem props comerciais (${forbidden.join(', ') || '0'})`],
   ['UPA2', visibleSectors.length === requiredSectors.length, `${visibleSectors.length}/${requiredSectors.length} placas setoriais na cena`],
   ['UPA3', accesses.length === 12 && validAccesses.length === 12, `${validAccesses.length}/12 acessos atravessam parede e têm batentes sólidos`],
   ['UPA4', routeDecisions.every(r => r.separated), routeDecisions.map(r => `${r.key}:${r.count}`).join(' · ')],
   ['UPA5', physicalCovers.length === 52 && physicalCovers.length === coverMeshes.length && Object.values(coverBySector).every(n => n >= 4), `${physicalCovers.length}/52 coberturas têm bounds/collider reais; setores ${Object.entries(coverBySector).map(([k,v])=>`${k}:${v}`).join(' · ')}`],
+  ['UPA6', bedside.length === 3 && bedsideGaps.every(value => value.clear), `monitores junto das macas ou com passagem física para raio 0,38 m; frestas ${bedsideGaps.map(value => `${value.gap.toFixed(2)} m`).join(' · ')}`],
 ];
 for (const [id, pass, note] of checks) console.log(`${pass ? '✓' : '✗'} ${id} ${note}`);
 if (checks.some(([,pass])=>!pass)) process.exit(1);
