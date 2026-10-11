@@ -22,7 +22,7 @@ Entregar loja dentro do jogo, imediatamente depois de JOGAR, com direção visua
 
 ## Estado atual e próximo passo
 
-Implementação client em `f3cb79f2d`; backend em `48d2e35` (economia `5a790de`/`bd5df0e`). Sete moedas corrigidas e aprovadas na vista frontal, wallet/toasts WebGL validados em fixtures locais, contrato cosmético assinado e gates locais aprovados. O dono autorizou os créditos existentes e restringiu a etapa atual à geração Mint. Cinco prévias solicitadas; Lula A e Bolsonaro aprovados como direção visual pelo crítico independente, Lula B rejeitado sem barba, Senador e Janja exigem correção facial. Próximo passo atual: corrigir prévias, gerar cinco modelos 3D e registrar entregas Mint. O objetivo amplo preserva rig/equipamento/vídeos como etapas posteriores. Campanha inativa até janela de lançamento; sem migration remota, merge/deploy ou publicação. Relatos abaixo preservam a evolução e os resultados rejeitados, e são superados pelo estado atual quando indicado.
+Implementação client em `f3cb79f2d`; backend em `48d2e35` (economia `5a790de`/`bd5df0e`). Sete moedas corrigidas e aprovadas na vista frontal, wallet/toasts WebGL validados em fixtures locais, contrato cosmético assinado e gates locais aprovados. O dono autorizou os créditos existentes e restringiu a etapa atual à geração Mint. As cinco direções visuais foram aprovadas pelo crítico independente após correção facial de Senador, Janja e Michelle; Lula B rejeitado sem barba. Pedidos3D confirmados uma vez por skin para as cinco direções selecionadas. Próximo passo atual: concluir os cinco modelos 3D e registrar entregas Mint. O objetivo amplo preserva rig/equipamento/vídeos como etapas posteriores. Campanha inativa até janela de lançamento; sem migration remota, merge/deploy ou publicação. Relatos abaixo preservam a evolução e os resultados rejeitados, e são superados pelo estado atual quando indicado.
 
 ## Marco: carteira SQL validada
 
@@ -72,3 +72,11 @@ Capturas reais em private-assets/treta-store/mint. Crítico independente aprovou
 ## Marco: primeiros modelos em geração
 
 Generate acionado uma vez para Lula A e Bolsonaro; UI confirmou3D MODEL TRIPO_P1, nomes Burgundy Goldbraid Boss e Emerald Varsity Dripster, progresso75% com tempo exibido~12min. Não equivale a conclusão. Correção Senador enviada com captura do retrato oficial do Senado; Janja enviada com referência Pablo Valadares/Câmara dos Deputados (CC BY3.0), URL no JSON. Michelle também rejeitada pelo rosto genérico semelhante à Janja anterior. Anexo inicial do Senador foi rejeitado por extensão PNG em bytesJPEG; corrigido para.jpg e enviado com sucesso. Falha de navegador no primeiro fluxo de anexo exigiu recuperação dos handles; sem repetir geração. Próximo: concluir correção Michelle, avaliar prévias corrigidas e finalizar três restantes.
+
+## Marco: três correções faciais aprovadas
+
+Senador, Janja e Michelle corrigidos com referências faciais e aprovados pelo crítico independente para avançar à geração3D. Capturas privadas senador-preview-corrected.jpg, janja-preview-corrected.jpg e michelle-preview-corrected.jpg em private-assets/treta-store/mint. Generate acionado uma vez para Michelle e Senador; UI confirmou TRIPO_P1 com os nomes Michelle Bolsonaro Corrected Face e Flavio Face Corrected. Janja ainda aguarda acionamento. Aprovação da prévia não comprova modelo final ou rig. Próximo: gerar Janja, verificar conclusão dos cinco, baixar GLBs e registrar metadados.
+
+## Marco: cinco modelos3D solicitados
+
+Janja Generate acionado uma vez; UI confirmou Janja Mature Face Corrected, TRIPO_P1. Cinco pedidos finais confirmados, sem segunda finalização do Lula B. Ainda em processamento na UI; próximo verificar conclusão/asset real e exportar.
