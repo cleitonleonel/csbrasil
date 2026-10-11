@@ -14,6 +14,7 @@ from mathutils import Matrix, Quaternion, Vector
 parser = argparse.ArgumentParser()
 parser.add_argument('--source', required=True)
 parser.add_argument('--output', required=True)
+parser.add_argument('--rodin', action='store_true')
 args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
 source, out = Path(args.source), Path(args.output)
 out.mkdir(parents=True, exist_ok=True)
@@ -26,16 +27,24 @@ lo = Vector(tuple(min(v.co[a] for v in sculpt.data.vertices) for a in range(3)))
 hi = Vector(tuple(max(v.co[a] for v in sculpt.data.vertices) for a in range(3)))
 center, scale = (lo + hi) / 2, 2 / max(hi - lo)
 for v in sculpt.data.vertices: v.co = (v.co - center) * scale
+if args.rodin:
+    for v in sculpt.data.vertices:
+        x, y, z = v.co; v.co = (-y, -x, z)
 # Studio export splits each triangle. Weld positions while retaining loop UVs.
 bm = bmesh.new(); bm.from_mesh(sculpt.data)
 bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=.00001)
 bm.normal_update()
 # Mint invents a mirrored head on the reverse: retain the front half only.
 bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.calc_center_median().y > -.003], context='FACES')
+if args.rodin:
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if math.hypot(f.calc_center_median().x, f.calc_center_median().z) > .875], context='FACES')
+field_y = -.3592 if args.rodin else -.0685
+relief_factor = .8 if args.rodin else .14
 for v in bm.verts:
     # Original field y=-.0685; compress raised portrait into shallow die relief.
     original_y = v.co.y
-    v.co.y = -.060 + (original_y + .0685) * .14 if original_y < -.075 else -.058
+    v.co.y = -.060 + (original_y - field_y) * relief_factor if original_y < field_y - .003 else -.058
+bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
 bm.normal_update(); bm.to_mesh(sculpt.data); bm.free()
 for o in list(bpy.context.scene.objects):
     if o != sculpt: bpy.data.objects.remove(o, do_unlink=True)
@@ -64,7 +73,7 @@ shader.inputs['Metallic'].default_value = 1
 shader.inputs['Roughness'].default_value = .37
 gold.diffuse_color = (.83, .60, .17, 1)
 for node in gold.node_tree.nodes:
-    if node.type == 'NORMAL_MAP': node.inputs['Strength'].default_value = .55
+    if node.type == 'NORMAL_MAP': node.inputs['Strength'].default_value = .12 if args.rodin else .55
     if node.type == 'TEX_IMAGE' and node.image and max(node.image.size) > 1024:
         node.image.scale(1024, 1024); node.image.pack()
 plain_gold = gold.copy(); plain_gold.name = 'CleanMintGold'
@@ -107,8 +116,22 @@ for label, center_angle, step in [('TRETA$', 0, .205), ('SACI', math.pi, -.18)]:
         text(char, (.858 * math.sin(a), -.068, .858 * math.cos(a)), .15,
              Quaternion((0, 1, 0), a + (math.pi if center_angle > 1 else 0)) @ Quaternion((1, 0, 0), math.pi/2))
 back_rotation = Quaternion((0, 0, 1), math.pi) @ Quaternion((1, 0, 0), math.pi/2)
-text('1', (0, .066, .20), 1.30, back_rotation, bold)
-text('T$', (0, .066, -.45), .38, back_rotation, bold)
+# Incuse reverse: real recessed glyphs provide dark die cavities at icon size.
+for label, z, size in [('1', .20, 1.30), ('T$', -.45, .48)]:
+    cutter = text(label, (0, .064, z), size, back_rotation, bold)
+    bpy.ops.object.select_all(action='DESELECT'); cutter.select_set(True)
+    bpy.context.view_layer.objects.active = cutter
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    # Expand depth only, so the cutter crosses the reverse face at y=.060.
+    for v in cutter.data.vertices: v.co.y = .064 + (v.co.y - .064) * 2
+    bpy.ops.object.select_all(action='DESELECT'); body.select_set(True)
+    bpy.context.view_layer.objects.active = body
+    modifier = body.modifiers.new('Incuse_' + label, 'BOOLEAN')
+    modifier.operation = 'DIFFERENCE'; modifier.solver = 'EXACT'; modifier.object = cutter
+    bpy.ops.object.modifier_apply(modifier=modifier.name)
+    bpy.data.objects.remove(cutter, do_unlink=True)
+# Keep the planar die field flat; smoothing boolean n-gons creates false folds.
+for polygon in body.data.polygons: polygon.use_smooth = False
 for mat in (gold, plain_gold):
     objects = [o for o in parent.children_recursive if o.type == 'MESH' and o.data.materials[0] == mat]
     bpy.ops.object.select_all(action='DESELECT')
@@ -129,7 +152,11 @@ plain_gold.node_tree.nodes.active = ao_node
 bpy.context.scene.render.engine = 'CYCLES'; bpy.context.scene.cycles.samples = 48
 bpy.ops.object.bake(type='AO', margin=8)
 pixels = np.array(ao_image.pixels[:], dtype=np.float32).reshape(-1, 4)
-shade = np.clip(pixels[:, 0], .20, 1)
+# Denoise the geometric AO before amplification; avoid a sandblasted field.
+ao = pixels[:, 0].reshape(1024, 1024)
+ao = sum(np.roll(np.roll(ao, i, 0), j, 1) * weight for i, j, weight in
+         [(0,0,4),(1,0,2),(-1,0,2),(0,1,2),(0,-1,2),(1,1,1),(-1,1,1),(1,-1,1),(-1,-1,1)]) / 16
+shade = np.clip(np.power(ao.ravel(), 6), .06, 1)
 linear_rgb = shade[:, None] * np.array([.83, .60, .17])
 pixels[:, :3] = np.where(linear_rgb <= .0031308, linear_rgb * 12.92,
                          1.055 * np.power(linear_rgb, 1/2.4) - .055)

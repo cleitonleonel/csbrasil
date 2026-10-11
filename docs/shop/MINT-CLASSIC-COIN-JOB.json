@@ -68,5 +68,11 @@
     "no mobile performance benchmark",
     "no full game balance/purchase evidence"
   ],
-  "final_review": "mint-classic-v5/finished/final-design-review.md"
+  "final_review": "mint-classic-v5/finished/final-design-review.md",
+  "higher_detail_conversion": {
+    "provider": "Rodin v2.5",
+    "state": "Generating; 43% observed",
+    "source": "fresh preview in ph71y8j0aqntbcggsr1bdqm68h8g3apk",
+    "authorization": "existing user-authorized Mint credits, one prototype"
+  }
 }

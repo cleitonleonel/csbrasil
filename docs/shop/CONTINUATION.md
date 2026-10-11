@@ -232,3 +232,7 @@ Três prévias no chat ph73t9nx870y6p9jcz0arqm3rn8g2qf0 mantiveram ângulo3/4 ap
 ## Marco: conversao Tripo P1 rejeitada
 
 Fonte Mint exportada em cena separada, 4990triangulos, SHA c8f8043ff506e6496efdacefa1d4bb16cd83de314ba8222982fd6b5745951e70. Acabamento Blender privado em mint-classic-v5/finished e copia rejected-tripo-conversion: 24101triangulos,2652960B,2clipes. TretaStage/392amostras/18frames passam estrutura/enquadramento, mas critica final-design-review.md REPROVA perda de definicao do retrato e T$ fraco em64px. Nenhum publico substituido ou aceite do dono inferido. Proximo: converter uma unica previa lateral aprovada usando provedor Mint com mais detalhe; verso em cavidade para reforcar leitura. Creditos existentes ja autorizados. Objetivo amplo preservado; outras lanes intactas.
+
+## Marco: Rodin matriz exportada e critica parcial
+
+Rodin v2.5 completou; cena Mint TRETA Saci Rodin Profile, export61.375.400B/500000triangulos, SHA1169d9ca0bb4eb7c939ec68e65f0389aedba8d0b84eb8864082abef82e69ee7c. Fonte/capturas em mint-classic-v5/rodin. Acabamento privado242882triangulos/8.563.888B passa loader e transformacoes. Critica review-rodin.md APROVA identidade/perfil e verso64/82px, REPROVA ondulacoes/olho/sorriso da frente. Nova reducao normal/denoise em rodin/polished sem aceite inferido. Proximo: reconstruir perfil integrado a partir da previa Mint lateral aprovada, controlando profundidade/contorno; manifest reference-locked-manifest.json privado. Outros objetivos e sete publicos rejeitados preservados.
