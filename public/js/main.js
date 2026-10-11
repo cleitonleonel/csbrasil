@@ -447,14 +447,17 @@ fetch(`/img/walls.json?v=${VERSION}`)
     if (Array.isArray(manifest.walls) && manifest.walls.length) WALLS.splice(0, WALLS.length, ...manifest.walls);
     if (Array.isArray(manifest.loading) && manifest.loading.length) LOADING_WALLS.splice(0, LOADING_WALLS.length, ...manifest.loading);
     _wallK = _wallVisit % WALLS.length;
-    HOME_WALL = wallUrl(0); SETUP_WALL = wallUrl(1); TEAM_WALL = wallUrl(2); CHAR_WALL = wallUrl(3);
-    HOME_WALL_3X2 = wall3x2Url(0); SETUP_WALL_3X2 = wall3x2Url(1);
-    applyHomeWall();
-    const team = $('team-select'); if (team) team.style.setProperty('--wall', TEAM_WALL);
-    const character = $('char-select'); if (character) character.style.setProperty('--wall', CHAR_WALL);
+    refreshWallpapers();
     applySplashWallpaper();
   })
   .catch(() => {});
+function refreshWallpapers() {
+  HOME_WALL = wallUrl(0); SETUP_WALL = wallUrl(1); TEAM_WALL = wallUrl(2); CHAR_WALL = wallUrl(3);
+  HOME_WALL_3X2 = wall3x2Url(0); SETUP_WALL_3X2 = wall3x2Url(1);
+  if ($('menu-setup')?.classList.contains('open')) applySetupWall(); else applyHomeWall();
+  $('team-select')?.style.setProperty('--wall', TEAM_WALL);
+  $('char-select')?.style.setProperty('--wall', CHAR_WALL);
+}
 function applyHomeWall() {
   const w = document.querySelector('#main-menu .cs-wallpaper');
   if (w) { w.style.setProperty('--menu-wall', HOME_WALL); w.style.setProperty('--menu-wall-3x2', HOME_WALL_3X2); }
@@ -466,6 +469,33 @@ function applySetupWall() {
 applyHomeWall();
 { const t = $('team-select'); if (t) t.style.setProperty('--wall', TEAM_WALL); }
 { const c = $('char-select'); if (c) c.style.setProperty('--wall', CHAR_WALL); }
+import { startVisibleRotation } from './media-rotation.js';
+startVisibleRotation(async () => {
+  const next = (_wallK + 1) % WALLS.length;
+  const offset = !$('char-select').classList.contains('hidden') ? 3
+    : !$('team-select').classList.contains('hidden') ? 2
+    : $('menu-setup')?.classList.contains('open') ? 1 : 0;
+  const preload = new Image();
+  const selected = WALLS[(next + offset) % WALLS.length];
+  preload.src = offset < 2 && matchMedia('(min-aspect-ratio:37/25) and (max-aspect-ratio:38/25)').matches
+    ? selected.replace('/img/', '/img/walls-3x2/') : selected;
+  await preload.decode();
+  _wallK = next;
+  try { localStorage.setItem('cs_wallK', String(_wallK)); } catch {}
+  refreshWallpapers();
+}, () => ['main-menu', 'team-select', 'char-select'].some(id => !$(id)?.classList.contains('hidden')));
+startVisibleRotation(async () => {
+  const next = (_loadWallI + 1) % LOADING_WALLS.length;
+  const preload = new Image();
+  preload.src = LOADING_WALLS[next];
+  await preload.decode();
+  _loadWallI = next;
+  $('boot-splash')?.style.setProperty('--loading-wall', loadingWallUrl(_loadWallI));
+  $('load-overlay')?.style.setProperty('--loading-wall', loadingWallUrl(_loadWallI));
+}, () => ['boot-splash', 'load-overlay'].some(id => {
+  const element = $(id);
+  return element && !element.classList.contains('gone') && !element.classList.contains('hidden');
+}));
 
 // Música de menu (loop, volume baixo). Toca só nas telas de menu; some quando a partida
 // começa e volta ao voltar pro menu. Chrome bloqueia autoplay COM som até o 1º gesto do
