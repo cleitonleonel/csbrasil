@@ -152,3 +152,9 @@ Jair corrigido p9796a1e30etp3xncgs1czbbg18g3wz0 e ZeroUm corrigido p978c5gpbzttz
 ## Marco lote2: sete pacotes concluidos, ultimo na fila
 
 ZeroUm corrigido exibe6clips e Idle reproduzido. JSON7animationUrls, entrega atualizada com provas3D e links finais. Jair corrigido continuaAnimatingset6, nao reacionarApply. Saldo5532globalaposrequests, nada comprado. ExportlocalbloqueadoporpermissionChromepergunta pendente. Proximo: aguardarJair, confirmar6/playback, entregargeracaoMint; exportbinario/pacoteoffline ainda dependem permissao e nao podemser afirmadosconcluidos.
+
+## Marco lote2: geração Mint concluída — oito modelos e48clipes
+
+Oito finais aprovados visualmente, oitoBasicMovement6concluídos noMint, Idle reproduzido/6enumerados emcada viewer. Jair corrigido agora concluído (reload da página expôs card pronto; não houve novoApply). JSON registra finalAssetId/animationBatchId, URLs finais e SHA256provas, entrega atualizada com8links. Capturas privadasanimations/*-six-clips.jpg, models/*model.jpg. AbaMint mantida como deliverable e viewerfinalpausado/fechado para reduzirGPU. Saldo5532globalaposrequests.
+
+A geração solicitada somenteMint está concluída. Exportação offline ainda NÃO concluída: Chromebloqueiamúltiplosdownloads, perguntaao dono sobre Alwaysallowmint.ggpendente, nenhuma configuraçãoalterada. Não há GLBs locais/ZIP/validaçãobinária novos. Próximo concretoparaexport: receberpermissãoseescolhida, habilitarviaUIChrome, downloadMediaIdleporcadachatURL, salvarglb/<slug>-idle.glb, criticarjuntas/pesos/movimento e criarZIPprivado. Se dono mantiverbloqueado, entrega pelos8linksMintjápronta. Objetivoamplo loja/economia/retarget/gameplay/vídeos/Trump/Vorcaro continua ledgeroriginal, semcodemutation/Blender/deployneste lote.

@@ -101,7 +101,14 @@
         "Regular Jump",
         "Idle Turn Left",
         "Idle Turn Right"
-      ]
+      ],
+      "finalAssetId": "p9705fnw3cpnmmb967m4vh79tx8g255y",
+      "animationBatchId": "w57ajbh0mfa5s0w072309d5eqn8g2bv3",
+      "animationProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/animations/lula-na-regua-six-clips.jpg",
+      "previewPathSha256": "f4d91c302bc0012f19c66bca011198ff87199688ddbafe7781f1dee993546300",
+      "proofPathSha256": "443c2e5c90ca3c7501e3e69700cd8fefa14c3835ee1928e3f747a15bccf3dfaa",
+      "modelProofPathSha256": "ad59efa9bd72595e8bce3985d00bcac234a5820211ad90e8455f342996dc378a",
+      "animationProofPathSha256": "d549b8f3d9e45554f48a1e194bda6ea5bb521a9dd306cfefd8a27f1a773a06b3"
     },
     {
       "slug": "lula-cyborg",
@@ -140,7 +147,14 @@
         "Regular Jump",
         "Idle Turn Left",
         "Idle Turn Right"
-      ]
+      ],
+      "finalAssetId": "p972pdktja57x75rez615askgd8g3m8v",
+      "animationBatchId": "w571326wc09b5x9yx5e0q665m98g376h",
+      "animationProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/animations/lula-cyborg-six-clips.jpg",
+      "previewPathSha256": "dece230085914970c305e8881be839efb452eccb35e526b7980e506f5737fff5",
+      "proofPathSha256": "2af1c53018aa54b5dcc0965e2097060a3062ff2aec9e6dc28908ee6e82302882",
+      "modelProofPathSha256": "56b59c4213ea7b0d7d5ce11b9d3a11546bd29d77ea26f1fd007858df9a00ef20",
+      "animationProofPathSha256": "2fe9c7a84d7d28e7b268d435242bad872b1aff3b4f02a78f41709668d1f580e0"
     },
     {
       "slug": "bolsonaro-cyborg",
@@ -173,7 +187,14 @@
         "Regular Jump",
         "Idle Turn Left",
         "Idle Turn Right"
-      ]
+      ],
+      "finalAssetId": "p970a04c3pr20txpch0nceseb98g3byj",
+      "animationBatchId": "w57fv29zhmewek8xsak4ep7cbx8g2yre",
+      "animationProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/animations/bolsonaro-cyborg-six-clips.jpg",
+      "previewPathSha256": "1edd15107ad3a9e951b5c63e277085d681b513b78a17a793721b5220b2438591",
+      "proofPathSha256": "1edd15107ad3a9e951b5c63e277085d681b513b78a17a793721b5220b2438591",
+      "modelProofPathSha256": "15ddf1c3584260343cc5f12b67b75413e36a6282cf18b37be489b3f62aecf0ef",
+      "animationProofPathSha256": "fe5e550ccaf3afdf2cb609f7693e170ba3d73c6b5a58b42429f3604e44191a23"
     },
     {
       "slug": "aljuiz-toga-mandrake",
@@ -207,7 +228,15 @@
         "Regular Jump",
         "Idle Turn Left",
         "Idle Turn Right"
-      ]
+      ],
+      "finalAssetId": "p97f0w08n90bw0eya5qqrj897h8g22xq",
+      "animationBatchId": "w578xk9whd16zfjvdqdrv9b2m98g3txk",
+      "animationProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/animations/aljuiz-toga-mandrake-six-clips.jpg",
+      "previewPathSha256": "7cc36215e4bd20d2419b06e270688bd1e1e0f440396ab253c7904e8a144a00c9",
+      "proofPathSha256": "7cc36215e4bd20d2419b06e270688bd1e1e0f440396ab253c7904e8a144a00c9",
+      "modelProofPathSha256": "d2b39bd808cce01044f9ff21e8d0bb332e56f59c9c8275aef25b648998e92d4f",
+      "correctedPreviewPathSha256": "b1dd6b12c55ec17ff67102e2a50e55b5fb97d7decc92e9bcbdd164824d67cf0c",
+      "animationProofPathSha256": "698ebd9a899ae38b5fdc0e29f18ae68248fb5d5543e73b5d63a37cf11e8eca38"
     },
     {
       "slug": "lula-mandrake",
@@ -246,12 +275,19 @@
         "Regular Jump",
         "Idle Turn Left",
         "Idle Turn Right"
-      ]
+      ],
+      "finalAssetId": "p97cw4hb2hp7bc204c8tfmfm8n8g29r5",
+      "animationBatchId": "w5795pmvbe851frxgv345kpeyh8g3fcd",
+      "animationProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/animations/lula-mandrake-six-clips.jpg",
+      "previewPathSha256": "cddfb2186c1ec1f33db3aff2fddfe39535260201987e2cbd62fed3154b5bbb7c",
+      "proofPathSha256": "cddfb2186c1ec1f33db3aff2fddfe39535260201987e2cbd62fed3154b5bbb7c",
+      "modelProofPathSha256": "25911c6e9e0f8e48ad6ee67ff08af54567fe74621640290cfcd92b12a0ac4f1f",
+      "animationProofPathSha256": "ae4dd14d4bce0744b7c4cf7fa04daacdc451d5290437e8214bc1bdc73818fcce"
     },
     {
       "slug": "bolsonaro-mandrake",
       "name": "Bolsonaro Mandrake",
-      "status": "corrected_animation_requested",
+      "status": "six_animations_completed_download_pending",
       "references": [
         {
           "number": 7,
@@ -279,7 +315,25 @@
       "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/bolsonaro-mandrake-model.jpg",
       "correctedPreviewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/bolsonaro-mandrake-chains-corrected.jpg",
       "rejectedAssetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph71cm0szvjm2y9va99y2rt2298g3t39&panel=asset&assetId=p9733j8qmevj8t1gssh58wk3ys8g3j2k&variant=original",
-      "correctedModelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/bolsonaro-mandrake-chains-corrected-model.jpg"
+      "correctedModelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/bolsonaro-mandrake-chains-corrected-model.jpg",
+      "animationUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph71cm0szvjm2y9va99y2rt2298g3t39&panel=asset&assetId=p9796a1e30etp3xncgs1czbbg18g3wz0&animationBatchId=w573kvnexb7jb42xzthmt0knr58g2hrf&animationClipId=w9710dws7tmyr26nb23m6n01px8g2g0z",
+      "clips": [
+        "Idle",
+        "Casual Walk inplace",
+        "run fast 3 inplace",
+        "Regular Jump",
+        "Idle Turn Left",
+        "Idle Turn Right"
+      ],
+      "finalAssetId": "p9796a1e30etp3xncgs1czbbg18g3wz0",
+      "animationBatchId": "w573kvnexb7jb42xzthmt0knr58g2hrf",
+      "animationProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/animations/bolsonaro-mandrake-six-clips.jpg",
+      "previewPathSha256": "1a28e0dca2fd5e2cd42b21a7249996780b1bd4c460c4d56f6e5eb8b497d84aab",
+      "proofPathSha256": "1a28e0dca2fd5e2cd42b21a7249996780b1bd4c460c4d56f6e5eb8b497d84aab",
+      "modelProofPathSha256": "61971c32075be9bb7ba97485167aa4d3568c72554ec5cd9f2a7cc9e93ba64e07",
+      "correctedPreviewPathSha256": "faff8e98d26a13938ff6ab434364e0244ac6c80c87ac9cb5edebeae43e856f67",
+      "correctedModelProofPathSha256": "911a7ace97a98acd7fda78acec3d7062ce90571f1375c33dc0533d1fbf19ead1",
+      "animationProofPathSha256": "d4fe9d82f7d4eb456f718a30f59e62c5aa8ea9e823e5293ebd5f586588be7858"
     },
     {
       "slug": "michelle-mandrake",
@@ -312,7 +366,14 @@
         "Regular Jump",
         "Idle Turn Left",
         "Idle Turn Right"
-      ]
+      ],
+      "finalAssetId": "p97exva6vgjfsm62xc907yh9th8g3y3r",
+      "animationBatchId": "w572kav7b0xf2y5dxb6jmtqhz18g366f",
+      "animationProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/animations/michelle-mandrake-six-clips.jpg",
+      "previewPathSha256": "fa7ea07f6f9714b82a30bf96054860ce59e60c813453b24f0a35762361822f08",
+      "proofPathSha256": "fa7ea07f6f9714b82a30bf96054860ce59e60c813453b24f0a35762361822f08",
+      "modelProofPathSha256": "a562d895f60e28761bd13847e86753aa6ae8c2141dc89478f68763bc47cb8ec2",
+      "animationProofPathSha256": "d3654e280f3be5a79911227961ecfa6166cf08b4f1cdc592fc78e4d9bba49b72"
     },
     {
       "slug": "zero-um-mandrake",
@@ -348,7 +409,16 @@
         "Regular Jump",
         "Idle Turn Left",
         "Idle Turn Right"
-      ]
+      ],
+      "finalAssetId": "p978c5gpbzttzf0e62j2cm1bg18g3hks",
+      "animationBatchId": "w573kpbjmgd8b4sb4w769mhped8g26q7",
+      "animationProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/animations/zero-um-mandrake-six-clips.jpg",
+      "previewPathSha256": "7ccd9dad2af217011a00cc7436ffea53341a73198032381930d70994db96121b",
+      "proofPathSha256": "7ccd9dad2af217011a00cc7436ffea53341a73198032381930d70994db96121b",
+      "modelProofPathSha256": "97eba5043138f668d441ff0ea8be39415a5b731cf33e722996e99a26dd69ca33",
+      "correctedPreviewPathSha256": "10b0c3475ca6a3db1eec79e3153741f93b141948041f1d482caaf9ddbd7bbec4",
+      "correctedModelProofPathSha256": "fc46135cea240b36456904df71b48e7318ddd8c3ba1a3245d719b8eb28082158",
+      "animationProofPathSha256": "b2dec1aeba62ee80ca2921989efc39f53a4080ed2300efafa5a3dab57d81bfcf"
     }
   ],
   "creditObservation": {
@@ -363,5 +433,7 @@
     "plan": 0,
     "usage": 5532,
     "note": "Global account balance after requests; no purchases or resubscription"
-  }
+  },
+  "mintGenerationStatus": "complete_8_models_48_clips",
+  "localExportStatus": "pending_Chrome_multiple_downloads_permission"
 }
