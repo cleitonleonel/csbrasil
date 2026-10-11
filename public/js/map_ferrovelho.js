@@ -496,7 +496,7 @@ export function buildFerroVelho(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -534,7 +534,7 @@ export function buildFerroVelho(scene, T) {
     zincOld: lam({ map: zincTex(1, 1, 313, { rust: 1, hi: '#9aa39f', mid: '#77817e', lo: '#4e5654' }), metalness: 0.58, roughness: 0.32, envMapIntensity: 1.7 }),
     zincDark: lam({ map: zincTex(3, 1.4, 907, { rust: 0.6, hi: '#5d666a', mid: '#48504f', lo: '#31393a' }), metalness: 0.50, roughness: 0.38, envMapIntensity: 1.6 }),
     tire: lam({ color: 0x22252a }),
-    barrel: lam({ map: barrelTex(), metalness: 0.4, roughness: 0.7 }),
+    barrel: lam({ map: barrelTex(), metalness: 0.4, roughness: 0.76 }),
     // óleo BRILHA (crítico R6: "lê como buraco preto fosco") — specular do sol na poça
     // óleo é FILME DIELÉTRICO sobre asfalto: quem faz o brilho é o Fresnel na rasante
     // (F ~ 0,14 com o sol a 20°), então a roughness tem que ficar baixa pro pico passar

@@ -100,7 +100,7 @@ export function buildCorrego(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;

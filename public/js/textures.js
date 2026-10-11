@@ -7,6 +7,7 @@ function canvas(w, h) { const c = document.createElement('canvas'); c.width = w;
    Espelho dos tetos: tools/eval/texel-tetos.mjs (ANISO_ALVO/ANISO_MIN); kill-switch `?texel=0`. */
 const _texQS = (() => { try { return new URLSearchParams(location.search); } catch (e) { return new URLSearchParams(''); } })();
 const TEXEL_ON = _texQS.get('texel') !== '0';
+const SURFACE_MACRO_ON = _texQS.get('surfacemacro') !== '0';
 const ANISO_TEX = !TEXEL_ON ? 1 : (_texQS.get('q') === 'low' ? 4 : 8);
 
 function tex(c, repeat = 1, ry = null) {
@@ -177,21 +178,30 @@ function noiseOver(ctx, w, h, alpha, colors) {
 }
 // manchas GRANDES (metade a um terço do tile): variação de macro-escala. Sem ela o olho
 // lê a repetição do tile como padrão; com ela cada repetição parece um trecho diferente.
-function macro(ctx, w, h, n, cols) {
-  for (let i = 0; i < n; i++) {
-    const x = Math.random() * w, y = Math.random() * h, r = w * (0.25 + Math.random() * 0.35);
-    const g = ctx.createRadialGradient(x, y, r * 0.1, x, y, r);
-    const c = cols[(Math.random() * cols.length) | 0];
-    g.addColorStop(0, c); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+// Vizinhos do tile recebem a mesma mancha: sem emenda, sem sorteio adicional.
+function radialTile(ctx, w, h, x, y, r, inner, col, periodic) {
+  const offsetsX = periodic ? [-w, 0, w] : [0];
+  const offsetsY = periodic ? [-h, 0, h] : [0];
+  for (const ox of offsetsX) for (const oy of offsetsY) {
+    const cx = x + ox, cy = y + oy;
+    if (periodic && (cx + r < 0 || cx - r > w || cy + r < 0 || cy - r > h)) continue;
+    const g = ctx.createRadialGradient(cx, cy, inner, cx, cy, r);
+    g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
   }
 }
-function stains(ctx, w, h, n, col) {
+function macro(ctx, w, h, n, cols, periodic = false) {
   for (let i = 0; i < n; i++) {
-    const x = Math.random() * w, y = Math.random() * h, r = 12 + Math.random() * 42;
-    const g = ctx.createRadialGradient(x, y, 2, x, y, r);
-    g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    const x = Math.random() * w, y = Math.random() * h, r = w * (0.25 + Math.random() * 0.35);
+    const c = cols[(Math.random() * cols.length) | 0];
+    radialTile(ctx, w, h, x, y, r, r * 0.1, c, periodic && SURFACE_MACRO_ON);
+  }
+}
+function stains(ctx, w, h, n, col, periodic = false) {
+  for (let i = 0; i < n; i++) {
+    const x = Math.random() * w, y = Math.random() * h, scale = Math.random();
+    const r = periodic ? w * (0.25 + scale * 0.25) : 12 + scale * 42;
+    radialTile(ctx, w, h, x, y, r, periodic ? r * 0.1 : 2, col, periodic);
   }
 }
 
@@ -297,11 +307,12 @@ function pixoLine(x, texto, x0, y0, alturaLetra, cor = '#111', seed = 1) {
   return cx - x0;   // largura ocupada, pra quem quiser encadear
 }
 
-function concreteBase(w = 256, h = 256, base = '#9a938a', dark = '#7d766d') {
+function concreteBase(w = 256, h = 256, base = '#9a938a', dark = '#7d766d', periodic = true) {
   const c = canvas(w, h), x = c.getContext('2d');
   x.fillStyle = base; x.fillRect(0, 0, w, h);
   noiseOver(x, w, h, 0.25, [dark, '#aaa398', '#8a847c']);
-  stains(x, w, h, 5, 'rgba(60,50,40,0.20)');
+  const tiled = periodic && SURFACE_MACRO_ON;
+  stains(x, w, h, 5, tiled ? 'rgba(60,50,40,0.05)' : 'rgba(60,50,40,0.20)', tiled);
   // cracks
   x.strokeStyle = 'rgba(50,45,40,0.5)'; x.lineWidth = 1;
   for (let i = 0; i < 4; i++) {
@@ -340,7 +351,7 @@ export function initTextures() {
     x.beginPath(); x.moveTo(760, -20); x.bezierCurveTo(620, 380, 880, 640, 700, 1050); x.stroke();
     // macro: nuvens grandes de sujeira/desbotado quebrando a leitura do tile (10 repetições
     // do mesmo 1024 num piso de 180 m liam como xadrez)
-    macro(x, 1024, 1024, 7, ['rgba(120,110,95,0.20)', 'rgba(70,64,56,0.16)', 'rgba(150,142,128,0.14)']);
+    macro(x, 1024, 1024, 7, ['rgba(120,110,95,0.20)', 'rgba(70,64,56,0.16)', 'rgba(150,142,128,0.14)'], true);
   }
   T.ground = puro(withDetail(tex(gc, 10, 10), gc, 2.6, 0.60, 0.98));
 
@@ -366,7 +377,7 @@ export function initTextures() {
     // qualquer região que ocupe > 5 % do frame)
     noiseOver(x, P, P, 0.18, ['#6f6d6b', '#3a3836']);
     stains(x, P, P, 4, 'rgba(30,28,26,0.3)');
-    macro(x, P, P, 5, ['rgba(150,148,146,0.13)', 'rgba(25,24,23,0.16)']);
+    macro(x, P, P, 5, ['rgba(150,148,146,0.13)', 'rgba(25,24,23,0.16)'], true);
     T.asphalt = puro(withDetail(tex(c, 4, 4), c, 2.0, 0.66, 0.99));
   }
   { /* dirt (MST camp) — R3: base #8a6b48 tinha S 0,478. Terra é a superfície mais EXTENSA
@@ -380,7 +391,7 @@ export function initTextures() {
     const c = canvas(P, P), x = c.getContext('2d');
     x.fillStyle = TEX_SAT_HOT ? '#8a6b48' : '#8a7866'; x.fillRect(0, 0, P, P);
     noiseOver(x, P, P, 0.35, TEX_SAT_HOT ? ['#75583a', '#9c7d56', '#63482e'] : ['#756654', '#9c8e7c', '#63584a']);
-    macro(x, P, P, 5, TEX_SAT_HOT ? ['rgba(60,44,26,0.22)', 'rgba(170,140,100,0.16)'] : ['rgba(60,50,38,0.22)', 'rgba(170,152,128,0.16)']);
+    macro(x, P, P, 5, TEX_SAT_HOT ? ['rgba(60,44,26,0.22)', 'rgba(170,140,100,0.16)'] : ['rgba(60,50,38,0.22)', 'rgba(170,152,128,0.16)'], true);
     T.dirt = puro(withDetail(tex(c, TEXEL_ON ? 17 : 3, TEXEL_ON ? 17 : 3), c, 3.0, 0.80, 1.0));
   }
   { /* grass patches — R3: base #5f7d3a tinha S 0,536. Mato é o único verde do cenário e
@@ -393,7 +404,7 @@ export function initTextures() {
     const c = canvas(P, P), x = c.getContext('2d');
     x.fillStyle = TEX_SAT_HOT ? '#5f7d3a' : '#677d55'; x.fillRect(0, 0, P, P);
     noiseOver(x, P, P, 0.4, TEX_SAT_HOT ? ['#4c682e', '#73924a', '#87a355'] : ['#556848', '#7b9265', '#8ea37a']);
-    macro(x, P, P, 4, TEX_SAT_HOT ? ['rgba(40,58,24,0.24)', 'rgba(140,160,90,0.14)'] : ['rgba(46,58,38,0.24)', 'rgba(148,160,124,0.14)']);
+    macro(x, P, P, 4, TEX_SAT_HOT ? ['rgba(40,58,24,0.24)', 'rgba(140,160,90,0.14)'] : ['rgba(46,58,38,0.24)', 'rgba(148,160,124,0.14)'], true);
     T.grass = puro(withDetail(tex(c, TEXEL_ON ? 30 : 2, TEXEL_ON ? 30 : 2), c, 2.4, 0.80, 1.0));
   }
   { // Caixa dos Correios (SEDEX) — papelão com a faixa amarela e o "C" azul
@@ -444,7 +455,7 @@ export function initTextures() {
 
   // --- graffiti walls (3 variants) ---
   T.graffiti = [0, 1, 2].map(v => {
-    const c = concreteBase(512, 256, '#8f8880', '#76706a'), x = c.getContext('2d');
+    const c = concreteBase(512, 256, '#8f8880', '#76706a', false), x = c.getContext('2d');
     // grime at the base
     const gr = x.createLinearGradient(0, 170, 0, 256);
     gr.addColorStop(0, 'rgba(40,32,22,0)'); gr.addColorStop(1, 'rgba(40,32,22,0.45)');
@@ -981,6 +992,7 @@ export function initTextures() {
           if (t.userData.aoFaltar) t.userData.aoFaltar();
           console.warn('[decals] 404 em "' + f + '" — peça escondida (rode scripts/fetch-decals.sh)');
         });
+        t.userData.decalArquivo = f;
         t.colorSpace = THREE.SRGBColorSpace;
         t.minFilter = THREE.LinearMipmapLinearFilter;
         // memoiza: troca o getter pela textura, então a 2ª leitura não repete nada

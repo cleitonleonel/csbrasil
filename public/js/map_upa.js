@@ -67,14 +67,14 @@ export function buildUpa(scene, T) {
     const H = 256, [c, x] = mkCanvas(8, H);
     x.fillStyle = '#f2f0ea'; x.fillRect(0, 0, 8, H);                        // branco (topo)
     x.fillStyle = '#e8e2d4'; x.fillRect(0, H * 0.78, 8, H * 0.19);         // creme (miolo)
-    x.fillStyle = '#9aa0c8'; x.fillRect(0, H * 0.74, 8, H * 0.05);         // faixa lilás (peito ~1 m)
+    x.fillStyle = '#a8a9ba'; x.fillRect(0, H * 0.74, 8, H * 0.05);         // faixa lilás (peito ~1 m)
     x.fillStyle = '#5c4d3b'; x.fillRect(0, H * 0.97, 8, H * 0.03);         // rodapé de madeira
     return tex(c);
   }
 
   const MAT = {
-    piso: lam({ map: floorTex() }), parede: lam({ map: wallTex() }), paredeAlta: lam({ color: 0xc8d4d1 }),
-    teto: lam({ color: 0x798089 }), maca: lam({ color: 0xf2f5f7 }), aco: lam({ color: 0x9aa0a6 }),
+    piso: lam({ map: floorTex() }), parede: lam({ map: wallTex() }), paredeAlta: lam({ color: 0xd4d8ce }),
+    teto: lam({ color: 0x91989b }), maca: lam({ color: 0xf2f5f7 }), aco: lam({ color: 0x9aa0a6 }),
     mesa: lam({ color: 0xc9b896 }), cadeira: lam({ color: 0x2f4a63 }), armario: lam({ color: 0xd6dbe0 }),
     verde: lam({ color: 0x3f9a86 }), vermelho: lam({ color: 0xc0392b }), vidro: lam({ color: 0x9fd0e6, transparent: true, opacity: 0.4 }),
   };

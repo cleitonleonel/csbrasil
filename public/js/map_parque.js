@@ -135,9 +135,9 @@ export function buildParque(scene, T) {
   const material = (color, surface = SURFACE.paint, roughness = 0.62, metalness = 0) => new THREE.MeshStandardMaterial({ color, map: surface, roughness, metalness });
   const MAT = {
     grass: material(0xffffff, SURFACE.grass, 1), path: material(0xffffff, SURFACE.concrete, 0.92), plaza: material(0xffffff, SURFACE.tiles, 0.78),
-    pink: material(0xff4f9a, SURFACE.paint, 0.46), blue: material(0x22a7e8, SURFACE.paint, 0.42), cyan: material(0x56e0e0, SURFACE.paint, 0.4),
-    yellow: material(0xffd84d, SURFACE.paint, 0.48), red: material(0xf04b4b, SURFACE.paint, 0.44), purple: material(0x7b55d9, SURFACE.paint, 0.5),
-    green: material(0x3ec67d, SURFACE.paint, 0.55), white: material(0xfff7e8, SURFACE.paint, 0.58), dark: material(0x39445a, SURFACE.metal, 0.34, 0.62),
+    pink: material(0xc58191, SURFACE.paint, 0.74), blue: material(0x6188a6, SURFACE.paint, 0.7), cyan: material(0x8fa7a2, SURFACE.paint, 0.68),
+    yellow: material(0xd5bb78, SURFACE.paint, 0.72), red: material(0xbf8068, SURFACE.paint, 0.74), purple: material(0x8d799b, SURFACE.paint, 0.72),
+    green: material(0x7eaa8b, SURFACE.paint, 0.76), white: material(0xfff7e8, SURFACE.paint, 0.72), dark: material(0x39445a, SURFACE.metal, 0.34, 0.62),
     wood: material(0xffffff, SURFACE.wood, 0.88), hedge: material(0xffffff, SURFACE.hedge, 1),
     trunk: material(0xffffff, SURFACE.casca, 0.95), leaf: material(0xffffff, SURFACE.folha, 1),
     dirt: material(0xffffff, SURFACE.terra, 1),

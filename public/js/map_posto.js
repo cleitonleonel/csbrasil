@@ -90,11 +90,11 @@ export function buildPosto(scene, T) {
     apron: lam(tex('concrete', 0x9aa0a6)),     // concreto claro do pátio
     curb: lam({ color: 0xb7a94a }),            // meio-fio amarelo da ilha de bomba
     loja: lam(tex('concrete', 0xe4dccb)),
-    lojaBanda: lam({ color: 0xc0392b }),
+    lojaBanda: lam({ color: 0xad5946 }),
     marquise: lam(tex('concrete', 0xd7dbe0)),
     marquiseBaixo: lam(tex('concrete', 0xb8bdc4)),
-    fascia: lam({ color: 0xe03c3c }),
-    bomba: lam({ color: 0xcf3b3b }),
+    fascia: lam({ color: 0xb95d49 }),
+    bomba: lam({ color: 0xb95848 }),
     bombaTopo: lam({ color: 0x1b1d21 }),
     aco: lam({ color: 0x8a9096 }),
     grama: lam({ color: 0x596b39 }),

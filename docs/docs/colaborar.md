@@ -258,10 +258,10 @@ O registro, gerado do `MAPS` de `public/js/maps.js`:
 | `ferro_velho` | Ferro Velho do Zé | **captura** | `map_ferrovelho.js` | 2.031 |
 | `quebrada` | Quebrada (Rua do Baile) | **captura** | `map_quebrada.js` | 1.709 |
 | `corrego` | Córrego (Favela de SP) | **captura** | `map_corrego.js` | 1.812 |
-| `lajes` | Lajes (Comunidade) | **captura** | `map_lajes_authored.js` | 419 |
+| `lajes` | Lajes (Comunidade) | **captura** | `map_lajes_authored.js` | 420 |
 | `posto_treta` | Posto da Treta | **captura** | `map_posto.js` | 757 |
 | `upa_24h` | UPA 24h da Treta | **captura** | `map_upa.js` | 383 |
-| `obras_prefeitura` | Obras da Prefeitura | **captura** | `map_obras.js` | 485 |
+| `obras_prefeitura` | Obras da Prefeitura | **captura** | `map_obras.js` | 490 |
 | `atacadao_treta` | Atacadão da Treta | **captura** | `map_atacadao.js` | 792 |
 | `parque_treta` | Parque da Treta | **captura** | `map_parque.js` | 991 |
 | `velho_oeste` | Sertão da Treta | **captura** | `map_velho_oeste.js` | 1.071 |

@@ -41,6 +41,7 @@ export function buildLajes(scene, T) {
   const root = new THREE.Group(); root.name = 'LAJES_BAIRRO_TERREO'; scene.add(root);
   const colliders = [], occluders = [], pickups = [];
   const { M, box, home, sign, material, backgroundHome, flush, doors, dispose: disposeArchitecture } = lajesArchitecture(root, colliders, occluders, T);
+  for (const mat of [M.concrete, M.brick, M.cream, M.adobe, M.ochre, M.rose, M.sage]) mat.normalScale.set(.45, .45);
   const low = (() => { try { return JSON.parse(localStorage.getItem('awpbr_settings') || '{}').quality === 'low'; } catch { return false; } })();
   scene.background = new THREE.Color(0xb9ced5);
   if (typeof location === 'undefined' || !new URLSearchParams(location.search).has('nofog')) scene.fog = makeAerialFog('lajes', { d: .0045, color: 0xb7c4cb, dir: .35 });

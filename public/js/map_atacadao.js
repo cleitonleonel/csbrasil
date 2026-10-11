@@ -148,8 +148,8 @@ export function buildAtacadao(scene, T) {
   };
   const MAT = {
     piso: lam({ map: TX.piso }), parede: lam({ map: TX.parede }), metal: lam({ color: 0x9aa0a6 }),
-    pilar: lam({ map: TX.pilar }), pilarBase: lam({ color: 0xe0b83a }), prat: lam({ color: 0x8a9096 }),
-    caixa: lam({ color: 0x2e6f9e }), esteira: lam({ color: 0x2a2d31 }), faixa: lam({ color: 0xe0b83a }),
+    pilar: lam({ map: TX.pilar }), pilarBase: lam({ color: 0xc9b168 }), prat: lam({ color: 0x8a9096 }),
+    caixa: lam({ color: 0x496c7e }), esteira: lam({ color: 0x2a2d31 }), faixa: lam({ color: 0xe0b83a }),
     asfalto: lam((T && T.asphalt) ? { map: T.asphalt } : { map: docaTex(14, 12) }),
     muro: lam({ map: TX.muro }), vidro: lam({ color: 0x9fd0e6, transparent: true, opacity: 0.45 }),
     predio: lam({ color: 0xa7a29a }), janela: lam({ color: 0x35404e }), faixaRua: lam({ color: 0xd8b83a }),

@@ -7,6 +7,7 @@ import { decalIds } from './map_decals.js';
 import { grafitar } from './graffiti_pass.js';
 import { createFavelaAmbience } from './ambientlife.js';
 import { AMB_LOOPS } from './soundscape.js';
+import { TEXEL_ALVO } from './map_uv.js';
 
 export const OBRAS_PROPS = [
   // MOLDES do kit posto_obras_r3 (Mint): torre escalável e bunker de spawn são
@@ -53,8 +54,8 @@ export function buildObras(scene, T) {
   const tex = (k, fallback) => (T && T[k]) ? { map: T[k] } : { color: fallback };
   const MAT = {
     terra: lam(tex('dirt', 0x6f5a42)), concreto: lam(tex('concrete', 0x9aa0a6)), asfalto: lam(tex('asphalt', 0x2b2e33)),
-    concRaw: lam({ color: 0xb3ab97 }), rebar: lam({ color: 0x8a6a3a }), metal: lam({ color: 0x9aa0a6 }),
-    tapume: lam({ color: 0x2f5fa8 }), tabua: lam({ color: 0x9c7b4a }), areia: lam({ color: 0xcbb27a }),
+    concRaw: lam({ color: 0xc0b6a5 }), rebar: lam({ color: 0x8a6a3a }), metal: lam({ color: 0x9aa0a6 }),
+    tapume: lam({ color: 0x59717e }), tabua: lam({ color: 0x9c7b4a }), areia: lam({ color: 0xcbb27a }),
     hazard: lam({ map: hazardTex() }), predio: lam({ color: 0xa7a29a }), janela: lam({ color: 0x35404e }),
     lona: lam({ color: 0x2f8b57, transparent: true, opacity: 0.7, side: THREE.DoubleSide }),
   };
@@ -137,6 +138,10 @@ export function buildObras(scene, T) {
     const pos = geo.attributes.position;
     for (let i = 0; i < pos.count; i++) pos.setY(i, terreno(pos.getX(i), pos.getZ(i)));
     geo.computeVertexNormals();
+    const uv = geo.attributes.uv, tile = MAT.terra.map;
+    if (tile?.image?.width) for (let i = 0; i < uv.count; i++)
+      uv.setXY(i, (pos.getX(i) + HALF_X) * TEXEL_ALVO / (tile.image.width * tile.repeat.x),
+        (HALF_Z - pos.getZ(i)) * TEXEL_ALVO / (tile.image.height * tile.repeat.y));
     const ground = new THREE.Mesh(geo, MAT.terra); ground.receiveShadow = true; root.add(ground);
   }
 

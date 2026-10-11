@@ -395,7 +395,7 @@ export function buildHavan(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -460,8 +460,8 @@ export function buildHavan(scene, T) {
     // O MESMO canvas entra como bumpMap: a junta rebaixada vira relevo no shader sem
     // custo de textura nova, que é o que dá micro-detalhe a < 2 m da câmera (B5).
     // vertexColors: o encardido/AO da base vem da geometria (ver bakeMuroAO).
-    muro: lam({ map: muroMap, bumpMap: muroMap, bumpScale: 0.45, roughness: 0.93, vertexColors: true }),
-    muroS: lam({ map: muroSMap, bumpMap: muroSMap, bumpScale: 0.45, roughness: 0.93, vertexColors: true }),
+    muro: lam({ map: muroMap, bumpMap: muroMap, bumpScale: 0.18, roughness: 0.93, vertexColors: true }),
+    muroS: lam({ map: muroSMap, bumpMap: muroSMap, bumpScale: 0.18, roughness: 0.93, vertexColors: true }),
     paintW: new THREE.MeshBasicMaterial({ map: tintaTex('#e8e6dd'), transparent: true, depthWrite: false }),
     paintY: new THREE.MeshBasicMaterial({ map: tintaTex('#e0b028'), transparent: true, depthWrite: false }),
   };

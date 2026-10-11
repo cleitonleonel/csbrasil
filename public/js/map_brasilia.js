@@ -69,7 +69,7 @@ export function buildBrasilia(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.92, metalness: 0.0, ...opts });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -519,7 +519,7 @@ export function buildBrasilia(scene, T) {
     // fachada de vidro vem do Fresnel (F->1 na rasante), não de tratar vidro como metal.
     vidroFume: lam({ color: 0x56636b, roughness: 0.26, metalness: 0.08, envMapIntensity: 2.0 }),
     aco: lam({ color: 0x9aa0a6, roughness: 0.32, metalness: 0.85, envMapIntensity: 1.8 }),
-    pintBranca: lam({ color: 0xdedbd2, roughness: 0.7 }),
+    pintBranca: lam({ color: 0xdedbd2, roughness: 0.82 }),
     asfalto: lam({ map: ctex(asfaltoTex(), 8, 40), roughness: 0.95, emissive: 0x282521, emissiveIntensity: 0.48 }),
     bronze: lam({ color: 0x5d6b4e, roughness: 0.40, metalness: 0.78, envMapIntensity: 1.7 }),   // pátina verde-escura
   };

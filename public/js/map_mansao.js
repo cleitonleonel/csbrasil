@@ -65,7 +65,7 @@ export function buildMansao(scene, T) {
   const lam = (o) => {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
-    if (det) { if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); } if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap; }
+    if (det) { if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); } if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap; }
     return m;
   };
   const texturaLaje = (base,junta,rx,ry) => {
@@ -109,16 +109,16 @@ export function buildMansao(scene, T) {
     const b = lam2 < 3 ? 24 : 58 + n + (lam2 === 4 ? 16 : 0);
     return [b - 2, b, b + 5];
   });
-  const pisoInterior=lam({ map:texturaLaje(0xc9c1b2,0x8e887f,3,2),color:0xf0ede7,roughness:.34 });
+  const pisoInterior=lam({ map:texturaLaje(0xc9c1b2,0x8e887f,3,2),color:0xf0ede7,roughness:.58 });
   const forroInterior=lam({ map:texturaLaje(0xe7e1d7,0xc8c2b8,2,2),color:0xf8f4ed,roughness:.82,side:THREE.DoubleSide });
   let TEX = {
     concrete: lam({ map: T.concrete }), grass: lam({ map: T.grass }), dirt: lam({ map: T.dirt }),
-    marble: lam({ map: T.concrete, color: 0xeee9df, roughness: 0.22 }),
+    marble: lam({ map: T.concrete, color: 0xeee9df, roughness: 0.45 }),
     garden: lam({ map: T.grass, roughness: 1 }), deck: lam({ map: T.dirt, color: 0x9a7654, roughness: 0.72 }),
   };
   if (typeof document !== 'undefined') {
     const load = (url, rx = 3, ry = 3) => { const t = new THREE.TextureLoader().load(url); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); return t; };
-    TEX.marble = lam({ map: load('/img/textures/mansao_streetart_marble.webp', 4, 4), roughness: 0.15, metalness: 0.05 });
+    TEX.marble = lam({ map: load('/img/textures/mansao_streetart_marble.webp', 4, 4), roughness: 0.42, metalness: 0.05 });
     TEX.garden = lam({ map: load('/img/textures/tex_mansao_lawn.webp', 11, 15.6), roughness: 1.0 });   // grama limpa v2.1: tex_garden tinha flor 2D gigante e xadrez de pedra assados
     TEX.garden.map.wrapS = TEX.garden.map.wrapT = THREE.MirroredRepeatWrapping;   // tile 4 m sem emenda
     TEX.deck = lam({ map: load('/img/textures/tex_deck.webp', 3, 6), roughness: 0.7 });

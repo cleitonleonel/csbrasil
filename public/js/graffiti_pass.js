@@ -59,6 +59,7 @@
    `userData.pecas` com o retângulo de cada uma — ver `graffiti-census.mjs`.
    ============================================================================ */
 import * as THREE from 'three';
+import { aplicarTintaRecortada } from './decal_ink.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { medirParede } from './map_decals.js';
 import { GRAFITE } from './graffiti_layout.js';
@@ -158,6 +159,7 @@ export function normalMundo(h, out) {
    Textura que falha no three não some — ela desenha BRANCO CHAPADO. */
 export function esconderSeFaltar(mesh, tex) {
   if (!mesh || !tex) return mesh;
+  for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) aplicarTintaRecortada(material, tex.userData.decalArquivo);
   if (tex.userData.faltou) mesh.visible = false;
   else {
     const antes = tex.userData.aoFaltar;

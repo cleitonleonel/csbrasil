@@ -74,7 +74,7 @@ export function buildEscadao(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -180,7 +180,7 @@ export function buildEscadao(scene, T) {
   const MAT_GUARDA = lam({ color: 0xc2baa7, map: T.concrete });
   const MAT_PORTA = lam({ color: 0x49372a, roughness: 0.88 });
   const MAT_VIDRO = lam({ color: 0x273b42, roughness: 0.22, metalness: 0.18 });
-  const MAT_ZINCO = lam({ color: 0x777a76, roughness: 0.72, metalness: 0.35 });
+  const MAT_ZINCO = lam({ color: 0x777a76, roughness: 0.78, metalness: 0.35 });
 
   // Referências do dono: concreto gasto e alvenaria aparente. UV em metros impede
   // que cada degrau repita a mesma rachadura inteira. Nenhuma foto foi usada como textura.

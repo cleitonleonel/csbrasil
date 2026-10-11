@@ -326,11 +326,11 @@ export function buildPoolDay(scene, T) {
   const TEX = {
     wall: tileTex('#eef3f6', '#c2d0d8', 4, 8, 3),
     floor: tileTex('#e7ecef', '#ccd6dd', 4, 12, 16),
-    pool: tileTex('#33c6e0', '#7fe4f2', 4, 4, 5),
+    pool: tileTex('#60b8c7', '#a0d8df', 4, 4, 5),
   };
   const MAT = {
     wall: lam({ map: TEX.wall }), floor: lam({ map: TEX.floor }), pool: lam({ map: TEX.pool }),
-    navy: lam({ map: tileTex('#193a70', '#10264c', 2, 2, 2) }),
+    navy: lam({ map: tileTex('#294862', '#1c354d', 2, 2, 2) }),
     white: lam({ map: tileTex('#f2f5f7', '#d1d9de', 4, 2, 2) }),
     locker: lam({ map: lockerTex() }), lockerDark: lam({ map: lockerTex('#778894', '#34434e') }),
     chair: lam({ map: utilityTex('#294984', '#1b315c', '#203764') }),
