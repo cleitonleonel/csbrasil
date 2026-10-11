@@ -7,7 +7,7 @@
       "id": "lula-drip",
       "name": "Lula do Drip",
       "url": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7azn60zfk9j2amd87f06vhdd8g3kcv",
-      "status": "preview_created",
+      "status": "model_generating",
       "prompt": "Create a NEW standalone full-body 3D character asset for CORO SOLTO. Generate the 3D Model preview now, then a downloadable textured GLB, suitable for humanoid rigging. Original stylized AAA cartoon multiplayer-shooter art inspired by Fortnite proportions and PBR finish, expressive recognizable adult caricature, strong silhouette, sculpted streetwear, detailed face, clean natural hands with distinct fingers and chunky sneakers. Neutral A-pose, full body head to soles, feet on the same ground plane, no fused weapon, no logos or text, no background geometry. This is a cosmetic skin; keep it one separate character model. Name: Lula do Drip. Recognizable Luiz Inacio Lula da Silva caricature with older face and gray beard, braided gray hair, visible gold grillz, several modeled gold rings, layered gold jewelry. Oversized burgundy streetwear jacket over cream oversized T-shirt, black cargo pants, chunky cream/red sneakers. Braids, grillz, rings and jewelry must be modeled rather than just painted. Produce the actual model, not a production plan. Use the existing account credits.",
       "selectedPreview": "Burgundy Goldbraid Boss Preview",
       "review": "Approved direction; second preview rejected: missing beard",
@@ -17,7 +17,7 @@
       "id": "bolsonaro-drip",
       "name": "Bolsonaro do Drip",
       "url": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7f4qjk9ww0n3533j9911nc198g2cck",
-      "status": "preview_created",
+      "status": "model_generating",
       "prompt": "Create a NEW standalone full-body 3D character asset for CORO SOLTO. Generate the 3D Model preview now, then a downloadable textured GLB, suitable for humanoid rigging. Original stylized AAA cartoon multiplayer-shooter art inspired by Fortnite proportions and PBR finish, expressive recognizable adult caricature, strong silhouette, sculpted streetwear, detailed face, clean natural hands with distinct fingers and chunky sneakers. Neutral A-pose, full body head to soles, feet on the same ground plane, no fused weapon, no logos or text, no background geometry. This is a cosmetic skin; keep it one separate character model. Name: Bolsonaro do Drip. Recognizable Jair Bolsonaro caricature with older angular face, short dark/graying hair, navy/emerald varsity streetwear jacket, white T-shirt, beige cargo pants, green/cream high-top sneakers. Several distinct thick modeled gold chains and gold rings. Face and clothing must be different from Lula, own original outfit design. Generate the actual model preview now using existing account credits.",
       "selectedPreview": "Emerald Varsity Dripster Preview",
       "review": "Approved direction; hands/rig unverified"
@@ -26,26 +26,30 @@
       "id": "senador-drip",
       "name": "Senador do Drip",
       "url": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7ba48kge0gsw267a8dvtzbpd8g38s9",
-      "status": "preview_created",
+      "status": "preview_correction_requested",
       "prompt": "Create a NEW standalone full-body 3D character asset for CORO SOLTO. Generate the 3D Model preview now, then a downloadable textured GLB, suitable for humanoid rigging. Original stylized AAA cartoon multiplayer-shooter art inspired by Fortnite proportions and PBR finish, expressive recognizable adult caricature, strong silhouette, sculpted streetwear, detailed face, clean natural hands with distinct fingers and chunky sneakers. Neutral A-pose, full body head to soles, feet on the same ground plane, no fused weapon, no logos or text, no background geometry. This is a cosmetic skin; keep it one separate character model. Name: Senador do Drip / Zero Um. Recognizable Flavio Bolsonaro caricature, adult male with close-cut dark hair and distinct face from Jair Bolsonaro. Tailored black oversized streetwear jacket, violet T-shirt, dark black/violet cargo trousers, white chunky sneakers. Distinctive heavy modeled gold chains with different shapes from the other characters, gold rings. Generate the actual model preview now using existing account credits.",
       "selectedPreview": "Violet Chain Street Brawler Preview",
-      "review": "Rejected direction: generic face, likeness correction required"
+      "review": "Rejected direction: generic face, likeness correction required",
+      "reference": "https://legis.senado.leg.br/senadores/fotos-oficiais/5894"
     },
     {
       "id": "janja",
       "name": "Janja",
       "url": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7cnh5y7g71netxwjajjyg2gh8g3fkx",
-      "status": "preview_created",
+      "status": "preview_correction_requested",
       "prompt": "Create a NEW standalone full-body 3D character asset for CORO SOLTO. Generate the 3D Model preview now, then a downloadable textured GLB, suitable for humanoid rigging. Original stylized AAA cartoon multiplayer-shooter art inspired by Fortnite proportions and PBR finish, expressive recognizable adult caricature, strong silhouette, sculpted streetwear, detailed face, clean natural hands with distinct fingers and chunky sneakers. Neutral A-pose, full body head to soles, feet on the same ground plane, no fused weapon, no logos or text, no background geometry. This is a cosmetic skin; keep it one separate character model. Name: Janja. Recognizable Janja Lula da Silva adult caricature, long brown hair and signature glasses, warm expressive face. Elegant contemporary urban streetwear: original burgundy/cream outfit, sculpted jacket, modern trousers, subtle modeled gold accessories and stylish sneakers. Natural adult feminine proportions. Model her own face and hairstyle, not a recolor of another woman. Generate the actual model preview now using existing account credits.",
       "selectedPreview": "Burgundy Glasses Executive Preview",
-      "review": "Rejected direction: generic young face, maturity/likeness correction required"
+      "review": "Rejected direction: generic young face, maturity/likeness correction required",
+      "reference": "https://commons.wikimedia.org/wiki/File:Janja_da_Silva_(cropped).jpg"
     },
     {
       "id": "michelle",
       "name": "Michelle Bolsonaro",
       "url": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7fr1dc9v0wv4z2vfk16swh5d8g2je9",
       "status": "preview_created",
-      "prompt": "Create a NEW standalone full-body 3D character asset for CORO SOLTO. Generate the 3D Model preview now, then a downloadable textured GLB, suitable for humanoid rigging. Original stylized AAA cartoon multiplayer-shooter art inspired by Fortnite proportions and PBR finish, expressive recognizable adult caricature, strong silhouette, sculpted streetwear, detailed face, clean natural hands with distinct fingers and chunky sneakers. Neutral A-pose, full body head to soles, feet on the same ground plane, no fused weapon, no logos or text, no background geometry. This is a cosmetic skin; keep it one separate character model. Name: Michelle Bolsonaro. Recognizable Michelle Bolsonaro adult caricature with her own face and medium-length dark brown hair. Elegant contemporary urban streetwear: original navy/emerald outfit, sculpted jacket, modern trousers, distinct subtle modeled gold jewelry and fashionable sneakers. Natural adult feminine proportions, detailed facial features. Independent character design, not a recolor of Janja or Julia Zanatta. Generate the actual model preview now using existing account credits."
+      "prompt": "Create a NEW standalone full-body 3D character asset for CORO SOLTO. Generate the 3D Model preview now, then a downloadable textured GLB, suitable for humanoid rigging. Original stylized AAA cartoon multiplayer-shooter art inspired by Fortnite proportions and PBR finish, expressive recognizable adult caricature, strong silhouette, sculpted streetwear, detailed face, clean natural hands with distinct fingers and chunky sneakers. Neutral A-pose, full body head to soles, feet on the same ground plane, no fused weapon, no logos or text, no background geometry. This is a cosmetic skin; keep it one separate character model. Name: Michelle Bolsonaro. Recognizable Michelle Bolsonaro adult caricature with her own face and medium-length dark brown hair. Elegant contemporary urban streetwear: original navy/emerald outfit, sculpted jacket, modern trousers, distinct subtle modeled gold jewelry and fashionable sneakers. Natural adult feminine proportions, detailed facial features. Independent character design, not a recolor of Janja or Julia Zanatta. Generate the actual model preview now using existing account credits.",
+      "selectedPreview": "Emerald Lapel Executive Preview",
+      "review": "Rejected direction: generic young face too similar to Janja"
     }
   ]
 }

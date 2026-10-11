@@ -68,3 +68,7 @@ Cinco chats separados com pedidos reais de3D Model preview, qualidade Standard, 
 ## Marco: revisão das prévias Mint
 
 Capturas reais em private-assets/treta-store/mint. Crítico independente aprovou Lula A (Burgundy Goldbraid Boss Preview) e Bolsonaro como direção visual. Lula B perdeu barba/bigode e foi rejeitado; segunda solicitação duplicada causada por atraso da UI, reconhecida ao dono, não finalizar ambas. Senador: rosto genérico com mandíbula/sobrancelhas exageradas; Janja: aparência jovem genérica com olhos grandes. Corrigir reconhecimento antes do3D. Prévias não comprovam topologia, dedos ou rig. Modelo selecionado na UI: Tripo P1. Créditos por etapa ainda sem valor confirmado.
+
+## Marco: primeiros modelos em geração
+
+Generate acionado uma vez para Lula A e Bolsonaro; UI confirmou3D MODEL TRIPO_P1, nomes Burgundy Goldbraid Boss e Emerald Varsity Dripster, progresso75% com tempo exibido~12min. Não equivale a conclusão. Correção Senador enviada com captura do retrato oficial do Senado; Janja enviada com referência Pablo Valadares/Câmara dos Deputados (CC BY3.0), URL no JSON. Michelle também rejeitada pelo rosto genérico semelhante à Janja anterior. Anexo inicial do Senador foi rejeitado por extensão PNG em bytesJPEG; corrigido para.jpg e enviado com sucesso. Falha de navegador no primeiro fluxo de anexo exigiu recuperação dos handles; sem repetir geração. Próximo: concluir correção Michelle, avaliar prévias corrigidas e finalizar três restantes.
