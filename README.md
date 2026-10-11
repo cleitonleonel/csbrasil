@@ -34,7 +34,7 @@ contra bots, direto na aba. Sem download, sem instalação, sem cadastro.
 
 | O que | Quanto | Onde confere |
 |---|---:|---|
-| Código do jogo | 59.143 linhas em 118 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| Código do jogo | 59.248 linhas em 119 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
 | `game.js` | **8.388** linhas | `wc -l public/js/game.js` |
 | `main.js` | 4.383 linhas | `wc -l public/js/main.js` |
 | Armas com GLB | 27 | `git ls-files 'public/models/weapons/*.glb' \| wc -l` |
@@ -44,7 +44,7 @@ contra bots, direto na aba. Sem download, sem instalação, sem cadastro.
 | Personagens jogáveis | 63, em 7 facções | array `CHARACTERS` de `characters.js` |
 | Mapas no registro | 18 | objeto `MAPS` de `maps.js` |
 | Arnêses visuais em HTML | 22 | `git ls-files 'public/*.html' \| wc -l` |
-| Scripts do arnês | 669 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
+| Scripts do arnês | 673 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
 | Scripts de pipeline | 102 | `git ls-files 'tools/*.mjs' \| wc -l` |
 | Tarefas de entrada escritas | 26 | `git ls-files 'docs/issues/[0-9]*.md' \| wc -l` |
 | Versão | `2.1.0-alpha.67` | `public/js/version.js` e `package.json` (batem) |
@@ -89,7 +89,7 @@ arquitetura): `cd docs && npm install && npm start` → <http://localhost:3000/d
 | Camada | Ferramenta | Versão |
 |---|---|---|
 | Motor 3D (WebGL) | **Three.js**, vendorizado | `r160` |
-| Jogo | ES modules vanilla, **zero build** | 118 arquivos |
+| Jogo | ES modules vanilla, **zero build** | 119 arquivos |
 | Site | **Astro** com SSR | `^7.1.1` |
 | Hospedagem | adapter **Vercel** | `^11.0.6` |
 | Banco | **Postgres gerenciado** (RLS; schema privado, fora do repo) | `^2.110.7` |
@@ -308,7 +308,7 @@ Os mapas registrados, e em que modo cada um abre:
 |---|---|---|---|---:|
 | `campomorro` | Campinho do Morro | **captura** | `map_campomorro.js` | 816 |
 | `mansao` | Mansão do Joá | **captura** | `map_mansao.js` | 1.398 |
-| `amazonia` | Treta na Amazônia | **captura** | `map_amazonia.js` | 1.266 |
+| `amazonia` | Treta na Amazônia | **captura** | `map_amazonia.js` | 1.265 |
 | `escadao` | Escadão (Morro) | **captura** | `map_escadao.js` | 1.411 |
 | `praca_poderes` | Praça dos Três Poderes | rodadas | `map_brasilia.js` | 1.989 |
 | `piscina_treta` | Piscina da Treta | rodadas | `map_piscina.js` | 1.201 |

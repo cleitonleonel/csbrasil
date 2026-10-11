@@ -39,12 +39,13 @@ export function commercialSlab(rx, ry) {
   });
 }
 
-// Massas suaves cruzam as emendas; pedriscos e capim sustentam a leitura próxima.
+// A terra conserva massas sem emenda; a grama usa somente grão e lâminas discretas.
 export function soilSurface(rx, ry, green = false) {
   return canvasSurface(green ? 'dry-ground-cover' : 'packed-junkyard-earth', 256, rx, ry, (ctx, s, rand) => {
     ctx.fillStyle = green ? '#677443' : '#786d5f'; ctx.fillRect(0, 0, s, s);
     for (let i = 0; i < 8; i++) {
       const px = rand() * s, py = rand() * s, radius = s * (.18 + rand() * .19);
+      if (green) continue;
       for (const ox of [-s, 0, s]) for (const oy of [-s, 0, s]) {
         const g = ctx.createRadialGradient(px + ox, py + oy, 0, px + ox, py + oy, radius);
         g.addColorStop(0, green ? 'rgba(112,97,61,.35)' : i % 2 ? 'rgba(63,56,47,.23)' : 'rgba(151,133,104,.24)');
@@ -102,22 +103,4 @@ export function directedMasonry(rx, ry, variant = 0, raw = false) {
   t.name = raw ? 'corrego-exposed-brick' : 'corrego-directed-plaster';
   t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.repeat.set(rx, ry); t.needsUpdate = true; detailFor(t); return t;
-}
-
-export function forestLeafLitter(rx, ry) {
-  return canvasSurface('forest-leaf-litter', 256, rx, ry, (ctx, s, rand) => {
-    ctx.fillStyle = '#7e7b65'; ctx.fillRect(0, 0, s, s);
-    for (let i = 0; i < 190; i++) {
-      const px = rand() * s, py = rand() * s, h = 10 + rand() * 20, turn = rand() * Math.PI * 2;
-      const dx = Math.cos(turn), dy = Math.sin(turn);
-      ctx.fillStyle = ['#8b846a', '#6c6b5a', '#969077', '#777960'][i % 4];
-      for (const ox of [-s, 0, s]) for (const oy of [-s, 0, s]) {
-        const x = px + ox, y = py + oy;
-        ctx.beginPath(); ctx.moveTo(x, y);
-        ctx.quadraticCurveTo(x + dx * h * .5 - dy * h * .24, y + dy * h * .5 + dx * h * .24, x + dx * h, y + dy * h);
-        ctx.quadraticCurveTo(x + dx * h * .5 + dy * h * .24, y + dy * h * .5 - dx * h * .24, x, y); ctx.fill();
-      }
-    }
-    for (let i = 0; i < 1800; i++) { ctx.fillStyle = i % 2 ? 'rgba(50,51,43,.12)' : 'rgba(157,151,122,.1)'; ctx.fillRect(rand() * s, rand() * s, 1, 1); }
-  }, null);
 }
