@@ -1,5 +1,8 @@
 # Revisão independente das moedas portrait-v2
 
+> Estado superado: design rejeitado pelo dono em 11/10/2026. Este relatório é
+> histórico; acompanhar o redesign em `TRETA-COINS-REDESIGN.md` e `CONTINUATION.md`.
+
 Data: 2026-10-11. Revisão somente leitura dos assets e da lane; este relatório privado é a única gravação. Sem interação com Blender aberto, UI ou Mint.
 
 Contrato usado: pedido atualizado do dono, seção 6 de `plans/TRETA-COINS-SKINS.md` e `.claude/skills/asset-review/SKILL.md` da lane `worktrees/treta-skin-store`. Referências: sete WebPs e `references/treta-coins/FONTE.md`. Os vetos editoriais foram interpretados conforme a ficha atual, que substitui explicitamente o antigo veto a figuras públicas; estas moedas não acrescentam retratos contemporâneos.

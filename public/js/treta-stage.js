@@ -8,7 +8,7 @@ export class TretaStage {
     this.scene=new THREE.Scene();this.camera=new THREE.PerspectiveCamera(34,1,.01,100);
     this.renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});
     this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));this.renderer.outputColorSpace=THREE.SRGBColorSpace;
-    this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.4;
+    this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=coin?1.1:1.4;
     this.renderer.domElement.setAttribute('aria-label',coin?`${this.count} moedas TRETA$ em 3D`:'Skin em 3D');
     host.append(this.renderer.domElement);
     const pixels=new Float32Array(64*32*4);
@@ -24,7 +24,7 @@ export class TretaStage {
     environment.dispose();pmrem.dispose();
     this.scene.add(new THREE.HemisphereLight(0xcbdfff,0x59391f,2));
     for(const [color,intensity,position] of [[0xffedd0,5,[3,4,5]],[0x91bcff,4,[-3,2,-3]],[0xffffff,2,[-3,4,4]]]){const light=new THREE.DirectionalLight(color,intensity);light.position.set(...position);this.scene.add(light);}
-    this.resize=()=>{if(this.disposed)return;const {width,height}=host.getBoundingClientRect();this.renderer.setSize(Math.max(1,width),Math.max(1,height),false);this.camera.aspect=width/Math.max(1,height);if(this.size){const fit=Math.max(this.size.y,this.size.x/this.camera.aspect,this.size.z);this.camera.position.set(0,0,fit/(2*Math.tan(THREE.MathUtils.degToRad(17)))*1.3);this.camera.lookAt(0,0,0);}this.camera.updateProjectionMatrix();this.renderer.render(this.scene,this.camera);};
+    this.resize=()=>{if(this.disposed)return;const {width,height}=host.getBoundingClientRect();this.renderer.setSize(Math.max(1,width),Math.max(1,height),false);this.camera.aspect=width/Math.max(1,height);if(this.size){const fit=Math.max(this.size.y,this.size.x/this.camera.aspect,this.size.z);this.camera.position.set(0,0,fit/(2*Math.tan(THREE.MathUtils.degToRad(17)))*(this.coin?1.2:1.3));this.camera.lookAt(0,0,0);}this.camera.updateProjectionMatrix();this.renderer.render(this.scene,this.camera);};
     this.observer=new ResizeObserver(this.resize);this.observer.observe(host);
     this.clock=new THREE.Clock();this.mixers=[];this.spinHold=0;
     this.renderer.setAnimationLoop(()=>{if(this.disposed)return;const delta=Math.min(this.clock.getDelta(),.05);if(document.hidden)return;if(this.model && !this.reduced){if(!this.coin)this.model.rotation.y+=delta*.25;if(this.spinHold>0)this.spinHold=Math.max(0,this.spinHold-delta);else for(const mixer of this.mixers)mixer.update(delta);}this.renderer.render(this.scene,this.camera);});
