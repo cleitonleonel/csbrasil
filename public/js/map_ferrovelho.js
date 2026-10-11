@@ -1315,10 +1315,12 @@ export function buildFerroVelho(scene, T) {
       im.frustumCulled = false;
       const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
       let n = 0;
-      for (const [cx, cz] of spots) for (let k = 0; k < per; k++) {
+      // Consumir o mesmo sorteio mantém sucata e capim low nos lugares do med.
+      for (const [cx, cz] of spots) for (let k = 0; k < 9; k++) {
         e.set(-Math.PI / 2, 0, drnd() * 6.3); q.setFromEuler(e);
         m4.compose(new THREE.Vector3(cx + (drnd() - 0.5) * 3.4, 0.025, cz + (drnd() - 0.5) * 3.4), q,
           new THREE.Vector3(0.05 + drnd() * 0.09, 0.04 + drnd() * 0.08, 1));
+        if (LOWQ && k >= 4) continue;
         im.setMatrixAt(n++, m4);
       }
       im.instanceMatrix.needsUpdate = true; root.add(im);
@@ -1433,7 +1435,7 @@ export function buildFerroVelho(scene, T) {
       const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), col = new THREE.Color();
       let n = 0;
       for (const [cx, cz] of clumps) {
-        for (let k = 0; k < perClump; k++) {
+        for (let k = 0; k < 7; k++) {
           const a = drnd() * 6.283, d = drnd() * 1.7;
           const px = cx + Math.cos(a) * d, pz = cz + Math.sin(a) * d;
           const h = 1.35 + drnd() * 0.85, w = h * (0.72 + drnd() * 0.4);
@@ -1441,6 +1443,7 @@ export function buildFerroVelho(scene, T) {
           // tint por tufo: verde-vivo (a maioria) até um pouco de palha — nunca uniforme
           const v = drnd();
           col.setHSL(0.24 + v * 0.06, 0.45 + (1 - v) * 0.3, 0.36 + v * 0.16);
+          if (LOWQ && k >= 3) continue;
           for (const off of [0, Math.PI / 2]) {
             e.set(0, yaw + off, 0); q.setFromEuler(e);
             m4.compose(new THREE.Vector3(px, h / 2, pz), q, new THREE.Vector3(w, h, 1));
