@@ -26,10 +26,12 @@
       "generationProvider": "TRIPO_P1",
       "finalReview": "Close confirms teeth stayed white/gray; gold grillz need material correction before visual acceptance",
       "finishRevision": {
-        "status": "requested_in_mint_chat",
+        "status": "corrected_model_generating",
         "target": "gold grillz",
         "sourceAssetId": "p973vsch5wvrxhzqgs84d7bxa98g2fr3",
-        "requestedAt": "2026-10-11T12:10:00+01:00"
+        "requestedAt": "2026-10-11T12:10:00+01:00",
+        "previewAssetId": "p9747dtjtqhak9fa3dnt3ay6yn8g26qb",
+        "previewReview": "Independent critic approved visible gold grillz and preserved beard/braids/outfit"
       }
     },
     {
@@ -49,12 +51,12 @@
         "faces": 4951,
         "vertices": 6932
       },
-      "localGlb": null,
-      "rigVerified": false,
+      "localGlb": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/bolsonaro-drip-idle.glb",
+      "rigVerified": true,
       "generationProvider": "TRIPO_P1",
       "finalReview": "General direction preserved; fine facial likeness/hands/rig unverified",
       "animationGeneration": {
-        "status": "animating_in_mint",
+        "status": "six_clips_completed_in_mint",
         "set": "Basic Movement (6)",
         "clips": [
           "Idle",
@@ -63,8 +65,13 @@
           "Regular Jump",
           "Idle Turn Left",
           "Idle Turn Right"
-        ]
-      }
+        ],
+        "batchId": "w574pr4pn17n7yvb002spj1ds58g2m61",
+        "idleClipId": "w97eq9qm4b6csfacy4skzyskq18g24yn",
+        "localIdleSha256": "0e91e3e378f923aed78f5350c923f0920038af1266e5dfa4b14e3a1fb03cf1b3",
+        "localIdleBytes": 3892872
+      },
+      "rigVerification": "GLB JSON: one Armature skin, 24 joints; Idle 66 animation channels, duration4.033333s. Mint gameplay not validated."
     },
     {
       "id": "senador-drip",
@@ -115,10 +122,12 @@
       "generationProvider": "TRIPO_P1",
       "finalReview": "Generated; glasses appear opaque/front reflection needs inspection before acceptance",
       "finishRevision": {
-        "status": "requested_in_mint_chat",
+        "status": "corrected_preview_approved",
         "target": "transparent lenses and visible eyes",
         "sourceAssetId": "p97bw80b5vw0qdbcmtcg29bx7h8g3ay2",
-        "requestedAt": "2026-10-11T12:10:00+01:00"
+        "requestedAt": "2026-10-11T12:10:00+01:00",
+        "previewName": "Burgundy Hoop Executive Preview",
+        "previewReview": "Independent critic approved both eyes visible through transparent lenses and preserved mature face/outfit"
       }
     },
     {

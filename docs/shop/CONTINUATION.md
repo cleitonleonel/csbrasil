@@ -100,3 +100,7 @@ Dono pediu “Termine a geração então”. Escopo atual continua sóMint com c
 ## Marco: animações básicas em processamento
 
 Mint Run Animate abriu Animation Catalog, Basic Movement(6) seleciona Idle, Casual Walk inplace, run fast3 inplace, Regular Jump, Idle Turn Left/Right. Apply confirmado uma vez para Bolsonaro; card Animation · Idle+5 / Animating exibido. Michelle recebeu o mesmo pacote, aguardando card de processamento. Não afirmar rig concluído só pelo pedido. Correções Lula/Janja enviadas uma vez com os respectivos assets selecionados. Próximo: conferir resultado dos ajustes, finalizar modelos corrigidos e completar animações dos cinco.
+
+## Marco: Bolsonaro rigado e seis clipes Mint concluídos
+
+Animation batch w574pr4pn17n7yvb002spj1ds58g2m61 concluído; visualizador enumera seis clipes. Link Download Idle GLB funciona via downloadMedia, ao contrário de botões de download. Arquivo real privado bolsonaro-drip-idle.glb salvo(3.892.872B), JSON GLB confirma skin Armature24joints e clip Armature|Idle|baselayer66channels,4,033333s. SHA no MINT-JOBS.json. Caminhada selecionada no visualizador mas screenshot foi capturado durante Loading; não usar como evidência de movimento. Botão Download caminhada não gerou arquivo observável nem evento; seis clipes disponíveis no Mint, apenas Idle local. Prévias corrigidas Lula/Janja aprovadas pelo crítico e Generate acionado uma vez para cada. Senador recebeu ajuste correntes pesadas preservando rosto/roupa; aguarda prévia. Próximo: conferir modelos revisados e completar animações restantes.
