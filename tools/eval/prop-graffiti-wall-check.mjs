@@ -8,7 +8,7 @@ import { preloadPropGeometry } from './prop-geometry-fixture.mjs';
 // Assets reais, dois caminhos de desenho. Fachada não pode perder pintura;
 // vidro/lataria e móveis não podem ganhar apoio só por serem opacos.
 const cases = [['bus', false], ['dumpster', false], ['pilha_pneus', false],
-  ['piscina_banco', false], ['casa_favela_tijolo', true],
+  ['piscina_banco', false], ['justica', false], ['casa_favela_tijolo', true],
   ['container_escritorio', true]];
 await preloadPropGeometry(cases.map(([id]) => id));
 const digest = root => {
@@ -44,7 +44,9 @@ for (const [id, wall] of cases) for (const mode of ['clone', 'batch']) {
   }
   const allowed = meshes.filter(superficieGrafitavel).length;
   assert.ok(wall ? allowed > 0 : allowed === 0, `${id}/${mode}: categoria de suporte errada`);
-  if (!wall) {
+  // A Justiça já contém "flag" no nome do GLB, e a regra de materiais/nome
+  // também a exclui. Os quatro outros props isolam causalmente a nova categoria.
+  if (!wall && id !== 'justica') {
     const before = digest(root);
     root.traverse(o => { delete o.userData.graffitiSupportExcluded; });
     assert.ok(meshes.some(superficieGrafitavel), `${id}/${mode}: mutante não recuperou falso apoio`);

@@ -16,7 +16,7 @@ const _base = new Map(); // id -> template scene
 // Casas e edifícios preservam suas fachadas; nomes de peças dentro do GLB não
 // são uma classificação confiável, por isso a categoria acompanha o asset.
 const GRAFFITI_WALL_PROPS = new Set([
-  'congresso', 'catedral', 'ministerio', 'palacio', 'justica', 'container_escritorio',
+  'congresso', 'catedral', 'ministerio', 'palacio', 'container_escritorio',
   'casa_pedra', 'casa_geminada', 'casa_favela_azul', 'casa_favela_tijolo', 'fav_house',
   'escadao_casa_r3', 'guarita_muro', 'portao_penitenciaria',
   'lajes_casa_escada', 'lajes_casa_tijolo',

@@ -4,7 +4,8 @@ import * as THREE from 'three';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp, hasProp, PropBatch, StaticBatch, InstBatch } from './mapprops.js';
 import { decalIds } from './map_decals.js';
-import { grafitar } from './graffiti_pass.js';
+import { grafitar, retanguloGrafiteDesenhado } from './graffiti_pass.js';
+import { criarSuporteGrafite } from './graffiti_surface.js';
 import { GRAFITE } from './graffiti_layout.js';
 import { VAO_BANDS, aoBoxGeo, aoMatFactory, ContactSkirt, BASE_FLOATING, onGround } from './vao.js';
 import { detailFor } from './textures.js';
@@ -1080,11 +1081,6 @@ export function buildCorrego(scene, T) {
     propComFallback(id, x, z, h, ry, () => addBox(1.35, h, 1.35, PAREDES[(Math.abs(z) / 10 | 0) & 3], x, 0, z));
   }
 
-  /* Empenas de pixo nas paredes cegas altas voltadas aos becos — pixo de empena existe
-     onde há parede cega e alguém para olhar, não atrás da fileira C. */
-  if (TEX.pixo) for (const [x, z, ry] of [[23.72, -28, -Math.PI / 2], [-23.72, 24, Math.PI / 2], [23.72, 8, -Math.PI / 2], [-23.72, -12, Math.PI / 2]])
-    addBox(0.05, 4.6, 6.0, TEX.pixo, x, 1.4, z, { collide: false, ry, skirt: false, bala: true });
-
   /* ===================== MUROS EXTERNOS =====================
      8 m fecha o horizonte (o muro liso de 3 m era o ímã dos cartazes reprovados) e EM SEGMENTOS de 8 m — face de 80 m não fecha uma volta de UV e o vao estica a textura. */
   const SEG = 8;
@@ -1702,6 +1698,27 @@ export function buildCorrego(scene, T) {
     const ms = Array.isArray(c.material) ? c.material : [c.material];
     if (ms.every((m) => m && m.transparent && (m.opacity === undefined || m.opacity < 0.9))) continue;   // vidro de GLB não é superfície (mesma doutrina do gate)
     occluders.push(c);
+  }
+
+  /* Pixo de empena no muro externo: a caixa fina girada antiga atravessava o
+     muro perpendicularmente e pendurava três metros de pintura sobre o beco.
+     A tinta é um plano sem colisão, apoiado na alvenaria já montada; o muro
+     continua sendo a superfície física tanto para movimento quanto para tiro. */
+  if (TEX.pixo) {
+    const suporte = criarSuporteGrafite(root);
+    for (const [lado, z] of [[1, -28], [-1, 24], [1, 8], [-1, -12]]) {
+      // A faixa 3,4–7 m fica acima dos beirais da fileira C e dentro do muro.
+      const piece = { x: lado * (HALF_X - .25 - .012), y: 5.2, z,
+        ry: -lado * Math.PI / 2, w: 6, h: 3.6 };
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(piece.w, piece.h), TEX.pixo);
+      mesh.position.set(piece.x, piece.y, piece.z); mesh.rotation.y = piece.ry;
+      mesh.updateMatrixWorld(true);
+      const drawn = retanguloGrafiteDesenhado(mesh.geometry, mesh.matrixWorld);
+      if (!suporte(piece) || !drawn || !suporte(drawn)) { mesh.geometry.dispose(); continue; }
+      mesh.name = 'decal:corrego_streetart_pixo.webp';
+      mesh.receiveShadow = true;
+      root.add(mesh);
+    }
   }
 
   /* ===================== GRAFFITI ===================== */
