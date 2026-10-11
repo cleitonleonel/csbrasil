@@ -32,9 +32,9 @@ async function svg(card, format) {
   const landscape = format === 'landscape', story = format === 'story';
   const left = landscape ? 56 : 72;
   const top = story ? 180 : landscape ? 38 : 56;
-  const logo = await dataImage('logo.png'), hero = await dataImage(card.image);
+  const logo = await dataImage('logo.png');
   const photo = card.kind === 'map' || card.kind === 'dev';
-  const imageBox = landscape ? [650, 110, 494, 412] : photo ? [72, story ? 700 : 555, 936, story ? 560 : 455] : [220, story ? 660 : 510, 820, story ? 710 : 570];
+  const imageBox = landscape ? [650, 110, 494, 412] : photo ? [72, story ? 700 : 555, 936, story ? 560 : 455] : [72, story ? 620 : 500, 936, story ? 750 : 570];
   const [ix, iy, iw, ih] = imageBox;
   const titleY = landscape ? 285 : story ? 495 : 360;
   const fontSize = landscape ? 84 : 112;
@@ -46,7 +46,17 @@ async function svg(card, format) {
   body += `<rect width="${w}" height="${h}" fill="${c.background}"/><path d="M0 ${h - 38}H${w}" stroke="${c.line}" stroke-width="2"/>`;
   body += `<image href="${logo}" x="${left}" y="${top}" width="${landscape ? 148 : 200}" height="${landscape ? 115 : 155}" preserveAspectRatio="xMidYMid meet"/>`;
   body += text('@corosolto', w - left, top + (landscape ? 30 : 55), landscape ? 20 : 26, c.muted, tokens.fonts.meta, 'text-anchor="end"');
-  body += `<image href="${hero}" x="${ix}" y="${iy}" width="${iw}" height="${ih}" preserveAspectRatio="${photo ? 'xMidYMid slice' : 'xMidYMid meet'}" ${photo ? 'clip-path="url(#photo)"' : ''}/>`;
+  const heroes = card.images || [{ image: card.image, crop: card.crop, fit: card.imageFit }];
+  for (let i = 0; i < heroes.length; i++) {
+    const item = heroes[i], hero = await dataImage(item.image);
+    const slotWidth = iw / heroes.length, slotX = ix + i * slotWidth;
+    if (item.crop) {
+      const meta = await sharp(path.join(root, 'assets', item.image)).metadata();
+      body += `<svg x="${slotX}" y="${iy}" width="${slotWidth}" height="${ih}" viewBox="${item.crop.join(' ')}" preserveAspectRatio="xMidYMin ${item.fit || 'meet'}" overflow="hidden"><image href="${hero}" width="${meta.width}" height="${meta.height}"/></svg>`;
+    } else {
+      body += `<image href="${hero}" x="${slotX}" y="${iy}" width="${slotWidth}" height="${ih}" preserveAspectRatio="${photo ? 'xMidYMid slice' : 'xMidYMid meet'}" ${photo ? 'clip-path="url(#photo)"' : ''}/>`;
+    }
+  }
   if (photo) body += `<path d="M${ix} ${iy}H${ix + iw}" stroke="${c.lime}" stroke-width="4"/>`;
   body += text(card.kicker, left, titleY - (landscape ? 101 : 119), landscape ? 21 : 27, c.amber, tokens.fonts.meta, 'letter-spacing="2"');
   card.headline.forEach((line, i) => { body += text(line, left, titleY + i * gap, fontSize, i ? c.lime : c.ink); });

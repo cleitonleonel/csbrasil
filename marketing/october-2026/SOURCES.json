@@ -97,6 +97,22 @@
       "derivation": "fontTools WOFF2 to TTF, glyphs unchanged",
       "bytes": 19540,
       "sha256": "a761be41345abd8aeb37f744e6d731ab0249b5e611286d5c66cdcbe6e9f2b3ec"
+    },
+    {
+      "file": "assets/barbudo-vitoria.webp",
+      "source": "public/img/resultado/barbudo-vitoria.webp",
+      "commit": "261cf59a7bbc0a7e50352a84d6ba5cb8313eec95",
+      "bytes": 73786,
+      "sha256": "c1bff14a43ae6d517f38143e2e388cd52ad6896fc573cac1c82fa11b80bc2f12",
+      "kind": "arte caricatura 3D existente, tela de resultado"
+    },
+    {
+      "file": "assets/capitao-vitoria.webp",
+      "source": "public/img/resultado/capitao-vitoria.webp",
+      "commit": "261cf59a7bbc0a7e50352a84d6ba5cb8313eec95",
+      "bytes": 61866,
+      "sha256": "69ba39076fdeeabec46ab7ef37353baa1915f4fde35f3cc91c40322bcd705ea3",
+      "kind": "arte caricatura 3D existente, tela de resultado"
     }
   ]
 }

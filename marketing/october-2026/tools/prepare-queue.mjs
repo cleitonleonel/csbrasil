@@ -22,7 +22,10 @@ const calendar = [
   [22, 2, 'Qual mapa merece outro teste?', 'Volta ao Velho Oeste e testa outra partida. Depois conta qual canto do mapa deu mais trabalho.'],
   [23, 1, 'Qual personagem entrou na sua partida?', 'Canarinho tá no card. Qual personagem entrou na sua partida? Escolha o seu no jogo.'],
   [24, 4, 'Como trazer alguém pra testar?', 'Mande o link do CORO SOLTO pra alguém que curte FPS de navegador. Depois contem como foi o teste.'],
-  [25, 0, 'Como continuar depois de outubro?', 'A treta continua. Jogue CORO SOLTO no navegador e acompanhe os próximos testes do projeto.']
+  [25, 0, 'Como continuar depois de outubro?', 'A treta continua. Jogue CORO SOLTO no navegador e acompanhe os próximos testes do projeto.'],
+  [12, 5, 'Barbudo do Planalto na sua partida?', 'Barbudo do Planalto entrou na treta. Escolha sua caricatura no CORO SOLTO.'],
+  [17, 6, 'Capitão do Cercadinho na sua partida?', 'Capitão do Cercadinho entrou na treta. Escolha sua caricatura no CORO SOLTO.'],
+  [23, 7, 'Barbudo ou Capitão?', 'Barbudo do Planalto ou Capitão do Cercadinho? Escolha seu personagem no CORO SOLTO.']
 ];
 const campaign = card => `outubro2026_${card.id.replaceAll('-', '_')}`;
 function link(card, channel) {
@@ -44,8 +47,8 @@ for (const [day, cardIndex, question, hook] of calendar) {
     else if (channel === 'instagram') caption = `${hook}\n\n${card.kind === 'map' || card.kind === 'dev' ? 'Imagem: captura WebGL do jogo de 06/09/2026.\n' : 'Imagem: arte do jogo.\n'}${card.destination === 'code' ? 'Abra o jogo pelo link do perfil. O código fica no menu Sobre o jogo.' : 'Jogo grátis no link do perfil.'} #CoroSolto ${card.kind === 'dev' ? '#GameDevBrasil' : '#JogoBrasileiro'}`;
     else if (channel === 'tiktok') caption = `${hook} ${card.destination === 'code' ? 'Jogo no link do perfil. Código no menu Sobre o jogo.' : 'Jogo grátis no link do perfil.'} ${card.kind === 'map' || card.kind === 'dev' ? 'Captura do jogo de 06/09/2026.' : 'Arte do jogo.'} #CoroSolto`;
     else caption = `${question}\n\n${caption}`;
-    const sourceNote = card.kind === 'map' || card.kind === 'dev' ? 'Captura histórica real de 06/09/2026; não afirma cenário atual.' : 'Arte promocional ou retrato do menu; não é screenshot de combate.';
-    rows.push({ id: `2026-10-${day}-${channel}`, date: `2026-10-${day}`, channel, account: '@corosolto', cardId: card.id, question, caption, alt: card.alt, asset: asset.file, assetSha256: asset.sha256, profileAsset: `exports/${card.id}-story.png`, url, campaign: campaign(card), attribution: 'first-touch por navegador; não mede retorno atribuível nem clique seguinte no repo', placement: ['instagram', 'tiktok'].includes(channel) ? 'Revisar link do perfil para esta peça antes de postar; não presumir link clicável na legenda.' : 'Link na legenda; confirmar suporte na superfície escolhida.', status: 'awaiting_owner_approval', sourceNote });
+    const sourceNote = card.kind === 'political' ? 'Caricaturas 3D existentes do jogo; alternativa ao post da data, não postagem adicional. Publicação depende do dono.' : card.kind === 'map' || card.kind === 'dev' ? 'Captura histórica real de 06/09/2026; não afirma cenário atual.' : 'Arte promocional ou retrato do menu; não é screenshot de combate.';
+    rows.push({ id: `2026-10-${day}-${channel}${card.kind === 'political' ? '-' + card.id : ''}`, ...(card.kind === 'political' ? { alternativeTo: `2026-10-${day}-${channel}` } : {}), date: `2026-10-${day}`, channel, account: '@corosolto', cardId: card.id, question, caption, alt: card.alt, asset: asset.file, assetSha256: asset.sha256, profileAsset: `exports/${card.id}-story.png`, url, campaign: campaign(card), attribution: 'first-touch por navegador; não mede retorno atribuível nem clique seguinte no repo', placement: ['instagram', 'tiktok'].includes(channel) ? 'Revisar link do perfil para esta peça antes de postar; não presumir link clicável na legenda.' : 'Link na legenda; confirmar suporte na superfície escolhida.', status: 'awaiting_owner_approval', sourceNote });
   }
 }
 for (const day of [15, 20, 24]) {
@@ -60,4 +63,4 @@ for (const card of cards) {
   for (const [channel, copy] of Object.entries(card.captions)) captions += `### ${channel}\n\n${copy.replaceAll('{url}', link(card, channel))}\n\n`;
 }
 fs.writeFileSync(path.join(root, 'CAPTIONS.md'), captions);
-console.log(`Fila local gerada: ${rows.length} rascunhos de canal, 15 datas. Sem agenda instalada.`);
+console.log(`Fila local gerada: ${rows.length} rascunhos de canal, 15 datas com alternativas políticas. Sem agenda instalada.`);

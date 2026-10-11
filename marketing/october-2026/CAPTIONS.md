@@ -116,3 +116,57 @@ Quer contribuir com o CORO SOLTO sem começar por um PR? Testa uma partida e abr
 
 O código está aberto. Uma captura do erro ajuda, desde que você retire nomes, emails e outros dados pessoais antes de anexar. Abra o jogo. O código fica no menu Sobre o jogo: https://www.corosolto.com.br/?utm_source=linkedin&utm_medium=organic_social&utm_campaign=outubro2026_05_convite_teste
 
+## 06-barbudo
+
+### x
+
+Barbudo do Planalto entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. https://www.corosolto.com.br/?utm_source=x&utm_medium=organic_social&utm_campaign=outubro2026_06_barbudo
+
+### tiktok
+
+Barbudo do Planalto entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. Link do perfil. #CoroSolto
+
+### instagram
+
+Barbudo do Planalto entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. Link do perfil. #CoroSolto
+
+### youtube
+
+Barbudo do Planalto entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. https://www.corosolto.com.br/?utm_source=youtube&utm_medium=organic_social&utm_campaign=outubro2026_06_barbudo
+
+## 07-capitao
+
+### x
+
+Capitão do Cercadinho entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. https://www.corosolto.com.br/?utm_source=x&utm_medium=organic_social&utm_campaign=outubro2026_07_capitao
+
+### tiktok
+
+Capitão do Cercadinho entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. Link do perfil. #CoroSolto
+
+### instagram
+
+Capitão do Cercadinho entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. Link do perfil. #CoroSolto
+
+### youtube
+
+Capitão do Cercadinho entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. https://www.corosolto.com.br/?utm_source=youtube&utm_medium=organic_social&utm_campaign=outubro2026_07_capitao
+
+## 08-duelo-politico
+
+### x
+
+Barbudo do Planalto ou Capitão do Cercadinho? As caricaturas fazem parte do elenco do CORO SOLTO. Escolha seu personagem e entre na partida. https://www.corosolto.com.br/?utm_source=x&utm_medium=organic_social&utm_campaign=outubro2026_08_duelo_politico
+
+### tiktok
+
+Barbudo do Planalto ou Capitão do Cercadinho? As caricaturas fazem parte do elenco do CORO SOLTO. Escolha seu personagem e entre na partida. Jogo grátis no link do perfil. #CoroSolto
+
+### instagram
+
+Barbudo do Planalto ou Capitão do Cercadinho? As caricaturas fazem parte do elenco do CORO SOLTO. Escolha seu personagem e entre na partida. Jogo grátis no link do perfil. #CoroSolto
+
+### youtube
+
+Barbudo do Planalto ou Capitão do Cercadinho? As caricaturas fazem parte do elenco do CORO SOLTO. Escolha seu personagem e entre na partida. https://www.corosolto.com.br/?utm_source=youtube&utm_medium=organic_social&utm_campaign=outubro2026_08_duelo_politico
+

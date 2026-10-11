@@ -27,3 +27,9 @@ Preparação funciona inteiramente local: arquivos, legenda, UTMs e decisões de
 ## Comunicação real de benefícios
 
 Call to action do kit: jogo gratuito de navegador e repo aberto para contribuição. A página pública confirma estes caminhos; leitura HTML não é prova de partida completa. Conta/social ainda draft não aparecem como benefício entregue. Proposta de monetização não prova emblema/cosmético/ads ativos e não entra nas peças. Nenhuma métrica de jogadores, retenção, alcance ou receita está na copy.
+
+## Personagens e alternativas políticas
+
+O kit tem oito cards em três formatos (24 PNG/SVG). Canarinho tem enquadramento ampliado. As três alternativas políticas são Barbudo do Planalto, Capitão do Cercadinho e os dois juntos; usam artes 3D caricatas existentes das telas de resultado, com os nomes do jogo e procedência em SOURCES.json. São peças sociais; OG images do site não foram modificadas.
+
+A fila contém 63 rascunhos originais e 12 alternativas políticas nas datas12,17,23. Cada alternativa traz alternativeTo: escolha uma versão para aquele canal/data, sem somar publicações automaticamente. Todas aguardam revisão e autorização de publicar. Regenerar arte invalida aprovação anterior por hash. URL sempre www.corosolto.com.br.

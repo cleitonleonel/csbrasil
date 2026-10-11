@@ -21,7 +21,14 @@
       "tiktok": "Do menu pra treta. Escolhe o personagem e testa o CORO SOLTO no navegador. Jogo grátis, link do perfil. #CoroSolto #JogoBrasileiro",
       "instagram": "O Canarinho já tá pistola. Falta você entrar na partida. CORO SOLTO é um FPS grátis de navegador. A arte é do jogo; o combate você testa no link do perfil. #CoroSolto #JogoBrasileiro",
       "youtube": "Entre na troca de tiros | CORO SOLTO\nFPS grátis de navegador. Escolha personagem e mapa para testar: {url}\nImagem: arte promocional do personagem."
-    }
+    },
+    "crop": [
+      140,
+      40,
+      800,
+      1050
+    ],
+    "imageFit": "slice"
   },
   {
     "id": "02-escolha-personagem",
@@ -45,7 +52,13 @@
       "tiktok": "Esse bico entrega o humor dele. Quem você escolhe pra treta? CORO SOLTO, grátis no navegador. Link do perfil. #CoroSolto #CanarinhoPistola",
       "instagram": "Canarinho Pistola no retrato do menu. Escolha seu personagem e entre na partida. Depois conta qual você levou pra treta. Link do perfil. #CoroSolto",
       "youtube": "Quem vai pra treta? | Canarinho Pistola\nVeja o elenco e escolha seu personagem no CORO SOLTO: {url}\nImagem: retrato promocional usado no menu, não captura do modelo em combate."
-    }
+    },
+    "crop": [
+      30,
+      0,
+      450,
+      512
+    ]
   },
   {
     "id": "03-mapas",
@@ -119,6 +132,117 @@
       "instagram": "O próximo teste pode ser seu. Abra o jogo, escolha uma partida e conte como foi. Achou um bug? Mapa, navegador e passos pra reproduzir ajudam a corrigir. Feedback dentro do jogo. Link do perfil. #CoroSolto",
       "youtube": "Joga uma. Conta pra gente. | Teste CORO SOLTO\nAbra uma partida: {url}\nPara reportar um bug, use Feedback no jogo e informe mapa, navegador e passos pra reproduzir.",
       "linkedin": "Quer contribuir com o CORO SOLTO sem começar por um PR? Testa uma partida e abre uma issue com mapa, navegador e passos pra reproduzir.\n\nO código está aberto. Uma captura do erro ajuda, desde que você retire nomes, emails e outros dados pessoais antes de anexar. Abra o jogo. O código fica no menu Sobre o jogo: {url}"
+    },
+    "crop": [
+      140,
+      40,
+      800,
+      1050
+    ],
+    "imageFit": "slice"
+  },
+  {
+    "id": "06-barbudo",
+    "kind": "political",
+    "kicker": "PERSONAGENS · SÁTIRA DO JOGO",
+    "headline": [
+      "BARBUDO",
+      "NA TRETA."
+    ],
+    "description": [
+      "Barbudo do Planalto.",
+      "Escolha seu personagem."
+    ],
+    "image": "barbudo-vitoria.webp",
+    "crop": [
+      400,
+      100,
+      624,
+      550
+    ],
+    "imageLabel": "CARICATURA 3D · ARTE DO JOGO",
+    "cta": "ESCOLHA E JOGUE",
+    "destination": "play",
+    "alt": "Barbudo do Planalto, caricatura 3D existente do CORO SOLTO, em destaque. Texto: BARBUDO NA TRETA. Escolha e jogue.",
+    "captions": {
+      "x": "Barbudo do Planalto entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. {url}",
+      "tiktok": "Barbudo do Planalto entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. Link do perfil. #CoroSolto",
+      "instagram": "Barbudo do Planalto entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. Link do perfil. #CoroSolto",
+      "youtube": "Barbudo do Planalto entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. {url}"
+    }
+  },
+  {
+    "id": "07-capitao",
+    "kind": "political",
+    "kicker": "PERSONAGENS · SÁTIRA DO JOGO",
+    "headline": [
+      "CAPITÃO",
+      "NA TRETA."
+    ],
+    "description": [
+      "Capitão do Cercadinho.",
+      "Escolha seu personagem."
+    ],
+    "image": "capitao-vitoria.webp",
+    "crop": [
+      400,
+      100,
+      624,
+      550
+    ],
+    "imageLabel": "CARICATURA 3D · ARTE DO JOGO",
+    "cta": "ESCOLHA E JOGUE",
+    "destination": "play",
+    "alt": "Capitão do Cercadinho, caricatura 3D existente do CORO SOLTO, em destaque. Texto: CAPITÃO NA TRETA. Escolha e jogue.",
+    "captions": {
+      "x": "Capitão do Cercadinho entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. {url}",
+      "tiktok": "Capitão do Cercadinho entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. Link do perfil. #CoroSolto",
+      "instagram": "Capitão do Cercadinho entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. Link do perfil. #CoroSolto",
+      "youtube": "Capitão do Cercadinho entrou na treta. É uma das caricaturas do elenco do CORO SOLTO. Escolha seu personagem e teste o jogo grátis no navegador. {url}"
+    }
+  },
+  {
+    "id": "08-duelo-politico",
+    "kind": "political",
+    "kicker": "PERSONAGENS · SÁTIRA DO JOGO",
+    "headline": [
+      "QUEM VAI",
+      "PRA TRETA?"
+    ],
+    "description": [
+      "Barbudo ou Capitão?",
+      "A escolha é sua no jogo."
+    ],
+    "image": "barbudo-vitoria.webp",
+    "images": [
+      {
+        "image": "barbudo-vitoria.webp",
+        "crop": [
+          400,
+          100,
+          624,
+          550
+        ]
+      },
+      {
+        "image": "capitao-vitoria.webp",
+        "crop": [
+          490,
+          100,
+          470,
+          500
+        ]
+      }
+    ],
+    "imageLabel": "CARICATURAS 3D · ARTE DO JOGO",
+    "cta": "ESCOLHA E JOGUE",
+    "destination": "play",
+    "alt": "Barbudo do Planalto e Capitão do Cercadinho, caricaturas 3D do CORO SOLTO, lado a lado com o mesmo destaque. Texto: Quem vai pra treta? Escolha e jogue.",
+    "captions": {
+      "x": "Barbudo do Planalto ou Capitão do Cercadinho? As caricaturas fazem parte do elenco do CORO SOLTO. Escolha seu personagem e entre na partida. {url}",
+      "tiktok": "Barbudo do Planalto ou Capitão do Cercadinho? As caricaturas fazem parte do elenco do CORO SOLTO. Escolha seu personagem e entre na partida. Jogo grátis no link do perfil. #CoroSolto",
+      "instagram": "Barbudo do Planalto ou Capitão do Cercadinho? As caricaturas fazem parte do elenco do CORO SOLTO. Escolha seu personagem e entre na partida. Jogo grátis no link do perfil. #CoroSolto",
+      "youtube": "Barbudo do Planalto ou Capitão do Cercadinho? As caricaturas fazem parte do elenco do CORO SOLTO. Escolha seu personagem e entre na partida. {url}"
     }
   }
 ]
