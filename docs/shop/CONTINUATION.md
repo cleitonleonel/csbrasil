@@ -271,3 +271,22 @@ CoinSpin/PurchaseReveal; novo visual classico existe apenas no Saci/1 privado,
 tambem com ambosclipes. Restam outros6perfis, demaisclipes locais e integracao/
 retarget/gameplay/mobile. Proximo concretopreservado: expandir direcao classica,
 refinar/otimizar antes integrar; UI/economia na lane propria.
+
+## Retomada autorizada: integrar assets no jogo e avaliar itens
+
+Dono em12/10: vamos integrar no jogo; pergunta por bonés/skins de armas.
+HEAD inicial dbad3e316, branch codex/treta-skin-store-20261011 limpa.
+Escopo: incorporar UI final da lane codex/treta-ui-clean-20261011 (3386f4ee6),
+aderivar versões leves das13skins privadas, retarget por rig dos estados do
+engine, integrar catálogo/previews/equipamento local e validar jogo real.
+Mesmo nome de osso não prova compatibilidade de repouso: não usar
+rigCompatibleWith sem medição. Fontes Mint originais preservadas.
+Moeda clássica atual sóSaci/1; seis perfis ainda pendentes, v2 rejeitada.
+Separar disponibilidade de arquivo, aprovação visual, catálogo/DB produtivos.
+Bonés/óculos/correntes podem usar socket Head; armas primeiro acabamento
+cosmético sem alterar stats/grip/ADS. Itens não têm preços definidos.
+DoD amplo preservado:13skins equipadas SP/MP,7moedas clássicas animadas,
+recompensas por conta/partida/convite e saldo, loja/UI, campanha/compra packs
+autoritativas, desempenho mobile, revisão independente e vídeos.
+Nesta integração não há merge principal/deploy/cobrança/migration remota.
+Próximo: incorporar UI, assar clipes por skin e inspecionar poses no runtime.
