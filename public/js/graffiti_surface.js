@@ -55,8 +55,8 @@ export function criarSuporteGrafite(root, grade) {
         if (normal.dot(direction) > -0.98) return false;
       }
     }
-    // Samples cheaply reject obvious misses. The complete rectangle must then
-    // be covered by the union of visible wall triangles, including its edges.
+    // Amostras rejeitam erros óbvios; depois o retângulo completo e suas bordas
+    // precisam estar cobertos pela união dos triângulos visíveis da parede.
     const candidates = new Set();
     const dx = Math.abs(ux) * w / 2 + Math.abs(nx) * .07;
     const dz = Math.abs(uz) * w / 2 + Math.abs(nz) * .07;

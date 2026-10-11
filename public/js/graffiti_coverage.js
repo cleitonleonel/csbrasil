@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-// Sparse bounds index immutable geometries; queried blocks alone produce
-// temporary world triangles, avoiding a second copy of the map's geometry.
+// Índice esparso da geometria evita manter uma segunda cópia do mapa.
+// Só os blocos consultados produzem triângulos temporários no espaço global.
 const BLOCK = 128, geometryIndices = new WeakMap();
 const EPS = 1e-10;
 const area = poly => Math.abs(poly.reduce((sum, a, i) => {
@@ -28,8 +28,8 @@ function clip(poly, distance) {
 function rectangleClip(poly, w, h) {
   return clip(clip(clip(clip(poly, p => p[0] + w / 2), p => w / 2 - p[0]), p => p[1] + h / 2), p => h / 2 - p[1]);
 }
-// Difference of convex polygons is a disjoint set of convex polygons. Repeating
-// it computes rectangle minus the UNION of actual rendered support triangles.
+// Diferença de polígonos convexos gera fragmentos disjuntos. A repetição
+// calcula o retângulo menos a união dos triângulos realmente desenhados.
 function subtract(subject, cutter) {
   if (!overlaps(boundsOf(subject), boundsOf(cutter))) return [subject];
   const out = []; let inside = subject;
@@ -68,8 +68,8 @@ const boundsOf = poly => poly.reduce((b, p) => [Math.min(b[0], p[0]), Math.min(b
 const overlaps = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
 const quadOf = b => [[b[0], b[1]], [b[2], b[1]], [b[2], b[3]], [b[0], b[3]]];
 const clipBounds = (poly, b) => clip(clip(clip(clip(poly, p => p[0] - b[0]), p => b[2] - p[0]), p => p[1] - b[1]), p => b[3] - p[1]);
-// Adaptive cells bound polygon fragmentation. Each cell's entire area must
-// be covered; subdivision never substitutes samples for triangle coverage.
+// Células adaptativas limitam fragmentação; cada célula exige cobertura inteira.
+// Subdividir não troca a união de triângulos por amostras pontuais.
 function coveredRectangle(w, h, supports, blockers, epsilon) {
   const stack = [{ bounds: [-w / 2, -h / 2, w / 2, h / 2], supports, blockers, depth: 0 }];
   let missingArea = 0;
@@ -87,7 +87,7 @@ function coveredRectangle(w, h, supports, blockers, epsilon) {
       }
       continue;
     }
-    // Numerical tolerance applies only to the sum over the whole art quad.
+    // A tolerância numérica vale uma vez para a soma do quad inteiro.
     let uncovered = [quadOf(bounds)];
     for (const support of node.supports) {
       const clippedSupport = clipBounds(support.poly, bounds);
@@ -112,8 +112,8 @@ function coveredRectangle(w, h, supports, blockers, epsilon) {
 }
 const rendered = material => material && material.visible !== false && material.colorWrite !== false && material.opacity > 0;
 
-// Exact projected coverage uses actual rendered triangles and foreground depths.
-// Numerical tolerance is shared by the entire quad, including tiny triangles.
+// Cobertura projetada usa triângulos visíveis e profundidades da superfície.
+// A tolerância pertence ao quad inteiro, inclusive nos triângulos minúsculos.
 export function criarCoberturaGrafite(superficieGrafitavel, maxDepth) {
   const meshBounds = new WeakMap(), world = new THREE.Matrix4(), local = new THREE.Matrix4(), inverse = new THREE.Matrix4();
   const query = new THREE.Box3(), localQuery = new THREE.Box3(), blockBox = new THREE.Box3(), instanceBox = new THREE.Box3();
@@ -174,8 +174,8 @@ export function criarCoberturaGrafite(superficieGrafitavel, maxDepth) {
               poly = rectangleClip(poly, w, h);
               if (poly.length < 3 || area(poly) <= 0) continue;
               if (signedArea(poly) < 0) poly.reverse();
-              // Reject a visible surface in front of the paint even when its
-              // tiny projected area lies strictly between all 25 sample rays.
+              // Superfície à frente da tinta reprova mesmo quando sua área
+              // pequena fica estritamente entre os 25 raios amostrados.
               const penetrated = clip(clip(poly, p => p[2] + .02), p => -1e-9 - p[2]);
               if (penetrated.length >= 3 && area(penetrated) > 0) return false;
               poly = clip(clip(poly, p => p[2]), p => maxDepth - p[2]);
