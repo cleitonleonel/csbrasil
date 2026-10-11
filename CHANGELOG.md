@@ -23,7 +23,10 @@
 > O conteúdo e as datas das entradas continuam intactos; só o rótulo mudou, porque chamar de
 > 3.3.0 um build com P0 em aberto promete ao jogador uma estabilidade que ele não tem.
 
-## Não lançado — 2026-10-06
+## Não lançado — 2026-10-11
+
+### Adicionado
+- Políticos e Míticos ganham 19 sprites animados no cabeçalho, com transparência, proporção quadrada e versão estática para movimento reduzido. Os fundos dos menus e os sprites alternam a cada 20 segundos enquanto a tela está visível.
 
 ### Corrigido
 - **Multiplayer:** removida a caixa fixa de diagnóstico com FPS, snapshots, jitter, banda e ping. A coleta continua alimentando a telemetria de qualidade por sessão.

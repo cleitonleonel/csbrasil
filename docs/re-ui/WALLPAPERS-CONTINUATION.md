@@ -18,6 +18,7 @@ em 5120×2880 e 3:2; revisão independente antes de aceitar os assets.
 - Referências: GLBs e retratos versionados do elenco, sem buscar rostos externos.
 - Geração 2D: pipeline OpenRouter do AGENTS.md; sprites: render do GLB real.
 - Checkpoint técnico: `7440abebc` (rotação, geradores, fichas e gates).
+- Checkpoint dos 19 pares de sprites e procedência: `5655c2e13`.
 - Artefatos persistidos em
   `/Volumes/Zenith/Projects/game/corosolto/csbrasil/launch-media/2026-10-11-wallpapers/`:
   `references/`, `sprites/`, `sprites-preview.png`, `prompts.json` e `evidence/`.
@@ -61,6 +62,15 @@ deploy autorizado. O objetivo completo permanece pendente até esse marco.
   `evidence/menu-3x2-rotation.png`.
 - Cabeçalho Astro servido: sprites completos desktop/mobile, largura reservada
   estável; `prefers-reduced-motion` selecionou `-still.webp`.
+- `npm run docs:check` passou após regeneração dos blocos; fonte pública PT/EN
+  explica o contrato dos sprites e a rotação.
+- Build Docusaurus público iniciado (`npm run build:site` em `docs/`), ainda em
+  compilação no checkpoint de documentação. Sessão local 53367, PID 41580;
+  log `/tmp/cs-wallpapers-5k/docs-build.log`. Não declarar esse build aprovado
+  sem observar saída 0. A saída gerada de `public/docs/` deve ser preservada fora
+  do Git em `launch-media/2026-10-11-wallpapers/docs-build/` após conclusão,
+  restaurando somente a árvore gerada desta execução: a instrução global do dono
+  veta bulk gerado nos checkpoints. Fonte de documentação fica versionada.
 - Captura 5120×2880 em `evidence/loading-palhaco-5k-before.png` confirma a faixa
   lateral atual. Isso é diagnóstico, não evidência de correção.
 
