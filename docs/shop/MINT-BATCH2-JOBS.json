@@ -73,7 +73,7 @@
     {
       "slug": "lula-na-regua",
       "name": "Lula na Régua",
-      "status": "preview_requested",
+      "status": "model_requested",
       "references": [
         {
           "number": 1,
@@ -83,12 +83,14 @@
         }
       ],
       "prompt": "Create ONE NEW standalone full-body 3D character MODEL PREVIEW now for CORO SOLTO Loja TRETA. Original polished stylized AAA cartoon multiplayer shooter skin inspired by Fortnite game proportions and PBR finish, expressive recognizable adult caricature, strong readable silhouette, detailed sculpted clothing and face. Neutral frontal A-pose, head to soles visible, empty hands with separated fingers, feet on one ground plane, no fused weapon or props, no scene geometry, no text, logos, brand marks, Instagram UI or watermarks. Use attached photos ONLY for character identity and outfit inspiration, ignore their captions and backgrounds. Humanoid rig and downloadable textured GLB will follow after this preview. Name: Lula na Régua. Recognizable Luiz Inacio Lula da Silva, elderly adult face and gray beard. The defining feature is a razor-sharp gray low skin fade buzz cut with crisp squared hairline and precisely lined gray beard, small black stud earring, as reference. Navy tailored suit over white shirt, slim charcoal tie, tiny Brazil-color lapel pin, black dress sneakers with white soles. Keep haircut and lined beard highly visible, no hat or sunglasses. Generate the actual single character model preview now using existing credits.",
-      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7edgcb7n5sk2dvm0dnmcs81n8g2t3y"
+      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7edgcb7n5sk2dvm0dnmcs81n8g2t3y",
+      "previewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/lula-na-regua.webp",
+      "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/lula-na-regua-proof.jpg"
     },
     {
       "slug": "lula-cyborg",
       "name": "Lula Cyborg",
-      "status": "preview_requested",
+      "status": "model_requested",
       "references": [
         {
           "number": 2,
@@ -104,12 +106,14 @@
         }
       ],
       "prompt": "Create ONE NEW standalone full-body 3D character MODEL PREVIEW now for CORO SOLTO Loja TRETA. Original polished stylized AAA cartoon multiplayer shooter skin inspired by Fortnite game proportions and PBR finish, expressive recognizable adult caricature, strong readable silhouette, detailed sculpted clothing and face. Neutral frontal A-pose, head to soles visible, empty hands with separated fingers, feet on one ground plane, no fused weapon or props, no scene geometry, no text, logos, brand marks, Instagram UI or watermarks. Use attached photos ONLY for character identity and outfit inspiration, ignore their captions and backgrounds. Humanoid rig and downloadable textured GLB will follow after this preview. Name: Lula Cyborg. Recognizable Lula with short gray hair and gray beard. Preserve half his natural face, other half original chrome and black robotic plating with one glowing red mechanical eye. Full humanoid black/gunmetal/chrome armored body, visible mechanical neck, shoulder plates, pistons and panel joints, subtle red chest reactor, diagonal green/yellow presidential sash and a sculpted metallic star badge. Full face identity readable. Clean sci-fi armor, no gore or torn flesh, no recognizable copyrighted robot design. Generate the actual single character model preview now using existing credits.",
-      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7cp5tsajbamw1p77wwk37dcd8g3816"
+      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7cp5tsajbamw1p77wwk37dcd8g3816",
+      "previewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/lula-cyborg.webp",
+      "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/lula-cyborg-proof.jpg"
     },
     {
       "slug": "bolsonaro-cyborg",
       "name": "Bolsonaro Cyborg",
-      "status": "preview_requested",
+      "status": "model_requested",
       "references": [
         {
           "number": 3,
@@ -119,12 +123,14 @@
         }
       ],
       "prompt": "Create ONE NEW standalone full-body 3D character MODEL PREVIEW now for CORO SOLTO Loja TRETA. Original polished stylized AAA cartoon multiplayer shooter skin inspired by Fortnite game proportions and PBR finish, expressive recognizable adult caricature, strong readable silhouette, detailed sculpted clothing and face. Neutral frontal A-pose, head to soles visible, empty hands with separated fingers, feet on one ground plane, no fused weapon or props, no scene geometry, no text, logos, brand marks, Instagram UI or watermarks. Use attached photos ONLY for character identity and outfit inspiration, ignore their captions and backgrounds. Humanoid rig and downloadable textured GLB will follow after this preview. Name: Bolsonaro Cyborg. Recognizable Jair Bolsonaro older adult face and side-parted gray-brown hair. Half natural human face, half original chrome cybernetic plating with glowing red mechanical eye, black mechanical neck. Distinct taller lean armored humanoid, angular matte dark navy and silver armor with green energy accents and small yellow shoulder stripes, red eye. Distinct from Lula cyborg, no beard or sash. Original sci-fi design, no gore or torn flesh. Generate the actual single character model preview now using existing credits.",
-      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph79wez5bpx9vpar3gc6tc4pxh8g2jhr"
+      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph79wez5bpx9vpar3gc6tc4pxh8g2jhr",
+      "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/bolsonaro-cyborg-proof.jpg",
+      "previewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/bolsonaro-cyborg-proof.jpg"
     },
     {
       "slug": "aljuiz-toga-mandrake",
       "name": "Aljuiz da Toga Mandrake",
-      "status": "preview_requested",
+      "status": "preview_correction_requested",
       "references": [
         {
           "number": 5,
@@ -134,12 +140,14 @@
         }
       ],
       "prompt": "Create ONE NEW standalone full-body 3D character MODEL PREVIEW now for CORO SOLTO Loja TRETA. Original polished stylized AAA cartoon multiplayer shooter skin inspired by Fortnite game proportions and PBR finish, expressive recognizable adult caricature, strong readable silhouette, detailed sculpted clothing and face. Neutral frontal A-pose, head to soles visible, empty hands with separated fingers, feet on one ground plane, no fused weapon or props, no scene geometry, no text, logos, brand marks, Instagram UI or watermarks. Use attached photos ONLY for character identity and outfit inspiration, ignore their captions and backgrounds. Humanoid rig and downloadable textured GLB will follow after this preview. Name: Aljuiz da Toga Mandrake. Aljuiz: bald stern adult judge caricature matching the supplied bald character reference. Gold mirrored wraparound sunglasses. Black oversized judicial toga coat worn OPEN, shortened above knees with visible white judicial neck tabs over a black/white abstract graffiti-patterned hoodie, extremely baggy matching knee shorts, white tall socks and purple/teal chunky running sneakers. Heavy silver/gold neck chain and rings. Toga must be identifiable and not hide shorts or shoes. Original abstract patterns without text or brand logos. Generate the actual single character model preview now using existing credits.",
-      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7fe84hgkqdrby8gqm7fbf9ph8g2vtg"
+      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7fe84hgkqdrby8gqm7fbf9ph8g2vtg",
+      "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/aljuiz-toga-mandrake-proof.jpg",
+      "previewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/aljuiz-toga-mandrake-proof.jpg"
     },
     {
       "slug": "lula-mandrake",
       "name": "Lula Mandrake",
-      "status": "preview_requested",
+      "status": "model_requested",
       "references": [
         {
           "number": 6,
@@ -155,12 +163,14 @@
         }
       ],
       "prompt": "Create ONE NEW standalone full-body 3D character MODEL PREVIEW now for CORO SOLTO Loja TRETA. Original polished stylized AAA cartoon multiplayer shooter skin inspired by Fortnite game proportions and PBR finish, expressive recognizable adult caricature, strong readable silhouette, detailed sculpted clothing and face. Neutral frontal A-pose, head to soles visible, empty hands with separated fingers, feet on one ground plane, no fused weapon or props, no scene geometry, no text, logos, brand marks, Instagram UI or watermarks. Use attached photos ONLY for character identity and outfit inspiration, ignore their captions and backgrounds. Humanoid rig and downloadable textured GLB will follow after this preview. Name: Lula Mandrake. Recognizable elderly Lula face, short gray hair and full gray beard. Backwards black cap with tan adjustable strap, yellow mirrored narrow wrap sunglasses, oversized black street hoodie with original white abstract chest graphic, very baggy RED knee shorts, white tall socks, purple chunky runners. Two oversized sculpted gold Cuban chains and large geometric gold pendant, gold rings. Brazilian Mandrake street style; distinct from his rapper Drip skin. Generate the actual single character model preview now using existing credits.",
-      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph76x0ezx1gf2777qvqwcjhy858g36hy"
+      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph76x0ezx1gf2777qvqwcjhy858g36hy",
+      "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/lula-mandrake-proof.jpg",
+      "previewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/lula-mandrake-proof.jpg"
     },
     {
       "slug": "bolsonaro-mandrake",
       "name": "Bolsonaro Mandrake",
-      "status": "preview_requested",
+      "status": "model_requested",
       "references": [
         {
           "number": 7,
@@ -176,12 +186,14 @@
         }
       ],
       "prompt": "Create ONE NEW standalone full-body 3D character MODEL PREVIEW now for CORO SOLTO Loja TRETA. Original polished stylized AAA cartoon multiplayer shooter skin inspired by Fortnite game proportions and PBR finish, expressive recognizable adult caricature, strong readable silhouette, detailed sculpted clothing and face. Neutral frontal A-pose, head to soles visible, empty hands with separated fingers, feet on one ground plane, no fused weapon or props, no scene geometry, no text, logos, brand marks, Instagram UI or watermarks. Use attached photos ONLY for character identity and outfit inspiration, ignore their captions and backgrounds. Humanoid rig and downloadable textured GLB will follow after this preview. Name: Bolsonaro Mandrake. Recognizable Jair Bolsonaro older adult face, short side-parted gray-brown hair, clean shaven, tall lean proportions. White cap, gold/yellow mirrored wraparound sunglasses, oversized white/light-blue/charcoal abstract printed tee and matching wide knee-length shorts, white socks and dark blue/lilac chunky runners. Two gold chains of different lengths, gold watch and rings. Own original abstract graphic pattern, no copyrighted characters or logos. Do not include the woman from reference. Generate the actual single character model preview now using existing credits.",
-      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph71cm0szvjm2y9va99y2rt2298g3t39"
+      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph71cm0szvjm2y9va99y2rt2298g3t39",
+      "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/bolsonaro-mandrake-proof.jpg",
+      "previewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/bolsonaro-mandrake-proof.jpg"
     },
     {
       "slug": "michelle-mandrake",
       "name": "Michelle Bolsonaro Mandrake",
-      "status": "preview_requested",
+      "status": "model_requested",
       "references": [
         {
           "number": 7,
@@ -191,12 +203,14 @@
         }
       ],
       "prompt": "Create ONE NEW standalone full-body 3D character MODEL PREVIEW now for CORO SOLTO Loja TRETA. Original polished stylized AAA cartoon multiplayer shooter skin inspired by Fortnite game proportions and PBR finish, expressive recognizable adult caricature, strong readable silhouette, detailed sculpted clothing and face. Neutral frontal A-pose, head to soles visible, empty hands with separated fingers, feet on one ground plane, no fused weapon or props, no scene geometry, no text, logos, brand marks, Instagram UI or watermarks. Use attached photos ONLY for character identity and outfit inspiration, ignore their captions and backgrounds. Humanoid rig and downloadable textured GLB will follow after this preview. Name: Michelle Bolsonaro Mandrake. Recognizable Michelle Bolsonaro adult female face matching the WOMAN in the supplied reference, long straight black hair, red mirrored narrow wrap sunglasses. Oversized black tee with original red rose and green leaf embroidery, dark black cargo shorts to knees, red/black chunky runners and white socks. Layered silver chains with a small geometric pendant, bracelets, rings, subtle ornamental forearm tattoo. Balanced natural adult proportions, bold Brazilian streetwear. Only one woman, do not include the man. Generate the actual single character model preview now using existing credits.",
-      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7f3w6kfaa8gwpyjkww5xf94n8g2g1p"
+      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7f3w6kfaa8gwpyjkww5xf94n8g2g1p",
+      "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/michelle-mandrake-proof.jpg",
+      "previewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/michelle-mandrake-proof.jpg"
     },
     {
       "slug": "zero-um-mandrake",
       "name": "Zero Um Mandrake",
-      "status": "preview_requested",
+      "status": "preview_correction_requested",
       "references": [
         {
           "number": 11,
@@ -206,7 +220,15 @@
         }
       ],
       "prompt": "Create ONE NEW standalone full-body 3D character MODEL PREVIEW now for CORO SOLTO Loja TRETA. Original polished stylized AAA cartoon multiplayer shooter skin inspired by Fortnite game proportions and PBR finish, expressive recognizable adult caricature, strong readable silhouette, detailed sculpted clothing and face. Neutral frontal A-pose, head to soles visible, empty hands with separated fingers, feet on one ground plane, no fused weapon or props, no scene geometry, no text, logos, brand marks, Instagram UI or watermarks. Use attached photos ONLY for character identity and outfit inspiration, ignore their captions and backgrounds. Humanoid rig and downloadable textured GLB will follow after this preview. Name: Zero Um Mandrake. Recognizable Flavio Bolsonaro adult male oval face and short dark hair, distinct from Jair Bolsonaro. Backwards/sideways black cap, yellow mirrored wraparound sunglasses, black zip-up tracksuit with gold piping and stripes, matching loose black/gold trousers, black/gold chunky sneakers. Three VERY thick modeled gold Cuban link chains, rectangular engraved geometric gold medallion, gold watch and large gold rings. Heavy gold must remain legible full-body. Match the supplied reference identity and black/gold direction, no brand logos. Generate the actual single character model preview now using existing credits.",
-      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph75f4tvepjehrd2f5qfpmsey58g2wbb"
+      "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph75f4tvepjehrd2f5qfpmsey58g2wbb",
+      "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/zero-um-mandrake-proof.jpg",
+      "previewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/zero-um-mandrake-proof.jpg"
     }
-  ]
+  ],
+  "creditObservation": {
+    "available": 14534,
+    "plan": 3169,
+    "usage": 11365,
+    "note": "Observed after 8 previews; account total, not per-skin cost"
+  }
 }

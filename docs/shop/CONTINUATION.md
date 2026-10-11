@@ -132,3 +132,7 @@ Definição de pronto da geração somenteMint atingida. Objetivo amplo continua
 ## Novo lote autorizado: oito skins Cyborg/Mandrake
 
 Lula na Regua, Lula Cyborg, Bolsonaro Cyborg, Aljuiz da Toga Mandrake, Lula Mandrake, Bolsonaro Mandrake, Michelle Bolsonaro Mandrake, Zero Um Mandrake. Michelle repetida normalizada. Referencias do dono copiadas sem edicao ao diretorio privado batch2-cyborg-mandrake/references, hashes no MINT-BATCH2-JOBS.json; fichas plans/TRETA-SKINS-BATCH2.md. Escopo somente Mint e creditos existentes, sem compra/Blender/integracao. DoD: oito modelos revisados, rigs e seis clipes Mint por skin, GLB Idle local verificado, provas e pacote privado. HEAD inicial 2255da632, branch codex/treta-skin-store-20261011 limpa. Lote anterior preservado. Proximo: enviar oito previas com referencias, critica independente e Generate uma vez por previa aceita.
+
+## Marco lote2: oito previas geradas, seis aceitas e duas correcoes
+
+Oito chats com referencias do dono e previas Mint concluídas; IDs/URLs no MINT-BATCH2-JOBS.json, capturas privadas. Critica MINT-BATCH2-PREVIEW-REVIEW.md aceitou seis para direcao. Aljuiz reprovado lentes pretas/simbolo tenis; Zero Um reprovado duas correntes/rosto quadrado. Correcoes enviadas uma vez com preview selecionada. Generate acionado uma vez nas seis aceitas (Lula na Regua, dois Cyborgs, Lula/Bolsonaro Mandrake e Michelle); nao declarar malha pronta pelo pedido. Saldo atual14.534após8previas, sem custo exclusivo por skin comprovado. Proximo: revisar duas correcoes e malhas finais antes rig/BasicMovement.
