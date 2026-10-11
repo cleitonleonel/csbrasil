@@ -34,12 +34,17 @@ export async function measureGraffitiArea(root, piece, THREE, predicate) {
       polygon = halfPlane(polygon, a, b, c);
     return polygon;
   };
-  const meaningful = polygon => polygon.length >= 3 && Math.abs(polygonArea(polygon)) > tolerance;
+  const meaningful = polygon => polygon.length >= 3 && Math.abs(polygonArea(polygon)) > 0;
+  const bounds = polygon => polygon.auditBounds ||= polygon.reduce((box, p) =>
+    [Math.min(box[0], p[0]), Math.min(box[1], p[1]), Math.max(box[2], p[0]), Math.max(box[3], p[1])], [Infinity, Infinity, -Infinity, -Infinity]);
   const difference = (subject, cut) => {
+    const s = bounds(subject), t = bounds(cut);
+    if (s[0] >= t[2] || s[2] <= t[0] || s[1] >= t[3] || s[3] <= t[1]) return [subject];
     const output = [];
     let pending = subject;
     for (let i = 0; i < cut.length && meaningful(pending); i++) {
       const p = cut[i], q = cut[(i + 1) % cut.length];
+      if (p[0] === q[0] && p[1] === q[1]) continue;
       const a = p[1] - q[1], b = q[0] - p[0], c = -a * p[0] - b * p[1];
       const [inside, outside] = split(pending, a, b, c);
       if (meaningful(outside)) output.push(outside);
@@ -65,7 +70,7 @@ export async function measureGraffitiArea(root, piece, THREE, predicate) {
   const cache = measureGraffitiArea.geometryCache ||= new WeakMap();
   const indexedBounds = geometry => {
     const position = geometry.attributes.position, indices = geometry.index;
-    const count = Math.floor((indices?.count ?? position.count) / 3), blockSize = 96;
+    const count = indices?.count ?? position.count, blockSize = 96 * 3;
     const previous = cache.get(geometry);
     if (previous?.position === position && previous.indices === indices && previous.count === count
       && previous.pVersion === position.version && previous.iVersion === indices?.version) return previous;
@@ -73,7 +78,7 @@ export async function measureGraffitiArea(root, piece, THREE, predicate) {
     const v = new THREE.Vector3();
     for (let start = 0; start < count; start += blockSize) {
       const box = new THREE.Box3(), end = Math.min(count, start + blockSize);
-      for (let i = start * 3; i < end * 3; i++) box.expandByPoint(v.fromBufferAttribute(position, indices ? indices.getX(i) : i));
+      for (let i = start; i < Math.min(count, end + 2); i++) box.expandByPoint(v.fromBufferAttribute(position, indices ? indices.getX(i) : i));
       blocks.push({ start, end, box });
     }
     const value = { position, indices, count, pVersion: position.version, iVersion: indices?.version, blocks };
@@ -87,7 +92,7 @@ export async function measureGraffitiArea(root, piece, THREE, predicate) {
   for (const mesh of meshes) {
     const geometry = mesh.geometry, eligible = predicate(mesh), lookup = indexedBounds(geometry);
     if (!geometry.boundingBox) geometry.computeBoundingBox();
-    const start = geometry.drawRange.start, end = Math.min(lookup.count * 3, start + geometry.drawRange.count);
+    const start = geometry.drawRange.start, end = Math.min(lookup.count, start + geometry.drawRange.count);
     const spans = Array.isArray(mesh.material)
       ? geometry.groups.map(group => ({ start: Math.max(start, group.start), end: Math.min(end, group.start + group.count), material: mesh.material[group.materialIndex] }))
       : [{ start, end, material: mesh.material }];
@@ -101,9 +106,10 @@ export async function measureGraffitiArea(root, piece, THREE, predicate) {
         const material = span.material;
         if (!material || material.visible === false || material.colorWrite === false || material.opacity <= 0) continue;
         for (const block of lookup.blocks) {
-          if (block.end * 3 <= span.start || block.start * 3 >= span.end || !block.box.intersectsBox(localQuery)) continue;
-          for (let face = Math.max(block.start, Math.ceil(span.start / 3)); face < Math.min(block.end, Math.floor(span.end / 3)); face++) {
-            const vertex = k => lookup.indices ? lookup.indices.getX(face * 3 + k) : face * 3 + k;
+          if (block.end <= span.start || block.start >= span.end || !block.box.intersectsBox(localQuery)) continue;
+          const first = span.start + Math.ceil((Math.max(block.start, span.start) - span.start) / 3) * 3;
+          for (let offset = first; offset < block.end && offset + 2 < span.end; offset += 3) {
+            const vertex = k => lookup.indices ? lookup.indices.getX(offset + k) : offset + k;
             v0.fromBufferAttribute(lookup.position, vertex(0)).applyMatrix4(transform);
             v1.fromBufferAttribute(lookup.position, vertex(1)).applyMatrix4(transform);
             v2.fromBufferAttribute(lookup.position, vertex(2)).applyMatrix4(transform);
@@ -113,7 +119,7 @@ export async function measureGraffitiArea(root, piece, THREE, predicate) {
             let polygon = [v0, v1, v2].map(v => [(v.x - x) * ux + (v.z - z) * uz, v.y - y, (x - v.x) * nx + (z - v.z) * nz]);
             const p = polygon[0], q = polygon[1], r = polygon[2];
             const det = (q[0] - p[0]) * (r[1] - p[1]) - (r[0] - p[0]) * (q[1] - p[1]);
-            if (Math.abs(det) < 1e-14) continue;
+            if (det === 0) continue;
             const du = ((q[2] - p[2]) * (r[1] - p[1]) - (r[2] - p[2]) * (q[1] - p[1])) / det;
             const dv = ((q[0] - p[0]) * (r[2] - p[2]) - (r[0] - p[0]) * (q[2] - p[2])) / det;
             const depth = [du, dv, p[2] - du * p[0] - dv * p[1]];
@@ -199,5 +205,12 @@ if (typeof process !== 'undefined' && process.argv[1] && import.meta.url === new
   await check('affine sheared instance', root(sheared), { ...piece, x: .03 }, true);
   const reflected = panel(-2, 2); reflected.scale.x = -1;
   await check('mirrored support winding', root(reflected), piece, true);
+  const partialGeometry = new THREE.BufferGeometry();
+  partialGeometry.setAttribute('position', new THREE.Float32BufferAttribute([10, 10, .1, -2, 0, .1, 2, 0, .1, 0, 4, .1, 10, 10, .1, 11, 10, .1], 3));
+  partialGeometry.setDrawRange(1, 3);
+  await check('drawRange starts at actual renderer offset', root(new THREE.Mesh(partialGeometry, new THREE.MeshLambertMaterial())), { ...piece, w: .5, h: 1 }, true);
+  const densePlant = new THREE.Mesh(new THREE.PlaneGeometry(.001, .001, 40, 40), new THREE.MeshLambertMaterial());
+  densePlant.position.set(.25, 2.25, .115); densePlant.name = 'plant'; densePlant.userData.nonSolidSurface = true;
+  await check('tessellated foreground accumulates whole area', root(panel(-2, 2), densePlant), piece, false);
   console.log(`Area audit: ${count} serialized-function fixtures passed`);
 }

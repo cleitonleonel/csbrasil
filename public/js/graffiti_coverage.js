@@ -30,14 +30,15 @@ function rectangleClip(poly, w, h) {
 }
 // Difference of convex polygons is a disjoint set of convex polygons. Repeating
 // it computes rectangle minus the UNION of actual rendered support triangles.
-function subtract(subject, cutter, epsilon) {
+function subtract(subject, cutter) {
+  if (!overlaps(boundsOf(subject), boundsOf(cutter))) return [subject];
   const out = []; let inside = subject;
   for (let i = 0; i < cutter.length && inside.length >= 3; i++) {
     const a = cutter[i], b = cutter[(i + 1) % cutter.length];
     if (a[0] === b[0] && a[1] === b[1]) continue;
     const edge = p => (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]);
     const outside = clip(inside, p => -edge(p));
-    if (outside.length >= 3 && area(outside) > epsilon) out.push(outside);
+    if (outside.length >= 3 && area(outside) > 0) out.push(outside);
     inside = clip(inside, edge);
   }
   return out;
@@ -86,23 +87,20 @@ function coveredRectangle(w, h, supports, blockers, epsilon) {
       }
       continue;
     }
-    const cellArea = (bounds[2] - bounds[0]) * (bounds[3] - bounds[1]);
-    // The sum of discarded rounding fragments across cells/operations is less
-    // than the single whole-quad numerical budget, not one tolerance per cell.
-    const fragmentEpsilon = epsilon * cellArea / (w * h) / (node.supports.length + node.blockers.length + 1);
+    // Numerical tolerance applies only to the sum over the whole art quad.
     let uncovered = [quadOf(bounds)];
     for (const support of node.supports) {
       const clippedSupport = clipBounds(support.poly, bounds);
-      if (clippedSupport.length < 3 || area(clippedSupport) <= fragmentEpsilon) continue;
+      if (clippedSupport.length < 3 || area(clippedSupport) <= 0) continue;
       let fragments = [clippedSupport];
       for (const blocker of node.blockers) {
         if (!overlaps(support.bounds, blocker.bounds)) continue;
         const inFront = clip(clipBounds(blocker.poly, bounds), p => support.depth[0] * p[0] + support.depth[1] * p[1] + support.depth[2] - p[2] + 1e-9);
-        if (inFront.length >= 3 && area(inFront) > fragmentEpsilon) fragments = fragments.flatMap(poly => subtract(poly, inFront, fragmentEpsilon));
+        if (inFront.length >= 3 && area(inFront) > 0) fragments = fragments.flatMap(poly => subtract(poly, inFront));
         if (!fragments.length) break;
       }
       for (const fragment of fragments) {
-        uncovered = uncovered.flatMap(poly => subtract(poly, fragment, fragmentEpsilon));
+        uncovered = uncovered.flatMap(poly => subtract(poly, fragment));
         if (!uncovered.length) break;
       }
       if (!uncovered.length) break;
@@ -114,12 +112,8 @@ function coveredRectangle(w, h, supports, blockers, epsilon) {
 }
 const rendered = material => material && material.visible !== false && material.colorWrite !== false && material.opacity > 0;
 
-/** Exact projected-area coverage, including foreground between the ray samples.
- * Candidate meshes are broadphase only. Triangles are transformed transiently,
- * clipped to the full art rectangle and to the 0..5 cm support slab. Hidden and
- * back-facing triangles cannot support paint. An ineligible triangle occludes
- * only support behind it; a hidden plant behind a real wall does not erase art.
- */
+// Exact projected coverage uses actual rendered triangles and foreground depths.
+// Numerical tolerance is shared by the entire quad, including tiny triangles.
 export function criarCoberturaGrafite(superficieGrafitavel, maxDepth) {
   const meshBounds = new WeakMap(), world = new THREE.Matrix4(), local = new THREE.Matrix4(), inverse = new THREE.Matrix4();
   const query = new THREE.Box3(), localQuery = new THREE.Box3(), blockBox = new THREE.Box3(), instanceBox = new THREE.Box3();
@@ -173,19 +167,19 @@ export function criarCoberturaGrafite(superficieGrafitavel, maxDepth) {
               let poly = [a, b, c].map(p => [(p.x - x) * ux + (p.z - z) * uz, p.y - y, (x - p.x) * nx + (z - p.z) * nz]);
               const p0 = poly[0], p1 = poly[1], p2 = poly[2];
               const det = (p1[0] - p0[0]) * (p2[1] - p0[1]) - (p1[1] - p0[1]) * (p2[0] - p0[0]);
-              if (Math.abs(det) <= epsilon) continue;
+              if (det === 0) continue;
               const du = ((p1[2] - p0[2]) * (p2[1] - p0[1]) - (p2[2] - p0[2]) * (p1[1] - p0[1])) / det;
               const dv = ((p1[0] - p0[0]) * (p2[2] - p0[2]) - (p2[0] - p0[0]) * (p1[2] - p0[2])) / det;
               const depth = [du, dv, p0[2] - du * p0[0] - dv * p0[1]];
               poly = rectangleClip(poly, w, h);
-              if (poly.length < 3 || area(poly) <= epsilon) continue;
+              if (poly.length < 3 || area(poly) <= 0) continue;
               if (signedArea(poly) < 0) poly.reverse();
               // Reject a visible surface in front of the paint even when its
               // tiny projected area lies strictly between all 25 sample rays.
               const penetrated = clip(clip(poly, p => p[2] + .02), p => -1e-9 - p[2]);
-              if (penetrated.length >= 3 && area(penetrated) > epsilon) return false;
+              if (penetrated.length >= 3 && area(penetrated) > 0) return false;
               poly = clip(clip(poly, p => p[2]), p => maxDepth - p[2]);
-              if (poly.length < 3 || area(poly) <= epsilon) continue;
+              if (poly.length < 3 || area(poly) <= 0) continue;
               const entry = { poly, depth, area: area(poly), bounds: boundsOf(poly) };
               if (eligible && facing >= .98) supports.push(entry); else blockers.push(entry);
             }

@@ -83,6 +83,7 @@ if (SO_IMPRESSAO) {
   process.exit(0);
 }
 
+const inputFingerprint = impressao();
 const browser = await chromium.launch({
   ...(process.env.CHROME_BIN ? { executablePath: process.env.CHROME_BIN } : { channel: 'chrome' }), headless: true,
   args: ['--mute-audio'],
@@ -143,6 +144,7 @@ export const GRAFITE = `;
    mapa ou o algoritmo da passada mudar e ninguém regerar, o hash não bate e o portão
    fecha. Mesma origem (`graffiti-fingerprint.mjs`) para não discordar de si mesma. */
 const fp = impressao();
+if (JSON.stringify(fp) !== JSON.stringify(inputFingerprint)) throw Error('Fontes alteradas durante o bake; layout anterior preservado. Reinicie com as fontes congeladas.');
 const rodape = `\n/* IMPRESSÃO DIGITAL DAS ENTRADAS (issue #82) — GERADA junto com o layout, ver\n`
   + `   tools/eval/graffiti-fingerprint.mjs. Cobrada por tools/eval/graffiti-layout-check.mjs. */\n`
   + `export const GRAFITE_FP = ${JSON.stringify(fp)};\n`;

@@ -65,6 +65,16 @@ function suite(api, quiet = false) {
     baked(`unsampled narrow foreground ${name} rejects paint`, () => grouped(box(), wallRect(.2, .3, 1, 3, .115, name)), row, 0);
   }
   baked('unsampled narrow penetrating concrete rejects paint', () => grouped(box(), wallRect(.2, .3, 1, 3, .14)), row, 0);
+  for (const segments of [1, 40]) {
+    baked(`unsampled 1mm foreground plant with ${segments * segments * 2} triangles rejects paint`, () => {
+      const plant = new THREE.Mesh(new THREE.PlaneGeometry(.001, .001, segments, segments), new THREE.MeshLambertMaterial());
+      plant.name = 'samambaia'; plant.position.set(.25, 2.25, .115); return grouped(box(), plant);
+    }, row, 0);
+  }
+  baked('dense tiny plant behind actual wall preserves support', () => {
+    const plant = new THREE.Mesh(new THREE.PlaneGeometry(.001, .001, 40, 40), new THREE.MeshLambertMaterial());
+    plant.name = 'samambaia'; plant.position.set(.25, 2.25, .09); return grouped(box(), plant);
+  }, row, 1);
   baked('plant behind actual wall does not erase supported paint', () => grouped(box(), wallRect(.2, .3, 1, 3, .09, 'samambaia')), row, 1);
   baked('undrawn geometry triangles cannot bridge a slit', () => {
     const left = wallRect(-2, .2), right = wallRect(.3, 2);
@@ -252,7 +262,8 @@ if (process.argv.includes('--self-test')) {
     'outermost unsampled edge cannot overhang wall',
     'unsampled narrow foreground samambaia rejects paint',
     'unsampled narrow foreground glass-window rejects paint',
-    'unsampled narrow penetrating concrete rejects paint'
+    'unsampled narrow penetrating concrete rejects paint',
+    'unsampled 1mm foreground plant with 3200 triangles rejects paint'
   ]) assert.ok(exactDetected.some(c => c.name === name), `25-ray-only mutant must fail: ${name}`);
   assert.ok(raysOnlyCases.find(c => c.name === 'joined coplanar walls retain paint across their exact seam')?.ok);
   console.log(JSON.stringify({ exactAreaSelfTest: 'passed', mutation: 'production exact-area guard bypassed, original 25 rays retained',
