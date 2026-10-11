@@ -4,7 +4,7 @@
 
 Veredito atual: nenhum achado P0/P1/P2/P3 pendente no recorte.
 
-- Os 15 PNGs foram vistos. Paleta, tipografia, logo, cortes e legibilidade conferidos. Rodapés usam domínio do dono. Arte promocional e captura histórica identificadas; dev orienta Código no menu Sobre o jogo.
+- Na versão inicial, os 15 PNGs foram vistos. Paleta, tipografia, logo, cortes e legibilidade conferidos. Rodapés usam domínio do dono. Arte promocional e captura histórica identificadas; dev orienta Código no menu Sobre o jogo.
 - 13 assets/fontes conferidos por hash/tamanho; originais comparados com commit261cf59a7 e recibos de mapas. Dimensões/hashes de 15PNG e63vínculos da fila conferem.
 - URLs públicos conferidos no site do dono. Contrato UTM mantém source/medium/campaign, sem utm_content e sem alegação de atribuição de retorno.
 - Diagnóstico independente em Node VM com DOM simulado: alteração de SHA/URL/copy da fila invalida decisão e exporta needs_re_review. Editar legenda invalida imediatamente pelo oninput e muda aviso. Filtro vazio limpa prévia/legenda/aviso e desabilita aprovação.
@@ -15,3 +15,11 @@ Achados corrigidos: sobreposição de rótulo/título; seta sem glifo; área de 
 Limites: sem navegador, partida real, produção ou plataformas sociais. DOM simulado confirma lógica, não a interação visual de index.html. Nenhuma aprovação humana de layout/publicação inferida da revisão. Welcome continua prévia com link de preferências a integrar pela frente social, sem transporte/email-client certificado.
 
 Hash revisado do index.html: abc746377fdc0f32bfc04e7c484fb3583288ae7d705a51aaf8cf056252631dc3.
+
+## Atualização: personagens e sátira política
+
+Crítico independente de contexto limpo revisou HEAD958ffb9c6 em11/10/2026. Sem achados P0/P1/P2/P3. Os24PNG foram olhados individualmente: rostos completos, personagens destacados, títulos e CTAs legíveis em feed/story/paisagem; dupla política com escala visual equilibrada, sem tratamento depreciativo. Somente nomes caricatos do jogo.
+
+15fontes conferidas por bytes/hash,11originais comparados byte a byte com commit261cf59a7 e quatro fontesTTF com glifos/mapa de caracteres/métricas preservados. 24exports conferem dimensões/bytes/SHA;75URLs usam domínio oficial e UTMs;12alternativeTo apontam original da mesma data/canal. Todas as linhas awaiting_owner_approval.
+
+Limites: inspeção de exports, sem browser/aparelho móvel/interfaces sociais/produção. Rótulos auxiliares menores, especialmente em paisagem, podem perder legibilidade com compressão da plataforma. OG images não alteradas. Revisão independente não concede aprovação do dono para publicação.
