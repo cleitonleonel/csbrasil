@@ -47,3 +47,4 @@ try {
 }
 writeFileSync(`${out}/manifest.json`, JSON.stringify(roster.map(c => ({ id: c.id, name: c.name, animated: `/img/roster-sprites/${c.id}.webp`, still: `/img/roster-sprites/${c.id}-still.webp` })), null, 2) + '\n');
 writeFileSync(`${refs}/FONTE.md`, '# Referências do elenco\n\nRender de `public/models/characters/<id>.glb` pelo `public/charvideo.html`,\ncom os materiais do jogo e sem arma adicional. Gerador: `tools/gen-roster-sprites.mjs`.\nNenhuma referência externa ou foto real.\n');
+writeFileSync(`${out}/FONTE.md`, '# Sprites do elenco\n\nRender dos GLBs versionados em `public/models/characters/` pelo `public/charvideo.html`,\ncom materiais do jogo e sem arma adicional. Gerador: `tools/gen-roster-sprites.mjs`.\nWebP animado: 192×192, 24 quadros, 12 fps, alpha; cada personagem tem um still\npara movimento reduzido. Nenhuma foto ou referência externa.\n');
