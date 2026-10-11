@@ -7,12 +7,14 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { stripTypeScriptTypes } from 'node:module';
 import vm from 'node:vm';
+import {execFileSync} from 'node:child_process';
+const vmTimeout=Number(process.env.SOCIAL_VM_TIMEOUT || 1000);
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const backend=process.env.SOCIAL_ENTRY_BACKEND || path.resolve(root,'../../../csbrasil-backend/worktrees/social-community');
 const read=p=>readFileSync(p,'utf8');
 const index=read(path.join(root,'src/pages/index.astro'));
-const community=read(path.join(root,'public/js/community.js'));
+let community=process.argv.includes('--baseline-handle')?execFileSync('git',['show','e024d7a06:public/js/community.js'],{cwd:root,encoding:'utf8'}):read(path.join(root,'public/js/community.js'));
 const entryPath=path.join(root,'public/js/account-entry.js');
 let entrySource=existsSync(entryPath)?read(entryPath):'';
 let authSource=read(path.join(backend,'api/social-auth.ts'));
@@ -21,8 +23,8 @@ let helperSource=existsSync(helperPath)?read(helperPath):'';
 const mutant=process.argv.find(s=>s.startsWith('--mutant='))?.split('=')[1];
 const only=process.argv.find(s=>s.startsWith('--only='))?.split('=')[1];
 if(mutant) {
-  assert(['advertise-disabled','stale-auth-dialog','quit-social-resume','portrait-no-guard','portrait-broad-guard'].includes(mutant),'unknown mutation');
-  if(mutant==='stale-auth-dialog') {
+  assert(['advertise-disabled','stale-auth-dialog','quit-social-resume','portrait-no-guard','portrait-broad-guard','handle-action','share-opt-in','copy-origin'].includes(mutant),'unknown mutation');
+  if(['handle-action','share-opt-in','copy-origin'].includes(mutant)){const pairs={'handle-action':["action('handle',null","action('settings',null"],'share-opt-in':['share.checked=p.settings.share_character===true','share.checked=true'],'copy-origin':['https://www.corosolto.com.br${p.url}','${location.origin}${p.url}']};const [before,after]=pairs[mutant];const changed=community.replace(before,after);assert.notEqual(changed,community,'mutation did not apply');community=changed;}else if(mutant==='stale-auth-dialog') {
     const changed=entrySource.replace('loading=false;if(dialog.open)draw();maybePrompt();','loading=false;maybePrompt();');
     assert.notEqual(changed,entrySource,'mutation did not apply');entrySource=changed;
   }else if(mutant==='advertise-disabled'){
@@ -83,30 +85,30 @@ class Element {
 }
 const all=n=>[n,...n.children.filter(c=>typeof c==='object').flatMap(all)];
 const words=n=>[n.textContent,...n.children.map(c=>typeof c==='string'?c:words(c))].join(' ');
-async function ui(authenticated=false,{nick='Guest',bootSplash=false,runCommunity=true,authGate=null}={}) {
-  const ids=Object.fromEntries(['community','social-status','social-account','social-content','social-unread','account-entry-dialog','account-entry-body','account-entry-close','hub-account-login','account-completion','account-completion-copy','main-menu'].map(id=>[id,new Element(id==='account-completion'?'details':'div')]));
+async function ui(authenticated=false,{nick='Guest',bootSplash=false,runCommunity=true,authGate=null,tab='profile',profileValues={}}={}) {
+  const ids=Object.fromEntries(['community','social-status','social-account','social-content','social-unread','hub-social-unread','account-entry-dialog','account-entry-body','account-entry-close','hub-account-login','account-completion','account-completion-copy','main-menu'].map(id=>[id,new Element(id==='account-completion'?'details':'div')]));
   ids['main-menu'].classList={contains:()=>false};
   if(bootSplash)ids['boot-splash']=new Element('div');
-  ids.community.dataset.tab='profile';
+  ids.community.dataset.tab=tab;
   const storage=new Map([['cs_anon','11111111-1111-4111-8111-111111111111'],['awpbr_token','22222222-2222-4222-8222-222222222222'],['awpbr_nick','Guest'],['awpbr_stats','{"kills":3}']]);
-  const before=Object.fromEntries(storage),navigation=[],calls=[];
+  const before=Object.fromEntries(storage),navigation=[],calls=[],copied=[];
   if(!nick)storage.delete('awpbr_nick');else storage.set('awpbr_nick',nick);
   let loggedIn=authenticated;
   const profile={id:'fixture-account',nick:'Fixture',avatar_url:null,bio:'',level:1,next_level_points:10,kills:0,deaths:0,matches:0,points:0,wins:0,losses:0,kd:0,play_seconds:0,socials:[],history:[],favorites:[],achievements:[],settings:{profile:'public',presence:'friends',activity:'friends'}};
-  const fetch=async(p,opts={})=> {
-    const body=opts.body?JSON.parse(opts.body):null;calls.push({path:p,action:body?.action});
+  Object.assign(profile,profileValues);const fetch=async(p,opts={})=> {
+    const body=opts.body?JSON.parse(opts.body):null;calls.push({path:p,action:body?.action,body});if(body?.action==='handle'){profile.handle=body.handle;profile.url='/u/'+body.handle;}
     if(authGate && p.startsWith('/api/social-auth'))await authGate;
     if(body?.action==='logout')loggedIn=false;
     const out=p.includes('action=providers')?{providers:required,email:true,password:true}:p==='/api/social-auth'?{authenticated:loggedIn,profile:loggedIn?profile:null}:p.includes('action=profile')?{profile}:{profile,friends:[],notifications:[],invites:[],feed:[],blocks:[]};
     return new Response(JSON.stringify(out),{status:200});
   };
   const observers=[];
-  const context=vm.createContext({document:{body:new Element('body'),getElementById:id=>ids[id] || null,createElement:tag=>new Element(tag),createTextNode:text=>text,querySelectorAll:()=>[],addEventListener:()=>{},dispatchEvent:()=>{},hidden:false,activeElement:null},CustomEvent:class {constructor(type,{detail}){this.type=type;this.detail=detail}},MutationObserver:class {constructor(fn){observers.push(fn)}observe(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},location:{origin:'http://localhost:4323',search:'',assign:p=>navigation.push(p)},navigator:{clipboard:{writeText:async()=>{}}},URL,URLSearchParams,fetch,AbortSignal,setInterval:()=>1,setTimeout,clearTimeout,console});
+  const context=vm.createContext({document:{body:new Element('body'),getElementById:id=>ids[id] || null,createElement:tag=>new Element(tag),createTextNode:text=>text,querySelectorAll:()=>[],addEventListener:()=>{},dispatchEvent:()=>{},hidden:false,activeElement:null},CustomEvent:class {constructor(type,{detail}){this.type=type;this.detail=detail}},MutationObserver:class {constructor(fn){observers.push(fn)}observe(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},location:{origin:'http://localhost:4323',search:'',assign:p=>navigation.push(p)},navigator:{clipboard:{writeText:async text=>copied.push(text)}},URL,URLSearchParams,fetch,AbortSignal,setInterval:()=>1,setTimeout,clearTimeout,console});
   let entry=null;
-  if(entrySource){const names=[...entrySource.matchAll(/export\s+(?:async\s+)?(?:function|const)\s+(\w+)/g)].map(m=>m[1]);entry=vm.runInContext('(function(){'+entrySource.replace(/export\s+/g,'')+`;return {${names.join(',')}}})()`,context,{timeout:1000});context.__entry=entry;}
-  if(runCommunity)vm.runInContext(community.replace(/import\s+\{([^}]+)\}\s+from\s+['"]\.\/account-entry\.js['"];?/g,'const {$1}=__entry;'),context,{timeout:1000});
+  if(entrySource){const names=[...entrySource.matchAll(/export\s+(?:async\s+)?(?:function|const)\s+(\w+)/g)].map(m=>m[1]);entry=vm.runInContext('(function(){'+entrySource.replace(/export\s+/g,'')+`;return {${names.join(',')}}})()`,context,{timeout:vmTimeout});context.__entry=entry;}
+  if(runCommunity)vm.runInContext(community.replace(/import\s+\{([^}]+)\}\s+from\s+['"]\.\/account-entry\.js['"];?/g,'const {$1}=__entry;'),context,{timeout:vmTimeout});
   for(let n=0;n<8;n++)await new Promise(resolve=>setImmediate(resolve));
-  return {ids,storage,before,navigation,calls,profile,entry,observers};
+  return {ids,storage,before,navigation,calls,copied,profile,entry,observers};
 }
 
 await check('E01','community rendered in game root',()=> {
@@ -232,6 +234,15 @@ await check('C02','portrait rotate guard exempts only visible community menu',()
   assert.equal(exempt({exists:true,hidden:true,tab:'comunidade'}),false,'hidden community menu suppresses active-game orientation overlay');
   assert.equal(exempt({exists:true,hidden:false,tab:'jogar'}),false,'play tab suppresses gameplay orientation overlay');
   assert.equal(exempt({exists:false,hidden:false,tab:'comunidade'}),false,'missing menu suppresses orientation overlay');
+});
+await check('H01','unique public ID is selectable in game settings and fixed after claim',async()=>{
+ const u=await ui(true,{tab:'settings'});let nodes=all(u.ids['social-content']);const label=nodes.find(n=>n.tagName==='LABEL'&&/ID público/.test(n.textContent));assert(label,'unique ID input absent');const field=all(label).find(n=>n.tagName==='INPUT');assert.equal(field.disabled,false);field.value='treta_unica';const b=nodes.find(n=>n.tagName==='BUTTON'&&n.textContent==='ESCOLHER ID');assert(b,'claim button absent');await b.onclick();assert(u.calls.some(c=>c.action==='handle'&&c.body.handle==='treta_unica'&&!c.body.target),'claim does not use authenticated handle action');nodes=all(u.ids['social-content']);assert(nodes.some(n=>n.tagName==='INPUT'&&n.value==='treta_unica'&&n.disabled),'claimed handle not fixed in UI');
+});
+await check('H02','public character sharing defaults off and is persisted explicitly',async()=>{
+ const u=await ui(true,{tab:'settings'});const nodes=all(u.ids['social-content']),label=nodes.find(n=>n.tagName==='LABEL'&&/último personagem/.test(n.textContent));assert(label,'sharing preference absent');const box=all(label).find(n=>n.tagName==='INPUT');assert.equal(box.checked,false);box.checked=true;await nodes.find(n=>n.tagName==='BUTTON'&&n.textContent==='SALVAR PERFIL').onclick();assert(u.calls.some(c=>c.action==='settings'&&c.body.shareCharacter===true),'sharing choice not persisted');
+});
+await check('H03','share link uses canonical domain and selected public ID',async()=>{
+ const u=await ui(true,{profileValues:{handle:'treta_unica',url:'/u/treta_unica'}});const b=all(u.ids['social-content']).find(n=>n.tagName==='BUTTON'&&n.textContent==='COPIAR LINK');assert(b);await b.onclick();assert.equal(u.copied[0],'https://www.corosolto.com.br/u/treta_unica');
 });
 if(process.env.SOCIAL_ENTRY_API && !only) {
   await check('L01','real local Auth advertises required enabled providers',async()=> {
