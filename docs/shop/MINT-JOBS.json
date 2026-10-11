@@ -132,12 +132,20 @@
       "generationProvider": "TRIPO_P1",
       "finalReview": "General direction preserved; heavy-chain thickness needs closer inspection",
       "finishRevision": {
-        "status": "corrected_model_generating",
+        "status": "corrected_model_completed_in_mint",
         "target": "heavy Cuban link chains and geometric pendant",
         "sourceAssetId": "p97at9cp8yxbxmee0784t0ecys8g3y86",
         "previewName": "Violet Chain Street Baron Preview",
         "previewReview": "Independent critic approved visible heavy links and preserved face/outfit",
-        "proof": "private-assets/treta-store/mint/senador-preview-chains-corrected.jpg"
+        "proof": "private-assets/treta-store/mint/senador-model-chains-corrected.jpg",
+        "assetId": "p97bdwctkpvh37hn2zkct5sykn8g31x3",
+        "modelName": "Violet Chain Street Baron",
+        "mintInfo": {
+          "faces": 4824,
+          "vertices": 7068,
+          "fileSize": "2.7 MB"
+        },
+        "review": "Independent critic approved three visible heavy gold chain layers and preserved direction"
       }
     },
     {

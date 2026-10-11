@@ -116,3 +116,7 @@ Asset p97f2vydpmmj5jkjtxpdp5p6a58g21pw Burgundy Hoop Executive,4.813faces/6.595v
 ## Marco: quatro pacotes animados concluídos
 
 Bolsonaro, Michelle, Lula corrigido e Janja corrigida têm seis clipes BasicMovement concluídos no Mint. Um GLB Idle local por skin, todos com Armature24joints,66channels e4,033333s; hashes e batches no JSON. Michelle e Lula reproduzidos no visualizador com playhead ativo e pose deformada preservada nas capturas *-animated-idle.jpg; gameplay não validado. Senador corrigido Generate acionado uma vez, em processamento. Próximo: finalizar revisão modeloSenador/Animate e fechar relatório com os cinco ativos corretos.
+
+## Marco: Senador corrigido aceito visualmente no3D
+
+Asset p97bdwctkpvh37hn2zkct5sykn8g31x3 Violet Chain Street Baron,4.824faces/7.068v/2,7MB. Crítico aprovou três camadas de correntes pesadas legíveis e direção preservada. Prova senador-model-chains-corrected.jpg. BasicMovement6 Apply acionado uma vez nesse asset. Próximo: confirmar sexto pacote/baixar GLB Idle, verificar os cinco arquivos e fechar relatório.
