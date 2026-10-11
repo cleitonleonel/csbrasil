@@ -244,6 +244,8 @@ export class NetClient {
           // entrou em campo / virou espectador (o servidor confirma; a UI nunca decide sozinha)
           this.yourEnt = m.yourEnt; this.yourTeam = m.yourTeam; this.espectador = !!m.espectador;
           this.onSlot?.(m);
+        } else if (m.type === 'clans') {
+          if (this.meta && Array.isArray(m.clanTags)) this.meta.clanTags = m.clanTags.slice(0, 64);
         } else if (m.type === 'personagem') {
           // um corpo trocou de personagem: o roster da partida acompanha, o netgame remonta a malha
           if (Number.isInteger(m.ent) && typeof m.char === 'string') {

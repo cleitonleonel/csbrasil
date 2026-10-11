@@ -32,53 +32,51 @@ Astro.response.headers.set(
 const parts = (Astro.params.path || '').split('/').filter(Boolean);
 let p: any = null, configured = !!supabaseAdmin;
 
-/* Perfis desligam junto com o ranking (src/lib/site.ts). Mesmo raciocínio da
-   /ranking: 200 + noindex, não 404 - estas URLs estão indexadas, são o que a
-   badge PNG referencia nas redes, e vão voltar. Sem a consulta ao banco, `p`
-   fica null e o template cai no aviso. */
-if (RANKING_ON && supabaseAdmin) {
+if (supabaseAdmin) {
   if (parts.length === 2) {
-    const { data, error } = await supabaseAdmin
-      .from('player_points').select('*').eq('id', parts[0]).maybeSingle();
-    if (error) return Astro.redirect('/ranking', 302);
-    let score: any = data;
-    if (!score) {
-      const { data: player, error: profileError } = await supabaseAdmin
-        .from('players').select('id,nick,social_link,socials,avatar_url')
-        .eq('id', parts[0]).maybeSingle();
-      if (profileError) return Astro.redirect('/ranking', 302);
-      if (player) score = emptyPlayerScore(player);
+    const { data: player, error: profileError } = await supabaseAdmin
+      .from('players').select('id,nick,social_link,socials,avatar_url')
+      .eq('id', parts[0]).eq('hidden', false).maybeSingle();
+    if (profileError) return Astro.redirect('/clans', 302);
+    let score: any = player ? emptyPlayerScore(player) : null;
+    if (player && RANKING_ON) {
+      const { data, error } = await supabaseAdmin
+        .from('player_points').select('*').eq('id', player.id).maybeSingle();
+      if (error) return Astro.redirect('/ranking', 302);
+      score = data || score;
     }
-    p = score ? { ...score, players: {
-      id: score.id, nick: score.nick, social_link: score.social_link,
-      socials: score.socials, avatar_url: score.avatar_url,
-    } } : null;
-    if (p) {
-      const real = p.players.nick;
-      if (decodeURIComponent(parts[1]).toLowerCase() !== real.toLowerCase())
-        return Astro.redirect(`/u/${p.players.id}/${encodeURIComponent(real)}`, 301);
-    }
+    p = score ? { ...score, players: player } : null;
+    if (p && decodeURIComponent(parts[1]).toLowerCase() !== player.nick.toLowerCase())
+      return Astro.redirect(`/u/${player.id}/${encodeURIComponent(player.nick)}`, 301);
   } else if (parts.length === 1) {
     const { data } = await supabaseAdmin
-      .from('players').select('id, nick')
+      .from('players').select('id, nick').eq('hidden', false)
       .eq('nick', decodeURIComponent(parts[0]).slice(0, 14)).maybeSingle();
     if (data) return Astro.redirect(`/u/${data.id}/${encodeURIComponent(data.nick)}`, 301);
   }
 }
-if (RANKING_ON && configured && !p) return Astro.redirect('/ranking', 302);
+if (configured && !p) return Astro.redirect(RANKING_ON ? '/ranking' : '/clans', 302);
 const points = Number(p?.points ?? 0);
 
 const nick = p?.players?.nick ?? parts.join('/') ?? '';
 const pid = p?.players?.id ?? '';
+let clan: any = null;
+if (pid && supabaseAdmin) {
+  const { data } = await supabaseAdmin.from('clan_roster').select('clan_id').eq('player_id', pid).maybeSingle();
+  if (data) {
+    const result = await supabaseAdmin.from('clan_directory').select('id,name,tag').eq('id', data.clan_id).maybeSingle();
+    clan = result.data;
+  }
+}
 const kd = p ? (p.deaths ? (p.kills / p.deaths).toFixed(2) : String(p.kills)) : '0';
 const tempo = p ? displayTime(p) : '0min';
 const [ladoLabel, ladoCor] = p ? sideOf(p.matches_p, p.matches_b) : ['NEUTRO', '#ffd23f'];
 const badgeUrl = abs(`/api/badge/${pid}.png`);
 const pageUrl = abs(`/u/${pid}/${encodeURIComponent(nick)}`);
-const title = `${nick} - ${p ? `${points} pontos, K/D ${kd}` : 'perfil'} | ${BRAND_FULL}`;
-const desc = p
+const title = `${nick} - ${p && RANKING_ON ? `${points} pontos, K/D ${kd}` : 'perfil'} | ${BRAND_FULL}`;
+const desc = p && RANKING_ON
   ? `${nick} no ${BRAND_FULL}: ${points} pontos, ${p.kills} kills, K/D ${kd}, ${p.wins > 0 ? p.wins : 'nenhuma'} vitória(s) e ${tempo} de arena.`
-  : 'Perfil de jogador';
+  : `${nick} no ${BRAND_FULL}${clan ? ` · clã ${clan.name}` : ''}.`;
 
 const socials: any[] = p
   ? (p.players.socials?.length ? p.players.socials
@@ -98,18 +96,18 @@ const jsonld = p ? [
       '@id': pageUrl + '#person',
       name: nick,
       url: pageUrl,
-      image: badgeUrl,
+      image: RANKING_ON ? badgeUrl : abs('/og-image.jpg'),
       description: desc,
       sameAs: socials.map(s => normalizeSocialUrl(s.url)).filter(Boolean),
     },
     mainEntity: { '@id': pageUrl + '#person' },
-    primaryImageOfPage: { '@type': 'ImageObject', url: badgeUrl, width: 840, height: 440 },
+    primaryImageOfPage: { '@type': 'ImageObject', url: RANKING_ON ? badgeUrl : abs('/og-image.jpg'), width: RANKING_ON ? 840 : 1200, height: RANKING_ON ? 440 : 630 },
   },
   {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Início', item: abs('/') },
-      { '@type': 'ListItem', position: 2, name: 'Ranking', item: abs('/ranking') },
+      { '@type': 'ListItem', position: 2, name: RANKING_ON ? 'Ranking' : 'Clãs', item: abs(RANKING_ON ? '/ranking' : '/clans') },
       { '@type': 'ListItem', position: 3, name: nick, item: pageUrl },
     ],
   },
@@ -119,24 +117,16 @@ const jsonld = p ? [
 {/* og:image:width/height vêm por PROP, não pelo slot: desde que o Layout passou
     a emitir as duas (1200×630 por padrão), repetir 840×440 aqui produziria a
     mesma propriedade duas vezes no <head> - e o scraper fica com a primeira. */}
-<Layout title={title} description={desc} ogImage={badgeUrl} ogType="profile"
-        ogImageWidth={840} ogImageHeight={440}
+<Layout title={title} description={desc} ogImage={RANKING_ON ? badgeUrl : undefined} ogType="profile"
+        ogImageWidth={RANKING_ON ? 840 : 1200} ogImageHeight={RANKING_ON ? 440 : 630}
         noindex={!RANKING_ON}
-        ogImageAlt={`Badge de ${nick} no ${BRAND_FULL}: ${p ? p.kills : 0} kills, K/D ${kd}`}
+        ogImageAlt={RANKING_ON ? `Badge de ${nick} no ${BRAND_FULL}: ${p ? p.kills : 0} kills, K/D ${kd}` : `Perfil de ${nick}`}
         jsonld={jsonld}>
   <Fragment slot="head">
     {p && <meta property="profile:username" content={nick} />}
   </Fragment>
 
-  {!RANKING_ON && (
-    <div class="panel">
-      <h1>Perfis desligados por enquanto</h1>
-      <p>O ranking e as páginas de jogador voltarão. Este endereço continua sendo o seu.</p>
-      <p><a href="/mapa">quem está jogando agora</a> · <a href="/changelog">o que mudou</a> ·
-      <a href="/">▶ JOGAR</a></p>
-    </div>
-  )}
-  {RANKING_ON && !configured && (<><h1>{nick}</h1><p>Ranking ainda não configurado.</p></>)}
+  {!configured && (<><h1>{nick}</h1><p>Perfil indisponível no momento.</p></>)}
 
   {p && (
     <>
@@ -154,9 +144,10 @@ const jsonld = p ? [
           return <div style="width:76px;height:76px;border:2px solid var(--line-hi);background:#12100a;display:flex;align-items:center;justify-content:center;font-size:34px;color:var(--amber)">{p.nick[0].toUpperCase()}</div>;
         })()}
         <div>
-          <h1 style="margin-bottom:6px">{nick}</h1>
-          <span class="chip" style={`color:${ladoCor};border-color:${ladoCor}`}>{ladoLabel}</span>
-          <span class="chip" style="margin-left:6px">{p.matches_p}E × {p.matches_b}D</span>
+          <h1 style="margin-bottom:6px">{clan ? `[${clan.tag}] ` : ''}{nick}</h1>
+          {clan && <a class="chip" href={`/clans/${clan.id}`}>{clan.name}</a>}
+          {RANKING_ON && <span class="chip" style={`color:${ladoCor};border-color:${ladoCor}`}>{ladoLabel}</span>}
+          {RANKING_ON && <span class="chip" style="margin-left:6px">{p.matches_p}E × {p.matches_b}D</span>}
           {socials.map(s => {
             const net = s.net || socialNet(s.url), info = NET_INFO[net] || NET_INFO.site;
             return (
@@ -169,6 +160,7 @@ const jsonld = p ? [
         </div>
       </div>
 
+      {RANKING_ON && <>
       <h2>Placar</h2>
       <div class="tstat">
         <div><b>{points}</b><span>pontos</span></div>
@@ -192,16 +184,18 @@ const jsonld = p ? [
         sozinha no card.
       </p>
 
+      </>}
+      {!RANKING_ON && <p>Estatísticas indisponíveis enquanto o ranking está desligado.</p>}
       <h2>Compartilhar</h2>
       <p style="display:flex;gap:10px;flex-wrap:wrap">
         <a class="btn-play" style="margin-left:0;text-decoration:none" target="_blank" rel="noopener"
-           href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Meu placar no ${BRAND_FULL}: ${p.kills} kills, K/D ${kd}, ${p.headshots} headshots. E aí, aguenta a treta?`)}&url=${encodeURIComponent(pageUrl)}`}>
+           href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Meu perfil no ${BRAND_FULL}${clan ? ` · clã ${clan.name}` : ""}. E aí, aguenta a treta?`)}&url=${encodeURIComponent(pageUrl)}`}>
           Postar no X</a>
         <button class="btn-play" type="button" style="margin-left:0;border:1px solid var(--amber);cursor:pointer"
                 data-url={pageUrl}
                 onclick="navigator.clipboard.writeText(this.dataset.url).then(()=>this.textContent='Link copiado!')">
           Copiar link</button>
-        <a class="btn-play" style="margin-left:0;background:transparent;color:var(--amber)!important;text-decoration:none" href="/ranking">Ver ranking</a>
+        {RANKING_ON && <a class="btn-play" style="margin-left:0;background:transparent;color:var(--amber)!important;text-decoration:none" href="/ranking">Ver ranking</a>}
       </p>
     </>
   )}

@@ -366,6 +366,7 @@ class Netcode {
     let dorDoJogador = 0;
     for (const e of snap.ents) {
       const ent = this._netMap.get(e.id);
+      if (ent) ent.clanTag = e.bot ? null : (this.net.meta?.clanTags || []).find(c => c.id === e.id)?.tag || null;
       if (!ent) continue;
       const wasHp = ent.hp, wasAlive = ent.alive;
       ent.hp = e.hp; ent.alive = e.alive;

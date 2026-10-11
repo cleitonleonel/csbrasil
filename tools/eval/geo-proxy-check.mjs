@@ -61,7 +61,8 @@ async function comLocation(loc, fn) {
   }
 }
 
-const ESPERADAS = ['heartbeat', 'perf', 'presence', 'submit-match', 'telemetry'];
+// Clãs mantém operações de perfil no mesmo origin; as rotas de geo continuam cobertas.
+const ESPERADAS = ['clans', 'heartbeat', 'perf', 'presence', 'submit-match', 'telemetry'];
 await comLocation({ search: '', hostname: 'www.csbrasil.online' }, async (api) => {
   const via = [...(api.ROTAS_VIA_SITE || [])].sort();
   cobra(via.join(',') === ESPERADAS.join(','), `GP1 ROTAS_VIA_SITE = [${via}] — esperado [${ESPERADAS}]`);
@@ -70,7 +71,7 @@ await comLocation({ search: '', hostname: 'www.csbrasil.online' }, async (api) =
     cobra(url === `/api/${r}`, `GP1 /api/${r} em produção vai para ${url} — run.app não tem borda, a geo morre (city_daily congelado desde 30/08)`);
   }
   const direta = api.apiUrl('/api/online');
-  cobra(/^https:\/\//.test(direta), `GP1 /api/online deveria continuar direto no backend (veio ${direta}) — o recorte é só das rotas de geo`);
+  cobra(/^https:\/\//.test(direta), `GP1 /api/online deveria continuar direto no backend (veio ${direta}) — online continua direto, sem gravar geo ou operar clãs`);
 });
 await comLocation({ search: '?api=1', hostname: 'localhost' }, async (api) => {
   cobra(api.apiUrl('/api/telemetry') === 'http://localhost:8080/api/telemetry', `GP2 ?api=1 não aponta telemetry para o backend local (${api.apiUrl('/api/telemetry')})`);
