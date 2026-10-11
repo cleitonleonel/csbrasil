@@ -58,10 +58,10 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 > [`public/js/transporte.js`](public/js/transporte.js). Para testar o jogo local
 > sem configurar um servidor multiplayer, comece pelo modo singleplayer.
 
-▶ **Jogue:** <https://www.csbrasil.online>
+▶ **Jogue:** <https://www.corosolto.com.br/>
 
-> **O jogo já se chamou CS BRASIL.** É o mesmo jogo — o domínio continua o
-> mesmo, e o nome antigo segue registrado como nome alternativo pra quem
+> **O jogo já se chamou CS BRASIL.** É o mesmo jogo, e o nome antigo segue
+> registrado como nome alternativo pra quem
 > procura por ele.
 
 > Este jogo nasceu gerado por IA a partir de um único prompt —
@@ -73,7 +73,7 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 
 | Você é… | Leia |
 |---|---|
-| curioso | esta página, e depois <https://www.csbrasil.online> |
+| curioso | esta página, e depois <https://www.corosolto.com.br/> |
 | dev novo (ou agente) | [`docs/README.md`](docs/README.md) → [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | quer entender a stack | [`docs/docs/stack.md`](docs/docs/stack.md) — Three.js, Astro, Supabase, geração de asset, skills |
 | quer contribuir hoje | [issues abertas](https://github.com/corosolto/client/issues) e [`CONTRIBUTING.md`](CONTRIBUTING.md); confira o estado antes de escolher |
