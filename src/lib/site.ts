@@ -22,6 +22,7 @@ export const SITE = 'https://www.csbrasil.online';
 export const BRAND = 'CORO SOLTO';
 export const BRAND_FULL = 'CORO SOLTO: Treta Suprema';
 export const BRAND_ALT = 'CS BRASIL';
+export const SUPPORT_EMAIL = 'ccorosolto@gmail.com';
 
 // Descrições genéricas aqui evitam copiar a contagem editorial de src/data/jogo.ts:
 // o elenco e os mapas jogáveis mudam antes de aquela vitrine ser revalidada.

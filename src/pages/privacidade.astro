@@ -1,0 +1,41 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { BRAND, BRAND_FULL, SUPPORT_EMAIL, abs } from '../lib/site';
+
+const jsonld = [{ '@type': 'BreadcrumbList', itemListElement: [
+  { '@type': 'ListItem', position: 1, name: 'Início', item: abs('/') },
+  { '@type': 'ListItem', position: 2, name: 'Privacidade', item: abs('/privacidade') },
+] }];
+---
+<Layout title={`Privacidade | ${BRAND_FULL}`} description={`Como o ${BRAND} trata dados de jogadores no site e no app, e como pedir a exclusão.`} h1="Privacidade" kicker="Seus dados" jsonld={jsonld}>
+  <Fragment slot="sub">Esta política vale para o site e para o app {BRAND}. Atualizada em 11 de outubro de 2026.</Fragment>
+
+  <h2>Quem responde pelos dados</h2>
+  <p>A equipe do {BRAND} mantém o jogo e atende solicitações sobre dados pelo email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</p>
+
+  <h2>Dados usados para jogar</h2>
+  <p>O jogo guarda no aparelho suas preferências, um identificador de jogador e a credencial que permite reconhecer seu perfil. Os serviços online podem receber esse identificador, apelido, partidas, pontuação, escolhas de mapa e personagem, presença e informações técnicas sobre conexão, versão, erros e desempenho. Esses dados permitem manter o jogo, investigar problemas, proteger partidas e calcular estatísticas.</p>
+  <p>Servidores e provedores de hospedagem recebem o endereço IP para atender conexões e prevenir abuso. A cidade e o país podem ser estimados a partir da conexão. O jogo não solicita localização por GPS. Seu apelido e sua localização aproximada podem aparecer no mapa público de jogadores online; outras pessoas também podem ver seu perfil, avatar e resultados quando esses recursos estiverem disponíveis.</p>
+  <p>Também podemos receber a página de entrada, a origem de um link e informações de campanha para entender como as pessoas chegam ao jogo.</p>
+
+  <h2>Informações que você escolhe enviar</h2>
+  <p>Se você preencher um perfil, podemos guardar avatar e links sociais. Ao usar um provedor de login, recebemos as informações de identidade autorizadas por você, como identificador, nome, email e foto. Não recebemos a senha desse provedor.</p>
+  <p>Feedback e pedidos de suporte incluem o texto e os dados de contato que você informar. O email de novidades tem uma opção própria de consentimento. Você pode retirar essa autorização pelo email de suporte.</p>
+  <p>Se você ativar a opção de contribuir com dados para treinar bots, o jogo envia amostras de movimentos e ações da partida ligadas ao seu identificador. Essa contribuição é opcional e pode ser desativada nas configurações.</p>
+
+  <h2>Chat e segurança</h2>
+  <p>Mensagens enviadas no chat são entregues às pessoas da partida. Denúncias podem guardar a mensagem denunciada, identificadores dos envolvidos, horário e contexto para investigar abuso. Não envie informações pessoais ou credenciais no chat. Use as opções de silenciar e denunciar quando necessário.</p>
+
+  <h2>Serviços que participam do tratamento</h2>
+  <p>Usamos hospedagem e proteção de tráfego da Vercel, Google Cloud e Cloudflare, e banco de dados e armazenamento da Supabase. A Vercel também fornece métricas de navegação e desempenho. Esses serviços podem processar dados fora do seu país. A caixa de suporte usa o Gmail. Quando o encaminhamento de feedback por email está ativo, a mensagem e os campos enviados passam pelo FormSubmit.</p>
+  <p>Esses fornecedores ajudam a operar e proteger o jogo. Links externos abrem serviços com suas próprias políticas de privacidade. A equipe não vende os dados dos jogadores.</p>
+
+  <h2>Conservação e exclusão</h2>
+  <p>Preferências e credenciais locais ficam no aparelho até você limpar os dados do app ou do navegador. Desinstalar o app não apaga o perfil guardado nos serviços online.</p>
+  <p>Perfis e resultados associados permanecem enquanto o perfil for mantido. Dados de suporte, diagnóstico e segurança são conservados conforme a finalidade do atendimento e da proteção do serviço. Ao atender uma solicitação de exclusão, removemos os dados associados ao jogador que pudermos identificar. Registros necessários para investigar fraude ou abuso podem ser preservados durante essa investigação; informaremos as exceções aplicáveis. Estatísticas sem vínculo com uma pessoa podem permanecer.</p>
+  <p>Consulte <a href="/excluir-dados">como pedir a exclusão do perfil e dos dados</a>. Você também pode pedir acesso ou correção e esclarecer dúvidas pelo email de suporte. Não envie senhas nem tokens.</p>
+
+  <h2>Proteção e alterações</h2>
+  <p>As conexões usam HTTPS. Restringimos o acesso administrativo aos serviços e usamos controles de autenticação e prevenção de abuso. Nenhum serviço elimina todos os riscos; comunique problemas pelo suporte.</p>
+  <p>Quando esta política mudar, atualizaremos a data e o conteúdo desta página.</p>
+</Layout>
