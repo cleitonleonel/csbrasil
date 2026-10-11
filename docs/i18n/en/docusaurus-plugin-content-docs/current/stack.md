@@ -188,6 +188,12 @@ committing is byte for byte what the player sees.
 
 ### Roster sprites and rotation {#roster-sprites-and-rotation}
 
+`tools/gen-roster-wallpapers.mjs --prepare-only` prepares the Politicians and
+Mythicals specification and prompts; `--import-masters` converts reviewed masters
+to WebP and normalizes the six loading images. Menus keep 3:2; loading uses exact
+16:9 to fill wide screens without side bands. After import, `npm run media`
+updates rotation and `npm run menuwalls` generates the menu variants.
+
 `tools/gen-roster-sprites.mjs` renders the Politicians and Mythicals GLBs in
 `charvideo.html`, without an additional weapon. It publishes 192×192 WebP with
 alpha, 24 frames at 12 fps, and a still for each character. The header reads the

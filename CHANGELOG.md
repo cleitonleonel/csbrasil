@@ -26,6 +26,7 @@
 ## Não lançado — 2026-10-11
 
 ### Adicionado
+- Políticos e Míticos ganham 19 wallpapers na rotação dos menus. As artes mantêm 3:2; os seis loadings usam 16:9 exato, e o palhaço vermelho recebe uma composição mais larga para preencher a tela 5K sem faixas laterais.
 - Políticos e Míticos ganham 19 sprites animados no cabeçalho, com transparência, proporção quadrada e versão estática para movimento reduzido. Os fundos dos menus e os sprites alternam a cada 20 segundos enquanto a tela está visível.
 
 ### Corrigido

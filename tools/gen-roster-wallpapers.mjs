@@ -2,9 +2,11 @@ import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync } from
 import { spawn } from 'node:child_process';
 import vm from 'node:vm';
 import path from 'node:path';
+import sharp from 'sharp';
 
 const source = readFileSync('public/js/characters.js', 'utf8');
 const roster = vm.runInNewContext(source.match(/export const CHARACTERS = (\[[\s\S]*?\n\]);/)[1]).filter(c => c.team === 'P' || c.team === 'M');
+const weapons = vm.runInNewContext('(' + source.match(/export const CHAR_WEAPON = (\{[\s\S]*?\n\});/)[1] + ')');
 const masters = process.env.MASTERS || '../../../launch-media/2026-10-11-wallpapers';
 mkdirSync(masters, { recursive: true });
 mkdirSync('plans', { recursive: true });
@@ -18,14 +20,35 @@ for (let i = 0; i < roster.length; i++) {
   const c = roster[i];
   jobs.push({
     id: `wall-${29 + i}`, character: c.id, aspect: '3:2', width: 3072,
-    refs: [`references/wallpapers-roster/${c.id}.png`, 'public/img/wall-20.webp'],
-    prompt: `Create a new CORO SOLTO game menu wallpaper of ${c.name}. Image 1 is the EXACT current game character render: preserve its face, costume, colors, hairstyle, silhouette, body proportions, signature details and weapon. ${c.blurb} Image 2 supplies only the cinematic Brazilian environment, lighting, composition and exact CORO SOLTO TRETA SUPREMA logo. Show ONLY the character from image 1, full body in the right half, head and feet safely inside the middle 75 percent of the canvas so a 16:9 screen can crop the top and bottom without cutting the figure. ${c.team === 'P' ? 'Keep the character clearly a satirical stylized 3D caricature, never a photograph or realistic real person. Environment: rainy Brasilia civic plaza at blue hour, modern Brazilian architecture, warm street lamps.' : 'Environment: an original Brazilian landscape suited to the character, with recognizable Brazilian vegetation or colonial/cangaco architecture, atmospheric dusk and cinematic lighting.'} Wide 3:2 composition with quiet dark negative space on the left for menu controls. Place the exact small logo from image 2 in the upper left SAFE AREA at least 12 percent below the top. Integrate the figure naturally into the scene with ground contact, shadow and consistent lighting. Sharp detailed original game key art. Edge-to-edge continuous environment. No borders, no blur panels, no extra characters, no watermarks, no captions, no gore, no real-world political party logos.`,
+    refs: [`references/wallpapers-roster/${c.id}.png`, 'public/img/wall-20.webp', `public/img/weapons/${weapons[c.id]}.webp`],
+    prompt: `Use case: style-transfer. Create a new CORO SOLTO game menu wallpaper of ${c.name}. Image 1 is the EXACT current game character render: preserve its face, costume, colors, hairstyle, silhouette, body proportions and signature details. ${c.blurb} Image 2 supplies only the cinematic Brazilian environment, lighting, composition and exact CORO SOLTO TRETA SUPREMA logo; do not copy its woman into the scene. Image 3 supplies the ${weapons[c.id]} firearm: give the character this weapon held naturally, finger outside trigger, muzzle lowered. Show ONLY the character from image 1, full body in the right half, head and feet safely inside the middle 70 percent of the canvas so a 16:9 screen can crop the top and bottom without cutting the figure. ${c.team === 'P' ? 'Keep the character clearly a satirical stylized 3D caricature with the same exaggerated proportions as image 1, never a photograph or realistic real person. Environment: rainy Brasilia civic plaza at blue hour, modern Brazilian architecture, warm street lamps.' : 'Environment: an original Brazilian landscape suited to the character, with recognizable Brazilian vegetation or colonial/cangaco architecture, atmospheric dusk and cinematic lighting. Keep the game character stylized and recognizable from image 1.'} Landscape 3:2 composition, ideally 3072×2048, with quiet dark negative space on the left for menu controls. Place the exact small logo from image 2 in the upper left SAFE AREA at least 15 percent below the top. Integrate the figure naturally into the scene with ground contact, shadow and consistent lighting. Sharp detailed original game key art. Edge-to-edge continuous environment. No borders, no blur panels, no extra characters, no watermarks, no captions, no gore, no real-world political party logos.`,
   });
 }
 writeFileSync('public/img/roster-wallpapers.json', JSON.stringify(wallpapers, null, 2) + '\n');
 writeFileSync('plans/WALLPAPERS-ROSTER.md', '<!-- spec:time -->\n# Wallpapers do elenco atual\n\n' + roster.map((c, i) => `## ${i + 1}. ${c.name} — arte do elenco\n\n- **Visual:** ${c.blurb} Identidade exata do GLB versionado.\n- **Papel:** wallpaper e sprite do personagem existente; não altera gameplay.\n- **Arma:** wallpapers seguem CHAR_WEAPON; sprites usam o render sem arma do charvideo.html.\n- **Mecânica:** mantém as habilidades existentes; varia somente apresentação e rotação de mídia.\n- **Procedência:** public/models/characters/${c.id}.glb; references/wallpapers-roster/FONTE.md.\n`).join('\n') + '\n## Vetos e aceite\n\nCaricaturas políticas seguem CONTRIBUTING.md; sem foto real, copyright externo ou gore.\nMenu 3:2; loading 16:9; sprite transparente quadrado; revisão independente no tamanho servido.\n');
 writeFileSync(path.join(masters, 'prompts.json'), JSON.stringify(jobs, null, 2) + '\n');
-const requested = process.argv.slice(2);
+const requested = process.argv.slice(2).filter(a => !a.startsWith('--'));
+if (process.argv.includes('--prepare-only')) process.exit(0);
+if (process.argv.includes('--import-masters')) {
+  for (const job of jobs) {
+    if (requested.length && !requested.includes(job.id) && !requested.includes(job.character)) continue;
+    const source = path.join(masters, `${job.id}-source.png`);
+    if (!existsSync(source)) throw new Error(`master ausente: ${source}`);
+    const loading = job.id === 'loading-roster-red';
+    const output = `public/img/${loading ? 'loading-1' : job.id}.webp`;
+    if (loading && !existsSync(path.join(masters, 'previous-loading-1.webp'))) copyFileSync(output, path.join(masters, 'previous-loading-1.webp'));
+    await sharp(source).resize(loading ? 1664 : 1536, loading ? 936 : 1024, { fit: 'cover', position: 'centre' }).webp({ quality: 90, smartSubsample: true }).toFile(output);
+  }
+  for (let i = 2; i <= 6 && (!requested.length || requested.includes('loading-roster-red')); i++) {
+    const output = `public/img/loading-${i}.webp`;
+    const previous = path.join(masters, `previous-loading-${i}.webp`);
+    if (!existsSync(previous)) copyFileSync(output, previous);
+    await sharp(previous).resize(1664, 936, { fit: 'cover', position: 'centre' }).webp({ quality: 90, smartSubsample: true }).toFile(output);
+  }
+  writeFileSync('public/img/roster-wallpapers-FONTE.md', '# Wallpapers do elenco — 11/10/2026\n\nGPT integrado do Codex, autorizado pelo dono após OpenRouter HTTP 402.\nReferências: GLBs versionados, renders de charvideo.html, wall-20 e thumbnails\ndas armas de CHAR_WEAPON. Sem foto externa. Os políticos são caricaturas do jogo.\nMasters e prompts: launch-media/2026-10-11-wallpapers/ no workspace.\nImportação: tools/gen-roster-wallpapers.mjs --import-masters; menu 1536×1024,\nloading 1664×936. A normalização conserva proporção e não estica a arte.\n\n' + wallpapers.map(w => `- ${w.wall}: ${w.name} (${w.id})`).join('\n') + '\n\nloading-1: recomposição GPT do palhaço original; loading-2..6: enquadramento\n16:9 das artes existentes, com originais preservados fora do Git.\n');
+  console.log(requested.length ? `masters importados: ${requested.join(', ')}` : `${wallpapers.length} wallpapers importados; 6 loadings normalizados`);
+  process.exit(0);
+}
 for (const job of jobs) {
   if (requested.length && !requested.includes(job.id) && !requested.includes(job.character)) continue;
   if (existsSync(`public/img/${job.id}.webp`)) { console.log(`${job.id}: já gerado`); continue; }

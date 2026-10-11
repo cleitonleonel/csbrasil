@@ -189,6 +189,12 @@ de commitar é byte a byte o que o jogador vê.
 
 ### Sprites do elenco e rotação
 
+`tools/gen-roster-wallpapers.mjs --prepare-only` prepara a ficha e os prompts dos
+Políticos e Míticos; `--import-masters` converte masters revisados para WebP e
+normaliza os seis loadings. Menus mantêm 3:2; loading usa 16:9 exato para preencher
+telas largas sem faixas laterais. Depois da importação, `npm run media` atualiza
+a rotação e `npm run menuwalls` gera as variantes de menu.
+
 `tools/gen-roster-sprites.mjs` renderiza os GLBs de Políticos e Míticos no
 `charvideo.html`, sem arma adicional. Publica WebP com alpha em 192×192, 24 quadros
 a 12 fps, mais um still por personagem. O cabeçalho usa o manifesto de
