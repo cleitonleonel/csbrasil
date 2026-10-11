@@ -8,15 +8,31 @@ function canvas(w, h) { const c = document.createElement('canvas'); c.width = w;
 const _texQS = (() => { try { return new URLSearchParams(location.search); } catch (e) { return new URLSearchParams(''); } })();
 const TEXEL_ON = _texQS.get('texel') !== '0';
 const SURFACE_MACRO_ON = _texQS.get('surfacemacro') !== '0';
-const ANISO_TEX = (() => {
+let ANISO_TEX = (() => {
   let quality = 'med';
   try { quality = JSON.parse(localStorage.getItem('awpbr_settings') || '{}').quality || quality; } catch (e) { /* noop */ }
   quality = _texQS.get('q') || quality;
   return !TEXEL_ON ? 1 : (quality === 'low' ? 4 : 8);
 })();
+const SAMPLER_SOURCES = new WeakSet();
+
+export function ajustarAnisotropia(root, quality) {
+  const q = _texQS.get('q') || quality;
+  ANISO_TEX = !TEXEL_ON ? 1 : (q === 'low' ? 4 : 8);
+  const seen = new Set();
+  root?.traverse(o => {
+    for (const material of Array.isArray(o.material) ? o.material : [o.material]) {
+      const t = material?.map;
+      if (!t || seen.has(t) || !SAMPLER_SOURCES.has(t.source)) continue;
+      seen.add(t);
+      if (t.anisotropy !== ANISO_TEX) { t.anisotropy = ANISO_TEX; t.needsUpdate = true; }
+    }
+  });
+}
 
 function tex(c, repeat = 1, ry = null) {
   const t = new THREE.CanvasTexture(c);
+  SAMPLER_SOURCES.add(t.source);
   t.colorSpace = THREE.SRGBColorSpace;
   /* NearestFilter fica: decisão travada de direção de arte (look pixel CS 1.6);
      trocar por Linear mudaria o look do jogo inteiro. */
@@ -137,7 +153,7 @@ export function detailFor(t) {
   if (!t) return null;
   /* Alavanca comum dos 10 mapas: texturas nascidas fora de `tex()` (4 mapas montam
      canvas próprio) também ganham anisotropia aqui. Só sobe quem está no default (1). */
-  if (TEXEL_ON && t.anisotropy <= 1) t.anisotropy = ANISO_TEX;
+  if (TEXEL_ON && t.anisotropy <= 1) { t.anisotropy = ANISO_TEX; SAMPLER_SOURCES.add(t.source); }
   let n = NORMALS.get(t), r = ROUGHS.get(t);
   if (!n && !r && t.source && BY_SOURCE.has(t.source)) {
     const d = BY_SOURCE.get(t.source);

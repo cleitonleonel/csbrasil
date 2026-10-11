@@ -1,6 +1,6 @@
 // Boot, menus, settings, logo, main loop.
 import * as THREE from 'three';
-import { initTextures } from './textures.js';
+import { initTextures, ajustarAnisotropia } from './textures.js';
 import { CHARACTERS, buildCharacter, charWeapon, ladosDe, podeNoLado } from './characters.js';
 import { preloadCharacterAssets, buildCharacterModel, hasModel, GLB_CHARS } from './glbchars.js';
 import { preloadFPArms } from './fparms.js';
@@ -179,6 +179,7 @@ renderer.domElement.addEventListener('webglcontextrestored', () => {
   }
 }
 
+ajustarAnisotropia(null, settings.quality);
 const textures = initTextures();
 const sfx = new Sfx(); sfx.vol = settings.vol;
 sfx.speechEnabled = settings.speech !== false;
@@ -207,6 +208,7 @@ if (!urlMap) { settings.map = currentMap; saveSettings(); }
 const MAP_PROPS = COMMON_MAP_PROPS;   // props do Piscinão de Ramos (Mint); carros/estátua do Havan carregam por-mapa   // Havan (estátua + carros + carrinho)
 let menuScene = new THREE.Scene();
 MAPS[currentMap].build(menuScene, textures);
+ajustarAnisotropia(menuScene, settings.quality);
 const menuCam = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 400);
 /* ---------------- loading real (barra via LoadingManager compartilhado) ---------------- */
 // GLTFLoader sem manager cai no THREE.DefaultLoadingManager — TODOS os GLBs (personagens,
@@ -327,6 +329,7 @@ function hideLoading() {
 function rebuildMenuBackdrop() {
   menuScene = new THREE.Scene();
   MAPS[currentMap].build(menuScene, textures);
+  ajustarAnisotropia(menuScene, settings.quality);
 }
 function menuProps(id) {
   return [...MAP_PROPS, ...((MAPS[id] && MAPS[id].props) || [])];
@@ -3325,7 +3328,7 @@ const updLabels = () => {
 sensEl.oninput = () => { settings.sens = +sensEl.value; updLabels(); saveSettings(); };
 invertEl.onchange = () => { settings.invertY = invertEl.checked; saveSettings(); ui.click(); };
 volEl.oninput = () => { settings.vol = +volEl.value; sfx.setVolume(settings.vol); updLabels(); saveSettings(); };
-qualEl.onchange = () => { settings.quality = qualEl.value; saveSettings(); if (game) game.applySettings(); };
+qualEl.onchange = () => { settings.quality = qualEl.value; saveSettings(); ajustarAnisotropia(menuScene, settings.quality); if (game) game.applySettings(); };
 // Clarão dos tiros (BUG-174): mesma disciplina da qualidade - persiste e aplica AO VIVO,
 // porque quem reclama do clarão está COM A ARMA NA MÃO quando procura o ajuste.
 const fxFlashEl = $('set-fxflash');
