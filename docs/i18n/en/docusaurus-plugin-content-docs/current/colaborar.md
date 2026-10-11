@@ -251,10 +251,10 @@ The registry, generated from the `MAPS` of `public/js/maps.js`:
 
 | Id | Menu name | Opens in | File in `public/js/` | Lines |
 |---|---|---|---|---:|
-| `campomorro` | Campinho do Morro | **capture** | `map_campomorro.js` | 815 |
+| `campomorro` | Campinho do Morro | **capture** | `map_campomorro.js` | 816 |
 | `mansao` | Mansão do Joá | **capture** | `map_mansao.js` | 1,399 |
 | `amazonia` | Treta na Amazônia | **capture** | `map_amazonia.js` | 1,265 |
-| `escadao` | Escadão (Morro) | **capture** | `map_escadao.js` | 1,409 |
+| `escadao` | Escadão (Morro) | **capture** | `map_escadao.js` | 1,410 |
 | `praca_poderes` | Praça dos Três Poderes | rounds | `map_brasilia.js` | 1,987 |
 | `piscina_treta` | Piscina da Treta | rounds | `map_piscina.js` | 1,201 |
 | `loja_h` | Loja H (Estacionamento) | **capture** | `map_havan.js` | 2,061 |

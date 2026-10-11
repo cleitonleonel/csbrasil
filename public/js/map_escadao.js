@@ -276,8 +276,9 @@ export function buildEscadao(scene, T) {
       const tex = loader.load(url, () => {
         mat.map = tex;
         const det = detailFor(tex);
-        if (det && det.normalMap) { mat.normalMap = det.normalMap; mat.normalScale.set(0.65, 0.65); }
-        if (det && det.roughnessMap) mat.roughnessMap = det.roughnessMap;
+        mat.normalMap = det?.normalMap || null;
+        mat.roughnessMap = det?.roughnessMap || null;
+        if (mat.normalMap) { const scale = mat.roughness >= .8 && mat.metalness < .2 ? .4 : .65; mat.normalScale.set(scale, scale); }
         mat.needsUpdate = true;
       });
       tex.colorSpace = THREE.SRGBColorSpace;
