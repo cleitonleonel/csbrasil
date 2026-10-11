@@ -228,3 +228,7 @@ Mint iniciou prévia Standard no chat ph73t9nx870y6p9jcz0arqm3rn8g2qf0, projeto 
 ## Marco: prévia Mint lateral aprovada somente como direção
 
 Três prévias no chat ph73t9nx870y6p9jcz0arqm3rn8g2qf0 mantiveram ângulo3/4 apesar revisões; preservadas e reprovadas para perfil estrito. Novo chat ph71y8j0aqntbcggsr1bdqm68h8g3apk com duas referências originais gerou saci-fresh-profile-preview.webp. Crítico preview-fresh-review.md aprova identidade/perfil/cunhagem somente para uma prova3D. Generate TripoP1 acionado para essa única base; resultado3D/download/verso/clipes/lote ainda pendentes. Tudo privado em coins/mint-classic-v5, prompts/UI/IDs em registro persistente docs/shop/MINT-CLASSIC-COIN-JOB.json. Próximo: concluir job, baixar modelo verdadeiro, conferir relevo/verso; não substituir lote público rejeitado ainda.
+
+## Marco: conversao Tripo P1 rejeitada
+
+Fonte Mint exportada em cena separada, 4990triangulos, SHA c8f8043ff506e6496efdacefa1d4bb16cd83de314ba8222982fd6b5745951e70. Acabamento Blender privado em mint-classic-v5/finished e copia rejected-tripo-conversion: 24101triangulos,2652960B,2clipes. TretaStage/392amostras/18frames passam estrutura/enquadramento, mas critica final-design-review.md REPROVA perda de definicao do retrato e T$ fraco em64px. Nenhum publico substituido ou aceite do dono inferido. Proximo: converter uma unica previa lateral aprovada usando provedor Mint com mais detalhe; verso em cavidade para reforcar leitura. Creditos existentes ja autorizados. Objetivo amplo preservado; outras lanes intactas.
