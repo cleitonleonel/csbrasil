@@ -108,3 +108,7 @@ Animation batch w574pr4pn17n7yvb002spj1ds58g2m61 concluído; visualizador enumer
 ## Marco: Lula corrigido aceito visualmente no3D
 
 Novo asset p978szcm8y7h62zwzaq86a2w6h8g2gq2(4.812faces/3.504v/3MB). Close da malha em lula-model-grillz-corrected.jpg confirma dourado; crítico aprovou grillz e direção preservada. Não é apenas prévia. BasicMovement6 Apply acionado uma vez nesse asset corrigido; card Animating confirmado. Próximo: completar Janja/Senador revisados, salvar GLBs rigados e confirmar seis clipes dos cinco no Mint.
+
+## Marco: Janja corrigida aceita visualmente no3D
+
+Asset p97f2vydpmmj5jkjtxpdp5p6a58g21pw Burgundy Hoop Executive,4.813faces/6.595v/2,6MB. Crítico confirmou ambos os olhos visíveis, lentes opacas corrigidas, direção preservada. Prova janja-model-lenses-corrected.jpg. BasicMovement6 Apply acionado uma vez nesse asset. Senador prévia Violet Chain Street Baron aprovada como direção com três camadas de elos largos. Próximo: Generate Senador, completar os pacotes animados e salvar GLBs privados.

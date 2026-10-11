@@ -130,12 +130,21 @@
       "generationProvider": "TRIPO_P1",
       "finalReview": "Generated; glasses appear opaque/front reflection needs inspection before acceptance",
       "finishRevision": {
-        "status": "corrected_preview_approved",
+        "status": "corrected_model_completed_in_mint",
         "target": "transparent lenses and visible eyes",
         "sourceAssetId": "p97bw80b5vw0qdbcmtcg29bx7h8g3ay2",
         "requestedAt": "2026-10-11T12:10:00+01:00",
         "previewName": "Burgundy Hoop Executive Preview",
-        "previewReview": "Independent critic approved both eyes visible through transparent lenses and preserved mature face/outfit"
+        "previewReview": "Independent critic approved both eyes visible through transparent lenses and preserved mature face/outfit",
+        "assetId": "p97f2vydpmmj5jkjtxpdp5p6a58g21pw",
+        "modelName": "Burgundy Hoop Executive",
+        "mintInfo": {
+          "faces": 4813,
+          "vertices": 6595,
+          "fileSize": "2.6 MB"
+        },
+        "proof": "private-assets/treta-store/mint/janja-model-lenses-corrected.jpg",
+        "review": "Independent critic approved both eyes visible in actual 3D and preserved direction"
       }
     },
     {
