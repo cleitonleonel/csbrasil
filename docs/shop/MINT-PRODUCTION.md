@@ -1,6 +1,6 @@
 # Produção Mint / Blender — coleção TRETA$
 
-Projeto: https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc. Nenhuma geração paga executada. Preview e final têm cobranças separadas; aguardar teto de créditos informado pelo dono e respeitá-lo em cada cobrança. T$800 é o preço no jogo.
+Projeto: https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc. Uso dos créditos existentes autorizado pelo dono em11/10 (“Só gere elas no mint. Podemos usar os créditos”). Preview e final têm cobranças separadas; conferir saldo e registrar custos, sem comprar créditos ou assinatura. Estado dos jobs no ledger CONTINUATION.md. T$800 é o preço no jogo.
 
 ## Prompt comum
 
