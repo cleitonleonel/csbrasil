@@ -48,6 +48,21 @@ function suite(api, quiet = false) {
     });
   }
   baked('wall retains baked paint', () => grouped(box()), row, 1);
+  // Matrizes Float32 dos painéis low 16/9 em map_ferrovelho.js; clipBounds
+  // criava uma aresta invertida de 2,22e-16 m e descartava 1,26/0,43 m² válidos.
+  const ferroClippingCases = [
+    { name: 'Ferro panel16 retains actual Float32 artwork through clipping',
+      matrix: [.051407694816589355, 0, 2.3121559619903564, 0, 0, 3.833750009536743, 0, 0, -.999752938747406, 0, .022228168323636055, 0, 31.479999542236328, 1.9168750047683716, 0, 1],
+      row: [0, 31.425, 1.45, -.146, -1.57, 1.468, 2.1] },
+    { name: 'Ferro panel9 retains actual Float32 artwork through clipping',
+      matrix: [.021646810695528984, 0, 2.3126258850097656, 0, 0, 3.6549999713897705, 0, 0, -.9999561905860901, 0, .009359863586723804, 0, 31.479999542236328, 1.8274999856948853, -15.272727012634277, 1],
+      row: [0, 31.425, 1.45, -15.527, -1.549, 1.05, .8] },
+  ];
+  for (const fixture of ferroClippingCases) baked(fixture.name, () => {
+    const wall = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, .05), new THREE.MeshLambertMaterial(), 1);
+    wall.setMatrixAt(0, new THREE.Matrix4().fromArray(fixture.matrix));
+    return grouped(wall);
+  }, fixture.row, 1);
   test('quantized live quad survives baked roundtrip on narrow real wall', 'live', () => {
     const raw = { x: 0, y: 2, z: .13, ry: 0, w: 1.0006, h: 1.2 };
     const makeRoot = () => grouped(box(1.0007));
@@ -290,6 +305,22 @@ if (process.argv.includes('--self-test')) {
   assert.equal(readFileSync(surfaceURL, 'utf8'), source, 'production support source must remain untouched');
   assert.equal(readFileSync(passURL, 'utf8'), passSource, 'production placement source must remain untouched');
   const exactMarker = 'return covers(piece, candidates);';
+  const coverageURL = new URL('../../public/js/graffiti_coverage.js', import.meta.url);
+  const coverageSource = readFileSync(coverageURL, 'utf8');
+  const normalizationMarker = 'return normalizarPoligono(out);';
+  assert.equal(coverageSource.split(normalizationMarker).length, 2, 'must restore raw production clip output exactly once');
+  const rawClip = coverageSource.replace(normalizationMarker, 'return out;');
+  const rawClipData = `data:text/javascript,${encodeURIComponent(absoluteImports(rawClip, coverageURL))}`;
+  const rawClipSurface = `data:text/javascript,${encodeURIComponent(absoluteImports(source, surfaceURL, { './graffiti_coverage.js': rawClipData }))}`;
+  const rawClipPass = `data:text/javascript,${encodeURIComponent(absoluteImports(passSource, passURL, { './graffiti_surface.js': rawClipSurface }))}`;
+  const rawClipCases = suite(await import(rawClipPass), true);
+  for (const panel of [16, 9]) assert.ok(rawClipCases.some(c => !c.ok && c.name === `Ferro panel${panel} retains actual Float32 artwork through clipping`),
+    `raw clipping mutant must reproduce valid artwork discarded on Ferro panel ${panel}`);
+  assert.ok(rawClipCases.find(c => c.name === 'unsampled 0.001m slit between coplanar walls rejects paint')?.ok,
+    'normalization mutant preserves the 1mm gap control');
+  assert.equal(readFileSync(coverageURL, 'utf8'), coverageSource, 'production coverage source must remain untouched by mutation');
+  console.log(JSON.stringify({ clippingSelfTest: 'passed', mutation: 'production clip returns unnormalized polygons',
+    detected: rawClipCases.filter(c => !c.ok).map(c => c.name) }));
   assert.equal(source.split(exactMarker).length, 2, 'must disable the actual exact-area production guard once');
   const raysOnly = source.replace(exactMarker, 'return true;');
   const raysOnlyData = `data:text/javascript,${encodeURIComponent(absoluteImports(raysOnly, surfaceURL))}`;

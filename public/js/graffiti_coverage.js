@@ -10,6 +10,16 @@ const area = poly => Math.abs(poly.reduce((sum, a, i) => {
 const signedArea = poly => poly.reduce((sum, a, i) => {
   const b = poly[(i + 1) % poly.length]; return sum + a[0] * b[1] - b[0] * a[1];
 }, 0);
+function normalizarPoligono(poly) {
+  const coincidem = (a, b) => [0, 1].every(i =>
+    Math.abs(a[i] - b[i]) <= 8 * Number.EPSILON * Math.max(1, Math.abs(a[i]), Math.abs(b[i])));
+  const out = [];
+  for (const point of poly) {
+    if (!out.length || !coincidem(out[out.length - 1], point)) out.push(point);
+  }
+  if (out.length > 1 && coincidem(out[0], out[out.length - 1])) out.pop();
+  return out;
+}
 function clip(poly, distance) {
   const out = [];
   if (!poly.length) return out;
@@ -23,7 +33,9 @@ function clip(poly, distance) {
     if (bInside) out.push(b);
     a = b; da = db;
   }
-  return out;
+  // Interpolação pode criar arestas invertidas de poucos ULPs; elas não
+  // representam um semiplano. O orçamento de área do quad continua intacto.
+  return normalizarPoligono(out);
 }
 function rectangleClip(poly, w, h) {
   return clip(clip(clip(clip(poly, p => p[0] + w / 2), p => w / 2 - p[0]), p => p[1] + h / 2), p => h / 2 - p[1]);
