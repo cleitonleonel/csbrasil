@@ -13,7 +13,7 @@ if(process.argv.includes('--self-test')){
  const file=fileURLToPath(import.meta.url),normal=spawnSync(process.execPath,[file],{stdio:'inherit'}),mutant=spawnSync(process.execPath,[file,'--mutante=proxy-piscina'],{stdio:'inherit'});
  const pass=normal.status===0&&mutant.status===1;console.log(`Shot map contract self-test: ${pass?'PASS normal green, mutant red':'FAIL'}`);process.exit(pass?0:1);
 }
-await preloadPropGeometry([...new Set([...COMMON_MAP_PROPS,...MAPS.piscina_treta.props,...havan.havanPropsPool()])]);
+await preloadPropGeometry([...new Set([...COMMON_MAP_PROPS,...MAPS.piscina_treta.props,...MAPS.upa_24h.props,...havan.havanPropsPool()])]);
 const textures=await initTextures();grafiteNoDedicado(true);
 const build=mod=>{seedRandom(12345);mod.setHavanCarSeed(76543);const world=mod.buildHavan(new THREE.Scene(),textures);world.root.updateMatrixWorld(true);return world;};
 const medium=build(havan);
@@ -60,7 +60,7 @@ GLTFLoader.prototype.load=function(url,ok,progress,fail){if(!String(url).include
 console.warn=()=>{};
 try{
  await preloadMapProps(['shot_unused_global_fixture']);
- await preloadMapProps(MAPS.upa_24h.props,{required:true});check(true,'LOAD0 erro em prop alheio não bloqueia UPA sem GLBs');
+ await preloadMapProps(MAPS.upa_24h.props,{required:true});check(MAPS.upa_24h.props.length===9&&MAPS.upa_24h.props.every(hasProp),'LOAD0 erro em prop alheio não bloqueia UPA com os nove GLBs carregados');
  await preloadMapProps([id]);check(!hasProp(id),'LOAD1 offline permite fallback após erro');
  let rejected=false;try{await preloadMapProps([id],{required:true});}catch(e){rejected=e.message.includes('Tente novamente');}
  check(rejected&&!hasProp(id),'LOAD2 online rejeita mapa incompleto com feedback');

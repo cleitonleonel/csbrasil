@@ -260,7 +260,7 @@ The registry, generated from the `MAPS` of `public/js/maps.js`:
 | `loja_h` | Loja H (Estacionamento) | **capture** | `map_havan.js` | 2,060 |
 | `ferro_velho` | Ferro Velho do Zé | **capture** | `map_ferrovelho.js` | 2,031 |
 | `quebrada` | Quebrada (Rua do Baile) | **capture** | `map_quebrada.js` | 1,709 |
-| `corrego` | Córrego (Favela de SP) | **capture** | `map_corrego.js` | 1,814 |
+| `corrego` | Córrego (Favela de SP) | **capture** | `map_corrego.js` | 1,812 |
 | `lajes` | Lajes (Comunidade) | **capture** | `map_lajes_authored.js` | 419 |
 | `posto_treta` | Posto da Treta | **capture** | `map_posto.js` | 757 |
 | `upa_24h` | UPA 24h da Treta | **capture** | `map_upa.js` | 383 |
