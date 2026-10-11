@@ -75,6 +75,7 @@ export const CORREGO_PROPS = ['pilha_pneus', 'tires', 'dumpster', 'moto_cg', 'fu
 export const CORREGO_ARTE_SUBSTITUICOES = Object.freeze({
   'folha-person-02.png': 'or-mitico-mural.png',
   'personagens-graffiti-01.png': 'or-mitico-mural.png',
+  'poster:DOLLYNHO.png': 'poster:or-quebrada-vive.jpg',
   'poster:despisque-leao.jpg': 'poster:or-quebrada-vive.jpg',
   'poster:ashtar-meme.jpg': 'poster:or-quebrada-vive.jpg',
   'poster:ashtar.png': 'poster:or-quebrada-vive.jpg',
@@ -1727,7 +1728,7 @@ export function buildCorrego(scene, T) {
       /* chance 30 → 12: o cartaz era a banda mais frequente e a que o dono nomeou
          ("CHEIO DE POSTER") — cai para ~1 em 8 âncoras; as outras bandas ficam. */
       { y0: 0.4, y1: 2.6, larg: 1.9, alturas: [1.5, 1.15, 0.85], chance: 12, fonte: 'poster',
-        pool: ((T && T.posterFiles) || []).map((nome, i) => [nome, i]).filter(([nome]) => !['despisque-leao.jpg','ashtar-meme.jpg','ashtar.png'].includes(nome)).map(([,i]) => i) },
+        pool: ((T && T.posterFiles) || []).map((nome, i) => [nome, i]).filter(([nome]) => !['DOLLYNHO.png','despisque-leao.jpg','ashtar-meme.jpg','ashtar.png'].includes(nome)).map(([,i]) => i) },
       { y0: 0.25, y1: 2.35, larg: 3.6, alturas: [2.0, 1.5, 1.1, 0.8, 0.6], chance: 45,
         pool: D_PIXO.concat(D_THROW, D_TAG, D_CARTAZERA, D_LAMBE, D_PERSO) },
       { y0: 2.3, y1: 4.3, larg: 4.4, alturas: [1.9, 1.4, 1.0], chance: 38,

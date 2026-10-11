@@ -319,7 +319,26 @@ try {
       await page.goto(`${base}/mapview.html?map=${encodeURIComponent(id)}&capture=1&hud=0`, { waitUntil: 'domcontentloaded', timeout: 120000 });
       await page.waitForFunction(() => window.MAPEVAL?.ready === true && !!window.__scene, null, { timeout: 180000 });
       await page.waitForLoadState('networkidle', { timeout: 30000 });
+      // Ociosidade da rede pode chegar antes do callback de TextureLoader no build
+      // síncrono do Córrego. Só medir depois de decodificar a arte que será desenhada.
+      const textureWaitStart = Date.now();
+      await page.waitForFunction(() => {
+        let ready = true;
+        window.__scene.traverse(mesh => {
+          if (!mesh.isMesh || !/^(decal:|mural:)/.test(mesh.name || '')) return;
+          const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          for (const material of materials) {
+            const texture = material?.map;
+            if (texture?.userData?.faltou === true) continue; // a medição reprova a falha real
+            const data = texture?.source?.data || texture?.image;
+            if (!data || !(data.naturalWidth ?? data.videoWidth ?? data.width)
+              || !(data.naturalHeight ?? data.videoHeight ?? data.height) || data.complete === false) ready = false;
+          }
+        });
+        return ready;
+      }, null, { timeout: 60000 });
       const result = await page.evaluate(measure, { limits, areaSource: measureGraffitiArea.toString(), graffitiMapIds: Object.keys(MAP_SOURCES) });
+      result.textureWaitMs = Date.now() - textureWaitStart;
       result.errors = errors; result.failedRequests = failedRequests; result.photos = [];
       result.relevantFailedRequests = failedRequests.filter(r => /\/models\/props\//.test(r.url) || result.usedArtworkPaths.includes(new URL(r.url).pathname));
       result.emptyIsAuthored = !result.declaredGraffiti && result.total === 0;

@@ -750,7 +750,7 @@ export function buildFerroVelho(scene, T) {
      tint por instância. O topo serrilhado dos painéis é o que quebra o horizonte reto. */
   const fenceP = [], fencePost = [];   // {x,z,ry,w,h,tint} / {x,z,ry,h}
   const zincFence = (cx, cz, ry, len) => {
-    const step = LOWQ ? 2.2 : 1.25;    // 'low': metade dos painéis, mesma silhueta
+    const step = 1.25;    // A parede de apoio do grafite permanece igual em todas as qualidades.
     const n = Math.max(1, Math.round(len / step)), w = len / n;
     const dx = Math.cos(ry), dz = -Math.sin(ry);
     for (let i = 0; i < n; i++) {
