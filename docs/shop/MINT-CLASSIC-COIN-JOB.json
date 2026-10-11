@@ -3,7 +3,7 @@
   "project_id": "zd782bweh7fqxhtyryrcg32ryx8g2zhc",
   "chat_id": "ph73t9nx870y6p9jcz0arqm3rn8g2qf0",
   "chat_url": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph73t9nx870y6p9jcz0arqm3rn8g2qf0",
-  "state": "REPROVED: Tripo P1 conversion lost portrait definition; T$ low contrast at 64px",
+  "state": "Single Saci/1 style proof approved by independent critic; owner visual acceptance pending",
   "quality": "Standard",
   "authorization": "User authorized Mint generation with existing credits in this conversation",
   "references": [
@@ -25,7 +25,7 @@
     "no body, weapon, queen, crown, logos, text or numbers",
     "plain gold reverse for later 1/T$ lettering"
   ],
-  "next": "One higher-detail Mint conversion from approved fresh profile preview; incuse reverse; repeat actual UI and independent critique",
+  "next": "Owner visual feedback on one style proof; production optimization, seven characters and full gameplay/mobile remain pending",
   "preview_asset_id": "p976h5jenxrde88tyetpe3qjr58g37xx",
   "preview_path": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/coins/mint-classic-v5/saci-preview.webp",
   "preview_sha256": "25cf3c60f95bdafa246972dda5f60fa5386cbf837bd6b74979154fbce4943f1d",
@@ -71,8 +71,44 @@
   "final_review": "mint-classic-v5/finished/final-design-review.md",
   "higher_detail_conversion": {
     "provider": "Rodin v2.5",
-    "state": "Generating; 43% observed",
+    "state": "Completed, exported, original preserved; finishing front independently rejected",
     "source": "fresh preview in ph71y8j0aqntbcggsr1bdqm68h8g3apk",
-    "authorization": "existing user-authorized Mint credits, one prototype"
+    "authorization": "existing user-authorized Mint credits, one prototype",
+    "scene": "TRETA Saci Rodin Profile",
+    "sourceBytes": 61375400,
+    "sourceSha256": "1169d9ca0bb4eb7c939ec68e65f0389aedba8d0b84eb8864082abef82e69ee7c",
+    "sourceTriangles": 500000
+  },
+  "reference_locked_prototype": {
+    "scope": "private source-locked relief reconstructed from Mint preview; not generated 3D mesh acceptance or owner-approved production",
+    "source": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/coins/mint-classic-v5/rodin/saci-mint-studio.glb",
+    "sourceSha256": "1169d9ca0bb4eb7c939ec68e65f0389aedba8d0b84eb8864082abef82e69ee7c",
+    "previewReliefSource": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/coins/mint-classic-v5/saci-fresh-profile-preview.webp",
+    "construction": "Mint preview silhouette/monochrome detail reconstructed as shallow geometry",
+    "glbBytes": 3513200,
+    "glbSha256": "76c39a4092b4babc244fba071e3f49b8f8578866c05809bf2ccc830b26f7342f",
+    "animations": [
+      "CoinSpin",
+      "PurchaseReveal"
+    ],
+    "mintChat": "ph71y8j0aqntbcggsr1bdqm68h8g3apk",
+    "changes": [
+      "front only",
+      "shallow relief",
+      "uniform gold",
+      "clean reverse and denomination",
+      "serif arc"
+    ],
+    "triangles": 122614,
+    "previewUrl": "http://127.0.0.1:5194/",
+    "maskIoU": 0.9778169531364772,
+    "sampledCycleChecks": 392,
+    "minimumMarginPx": 2,
+    "movementFrames": 18,
+    "review": "design-review.md: front, reverse and sampled motion approved for one prototype only",
+    "refinements": [
+      "reduce dark halos around legends/portrait",
+      "soften irregular cap edge"
+    ]
   }
 }

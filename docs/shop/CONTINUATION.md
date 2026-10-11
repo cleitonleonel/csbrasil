@@ -236,3 +236,26 @@ Fonte Mint exportada em cena separada, 4990triangulos, SHA c8f8043ff506e6496efda
 ## Marco: Rodin matriz exportada e critica parcial
 
 Rodin v2.5 completou; cena Mint TRETA Saci Rodin Profile, export61.375.400B/500000triangulos, SHA1169d9ca0bb4eb7c939ec68e65f0389aedba8d0b84eb8864082abef82e69ee7c. Fonte/capturas em mint-classic-v5/rodin. Acabamento privado242882triangulos/8.563.888B passa loader e transformacoes. Critica review-rodin.md APROVA identidade/perfil e verso64/82px, REPROVA ondulacoes/olho/sorriso da frente. Nova reducao normal/denoise em rodin/polished sem aceite inferido. Proximo: reconstruir perfil integrado a partir da previa Mint lateral aprovada, controlando profundidade/contorno; manifest reference-locked-manifest.json privado. Outros objetivos e sete publicos rejeitados preservados.
+
+## Marco: prova Saci/1 da direcao classica aprovada para avaliacao do dono
+
+HEAD de partida7850d9179, mesma branch/lane. Reconstruction reference-locked-final
+usa contorno/detalhe monocromatico da previa Mint aprovada e superficie rasa
+Blender; nao aceita nem reapresenta as malhas Tripo/Rodin rejeitadas. Gerador
+prototype_treta_mint_profile_coin.py, fontes privadas GLB/blend/JSON/capturas,
+board/folha18frames e parecer design-review.md. GLB3513200B/122614triangulos,
+2meshes/2materiais/2imagens, SHA76c39a4092b4babc244fba071e3f49b8f8578866c05809bf2ccc830b26f7342f.
+
+Critico APROVA frente/verso e movimento amostrado para unico prototipo Saci/1;
+1/T$ legiveis64/82px. Refinamentos: halos de inscricoes/contorno e borda do gorro.
+Loader/transformacoes7stages reais TretaStage sem erros;392amostras com margem
+minima2px (giro4px/compra2px),18frames. Mascara contra contorno manual da previa
+Mint IoU0,9778,centro1,40px de grade; nao prova profundidade1:1. Sintaxe/diff/hashes
+conferidos. Preview http://127.0.0.1:5194/ read-only, painel Codex queued.
+
+Dono ainda nao aprovou, lote publico7 permanece rejeitado. Prova unica concluida
+para feedback de estilo; nao significa producao/mobile/economia real. Proximo:
+feedback do dono, refinamentos/otimizacao/bake/LOD, demais6personagens depois da
+direcao, integracao em lane apropriada e medicao jogo/mobile. Objetivo amplo
+skins/rigs/equipamentos/UI/loja/TRETA/recompensas/packs/videos/expansao preservado;
+UI segue no chat01a12cc7-e78d-7ec1-b2e3-3210df5efd6b. Sem outra lane/merge/deploy.

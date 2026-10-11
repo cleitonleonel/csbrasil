@@ -15,6 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--source', required=True)
 parser.add_argument('--output', required=True)
 parser.add_argument('--rodin', action='store_true')
+parser.add_argument('--preview-relief')
 args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
 source, out = Path(args.source), Path(args.output)
 out.mkdir(parents=True, exist_ok=True)
@@ -76,6 +77,59 @@ for node in gold.node_tree.nodes:
     if node.type == 'NORMAL_MAP': node.inputs['Strength'].default_value = .12 if args.rodin else .55
     if node.type == 'TEX_IMAGE' and node.image and max(node.image.size) > 1024:
         node.image.scale(1024, 1024); node.image.pack()
+
+if args.preview_relief:
+    # Source-locked shallow die. This is reconstructed geometry, not Mint's 3D mesh.
+    preview_image = bpy.data.images.load(args.preview_relief)
+    raw = np.array(preview_image.pixels[:], dtype=np.float32).reshape(1024,1024,4)
+    n, span = 257, .86
+    x, z = np.meshgrid(np.linspace(-span,span,n), np.linspace(-span,span,n))
+    px, py = 512+x*412, 512-z*412
+    outline = [(250,398),(276,325),(337,278),(389,213),(450,202),(502,210),(598,259),(672,310),(694,347),(669,350),(689,397),(704,433),(705,473),(725,490),(750,514),(746,540),(728,550),(737,584),(729,608),(716,625),(709,651),(686,679),(640,684),(597,700),(593,750),(598,818),(553,806),(450,756),(382,733),(399,662),(403,600),(373,565),(360,539),(348,642),(331,723),(305,750),(283,747),(279,715),(270,580),(255,479)]
+    mask = np.zeros_like(x, dtype=bool)
+    for i,(ax,ay) in enumerate(outline):
+        bx,by = outline[(i+1)%len(outline)]
+        mask ^= ((ay>py)!=(by>py)) & (px < (bx-ax)*(py-ay)/(by-ay+1e-12)+ax)
+    hard_mask = mask.copy(); mask = mask.astype(float)
+    def blur(grid, repeats):
+        for _ in range(repeats):
+            pad=np.pad(grid,1,mode='edge')
+            grid=(4*pad[1:-1,1:-1]+2*(pad[2:,1:-1]+pad[:-2,1:-1]+pad[1:-1,2:]+pad[1:-1,:-2])+pad[2:,2:]+pad[:-2,:-2]+pad[2:,:-2]+pad[:-2,2:])/16
+        return grid
+    mask = blur(mask, 4)
+    colors = raw[np.clip((1023-py).astype(int),0,1023),np.clip(px.astype(int),0,1023),:3]
+    gray = colors @ np.array([.2126,.7152,.0722]); fine = gray-blur(gray,18)
+    height = mask*(.009 + .016*np.exp(-((x+.25)/.38)**2-((z-.40)/.40)**2) + .012*np.exp(-((x-.20)/.27)**2-((z+.02)/.32)**2)+ .012*np.exp(-((x-.51)/.12)**2-((z+.015)/.10)**2))
+    height += np.clip(fine,-.25,.25)*.012*mask
+    vertices=[]; index={}; faces=[]
+    for row in range(n):
+        for col in range(n):
+            if x[row,col]**2+z[row,col]**2 > span**2: continue
+            index[row,col]=len(vertices)
+            vertices.append((x[row,col],-.058-height[row,col],z[row,col]))
+    for row in range(n-1):
+        for col in range(n-1):
+            keys=[(row,col),(row,col+1),(row+1,col+1),(row+1,col)]
+            if all(k in index for k in keys): faces.append([index[k] for k in keys])
+    mesh=bpy.data.meshes.new('SourceLockedProfileDie'); mesh.from_pydata(vertices,[],faces); mesh.update()
+    uv=mesh.uv_layers.new(name='ProfileUV')
+    for loop in mesh.loops:
+        v=mesh.vertices[loop.vertex_index].co; uv.data[loop.index].uv=((v.x+span)/(2*span),(v.z+span)/(2*span))
+    sculpt.data=mesh; sculpt.data.materials.append(gold)
+    for key in ('Base Color','Normal'):
+        for link in list(shader.inputs[key].links): gold.node_tree.links.remove(link)
+    tx,tz=np.meshgrid(np.linspace(-span,span,513),np.linspace(-span,span,513))
+    detail=raw[np.clip((511+tz*412).astype(int),0,1023),np.clip((512+tx*412).astype(int),0,1023),:3]
+    shade=np.clip((detail@np.array([.2126,.7152,.0722]))/.73,.22,1)**.8
+    linear_rgb = shade[:,:,None]*np.array([.83,.60,.17])
+    rgba=np.ones((513,513,4),dtype=np.float32)
+    rgba[:,:,:3]=np.where(linear_rgb<=.0031308,linear_rgb*12.92,1.055*np.power(linear_rgb,1/2.4)-.055)
+    image=bpy.data.images.new('MintPreviewGoldDie',width=513,height=513,alpha=True)
+    image.pixels.foreach_set(rgba.ravel()); image.update(); image.pack()
+    tex=gold.node_tree.nodes.new('ShaderNodeTexImage');tex.image=image
+    gold.node_tree.links.new(tex.outputs['Color'],shader.inputs['Base Color'])
+    np.savez_compressed(out/'reference-mask.npz',hard=hard_mask,relief=height>.007,x=x,z=z)
+
 plain_gold = gold.copy(); plain_gold.name = 'CleanMintGold'
 plain_shader = plain_gold.node_tree.nodes.get('Principled BSDF')
 for key in ('Normal', 'Base Color'):
@@ -154,8 +208,9 @@ bpy.ops.object.bake(type='AO', margin=8)
 pixels = np.array(ao_image.pixels[:], dtype=np.float32).reshape(-1, 4)
 # Denoise the geometric AO before amplification; avoid a sandblasted field.
 ao = pixels[:, 0].reshape(1024, 1024)
-ao = sum(np.roll(np.roll(ao, i, 0), j, 1) * weight for i, j, weight in
-         [(0,0,4),(1,0,2),(-1,0,2),(0,1,2),(0,-1,2),(1,1,1),(-1,1,1),(1,-1,1),(-1,-1,1)]) / 16
+for _ in range(6):
+    ao = sum(np.roll(np.roll(ao, i, 0), j, 1) * weight for i, j, weight in
+             [(0,0,4),(1,0,2),(-1,0,2),(0,1,2),(0,-1,2),(1,1,1),(-1,1,1),(1,-1,1),(-1,-1,1)]) / 16
 shade = np.clip(np.power(ao.ravel(), 6), .06, 1)
 linear_rgb = shade[:, None] * np.array([.83, .60, .17])
 pixels[:, :3] = np.where(linear_rgb <= .0031308, linear_rgb * 12.92,
@@ -219,6 +274,8 @@ for label, pos in [('front',(0,-4.8,0)),('angle',(1.5,-4.8,1.2)),('back',(0,4.8,
 bpy.ops.wm.save_as_mainfile(filepath=str(out/'coin-1.blend'))
 metadata = {'scope':'private-single-design-study-not-owner-approved','source':str(source),
             'sourceSha256':hashlib.sha256(source.read_bytes()).hexdigest(),
+            'previewReliefSource':args.preview_relief,
+            'construction':'Mint preview silhouette/monochrome detail reconstructed as shallow geometry' if args.preview_relief else 'Mint mesh finishing',
             'glbBytes':glb.stat().st_size,'glbSha256':hashlib.sha256(glb.read_bytes()).hexdigest(),
             'animations':['CoinSpin','PurchaseReveal'],'mintChat':'ph71y8j0aqntbcggsr1bdqm68h8g3apk',
             'changes':['front only','shallow relief','uniform gold','clean reverse and denomination','serif arc'],

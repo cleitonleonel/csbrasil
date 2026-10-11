@@ -7,7 +7,7 @@ acabamento/composição, não um pedido de copiar retrato real, inscrições ou 
 Continuam rosto/personagem na frente e denominação/T$ no verso, sete valores e
 personagens, CoinSpin/PurchaseReveal. Não equivale a aprovação do protótipo v3.
 
-## Estudo e limites
+## Estudo anterior v4, reprovado
 
 Gerador de estudo: `tools/blender/prototype_treta_profile_coin.py`, executado no
 Blender headless isolado. Retrato analítico original inspirado no avatar Saci;
@@ -57,3 +57,35 @@ pendentes. Nenhuma nova geração paga, cena Blender nativa, outra lane, merge o
 deploy neste estudo. Próximo: gerar uma única base de escultura no Mint com
 os créditos já autorizados, preservando identidade Saci e a cunhagem de perfil;
 revisar antes de repetir nas sete e otimizar antes de produção.
+
+
+## Prova atual: Mint + relevo reconstruido
+
+A previa Mint lateral `saci-fresh-profile-preview.webp` passou identidade/perfil
+somente como direcao. Tripo P1 perdeu definicao; Rodin v2.5 gerou uma matriz de
+500000triangulos/61375400B. Ambas as conversoes3D tiveram acabamento reprovado
+independentemente. Fontes e pareceres permanecem em `coins/mint-classic-v5`.
+
+A prova atual em `coins/mint-classic-v5/reference-locked-final` reconstrui o
+contorno e detalhe monocromatico da previa Mint como superficie rasa continua
+no Blender; nao e aceite da malha3D convertida nem mera colagem de imagem em um
+disco plano. Profundidade e inferida, com campo limpo, arco serifado, aro fino e
+verso realmente escavado com `1 T$`. Nao copia retrato/textura da moeda real.
+Gerador `tools/blender/prototype_treta_mint_profile_coin.py` com `--rodin` e
+`--preview-relief`; mantem originais e materiais em mesma familia de ouro.
+
+GLB atual: 3513200B,122614triangulos,2meshes/2materiais/2imagens embutidas,
+CoinSpin4,03s/PurchaseReveal2s, SHA256
+`76c39a4092b4babc244fba071e3f49b8f8578866c05809bf2ccc830b26f7342f`.
+Fonte `.blend`, JSON, frente/verso/angulo/borda, prototype-board.png e preview
+real TretaStage em `http://127.0.0.1:5194/`. Checks de loader/transformacoes sem
+erros;392amostras/18frames sem cortar o disco, margem minima2px. Mascara do
+relevo contra contorno tracado da propria previa: IoU0,9778, centro1,40px de
+grade; nao prova igualdade fotometrica/profundidade ou1:1 com a moeda do dono.
+Parecer atual em `design-review.md` privado; status no registro de jobs.
+
+Somente Saci/1 para revisao visual. As sete moedas publicas continuam rejeitadas;
+nenhum lote, desempenho mobile, economia real ou compra integrada foi aprovado.
+O ativo precisa otimizacao/bake/LOD antes producao. Proximos: feedback visual do
+dono, acabamento se necessario, producao dos outros6perfis e medicao no jogo;
+UI/loja seguem no chat proprio. Sem alterar outros checkouts, merge ou deploy.
