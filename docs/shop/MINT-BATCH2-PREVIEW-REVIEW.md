@@ -39,3 +39,43 @@ SHA-256 das imagens de entrada, para não confundir uma correção posterior com
 | bolsonaro-mandrake | `1a28e0dca2fd5e2cd42b21a7249996780b1bd4c460c4d56f6e5eb8b497d84aab` |
 | michelle-mandrake | `fa7ea07f6f9714b82a30bf96054860ce59e60c813453b24f0a35762361822f08` |
 | zero-um-mandrake | `7ccd9dad2af217011a00cc7436ffea53341a73198032381930d70994db96121b` |
+
+## Rodada 2 — Aljuiz e Zero Um corrigidos
+
+Os pareceres anteriores acima documentam as primeiras prévias. Esta rodada avalia somente as duas imagens corrigidas, pela mesma ficha e referências. Resultado atual do lote: **8/8 direções visuais aprovadas para avançar à geração 3D**; isso não valida o modelo que será gerado.
+
+| Skin | Veredito da prévia corrigida | Evidência concreta |
+|---|---|---|
+| Aljuiz da Toga Mandrake | **APROVADO** | `previews/aljuiz-toga-mandrake-corrected.jpg`: lentes agora douradas/amarelas espelhadas; o símbolo branco lateral dos tênis não aparece mais. Toga encurtada termina acima da barra da bermuda e deixa sua parte inferior exposta, preservando abertura frontal e abas judiciais brancas. Identidade calva/severa, grafismo preto/branco, correntes, anéis, meias e tênis roxo/teal mantidos. Não há divergência material visível remanescente das correções solicitadas. |
+| Zero Um Mandrake | **APROVADO** | `previews/zero-um-mandrake-corrected.jpg`: três curvas de correntes grossas douradas agora legíveis e separadas, com o medalhão retangular na camada inferior. Mandíbula menos quadrada, bochechas mais arredondadas e expressão suavizada aproximam o rosto oval da ref. 11 e o distinguem de Jair. Boné lateral preto, óculos dourados, conjunto preto/ouro, relógio, anéis e tênis preservados. Não há divergência material visível remanescente. |
+
+Ambas as capturas mantêm cabeça e solas inteiras; não necessitam recaptura por enquadramento. Permanecem os limites da rodada anterior: frontal apenas, identidade parcialmente encoberta pelos óculos, sem prova de topologia, separação geométrica das correntes/dedos, rig, movimento, engine ou gameplay.
+
+| Imagem corrigida | Bytes | SHA-256 |
+|---|---:|---|
+| aljuiz-toga-mandrake-corrected.jpg | 88571 | `b1dd6b12c55ec17ff67102e2a50e55b5fb97d7decc92e9bcbdd164824d67cf0c` |
+| zero-um-mandrake-corrected.jpg | 89808 | `a60e224f7a576f6e0f9f858c22adc947bc1598cbe3b18202470193f267106463` |
+
+## Rodada 3 — prévias para corrigir regressões das malhas
+
+Escopo: somente novas **prévias**, sem rever ou aprovar por inferência as malhas reprovadas. As evidências e os pareceres das rodadas anteriores ficam preservados.
+
+| Skin | Veredito desta prévia | Evidência e ação concreta |
+|---|---|---|
+| Bolsonaro Mandrake | **REPROVADO quanto à quantidade da ficha** | `previews/bolsonaro-mandrake-chains-corrected.jpg`: correntes voltaram a aparecer claramente sobre a camiseta, mas há **três quedas distintas** — duas finas no alto do peito e uma cubana grossa mais longa com pingente. A ficha pede duas de comprimentos distintos; esta correção excedeu a quantidade. Rosto de Jair adulto, boné branco, lentes douradas, conjunto estampado azul/branco/carvão, relógio/anéis, meias e tênis permanecem. Correção mínima: remover uma das camadas finas e manter duas correntes com quedas separadas. Não há motivo visual nesta imagem para refazer rosto ou roupas. |
+| Zero Um Mandrake | **APROVADO para avançar à geração 3D** | `previews/zero-um-mandrake-chains-corrected.jpg`: três curvas de correntes grossas douradas estão separadamente legíveis; a intermediária voltou a ter altura própria entre gola e medalhão. Medalhão retangular com desenho geométrico visível, rosto adulto oval corrigido, boné preto lateral, lentes douradas, conjunto preto/ouro, relógio/anéis e tênis mantidos. Nenhuma regressão visual material identificada na prévia. |
+
+As duas capturas mostram cabeça e solas completas. Este exame não prova a presença/separação das três correntes no futuro modelo de Zero Um nem a correção do modelo de Jair; ambos precisam de nova captura das respectivas malhas geradas.
+
+| Imagem da rodada 3 | Bytes | SHA-256 |
+|---|---:|---|
+| bolsonaro-mandrake-chains-corrected.jpg | 93636 | `faff8e98d26a13938ff6ab434364e0244ac6c80c87ac9cb5edebeae43e856f67` |
+| zero-um-mandrake-chains-corrected.jpg | 89456 | `10b0c3475ca6a3db1eec79e3153741f93b141948041f1d482caaf9ddbd7bbec4` |
+
+### Decisão atualizada — Bolsonaro Mandrake após ajuste da ficha
+
+**APROVADO como prévia de direção para avançar à geração 3D.** Conferido em `plans/TRETA-SKINS-BATCH2.md:29`: o requisito atual é “Two or three visibly modeled gold chains of different lengths”. A contagem de duas era uma escolha anterior de direção, não uma exigência do pedido original do dono; a ficha atual aceita três camadas pertinentes ao estilo Mandrake.
+
+A mesma imagem `previews/bolsonaro-mandrake-chains-corrected.jpg` apresenta três quedas douradas de comprimentos diferentes, satisfazendo a quantidade atual. Identidade adulta, boné, lentes, roupa estampada e demais acessórios permanecem preservados conforme a rodada 3. O parecer anterior fica acima como histórico da comparação com a ficha antiga.
+
+**Exigência de prova na próxima malha:** duas ou três correntes douradas devem permanecer visíveis sobre a camiseta, com volumes/elos legíveis e quedas distintas no visualizador 3D; esta imagem de prévia não comprova geometria ou materiais do futuro modelo. Bolsonaro Mandrake do relatório de modelos continua reprovado até captura real que demonstre essa correção. Nenhuma outra exigência ou veredito foi alterado.

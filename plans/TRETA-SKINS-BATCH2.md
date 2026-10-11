@@ -26,7 +26,7 @@ Recognizable elderly Lula face, short gray hair and full gray beard. Backwards b
 Referencias: 6, 9
 
 ## Bolsonaro Mandrake
-Recognizable Jair Bolsonaro older adult face, short side-parted gray-brown hair, clean shaven, tall lean proportions. White cap, gold/yellow mirrored wraparound sunglasses, oversized white/light-blue/charcoal abstract printed tee and matching wide knee-length shorts, white socks and dark blue/lilac chunky runners. Two gold chains of different lengths, gold watch and rings. Own original abstract graphic pattern, no copyrighted characters or logos. Do not include the woman from reference.
+Recognizable Jair Bolsonaro older adult face, short side-parted gray-brown hair, clean shaven, tall lean proportions. White cap, gold/yellow mirrored wraparound sunglasses, oversized white/light-blue/charcoal abstract printed tee and matching wide knee-length shorts, white socks and dark blue/lilac chunky runners. Two or three visibly modeled gold chains of different lengths, gold watch and rings. Own original abstract graphic pattern, no copyrighted characters or logos. Do not include the woman from reference.
 Referencias: 7, 10
 
 ## Michelle Bolsonaro Mandrake
