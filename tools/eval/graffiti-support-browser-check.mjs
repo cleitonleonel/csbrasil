@@ -14,6 +14,14 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { measureGraffitiArea } from './graffiti-area-audit.mjs';
 import { MAP_SOURCES } from './graffiti-fingerprint.mjs';
+import { identifyGraffitiTexture, inventoryGraffitiMaterials, trackGraffitiCanvases } from './graffiti-art-inventory.mjs';
+
+const textureSource = readFileSync(new URL('../../public/js/textures.js', import.meta.url), 'utf8');
+const canvasStart = textureSource.indexOf('T.graffiti =');
+const canvasEnd = textureSource.indexOf('// --- fictional campaign posters', canvasStart);
+if (canvasStart < 0 || canvasEnd < 0) throw Error('Canvas graffiti producer range could not be measured');
+const canvasRanges = { graffitiStart: textureSource.slice(0, canvasStart).split('\n').length,
+  graffitiEnd: textureSource.slice(0, canvasEnd).split('\n').length - 1 };
 
 const args = process.argv.slice(2);
 const option = (name, fallback) => {
@@ -42,7 +50,9 @@ const save = () => writeFileSync(`${out}/receipt.json`, JSON.stringify(receipt, 
 
 // Serialized into the browser. Only the paintability predicate is shared; the
 // sampling, spatial index, nearest-hit, normals and verdict code are independent.
-const measure = async ({ limits, areaSource, graffitiMapIds }) => {
+const measure = async ({ limits, areaSource, graffitiMapIds, identifySource, inventorySource }) => {
+  const identifyTexture = (0, eval)(`(${identifySource})`);
+  const inventoryMaterials = (0, eval)(`(${inventorySource})`);
   const areaAudit = new Function(`return (${areaSource})`)();
   const THREE = await import('three');
   const { superficieGrafitavel } = await import('./js/graffiti_surface.js');
@@ -143,15 +153,13 @@ const measure = async ({ limits, areaSource, graffitiMapIds }) => {
         visible: !reason, reason, bbox: bounds.isEmpty() ? null : { min: bounds.min.toArray(), max: bounds.max.toArray() } });
       if (!reason) { realDrawnBatches++; drawnBounds.union(bounds); }
     }
-    if (o.isMesh && !art(o)) {
-      const mats = Array.isArray(o.material) ? o.material : [o.material];
-      for (const material of mats) {
-        const image = material?.map?.source?.data || material?.map?.image;
-        const imageURL = typeof image?.src === 'string' ? image.src : '';
-        if (/\/img\/decals\//.test(imageURL)) unclassifiedArt.push({ name: o.name, imageURL, geometry: o.geometry?.type });
-      }
-    }
   });
+  const artMaterialInventory = inventoryMaterials(scene, THREE, superficieGrafitavel,
+    identifyTexture, window.__graffitiCanvasSources);
+  unclassifiedArt.push(...artMaterialInventory.filter(e => e.classification === 'unclassified-overlay'));
+  const paintedArtSurfaces = artMaterialInventory.filter(e => e.classification === 'painted-surface');
+  const unpaintableTexturedSurfaces = paintedArtSurfaces.filter(e => !e.eligibleSurface || !e.visibleArtwork);
+  for (const entry of artMaterialInventory) if (entry.artwork.path) artworkPaths.add(entry.artwork.path);
   scene.traverse(o => {
     if (!o.isMesh || !/^(decal:|mural:)/.test(o.name || '') || o.userData?.pecas) return;
     const params = o.geometry?.parameters;
@@ -290,6 +298,8 @@ const measure = async ({ limits, areaSource, graffitiMapIds }) => {
     realDrawnBatches, visibleArea, usedArtworkPaths: [...artworkPaths], visiblePieces: pieces.filter(p => p.visible).length, batchVisibility, unloadedTemplates,
     drawnBBox: drawnBounds.isEmpty() ? null : { min: drawnBounds.min.toArray(), max: drawnBounds.max.toArray() },
     batchMeshPieces, inventoriedBatchPieces: pieces.filter(p => p.source === 'batch').length, unclassifiedArt,
+    artMaterialInventory, paintedArtSurfaces, unpaintableTexturedSurfaces,
+    canvasProvenanceInstrumented: !!window.__graffitiCanvasSources,
     totalArea, validArea: totalArea - rejectedArea, rejectedArea,
     allowedWallMeshes: allowed.length, allowedWallNames: [...new Set(allowed.map(o => o.name || '(unnamed wall)'))],
     byReason, supportedBy, pieces: inspected, failures, bounds: window.__world?.bounds || null };
@@ -310,6 +320,7 @@ try {
   for (const id of ids) {
     const page = await browser.newPage({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: 1 });
     await page.addInitScript(quality => localStorage.setItem('awpbr_settings', JSON.stringify({ quality })), quality);
+    await page.addInitScript(trackGraffitiCanvases, canvasRanges);
     const errors = [], failedRequests = [];
     page.on('pageerror', e => errors.push(e.message));
     page.on('response', r => { if (r.status() >= 400) failedRequests.push({ status: r.status(), url: r.url() }); });
@@ -337,14 +348,18 @@ try {
         });
         return ready;
       }, null, { timeout: 60000 });
-      const result = await page.evaluate(measure, { limits, areaSource: measureGraffitiArea.toString(), graffitiMapIds: Object.keys(MAP_SOURCES) });
+      const result = await page.evaluate(measure, { limits, areaSource: measureGraffitiArea.toString(), graffitiMapIds: Object.keys(MAP_SOURCES),
+        identifySource: identifyGraffitiTexture.toString(), inventorySource: inventoryGraffitiMaterials.toString() });
       result.textureWaitMs = Date.now() - textureWaitStart;
       result.errors = errors; result.failedRequests = failedRequests; result.photos = [];
-      result.relevantFailedRequests = failedRequests.filter(r => /\/models\/props\//.test(r.url) || result.usedArtworkPaths.includes(new URL(r.url).pathname));
+      result.relevantFailedRequests = failedRequests.filter(r => /\/models\/props\//.test(r.url)
+        || /\/img\/textures\/(corrego_streetart_pixo|campomorro_streetart_baile)\.webp/.test(r.url)
+        || result.usedArtworkPaths.includes(new URL(r.url).pathname));
       result.emptyIsAuthored = !result.declaredGraffiti && result.total === 0;
       result.ok = result.actualMapId === id && (result.total > 0 || result.emptyIsAuthored)
         && result.bakeApplied
         && result.rejected === 0 && errors.length === 0 && result.unclassifiedArt.length === 0
+        && result.unpaintableTexturedSurfaces.length === 0 && result.canvasProvenanceInstrumented
         && result.batchMeshPieces === result.inventoriedBatchPieces
         && result.relevantFailedRequests.length === 0 && result.unloadedTemplates.length === 0;
       if (selfTest && result.ok) {
@@ -369,7 +384,8 @@ try {
           if (!applied) continue;
           let mutant;
           try {
-            mutant = await page.evaluate(measure, { limits, areaSource: measureGraffitiArea.toString(), graffitiMapIds: Object.keys(MAP_SOURCES) });
+            mutant = await page.evaluate(measure, { limits, areaSource: measureGraffitiArea.toString(), graffitiMapIds: Object.keys(MAP_SOURCES),
+              identifySource: identifyGraffitiTexture.toString(), inventorySource: inventoryGraffitiMaterials.toString() });
           } finally {
             await page.evaluate(() => {
               const saved = window.__mapAuditMutation;
