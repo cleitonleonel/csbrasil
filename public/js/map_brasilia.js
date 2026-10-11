@@ -951,7 +951,7 @@ export function buildBrasilia(scene, T) {
       // small "PERDEU MANÉ" graffiti decal on the chest (statue front faces +X, chest
       // surface measured by raycast at x≈-11.1), clear of the sash
       addPlane(0.6, 0.4, lam({ map: T.perdeuMane, transparent: true, side: THREE.DoubleSide }),
-        sx - 0.04, 2.35, sz + 0.05, Math.PI / 2);
+        sx - 0.04, 2.35, sz + 0.05, Math.PI / 2).name = 'decal:perdeu-mane';
     }
   }
   { // Os Guerreiros — procedural bronze monument (Mint mesher failed on it twice)
@@ -1576,8 +1576,10 @@ export function buildBrasilia(scene, T) {
         frondes.push({ x: x + Math.cos(a) * 1.5, y: 14.1, z: z + Math.sin(a) * 1.5, ry: -a, rz: 0.55 });
       }
     }
-    addInst(new THREE.CylinderGeometry(0.34, 0.5, 14, 7), palmMat, troncos, { occlude: true });
-    addInst(new THREE.PlaneGeometry(3.4, 0.9), leafMat, frondes, { shadow: false });
+    const palmTrunks = addInst(new THREE.CylinderGeometry(0.34, 0.5, 14, 7), palmMat, troncos, { occlude: true });
+    const palmLeaves = addInst(new THREE.PlaneGeometry(3.4, 0.9), leafMat, frondes, { shadow: false });
+    if (palmTrunks) palmTrunks.name = 'arvore:palmeira-troncos';
+    if (palmLeaves) palmLeaves.name = 'folhagem:palmeira-frondes';
 
     // IPÊ-AMARELO florido (ago–set): galhos NUS cobertos de flor amarela intensa. O BAR diz
     // que é "o único ponto de cor saturada legítimo da cena" — logo, o melhor marcador de
@@ -1616,9 +1618,14 @@ export function buildBrasilia(scene, T) {
             sy: ts * 0.62 * (0.82 + hash(S0 + t + b + 41) * 0.42) });
       }
     }
-    addInst(new THREE.CylinderGeometry(0.2, 0.42, 4.7, 8), ipeMat, ipeTr, { occlude: true });
-    addInst(new THREE.CylinderGeometry(0.05, 0.14, 2.4, 5), ipeMat, ipeGalho, { shadow: false });
-    ipeFolha.forEach((list, i) => addInst(new THREE.PlaneGeometry(1, 1), MAT.folhaIpe[i], list, { shadow: false }));
+    const ipeTrunks = addInst(new THREE.CylinderGeometry(0.2, 0.42, 4.7, 8), ipeMat, ipeTr, { occlude: true });
+    const ipeBranches = addInst(new THREE.CylinderGeometry(0.05, 0.14, 2.4, 5), ipeMat, ipeGalho, { shadow: false });
+    if (ipeTrunks) ipeTrunks.name = 'arvore:ipe-troncos';
+    if (ipeBranches) ipeBranches.name = 'arvore:ipe-galhos';
+    ipeFolha.forEach((list, i) => {
+      const leaves = addInst(new THREE.PlaneGeometry(1, 1), MAT.folhaIpe[i], list, { shadow: false });
+      if (leaves) leaves.name = 'folhagem:ipe';
+    });
 
     /* ------- SINAIS DE IDADE + densidade secundária (critério D2, que estava em FAIL) ------- */
     // Brasília tem 65 anos e o mapa parecia entregue ontem. Tudo aqui é decal ou InstancedMesh:

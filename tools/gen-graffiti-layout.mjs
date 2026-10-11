@@ -39,6 +39,7 @@ const SAIDA = 'public/js/graffiti_layout.js';
 const MAPAS = Object.keys(MAP_SOURCES);
 const ARGS = process.argv.slice(2);
 const ONLY = ARGS.find((a) => !a.startsWith('--'));
+if (ONLY && !MAP_SOURCES[ONLY]) throw Error(`Mapa de grafite desconhecido: ${ONLY}`);
 /* SÓ A IMPRESSÃO: reassina as entradas SEM reassar a colocação. Existe porque assar não é
    operação fiel — duas rodadas idênticas na mesma árvore deram 2769 e 2767 peças (loja_h 300 e
    298), e uma árvore sem o acervo completo de decalques apaga ~180 peças em silêncio. Para
@@ -63,6 +64,7 @@ if (existsSync(SAIDA)) {
   const json = txt.match(/^export const GRAFITE = (.+);$/m)?.[1];
   if (!json) throw Error('Layout anterior não reconhecido; regeneração cancelada');
   Object.assign(anterior, JSON.parse(json));
+  for (const id of Object.keys(anterior)) if (!MAP_SOURCES[id]) delete anterior[id];
 }
 
 /* Reassinar sem reassar: nenhuma peça muda, só a impressão das entradas. Sai antes do
@@ -82,20 +84,25 @@ if (SO_IMPRESSAO) {
 }
 
 const browser = await chromium.launch({
-  channel: 'chrome', headless: true,
-  args: ['--use-gl=angle', '--use-angle=swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'],
+  ...(process.env.CHROME_BIN ? { executablePath: process.env.CHROME_BIN } : { channel: 'chrome' }), headless: true,
+  args: ['--mute-audio'],
 });
 
+try {
 for (const id of MAPAS) {
   if (ONLY && id !== ONLY) continue;
   const page = await browser.newPage({ viewport: { width: 900, height: 600 } });
   page.on('pageerror', (e) => console.log('  [pageerror]', e.message));
   // `grafite=vivo`: manda o mapa RODAR a passada em vez de aplicar o layout assado
-  await page.goto(`${BASE}/mapview.html?map=${id}&grafite=vivo`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+  const viewId = id;
+  await page.goto(`${BASE}/mapview.html?map=${viewId}&grafite=vivo`, { waitUntil: 'domcontentloaded', timeout: 120000 });
   await page.waitForFunction('window.MAPEVAL && window.MAPEVAL.ready===true', null, { timeout: 300000 });
   const g = await page.evaluate(() => window.__grafite || null);
+  const actualMap = await page.evaluate(() => window.__mapId);
   await page.close();
-  if (!g || !g.pass || !g.pass.layout) { console.log(`  ${id}: sem passada (mapa ainda não ligado)`); continue; }
+  if (actualMap !== viewId || g?.mapa !== id || !g?.pass?.layout?.pecas?.length) {
+    throw Error(`${id}: mapa/passada inválidos (${actualMap}/${g?.mapa}); bake cancelado`);
+  }
   anterior[id] = {
     arquivos: g.pass.layout.arquivos, pecas: g.pass.layout.pecas,
     murais: (g.hom && g.hom.layout) || [],
@@ -108,7 +115,7 @@ for (const id of MAPAS) {
   console.log(`  ${id}: ${anterior[id].pecas.length} peças · ${anterior[id].arquivos.length} arquivos · `
     + `${anterior[id].murais.length} murais · ${g.ms} ms de passada`);
 }
-await browser.close();
+} finally { await browser.close(); }
 
 const total = Object.values(anterior).reduce((a, m) => a + m.pecas.length, 0);
 const cabecalho = `/* ============================================================================

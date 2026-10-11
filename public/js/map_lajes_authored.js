@@ -372,7 +372,7 @@ export function buildLajes(scene, T) {
   const D_TAG = decalIds(T, ['tag-fina.png', 'tag-flop.png', 'tag-larga.png', 'tag-money.png']);
   grafitar({
     // a nav de Lajes entrega `waypoints` como {nodes, adj}; o `grafitar` quer a lista
-    id: 'fy_lajes', root, T, waypoints: nav.waypoints.nodes, seed: 6088, passo: 1.2, alcance: 9, cobre: 0.025, minLarg: 0.3,
+    id: 'lajes', root, T, waypoints: nav.waypoints.nodes, seed: 6088, passo: 1.2, alcance: 9, cobre: 0.025, minLarg: 0.3,
     limpo: [...STAIRS.map((s) => ({ x0: s.x - s.width / 2, x1: s.x + s.width / 2, z0: s.z, z1: s.z + s.dirZ * s.run })),
       { x0: 7.7, x1: 9.1, z0: -36.5, z1: -32.4 }],
     murais: {

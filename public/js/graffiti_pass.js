@@ -62,6 +62,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { medirParede } from './map_decals.js';
 import { GRAFITE } from './graffiti_layout.js';
+import { criarSuporteGrafite, superficieGrafitavel } from './graffiti_surface.js';
 
 /* ── POR QUE A COLOCAÇÃO É ASSADA E NÃO CALCULADA NO LOAD ────────────────────
    A passada medida custou 8,9 s na Quebrada. O build INTEIRO do Piscina custa 88 ms.
@@ -150,6 +151,7 @@ export function grafitar(cfg) {
   if (_semTinta) return { pass: { ancoras: 0, pecas: 0, pulado: true }, hom: { murais: 0, pulado: true } };
   const { id, root, T, waypoints, bandas, murais } = cfg;
   const _t0 = (typeof performance !== 'undefined' ? performance.now() : 0);
+  revisarGrafiteManual(root);
   const assado = GRAFITE && GRAFITE[id];
   const vivo = (typeof window !== 'undefined' && window.__grafiteLive) || !assado;
   let pass, hom;
@@ -178,6 +180,25 @@ export function grafitar(cfg) {
     };
   }
   return { pass, hom };
+}
+
+function revisarGrafiteManual(root) {
+  const suporte = criarSuporteGrafite(root, gradeEspacial), pieces = [];
+  root.traverse((mesh) => {
+    if (!mesh.isMesh || !/^(decal:|mural:)/.test(mesh.name) || mesh.userData.pecas) return;
+    const params = mesh.geometry.parameters;
+    if (!params?.width || !params?.height) return;
+    const position = mesh.getWorldPosition(new THREE.Vector3());
+    const normal = new THREE.Vector3(0, 0, 1).applyNormalMatrix(new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld));
+    const up = new THREE.Vector3(0, 1, 0).transformDirection(mesh.matrixWorld);
+    const scale = mesh.getWorldScale(new THREE.Vector3());
+    const piece = { x: position.x, y: position.y, z: position.z, ry: Math.atan2(normal.x, normal.z),
+      w: params.width * Math.abs(scale.x), h: params.height * Math.abs(scale.y) };
+    if (Math.abs(normal.y) > 0.001 || Math.abs(up.y) < 1 - 1e-6 || !suporte(piece)) pieces.push(mesh);
+  });
+  for (const mesh of pieces) {
+    mesh.removeFromParent(); mesh.geometry.dispose();
+  }
 }
 
 function mix32(n) {
@@ -212,7 +233,7 @@ const NAO_PINTA = new RegExp([
 ].join('|'), 'i');
 
 function _pintavel(o) {
-  if (!o.isMesh || !o.visible || !o.material || !o.geometry) return false;
+  if (!superficieGrafitavel(o)) return false;
   /* Testa a CADEIA de nomes, não só o da malha: num GLB do Tripo a malha se chama
      `tripo_node_<uuid>` e quem carrega `Weathered_Green_Dome_Tent` é o grupo pai.
      Testando só `o.name`, metade da lista de exclusão nunca casaria. */
@@ -338,6 +359,7 @@ export function pintarParedes(opts) {
      já sobram. Célula menor = lista menor por consulta = o `pintar` sai de 10,4 s. */
   const perto = _grade(alvos, 3);
   const pertoFrente = _grade(_oclusores(root), 3);
+  const suporte = criarSuporteGrafite(root, gradeEspacial);
   for (const A of ancoras.values()) A.teto = _alturaParede(perto(A.x, A.z), rc, A);
   tempo.teto = Math.round(_ms() - _t); _t = _ms();
   // Caixa/dumpster não é parede: exige _alturaParede ≥ 1,8 m (pessoa em pé; crate ~1,2 m, muro ≥ 2 m — medido por _alturaParede).
@@ -436,6 +458,7 @@ export function pintarParedes(opts) {
         if (recuo === null) { rec.semParede++; continue; }
         const ax = A.x + Math.cos(A.ry) * du, az = A.z - Math.sin(A.ry) * du;
         const px = ax - Math.sin(A.ry) * recuo, pz = az - Math.cos(A.ry) * recuo;
+        if (!suporte({ x: px, y: yc, z: pz, ry: A.ry, w, h })) { rec.semParede++; continue; }
         if (_cobreDemais(postas, px, yc, pz, A.ry, w, h, cobre)) { rec.cobria++; continue; }
         if (exigeChao && B.exigeChao !== false && !_temChao(amostra, du, w, yc - h / 2)) { rec.noAr++; continue; }
         postas.push({ i, cartaz, x: px, y: yc, z: pz, ry: A.ry, hw: w / 2, hh: h / 2, quem: A.quem });
@@ -498,11 +521,13 @@ export function pintarParedes(opts) {
    ============================================================================ */
 export function aplicarGrafite(root, T, layout, muraisTex) {
   if (!root || !T || !layout || !T.decalFiles) return { pecas: 0, murais: 0 };
+  const suporte = criarSuporteGrafite(root, gradeEspacial);
   const idx = new Map(), idxP = new Map();
   T.decalFiles.forEach((f, i) => idx.set(f, i));
   (T.posterFiles || []).forEach((f, i) => idxP.set(f, i));
   const porArquivo = new Map(), postas = [];
   for (const [a, x, y, z, ry, w, h] of (layout.pecas || [])) {
+    if (!suporte({ x, y, z, ry, w, h })) continue;
     const nome = layout.arquivos[a];
     /* Nome ausente = layout corrompido (aconteceu: uma semente de mural entrou na
        lista de peças com índice -1 e virou `null` no JSON). Um mapa inteiro não pode
@@ -527,6 +552,7 @@ export function aplicarGrafite(root, T, layout, muraisTex) {
 
   let murais = 0;
   for (const [nome, x, y, z, ry, w, h] of (layout.murais || [])) {
+    if (!suporte({ x, y, z, ry, w, h })) continue;
     const t = muraisTex && muraisTex[nome];
     if (!t) continue;
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshLambertMaterial({
@@ -704,6 +730,7 @@ export function pendurarMurais(opts) {
      desempata pelo hash, pra ficar determinístico. */
   const perto = _grade(alvos);
   const pertoFrente = _grade(_oclusores(root), 3);
+  const suporte = criarSuporteGrafite(root, gradeEspacial);
   const notas = [];
   for (const A of cand.values()) {
     const viz = perto(A.x, A.z);
@@ -729,6 +756,7 @@ export function pendurarMurais(opts) {
     if (rec === null) continue;
     if (!_temChao(am, 0, w, yc - h / 2)) continue;
     const px = c.A.x - Math.sin(c.A.ry) * rec, pz = c.A.z - Math.cos(c.A.ry) * rec;
+    if (!suporte({ x: px, y: yc, z: pz, ry: c.A.ry, w, h })) continue;
     const i = feitos.length;
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshLambertMaterial({
       map: texturas[i], polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -5,
@@ -987,7 +1015,7 @@ function _juntar(porArquivo, T, root, postas) {
       /* o NOME do arquivo vai junto: depois da junção a régua não tem como saber
          quantas artes distintas entraram (todas as peças viram uma malha por PNG), e
          "353 peças de 3 arquivos" é um alarme falso que custou meia hora. */
-      f: p.f || (p.i !== undefined && T.decalFiles ? T.decalFiles[p.i] : 'peça'),
+      f: p.f || (p.i !== undefined ? (p.cartaz ? 'poster:' + T.posterFiles?.[p.i] : T.decalFiles?.[p.i]) : 'peça'),
     })));
   }
   return malhas;

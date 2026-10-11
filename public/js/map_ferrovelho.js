@@ -1566,7 +1566,8 @@ export function buildFerroVelho(scene, T) {
         [-16, 35.36, Math.PI, 1], [18, 35.36, Math.PI, 0]];   // sul: à FRENTE das chapas de zinco (z-fight)
       for (const [x, z, ry, gi] of gp) {
         const m = new THREE.Mesh(new THREE.PlaneGeometry(6.2, 2.7), lam({ map: T.graffiti[gi % T.graffiti.length] }));
-        m.position.set(x, 1.75, z); m.rotation.y = ry; m.receiveShadow = true; root.add(m);
+        m.position.set(x, 1.75, z); m.rotation.y = ry; m.receiveShadow = true;
+        m.name = 'mural:ferro-procedural-' + gi; root.add(m);
       }
     }
     /* PIXAÇÃO em preto/prata sobre o zinco (BAR §4.4) — é diferente do grafite colorido:
@@ -1578,7 +1579,8 @@ export function buildFerroVelho(scene, T) {
         [31.42, -4, -Math.PI / 2, 0], [-24, 35.34, Math.PI, 0], [26, 35.34, Math.PI, 1]]) {
         const m = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 1.7),
           new THREE.MeshBasicMaterial({ map: pix[pi], transparent: true, alphaTest: 0.15 }));
-        m.position.set(x, 2.65, z); m.rotation.y = ry; root.add(m);
+        m.position.set(x, 2.65, z); m.rotation.y = ry;
+        m.name = 'decal:ferro-pixacao-' + pi; root.add(m);
       }
     }
     /* ===== DECALQUE RECORTADO (public/img/decals) — 3ª camada de tinta =====
