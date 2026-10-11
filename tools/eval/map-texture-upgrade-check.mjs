@@ -15,6 +15,10 @@ const baseline = baselinePath ? fs.readFileSync(baselinePath, 'utf8') : null;
 const mutableImages = new Set(['ground', 'concrete', 'concreteDark', 'asphalt', 'dirt', 'grass', 'metal']);
 
 function evaluate(src, search = '') {
+  // Contrato do albedo usa sampler MED explícito; perfil LOW tem régua causal própria.
+  const query = new URLSearchParams(search);
+  if (!query.has('q')) query.set('q', 'med');
+  search = '?' + query.toString();
   let state = 123456789, randomCalls = 0;
   const math = Object.create(Math);
   math.random = () => { randomCalls++; state ^= state << 13; state ^= state >>> 17; state ^= state << 5; return (state >>> 0) / 4294967296; };

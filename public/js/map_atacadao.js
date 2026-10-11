@@ -1,6 +1,7 @@
 // Atacadão da Treta: ARMAZÉM DE CLUBE DE ATAQUE — labirinto de rack de pallet, não
 // átrio de loja. Projeto, lattice e medidas: docs/mapa-atacadao.md. Régua: eval:atacadao.
 import * as THREE from 'three';
+import { detailFor } from './textures.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp, PropBatch } from './mapprops.js';
 import { decalIds } from './map_decals.js';
@@ -67,7 +68,7 @@ function canvasTex(W, H, draw, rx = 1, ry = 1) {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry);
-  return t;
+  detailFor(t); return t;
 }
 const salpico = (x, W, H, n, cores, semente, smin = 1, smax = 3) => {
   const r = rng(semente);

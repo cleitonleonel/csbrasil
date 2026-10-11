@@ -3,12 +3,17 @@ import * as THREE from 'three';
 
 function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 
-/* Anisotropia 8 (4 em `q=low`): sem ela o chão visto em ângulo rasteiro vira papa.
+/* Anisotropia 8 (4 no perfil LOW): sem ela o chão visto em ângulo rasteiro vira papa.
    Espelho dos tetos: tools/eval/texel-tetos.mjs (ANISO_ALVO/ANISO_MIN); kill-switch `?texel=0`. */
 const _texQS = (() => { try { return new URLSearchParams(location.search); } catch (e) { return new URLSearchParams(''); } })();
 const TEXEL_ON = _texQS.get('texel') !== '0';
 const SURFACE_MACRO_ON = _texQS.get('surfacemacro') !== '0';
-const ANISO_TEX = !TEXEL_ON ? 1 : (_texQS.get('q') === 'low' ? 4 : 8);
+const ANISO_TEX = (() => {
+  let quality = 'med';
+  try { quality = JSON.parse(localStorage.getItem('awpbr_settings') || '{}').quality || quality; } catch (e) { /* noop */ }
+  quality = _texQS.get('q') || quality;
+  return !TEXEL_ON ? 1 : (quality === 'low' ? 4 : 8);
+})();
 
 function tex(c, repeat = 1, ry = null) {
   const t = new THREE.CanvasTexture(c);

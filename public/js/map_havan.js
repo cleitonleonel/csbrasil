@@ -136,7 +136,7 @@ function tileTex(base, line, n, rx, rz) {
   const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
   x.fillStyle = base; x.fillRect(0, 0, 128, 128); x.strokeStyle = line; x.lineWidth = 3;
   const s = 128 / n; for (let i = 0; i <= n; i++) { x.beginPath(); x.moveTo(i * s, 0); x.lineTo(i * s, 128); x.stroke(); x.beginPath(); x.moveTo(0, i * s); x.lineTo(128, i * s); x.stroke(); }
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, rz); return t;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, rz); detailFor(t); return t;
 }
 // textura rica: manchas + rachaduras + pontos (asfalto/concreto pintado, sem cara de low-poly)
 function noiseTex(base, blotches, rx, rz, opts = {}) {
@@ -353,7 +353,7 @@ function tintaTex(color) {
   }
   x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; detailFor(t); return t;
 }
 // LETREIRO HAVAN: caixa azul com letras AMARELAS (a identidade nº1 da loja, e o que
 // faltava — o logo antigo era azul sobre branco e sumia na fachada branca).
@@ -1509,6 +1509,7 @@ export function buildHavan(scene, T) {
     g.addColorStop(0, 'rgba(14,15,18,0.85)'); g.addColorStop(0.55, 'rgba(20,22,26,0.45)'); g.addColorStop(1, 'rgba(20,22,26,0)');
     cx.fillStyle = g; cx.fillRect(0, 0, S, S);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    detailFor(t);
     const oilMat = new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false });
     for (const [x, z, r, sd] of [[-14, 26, 1.9, 1], [8, 40, 1.3, 2], [22, 16, 2.1, 3], [-26, 46, 1.5, 4], [4, 8, 1.2, 5], [-19, 12, 1.6, 6], [30, 38, 1.4, 7]]) {
       const p = new THREE.Mesh(new THREE.PlaneGeometry(r * 2, r * 2 * (0.7 + (sd % 3) * 0.15)), oilMat);

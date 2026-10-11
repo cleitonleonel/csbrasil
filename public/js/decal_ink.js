@@ -10,11 +10,10 @@ export function aplicarTintaRecortada(material, arquivo) {
     shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
 #ifdef USE_MAP
   float inkLight = min(sampledDiffuseColor.r, min(sampledDiffuseColor.g, sampledDiffuseColor.b));
-  float inkChroma = max(sampledDiffuseColor.r, max(sampledDiffuseColor.g, sampledDiffuseColor.b)) - inkLight;
-  diffuseColor.a *= 1.0 - smoothstep( 0.35, 0.50, inkLight ) * (1.0 - smoothstep( 0.015, 0.025, inkChroma ));
+  diffuseColor.a *= 1.0 - smoothstep( 0.155, 0.180, inkLight );
 #endif`);
   };
-  material.customProgramCacheKey = () => key + ':black-ink-v1';
+  material.customProgramCacheKey = () => key + ':black-ink-v3';
   material.userData.tintaRecortada = arquivo;
   RECORTADOS.add(material);
   material.needsUpdate = true;

@@ -181,7 +181,7 @@ function blobTex(r, g, b, aMax, seed = 101) {
     x.fillStyle = gr; x.beginPath(); x.arc(px, py, rr, 0, 7); x.fill();
   }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return t;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; detailFor(t); return t;
 }
 
 /* ===================================================================================
@@ -416,7 +416,7 @@ function bladeTex(seed = 401, tall = false) {
     x.stroke();
   }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return t;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; detailFor(t); return t;
 }
 // trepadeira: manta de folhas que cobre a pilha inteira (alpha, bordas recortadas)
 function vineTex(seed = 733) {
@@ -473,7 +473,7 @@ function puddleTex(seed = 617) {
     x.beginPath(); x.ellipse(S / 2 + (rnd() - 0.5) * 28, S / 2 + (rnd() - 0.5) * 28, 10 + rnd() * 34, 8 + rnd() * 28, rnd() * 3, 0, 6.3); x.stroke();
   }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return t;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; detailFor(t); return t;
 }
 
 export function buildFerroVelho(scene, T) {
