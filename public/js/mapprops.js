@@ -12,6 +12,11 @@ const loader = new GLTFLoader();
 const loadGLB = (url) => new Promise((res, rej) => loader.load(url, res, undefined, rej));
 const _base = new Map(); // id -> template scene
 
+export const COMMON_MAP_PROPS = ['congresso', 'catedral', 'ministerio', 'palacio', 'justica', 'tires', 'stall', 'tent', 'bus', 'drinkstand', 'urna', 'towner',
+  'quiosque', 'skate_ramp', 'lifeguard_tower', 'guarda_sol', 'arquibancada',
+  'churrasqueira', 'mesa_guardasol', 'cooler', 'boia', 'placa_piscina', 'caixa_som'];
+
+
 /* ===================== CUSTO DE CENA (rodada 3) =====================
    MEDIDO em /root/shots/r2/_metrics-draw.json: loja_h 4.347 draw calls e 3,65 M
    triangulos, contra um teto de regua de 300-800 calls e 500 k tris. Duas causas
@@ -32,11 +37,13 @@ const _qp = (() => { try { return new URLSearchParams(location.search); } catch 
 export const PROP_CULL = _qp.get('cull') !== '0';
 export const PROP_BATCH = _qp.get('batch') !== '0';
 
-export async function preloadMapProps(ids) {
-  await Promise.all([...new Set(ids)].filter((id) => !_base.has(id)).map(async (id) => {
+export async function preloadMapProps(ids, { required = false } = {}) {
+  const unique = [...new Set(ids)];
+  await Promise.all(unique.filter((id) => !_base.has(id)).map(async (id) => {
     try { const g = await loadGLB(`models/props/${id}.glb?v=${VERSION}`); _base.set(id, g.scene); }
     catch (e) { console.warn('map prop load failed', id, e); }
   }));
+  if (required && unique.some(id => !_base.has(id))) throw new Error('Não foi possível carregar os objetos do mapa. Tente novamente.');
 }
 
 export function hasProp(id) { return _base.has(id); }

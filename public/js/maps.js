@@ -3,7 +3,7 @@ import { buildMansao, MANSAO_PROPS, MANSAO_AMBIENCE } from './map_mansao.js';
 import { buildAmazonia, AMAZONIA_PROPS, AMAZONIA_AMBIENCE } from './map_amazonia.js';
 import { buildEscadao, ESCADAO_PROPS, ESCADAO_AMBIENCE } from './map_escadao.js';
 // Map registry — single source of truth for selectable arenas.
-import { buildBrasilia } from './map_brasilia.js';
+import { buildBrasilia, BRASILIA_PROPS } from './map_brasilia.js';
 import { buildPoolDay, PISCINA_PROPS } from './map_piscina.js';
 import { buildHavan, havanPropsForMatch } from './map_havan.js';
 import { buildFerroVelho, FERRO_PROPS } from './map_ferrovelho.js';
@@ -43,7 +43,7 @@ export const MAPS = {
   mansao: { name: 'Mansão do Joá', preload: preloadMansaoAmbience, build: buildMansao, props: MANSAO_PROPS, ambience: MANSAO_AMBIENCE, ctfMode: true },
   amazonia: { name: 'Treta na Amazônia', build: buildAmazonia, props: AMAZONIA_PROPS, ambience: AMAZONIA_AMBIENCE, ctfMode: true },
   escadao: { name: 'Escadão (Morro)', build: buildEscadao, props: ESCADAO_PROPS, ambience: ESCADAO_AMBIENCE, ctfMode: true },
-  praca_poderes: { name: 'Praça dos Três Poderes', build: buildBrasilia }, // Brasília fiel (substitui o clássico)
+  praca_poderes: { name: 'Praça dos Três Poderes', build: buildBrasilia, props: BRASILIA_PROPS }, // Brasília fiel (substitui o clássico)
   /* `praca_old` (a "Praça (clássico)", public/js/map.js) SAIU DO REGISTRO — pedido literal do
      dono: "vamos apagar a praça clássica". Ela era a versão procedural anterior da mesma
      praça que o awp_map já entrega em Brasília fiel, e ficava no menu como um 5º cartaz que

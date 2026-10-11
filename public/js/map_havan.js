@@ -130,6 +130,7 @@ export function havanCarSelection(n = 12) {
 // props p/ preload da partida atual (maps.js consome via getter)
 const STORE_PROPS = ['gondola_mercado', 'gondola_eletro', 'arara_roupas', 'caixa_cobranca', 'painel_tvs', 'manequim', 'onibus_urbano'];
 export function havanPropsForMatch() { return ['statue_liberty', 'shopping_cart', ...STORE_PROPS, ...havanCarSelection()]; }
+export function havanPropsPool() { return ['statue_liberty', 'shopping_cart', ...STORE_PROPS, ...LIGHT_CARS, ...MINT_BR]; }
 
 function tileTex(base, line, n, rx, rz) {
   const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
@@ -1412,8 +1413,8 @@ export function buildHavan(scene, T) {
     const pil = lam({ map: reTile(MURO_TEX, 0.45, 3.1), bumpMap: reTile(MURO_TEX, 0.45, 3.1), bumpScale: 0.4, roughness: 0.93 });
     addBox(2 * HALF_X + 2.4, 0.22, 1.4, cap, 0, 3, wZ, { collide: false });
     for (const sx of [-1, 1]) addBox(1.4, 0.22, HALF_Z - SF, cap, sx * (HALF_X + 0.5), 3, (wZ + SF) / 2, { collide: false });
-    // passo maior em quality low: metade dos pilaretes, mesma leitura, metade dos draw calls
-    const PSTEP = DECO_HI ? 8 : 16;
+    // Pilastras bloqueiam tiros: mesma presença em todas as qualidades.
+    const PSTEP = 8;
     // capitel EM CIMA + plinto EMBAIXO: sem a base, a pilastra "flutua" (critério A2 —
     // todo objeto apoiado precisa de escurecimento encostado no chão) e volta a ler como
     // peça solta. O plinto é o mesmo concreto do rufo, 20 cm mais largo que o fuste.
@@ -1518,7 +1519,7 @@ export function buildHavan(scene, T) {
   // CARRINHOS DE COMPRAS espalhados + baia de devolução (a assinatura de estacionamento
   // de loja: carrinho abandonado atravessado na vaga)
   const carts = [[-20, 48, 0], [24, 12, 0.8], [-30, 30, 2.1], [15.5, 24, 1.4], [-8.5, 34, 0.3], [27, 47, 2.6]];
-  if (DECO_HI) carts.push([-15.5, 15, 1.9], [33, 29, 0.5], [-3.5, 47, 2.2], [20, 55, 1.1]);
+  carts.push([-15.5, 15, 1.9], [33, 29, 0.5], [-3.5, 47, 2.2], [20, 55, 1.1]);
   for (const [cx, cz, cry] of carts) gprop('shopping_cart', cx, cz, 1.0, cry);
   if (DECO) for (const [bx, bz] of [[-8.5, 30], [8.5, 42]]) {   // baia: dois trilhos + placa
     // trilhos SÓLIDOS: a régua viu a ponta do trilho dentro do colisor do carro vizinho
@@ -1530,8 +1531,9 @@ export function buildHavan(scene, T) {
   // Usa a SELEÇÃO da partida (12 modelos leves sorteados por seed — ver havanCarSelection).
   let ci = 0;
   const carPool = havanCarSelection();
+  let carState = _carSeed;
+  const carRandom = () => (carState = (carState * 16807) % 2147483647) / 2147483647;
   const parkSpots = [];
-  let _spot = 0;
   for (const zc of [10, 18, 28, 36, 44, 52]) for (const xc of [-32, -25, -18, -11, 11, 18, 25, 32]) {
     if (Math.hypot(xc, zc - 20) < 9) continue;   // deixa espaço ao redor da estátua
     /* FLANCOS DO RESPAWN P LIVRES. A fileira de waypoints mais ao norte é z = 52,8 (a grade
@@ -1542,15 +1544,11 @@ export function buildHavan(scene, T) {
        até a bandeira LOJA L (CTF2). Duas vagas VAZIAS aqui (com a tinta de demarcação à
        mostra, que é conteúdo que já existe) valem mais que dois carros. */
     if (zc === 52 && Math.abs(xc) === 11) continue;
-    // GATE DE QUALIDADE (item 5 da auditoria de custo): em 'low' o pátio fica com METADE
-    // dos carros, em xadrez — continua lendo como estacionamento cheio, com metade da
-    // geometria. As vagas vazias mostram a tinta de demarcação, que é conteúdo que já existe.
-    if (LOWQ && (_spot++ % 2)) continue;
     parkSpots.push([xc, zc]);
   }
   for (const [x, z] of parkSpots) {
     const id = carPool[ci % carPool.length]; ci++;
-    const ry = (z > 28 ? 0 : Math.PI) + (RY_FIX[id] || 0) + (Math.random() - 0.5) * 0.12;   // fileiras retas, quase alinhadas
+    const ry = (z > 28 ? 0 : Math.PI) + (RY_FIX[id] || 0) + (carRandom() - 0.5) * 0.12;   // fileiras retas, quase alinhadas
     placeCar(id, x, z, ry);
     carCover(x, z, 1.2, 2.2, 1.4);
   }
@@ -1568,9 +1566,8 @@ export function buildHavan(scene, T) {
        • as duas faixas LATERAIS, |x| ∈ [33, 38], entre a última coluna de vagas e o muro
          (x = ±35,5, três carros por lado, espaçados 16 m — não fecham a faixa). */
   for (const [xc, zc] of [[-32, 3], [-25, 3], [-18, 3], [-11, 3], [11, 3], [18, 3], [25, 3], [32, 3]]) {
-    if (LOWQ && ((xc + zc) % 7 < 3)) continue;   // mesmo gate de qualidade da grade principal
     const id = carPool[ci++ % carPool.length];
-    const ry = Math.PI + (RY_FIX[id] || 0) + (Math.random() - 0.5) * 0.12;
+    const ry = Math.PI + (RY_FIX[id] || 0) + (carRandom() - 0.5) * 0.12;
     placeCar(id, xc, zc, ry);
     carCover(xc, zc, 1.2, 2.2, 1.4);
   }
@@ -1583,7 +1580,6 @@ export function buildHavan(scene, T) {
      penetração 0,825 m. O colisor quadrado cobre a maior dimensão do carro em QUALQUER
      rotação — 4,4/2 = 2,2 m contra 2,1 m de meia-carroceria. */
   for (const [xc, zc] of [[-35.5, 14], [-35.5, 30], [-35.5, 46], [35.5, 14], [35.5, 30], [35.5, 46]]) {
-    if (LOWQ && ((xc + zc) % 7 < 3)) continue;
     const id = carPool[ci++ % carPool.length];
     placeCar(id, xc, zc, (xc < 0 ? -Math.PI / 2 : Math.PI / 2) + (RY_FIX[id] || 0));
     carCover(xc, zc, 2.2, 2.2, 1.4);
@@ -1594,7 +1590,7 @@ export function buildHavan(scene, T) {
   // e os flancos ficam livres pro A* (vãos ≥4m).
   for (const [cx, cz] of [[-5, 8], [5, 13], [-5, 26], [5, 31], [-5, 38], [5, 43]]) {
     const id = carPool[ci++ % carPool.length];
-    const ry = (cz > 28 ? 0 : Math.PI) + (RY_FIX[id] || 0) + (Math.random() - 0.5) * 0.12;
+    const ry = (cz > 28 ? 0 : Math.PI) + (RY_FIX[id] || 0) + (carRandom() - 0.5) * 0.12;
     placeCar(id, cx, cz, ry);
     carCover(cx, cz, 1.2, 2.2, 1.4);
   }

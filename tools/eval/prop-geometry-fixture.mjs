@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { GLTFLoader } from '../../public/vendor/addons/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { hasProp, preloadMapProps } from '../../public/js/mapprops.js';
 
 // Node valida a geometria GLB real; textura e aparência continuam no gate de browser.
@@ -11,8 +11,11 @@ export async function preloadPropGeometry(ids) {
     try {
       const source=readFileSync(new URL(`../../public/${file}`,import.meta.url));
       const jsonLength=source.readUInt32LE(12), json=JSON.parse(source.subarray(20,20+jsonLength));
-      json.materials=[{pbrMetallicRoughness:{baseColorFactor:[.5,.5,.5,1]}}];
-      json.meshes.forEach(mesh=>mesh.primitives.forEach(primitive=>{primitive.material=0;}));
+      const removeTextures=object=>{
+        if(!object||typeof object!=='object')return;
+        for(const key of Object.keys(object)){if(/texture$/i.test(key))delete object[key];else removeTextures(object[key]);}
+      };
+      for(const material of json.materials||[])removeTextures(material);
       delete json.textures; delete json.images;
       const encoded=Buffer.from(JSON.stringify(json)), padded=Buffer.alloc(Math.ceil(encoded.length/4)*4,32);
       encoded.copy(padded);

@@ -223,8 +223,8 @@ export function buildPoolDay(scene, T) {
       const ex = (opts.ry || opts.rz) ? Math.max(w, d) / 2 : w / 2;
       const ez = (opts.ry || opts.rz) ? Math.max(w, d) / 2 : d / 2;
       colliders.push({ minX: x - ex - pad, maxX: x + ex + pad, minY: y, maxY: y + h, minZ: z - ez - pad, maxZ: z + ez + pad });
-      occluders.push(m);
-    } else if (opts.bala || opts.occlude === true) occluders.push(m);   // visível dentro de colisor alheio: a bala para nele (BUG-54)
+      if (mat.colorWrite !== false) occluders.push(m);
+    } else if ((opts.bala || opts.occlude === true) && mat.colorWrite !== false) occluders.push(m);   // visível dentro de colisor alheio: a bala para nele (BUG-54)
     return m;
   }
 
@@ -344,7 +344,7 @@ export function buildPoolDay(scene, T) {
   let propsOn = true;
   try { propsOn = new URLSearchParams(location.search).get('piscinaProps') !== '0'; } catch { /* node */ }
   const temProp = (id) => propsOn && hasProp(id);
-  // Caixa que só colide e para bala: o GLB por cima é a imagem, ela é o contrato físico.
+  // Caixa que só colide: o GLB por cima é a imagem, ela é o contrato físico.
   const OCULTO = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
   // GLB esticado na caixa w×h×d (largura X, frente +Z). Sombra só na escada: em tudo
   // custava +150 mil tris e estourava PIS5 (números no commit).
@@ -572,7 +572,7 @@ export function buildPoolDay(scene, T) {
   {
     const imgs = T.posterImgs || [], asp = T.posterAspects || [];
     if (imgs.length) {
-      const HBASE = 2.2, Y = 2.6, OFF = 0.06;
+      const HBASE = 2.2, Y = 2.6, OFF = 0.03;
       // [x, z, ry] de cada cartaz, já virado pra dentro do salão
       const vagas = [
         [-13, HALF_Z - OFF, Math.PI], [-3, HALF_Z - OFF, Math.PI], [11, HALF_Z - OFF, Math.PI],
@@ -596,7 +596,7 @@ export function buildPoolDay(scene, T) {
      São as únicas peças COLORIDAS grandes do salão — exceção deliberada do dono à regra
      "só pixação" deste mapa; ficam na lateral, fora do plano de fundo do duelo axial. */
   {
-    const MH = 2.3, MW = MH * 1.8333, MY = 2.2 + MH / 2, MOFF = 0.06;   // 1408×768 medido
+    const MH = 2.3, MW = MH * 1.8333, MY = 2.2 + MH / 2, MOFF = 0.03;   // 1408×768 medido
     // nome = quem é o arquivo: em node a textura nunca carrega e o nome é a única régua
     if (T.muralEternamente) { const a = addPlane(MW, MH, lam({ map: T.muralEternamente, side: THREE.DoubleSide }), -HALF_X + MOFF, MY, 6, Math.PI / 2); a.name = 'mural:eternamente'; }
     if (T.muralLesteVive) { const b = addPlane(MW, MH, lam({ map: T.muralLesteVive, side: THREE.DoubleSide }), HALF_X - MOFF, MY, 6, -Math.PI / 2); b.name = 'mural:leste-vive'; }

@@ -42,6 +42,8 @@ export const PEGADA_CORPO = {
    centro ≈ origem do arquivo. ryCorr é o delta SOBRE o ry de placement (0,55). */
 export const PEGADA_BUS = { hx: 4.6, hz: 1.0, ryCorr: 0.3263 };
 
+export const BRASILIA_PROPS = ['congresso', 'catedral', 'ministerio', 'palacio', 'justica', 'tires', 'stall', 'tent', 'bus', 'drinkstand', 'urna', 'towner'];
+
 export function buildBrasilia(scene, T) {
   const colliders = [];   // {minX,minY,minZ,maxX,maxY,maxZ}
   const occluders = [];   // meshes for LOS / bullet raycasts

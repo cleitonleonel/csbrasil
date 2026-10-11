@@ -4,7 +4,7 @@ import { initTextures } from './textures.js';
 import { CHARACTERS, buildCharacter, charWeapon, ladosDe, podeNoLado } from './characters.js';
 import { preloadCharacterAssets, buildCharacterModel, hasModel, GLB_CHARS } from './glbchars.js';
 import { preloadFPArms } from './fparms.js';
-import { preloadMapProps } from './mapprops.js';
+import { preloadMapProps, COMMON_MAP_PROPS } from './mapprops.js';
 import { preloadAmbientLife } from './ambientlife.js';   // fauna do mapa (MAPS[id].ambience)
 import { apiUrl, fetchComRetry, versaoComOrigem } from './apibase.js';   // rotas /api de banco moram no backend (docs/APIS.md)
 import { MAPS, DEFAULT_MAP, resolveMapId, mapaDaSessao, mapasDoMenu, MAPAS_PARADOS } from './maps.js';
@@ -204,9 +204,7 @@ if (!urlMap) { settings.map = currentMap; saveSettings(); }
 
 /* ---------------- menu backdrop (orbiting map) ---------------- */
 // Mint building/statue GLBs used by the Brasília map (loaded once, cloned per placement).
-const MAP_PROPS = ['congresso', 'catedral', 'ministerio', 'palacio', 'justica', 'tires', 'stall', 'tent', 'bus', 'drinkstand', 'urna', 'towner',
-  'quiosque', 'skate_ramp', 'lifeguard_tower', 'guarda_sol', 'arquibancada',
-  'churrasqueira', 'mesa_guardasol', 'cooler', 'boia', 'placa_piscina', 'caixa_som'];   // props do Piscinão de Ramos (Mint); carros/estátua do Havan carregam por-mapa   // Havan (estátua + carros + carrinho)
+const MAP_PROPS = COMMON_MAP_PROPS;   // props do Piscinão de Ramos (Mint); carros/estátua do Havan carregam por-mapa   // Havan (estátua + carros + carrinho)
 let menuScene = new THREE.Scene();
 MAPS[currentMap].build(menuScene, textures);
 const menuCam = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 400);
@@ -1498,7 +1496,7 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
   // procedural box meshes for any archetype that isn't modeled yet. Map props (statues)
   // load in parallel and are optional — the map renders fine if they're missing.
   // sorteia os carros da Havan desta partida ANTES do preload (seleção = props do mapa)
-  setHavanCarSeed((Math.random() * 1e9) | 0);
+  setHavanCarSeed(sessao ? (sessao.net.meta.mapSeed ?? 1) : (Math.random() * 1e9) | 0);
   /* SÓ OS PERSONAGENS DA PARTIDA: o roster é sorteado ANTES do preload e só esses GLBs sobem
      (jogador + ~teamSize×2). Filtro vazio = rede de segurança: elenco inteiro. Régua: PL1. */
   /* Tamanho do time é do SERVIDOR, nunca do ajuste local de bots (senão sobram corpos e o
@@ -1541,6 +1539,8 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
       ]);
     }
   } catch (e) { console.error('preload da partida falhou parcialmente', e); }
+  if (lancamentoPerdeu(meuLancamento)) return;
+  if (sessao) await preloadMapProps(MAPS[currentMap]?.props || [], { required: true });
   /* RÉGUA:launch-race nascimento início — extraído por `tools/eval/launch-race-check.mjs` */
   /* O preload leva segundos: sem esta saída, uma queda de socket no meio dele fazia nascer um
      Game zumbi por cima do menu que a desconexão já havia aberto. */
