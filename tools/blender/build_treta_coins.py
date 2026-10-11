@@ -7,7 +7,9 @@ import sys
 from pathlib import Path
 
 import bpy
-from mathutils import Vector, Matrix, Quaternion
+import bmesh
+from mathutils import Vector
+from mathutils.bvhtree import BVHTree
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--root', required=True)
@@ -16,42 +18,8 @@ parser.add_argument('--only')
 args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
 root, output = Path(args.root), Path(args.output)
 output.mkdir(parents=True, exist_ok=True)
-coins = [(1, 'saci', 'mp5'), (5, 'curupira', 'mp5'), (10, 'caipora', 'scar'),
-         (50, 'lobisomem', 'ak'), (100, 'gotinha', 'mp5'), (200, 'canarinho', 'deagle'), (1000, 'zumbi', 'ak')]
-
-def geometry_import(path):
-    """Read the existing weapon geometry without importing its WebP materials."""
-    raw = path.read_bytes()
-    length = struct.unpack_from('<I', raw, 12)[0]
-    doc = json.loads(raw[20:20 + length])
-    binary = raw[28 + length:]
-    def accessor(index):
-        a = doc['accessors'][index]; view = doc['bufferViews'][a['bufferView']]
-        fmt = {5126:'f',5125:'I',5123:'H',5121:'B'}[a['componentType']]
-        n = {'SCALAR':1,'VEC3':3}[a['type']]; size = struct.calcsize(fmt)*n
-        offset = view.get('byteOffset',0)+a.get('byteOffset',0)
-        stride = view.get('byteStride',size)
-        return [struct.unpack_from('<'+fmt*n,binary,offset+i*stride) for i in range(a['count'])]
-    def visit(index, parent):
-        n = doc['nodes'][index]
-        if 'matrix' in n:
-            m = Matrix([n['matrix'][i:i+4] for i in range(0,16,4)]).transposed()
-        else:
-            q = n.get('rotation',[0,0,0,1]); scale = n.get('scale',[1,1,1])
-            m = Matrix.Translation(Vector(n.get('translation',[0,0,0]))) @ Quaternion((q[3],*q[:3])).to_matrix().to_4x4() @ Matrix.Diagonal((*scale,1))
-        world = parent @ m
-        if 'mesh' in n:
-            for p in doc['meshes'][n['mesh']]['primitives']:
-                if p.get('mode',4)!=4: continue
-                vertices = accessor(p['attributes']['POSITION'])
-                indices = [x[0] for x in accessor(p['indices'])] if 'indices' in p else list(range(len(vertices)))
-                mesh = bpy.data.meshes.new('WeaponRelief')
-                mesh.from_pydata(vertices,[],[indices[i:i+3] for i in range(0,len(indices),3)])
-                obj = bpy.data.objects.new('WeaponRelief',mesh);bpy.context.collection.objects.link(obj);obj.matrix_world=world
-        for child in n.get('children',[]):visit(child,world)
-    for index in doc['scenes'][doc.get('scene',0)]['nodes']:
-        visit(index,Matrix.Rotation(math.pi/2,4,'X'))
-
+coins = [(1, 'saci'), (5, 'curupira'), (10, 'caipora'), (50, 'lobisomem'),
+         (100, 'gotinha'), (200, 'canarinho'), (1000, 'zumbi')]
 
 def material(name, color, metallic=1, roughness=.28):
     m = bpy.data.materials.new(name)
@@ -90,94 +58,107 @@ def text(label, pos, size, mat, parent, backside=False):
     finish(obj, 'Legend_' + label, mat, parent)
 
 
-def import_relief(character, weapon, mat, parent):
+def import_portrait(character, mat, dark, parent):
     before = set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=str(root / f'public/models/characters/{character}.glb'))
-    char_objects = set(bpy.data.objects) - before
-    rig = next((o for o in char_objects if o.type == 'ARMATURE'), None)
-    if rig:
-        rig.animation_data_clear()
-        # Pose the rest rig directly. Animation-only files use a different node
-        # hierarchy; their transforms cannot be copied into Blender bone matrices.
-        for side, sign in [('Left', 1), ('Right', -1)]:
-            for name, degrees in [(side + 'Arm', 55 * sign), (side + 'ForeArm', -200 * sign)]:
-                bone = rig.pose.bones.get(name)
-                if bone:
-                    pivot = bone.matrix.translation.copy()
-                    turn = Matrix.Translation(pivot) @ Matrix.Rotation(math.radians(degrees), 4, 'Y') @ Matrix.Translation(-pivot)
-                    bone.matrix = turn @ bone.matrix
-                    bpy.context.view_layer.update()
-    # Blender creates hidden BoneShape meshes for rig display. They are not
-    # character geometry and must never enter the embossed model or its bounds.
-    meshes = [o for o in char_objects if o.type == 'MESH' and not o.hide_render and (not rig or any(m.type=='ARMATURE' for m in o.modifiers))]
+    imported = set(bpy.data.objects) - before
+    rig = next(o for o in imported if o.type == 'ARMATURE')
+    rig.animation_data_clear()
+    head = rig.matrix_world @ rig.pose.bones['Head'].matrix.translation
+    meshes = [o for o in imported if o.type == 'MESH' and not o.hide_render
+              and any(m.type == 'ARMATURE' for m in o.modifiers)]
     baked = []
     for obj in meshes:
+        head_group = obj.vertex_groups['Head'].index
+        minimum_head_weight = .4
+        head_vertices = {v.index for v in obj.data.vertices
+                         if any(g.group == head_group and g.weight > minimum_head_weight for g in v.groups)}
         evaluated = obj.evaluated_get(bpy.context.evaluated_depsgraph_get())
         obj.data = bpy.data.meshes.new_from_object(evaluated, depsgraph=bpy.context.evaluated_depsgraph_get())
         obj.modifiers.clear()
         matrix = obj.matrix_world.copy()
         obj.parent = None
-        obj.matrix_world = matrix
-        baked.append(obj)
-    bounds = [o.matrix_world @ o.data.vertices[i].co for o in baked for i in {i for p in o.data.polygons for i in p.vertices}]
-    lo, hi = [Vector([f(p[i] for p in bounds) for i in range(3)]) for f in (min, max)]
+        for vertex in obj.data.vertices:
+            vertex.co = matrix @ vertex.co
+        obj.matrix_world.identity()
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        bm.verts.ensure_lookup_table()
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.index not in head_vertices], context='VERTS')
+        bmesh.ops.bisect_plane(bm, geom=list(bm.verts) + list(bm.edges) + list(bm.faces),
+                              plane_co=(0, 0, head.z - .035), plane_no=(0, 0, 1),
+                              clear_inner=True, clear_outer=False, dist=.00001)
+        loose = [v for v in bm.verts if not v.link_faces]
+        bmesh.ops.delete(bm, geom=loose, context='VERTS')
+        bm.to_mesh(obj.data)
+        bm.free()
+        if obj.data.polygons:
+            baked.append(obj)
+    points = [v.co for o in baked for v in o.data.vertices]
+    lo, hi = [Vector([f(p[i] for p in points) for i in range(3)]) for f in (min, max)]
     center = (lo + hi) / 2
-    factor = min(1.18 / max(hi.z - lo.z, .01), 1.25 / max(hi.x - lo.x, .01))
-    hands = [rig.matrix_world @ rig.pose.bones[name].matrix.translation for name in ['LeftHand', 'RightHand'] if rig and name in rig.pose.bones]
-    grip = (sum(hands, Vector()) / len(hands) - center) * factor if hands else Vector((0, 0, .17))
-    print('RELIEF_BOUNDS', character, list(lo), list(hi), factor, list(grip))
-    head = rig.pose.bones.get("Head") if rig else None
-    head_center = rig.matrix_world @ head.matrix.translation - center if head else None
+    factor = min(1.40 / (hi.z - lo.z), 1.48 / (hi.x - lo.x))
+    depth = max(hi.y - lo.y, .001)
     for obj in baked:
         for vertex in obj.data.vertices:
-            p = obj.matrix_world @ vertex.co - center
-            if character in ('caipora', 'zumbi', 'canarinho') and head_center is not None:
-                weight = max(0, min(1, (p.z - head_center.z + .025 / factor) / (.05 / factor)))
-                p += (p - head_center) * .18 * weight
-            vertex.co = (p.x * factor, -.18 + p.y * factor * .16, p.z * factor - .05)
-        obj.matrix_world.identity()
-        finish(obj, 'MintRelief_' + character, mat, parent)
-    for obj in char_objects:
+            p = vertex.co.copy()
+            vertex.co = ((p.x - center.x) * factor,
+                         -.245 + (p.y - lo.y) / depth * .155,
+                         (p.z - center.z) * factor)
+        if character == 'caipora':
+            # Preserve jaw/hair; neck-only region from the 512px poster x211–295/y385–409.
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+            neck = [v for v in bm.verts if -.27 < v.co.x < .23 and v.co.z < -.605]
+            bmesh.ops.delete(bm, geom=neck, context='VERTS')
+            bm.to_mesh(obj.data)
+            bm.free()
+        finish(obj, 'GEO-Portrait_' + character, mat, parent)
+    if character == 'caipora':
+        # Reference mask: references/treta-coins/caipora.webp, eye band x95–147/y52–77.
+        outline = [(-.26, .02), (-.13, .06), (-.036, .034), (0, .002),
+                   (.036, .034), (.13, .06), (.26, .02), (.256, -.092),
+                   (.122, -.128), (.064, -.084), (0, -.106), (-.064, -.084),
+                   (-.122, -.128), (-.256, -.092)]
+        surfaces = [BVHTree.FromPolygons([v.co for v in o.data.vertices],
+                                        [p.vertices[:] for p in o.data.polygons]) for o in baked]
+        def inside(x, z):
+            parity = False
+            for i, (ax, az) in enumerate(outline):
+                bx, bz = outline[(i + 1) % len(outline)]
+                if (az > z) != (bz > z) and x < (bx - ax) * (z - az) / (bz - az) + ax:
+                    parity = not parity
+            eyes = any(((x - ex) / .060) ** 2 + ((z + .043) / .025) ** 2 < 1 for ex in (-.145, .145))
+            return parity and not eyes
+        vertices, indices, faces = [], {}, []
+        for ix in range(57):
+            for iz in range(23):
+                x, z = -.28 + ix * .01, -.15 + iz * .01
+                if not inside(x, z):
+                    continue
+                hits = [tree.ray_cast(Vector((x, -1, z)), Vector((0, 1, 0)))[0] for tree in surfaces]
+                hits = [hit for hit in hits if hit is not None]
+                if hits:
+                    hit = min(hits, key=lambda point: point.y)
+                    indices[ix, iz] = len(vertices)
+                    vertices.append((x, hit.y - .004, z))
+        for ix in range(56):
+            for iz in range(22):
+                corners = [(ix, iz), (ix + 1, iz), (ix + 1, iz + 1), (ix, iz + 1)]
+                if all(corner in indices for corner in corners):
+                    faces.append([indices[corner] for corner in corners])
+        mesh = bpy.data.meshes.new('CaiporaMaskRelief')
+        mesh.from_pydata(vertices, [], faces)
+        obj = bpy.data.objects.new('GEO-CaiporaEyeMask', mesh)
+        bpy.context.collection.objects.link(obj)
+        finish(obj, obj.name, dark, parent)
+    for obj in imported:
         if obj not in baked and obj.name in bpy.data.objects:
             bpy.data.objects.remove(obj, do_unlink=True)
-    before_weapon = set(bpy.data.objects)
-    # Some weapon node names contain numeric suffixes larger than Blender's
-    # importer accepts. Rename only labels in a temporary GLB, preserving buffers.
-    raw = (root / f'public/models/weapons/{weapon}.glb').read_bytes()
-    length = struct.unpack_from('<I', raw, 12)[0]
-    doc = json.loads(raw[20:20 + length])
-    for key in ('nodes', 'meshes', 'materials'):
-        for i, entry in enumerate(doc.get(key, [])):
-            entry['name'] = f'Treta_{key}_{i}'
-    chunk = json.dumps(doc, separators=(',', ':')).encode()
-    chunk += b' ' * (-len(chunk) % 4)
-    tail = raw[20 + length:]
-    temporary = output / f'weapon-{weapon}-import.glb'
-    temporary.write_bytes(struct.pack('<4sII', b'glTF', 2, 20+len(chunk)+len(tail)) + struct.pack('<I4s', len(chunk), b'JSON') + chunk + tail)
-    geometry_import(temporary)
-    gun_objects = set(bpy.data.objects) - before_weapon
-    gun_meshes = [o for o in gun_objects if o.type == 'MESH']
-    gun_points = [o.matrix_world @ Vector(c) for o in gun_meshes for c in o.bound_box]
-    gl, gh = [Vector([f(p[i] for p in gun_points) for i in range(3)]) for f in (min, max)]
-    gc = (gl + gh) / 2
-    longest = max(range(3), key=lambda i: gh[i] - gl[i])
-    height_axis = min((i for i in range(3) if i != longest), key=lambda i: abs(i - 2))
-    depth_axis = next(i for i in range(3) if i not in (longest, height_axis))
-    gun_scale = (.45 if weapon == 'deagle' else .72) / max(gh[longest] - gl[longest], .01)
-    for obj in gun_meshes:
-        matrix = obj.matrix_world.copy()
-        obj.parent = None
-        for vertex in obj.data.vertices:
-            p = matrix @ vertex.co - gc
-            vertex.co = (p[longest] * gun_scale + grip.x, -.23 + p[depth_axis] * gun_scale * .15, p[height_axis] * gun_scale + grip.z - .14)
-        obj.matrix_world.identity()
-        finish(obj, 'EmbossedWeapon_' + weapon, mat, parent)
-    for obj in gun_objects:
-        if obj not in gun_meshes and obj.name in bpy.data.objects:
-            bpy.data.objects.remove(obj, do_unlink=True)
+    print('PORTRAIT_BOUNDS', character, list(lo), list(hi), factor)
 
 
-def build(value, character, weapon):
+def build(value, character):
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete(use_global=False)
     for action in list(bpy.data.actions):
@@ -203,31 +184,9 @@ def build(value, character, weapon):
         obj = bpy.context.object
         obj.scale, obj.rotation_euler = (.015, .13, .019), (0, -theta, 0)
         finish(obj, 'ReededEdge_' + str(i), dark, parent)
-    import_relief(character, weapon, bright, parent)
-    if character == 'caipora':
-        # Mask and jaguar spots: references/treta-coins/caipora.webp, eyes x95–147/y52–77.
-        outline=[(-.058,.423),(-.029,.432),(-.008,.426),(0,.419),(.008,.426),(.029,.432),(.058,.423),(.057,.398),(.027,.39),(.014,.40),(0,.395),(-.014,.40),(-.027,.39),(-.057,.398)]
-        mesh=bpy.data.meshes.new('CaiporaMask');mesh.from_pydata([(x,-.223,z) for x,z in outline],[],[list(range(len(outline)))])
-        obj=bpy.data.objects.new('CaiporaMask',mesh);bpy.context.collection.objects.link(obj)
-        solid=obj.modifiers.new('MaskRelief','SOLIDIFY');solid.thickness=.003
-        bpy.context.view_layer.objects.active=obj;bpy.ops.object.modifier_apply(modifier=solid.name)
-        finish(obj,'Caipora_ContinuousMask',dark,parent)
-        for x in (-.027,.027):
-            bpy.ops.mesh.primitive_uv_sphere_add(segments=12,ring_count=6,radius=1,location=(x,-.227,.412))
-            obj=bpy.context.object;obj.scale=(.013,.003,.006)
-            finish(obj,'Caipora_Eyes',gold,parent)
-        for k,(x,z) in enumerate([(-.052,.112),(-.025,.084),(.025,.111),(.058,.09),(-.055,.056),(.023,.052)]):
-            points=[]
-            for j in range(7):
-                angle=math.tau*j/7;r=.008*(1+.35*math.sin(j*2.1+k))
-                points.append((x+r*math.cos(angle),-.216,z+r*.65*math.sin(angle)))
-            mesh=bpy.data.meshes.new('JaguarMark');mesh.from_pydata(points,[],[list(range(7))])
-            obj=bpy.data.objects.new('JaguarMark',mesh);bpy.context.collection.objects.link(obj)
-            finish(obj,'Caipora_JaguarMark',dark,parent)
-    text(str(value), (0, -.13, .72), .29 if value < 1000 else .235, bright, parent)
-    text('T$', (0, -.13, -.76), .25, bright, parent)
-    text('TRETA$', (0, .13, .16), .34, bright, parent, True)
-    text('CORO SOLTO', (0, .13, -.26), .13, bright, parent, True)
+    import_portrait(character, bright, dark, parent)
+    text(str(value), (0, .13, .16), .53 if value == 1000 else .72, bright, parent, True)
+    text('T$', (0, .13, -.40), .32, bright, parent, True)
     # One static mesh per material keeps a coin from costing ~70 draw calls.
     for mat in (gold, bright, dark):
         meshes = [o for o in parent.children_recursive if o.type == 'MESH' and o.data.materials[0] == mat]
@@ -291,13 +250,13 @@ def build(value, character, weapon):
     for track in parent.animation_data.nla_tracks:
         track.mute = True
     parent.rotation_euler, parent.scale = (0, 0, 0), (1, 1, 1)
-    bpy.ops.object.camera_add(location=(.15, -4.8, .25))
+    bpy.ops.object.camera_add(location=(0, -4.8, 0))
     camera = bpy.context.object
     camera.rotation_euler = (Vector((0, 0, 0)) - camera.location).to_track_quat('-Z', 'Y').to_euler()
     camera.data.type, camera.data.ortho_scale = 'ORTHO', 2.35
     scene.camera = camera
     scene.world.color = (.2, .2, .2)
-    for pos, power, size in [((-3, -3, 4), 650, 3), ((3, -2, 1), 500, 2), ((0, 2, 3), 750, 2)]:
+    for pos, power, size in [((-3, -3, 4), 650, 3), ((3, -2, 1), 500, 2), ((0, 2, 3), 750, 2), ((-3, 3, 4), 650, 3), ((3, 2, 1), 500, 2)]:
         bpy.ops.object.light_add(type='AREA', location=pos)
         light = bpy.context.object
         light.data.energy, light.data.shape, light.data.size = power, 'DISK', size
@@ -312,15 +271,23 @@ def build(value, character, weapon):
     poster.parent.mkdir(parents=True, exist_ok=True)
     scene.render.filepath = str(poster)
     bpy.ops.render.render(write_still=True)
+    camera.location = (0, 4.8, 0)
+    camera.rotation_euler = (-camera.location).to_track_quat('-Z', 'Y').to_euler()
+    scene.render.filepath = str(output / f'coin-{value}-back.png')
+    bpy.ops.render.render(write_still=True)
+    camera.location = (0, -4.8, 0)
+    camera.rotation_euler = (-camera.location).to_track_quat('-Z', 'Y').to_euler()
+    scene.render.filepath = str(poster)
     bpy.ops.wm.save_as_mainfile(filepath=str(output / f'coin-{value}.blend'))
-    metadata = {'value': value, 'character': character, 'weapon': weapon, 'blender': bpy.app.version_string,
+    metadata = {'value': value, 'character': character, 'design': 'portrait-front-value-back-v2', 'weapon': None, 'blender': bpy.app.version_string,
                 'glbBytes': glb.stat().st_size, 'glbSha256': hashlib.sha256(glb.read_bytes()).hexdigest(),
                 'animations': ['CoinSpin', 'PurchaseReveal'], 'poster': str(poster),
+                'backPoster': str(output / f'coin-{value}-back.png'),
                 'source': f'public/models/characters/{character}.glb', 'triangles': sum(sum(len(p.vertices)-2 for p in o.data.polygons) for o in asset_objects if o.type == 'MESH')}
     (output / f'coin-{value}.json').write_text(json.dumps(metadata, indent=2))
     print('TRETA_COIN_DONE', json.dumps(metadata))
 
 
-for denomination, char, gun in coins:
+for denomination, char in coins:
     if not args.only or str(denomination) == args.only:
-        build(denomination, char, gun)
+        build(denomination, char)

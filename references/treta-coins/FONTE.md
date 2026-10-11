@@ -10,8 +10,8 @@ Referências: personagens 3D já presentes no client, pipeline Mint documentado 
 - `public/models/characters/canarinho.glb` — SHA256 `44bc26b92f8f99b60fe70a6f1f5b5ff79ee19061d4801a3b792eb28a8684a3ff`. Referência visual: `canarinho.webp`.
 - `public/models/characters/zumbi.glb` — SHA256 `b8596378f0ba96d6cdf54b625edf2b6e79b920025abad8a0acdc9ad562bde2dd`. Referência visual: `zumbi.webp`.
 
-As armas vêm de `public/models/weapons/{mp5,scar,ak,deagle}.glb`. O relevo usa apenas geometria, com ouro original criado no Blender. Não inclui logos do Fortnite ou texturas do jogo de referência.
+Pedido atualizado: moedas v2 usam somente cabeça/rosto derivado dos mesmos GLBs, sem arma ou corpo. O relevo usa apenas geometria, com ouro original criado no Blender. A máscara facial da Caipora usa a referência caipora.webp (faixa dos olhos x95–147/y52–77) e é cunhada em ouro escuro sobre a superfície do rosto. Não inclui logos do Fortnite ou texturas do jogo de referência.
 
-Blender sources/renders/rejeições: `csbrasil/private-assets/treta-store/`. Script reproduzível: `tools/blender/build_treta_coins.py`.
+Fontes/renders atuais: `csbrasil/private-assets/treta-store/coins/portrait-v2/`; composição antiga preservada em `coins/rejected-fullbody-20261011/`. Frente: rosto sozinho; verso: valor/T$. Script reproduzível: `tools/blender/build_treta_coins.py`.
 
 Referências visuais: Saci/Curupira/Caipora/Lobisomem/Zumbi copiados de `public/img/chars/avatars/`; Gotinha/Canarinho de `public/img/chars/`. Os retratos auxiliam identificação, mas a geometria cunhada deriva exclusivamente dos GLBs com hashes acima.

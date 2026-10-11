@@ -34,9 +34,9 @@ Pedido do dono em 11/10/2026: figuras políticas reais autorizadas nesta coleç�
 - **Mecânica:** preserva integralmente os valores da base.
 
 ## 6. Moedas TRETA$: cunhagem
-- **Visual:** ouro PBR, borda estriada, denominação e T$ em relevo, personagem 3D com arma cunhado no anverso; reverso TRETA$ / CORO SOLTO. Valores: 1/Saci, 5/Curupira, 10/Caipora, 50/Lobisomem, 100/Gotinha, 200/Canarinho, 1000/Zumbi. Reutilizar malhas reais já geradas no Mint, aplicar pose de arma no rig e converter para baixo-relevo no Blender.
+- **Visual:** pedido atualizado do dono: somente rosto/cabeça reconhecível do personagem em relevo grande no anverso, sem corpo, arma ou valor nessa face. Reverso com denominação grande e T$ menor, legíveis e orientados para quem olha o verso. Manter ouro PBR e borda estriada. Valores: 1/Saci, 5/Curupira, 10/Caipora, 50/Lobisomem, 100/Gotinha, 200/Canarinho, 1000/Zumbi. Derivar retratos das mesmas malhas reais existentes, preservando chapéu/cabelo/orelhas/bico/faixa e máscara facial quando definem identidade, recortar abaixo da cabeça e converter para baixo-relevo no Blender.
 - **Papel:** identidade visual da carteira/recompensa/compra; colecionável visual sem alterar o valor da carteira.
-- **Arma:** MP5, MP5, SCAR, AK, MP5, Desert Eagle e AK respectivamente, em relevo junto ao personagem.
+- **Arma:** nenhuma nas moedas; pedido atual substitui composição anterior de corpo e arma.
 - **Mecânica:** animações CoinSpin e PurchaseReveal exportadas em GLB; nenhum saldo calculado pela animação. Valores inteiros e decomposição determinística em moedas.
 
 ## Referências e procedência
