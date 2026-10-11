@@ -22,7 +22,7 @@ Entregar loja dentro do jogo, imediatamente depois de JOGAR, com direção visua
 
 ## Estado atual e próximo passo
 
-Implementação client em `f3cb79f2d`; backend em `48d2e35` (economia `5a790de`/`bd5df0e`). Sete moedas corrigidas e aprovadas na vista frontal, wallet/toasts WebGL validados em fixtures locais, contrato cosmético assinado e gates locais aprovados. A geração das cinco skins reais continua pendente do teto em créditos Mint; prompts/roteiros prontos. Próximo passo: executar Mint dentro do teto aprovado, finalizar/rigar no Blender, testar equipamento real e produzir capturas/vídeos. Campanha inativa até janela de lançamento; sem migration remota, merge/deploy ou publicação. Relatos abaixo preservam a evolução e os resultados rejeitados, e são superados pelo estado atual quando indicado.
+Implementação client em `f3cb79f2d`; backend em `48d2e35` (economia `5a790de`/`bd5df0e`). Sete moedas corrigidas e aprovadas na vista frontal, wallet/toasts WebGL validados em fixtures locais, contrato cosmético assinado e gates locais aprovados. O dono autorizou os créditos existentes e restringiu a etapa atual à geração Mint. Cinco prévias solicitadas; Lula A e Bolsonaro aprovados como direção visual pelo crítico independente, Lula B rejeitado sem barba, Senador e Janja exigem correção facial. Próximo passo atual: corrigir prévias, gerar cinco modelos 3D e registrar entregas Mint. O objetivo amplo preserva rig/equipamento/vídeos como etapas posteriores. Campanha inativa até janela de lançamento; sem migration remota, merge/deploy ou publicação. Relatos abaixo preservam a evolução e os resultados rejeitados, e são superados pelo estado atual quando indicado.
 
 ## Marco: carteira SQL validada
 
@@ -64,3 +64,7 @@ Saldo observado no Mint antes da geração:30.580 créditos (19.215 do plano +11
 ## Marco: cinco prévias solicitadas no Mint
 
 Cinco chats separados com pedidos reais de3D Model preview, qualidade Standard, criados no projeto TRETA. URLs e prompts completos em docs/shop/MINT-JOBS.json. Lula ph7azn60zfk9j2amd87f06vhdd8g3kcv; Bolsonaro ph7f4qjk9ww0n3533j9911nc198g2cck; Senador ph7ba48kge0gsw267a8dvtzbpd8g38s9; Janja ph7cnh5y7g71netxwjajjyg2gh8g3fkx; Michelle ph7fr1dc9v0wv4z2vfk16swh5d8g2je9. UI mostrou Creating preview / start_model_generation. Prévia ainda não avaliada; não afirmar GLB final pronto. Próximo: inspecionar prévias, finalizar modelo, registrar ids/custos e exportar arquivos. Nenhuma compra de créditos/assinatura.
+
+## Marco: revisão das prévias Mint
+
+Capturas reais em private-assets/treta-store/mint. Crítico independente aprovou Lula A (Burgundy Goldbraid Boss Preview) e Bolsonaro como direção visual. Lula B perdeu barba/bigode e foi rejeitado; segunda solicitação duplicada causada por atraso da UI, reconhecida ao dono, não finalizar ambas. Senador: rosto genérico com mandíbula/sobrancelhas exageradas; Janja: aparência jovem genérica com olhos grandes. Corrigir reconhecimento antes do3D. Prévias não comprovam topologia, dedos ou rig. Modelo selecionado na UI: Tripo P1. Créditos por etapa ainda sem valor confirmado.
