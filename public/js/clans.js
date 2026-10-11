@@ -92,6 +92,8 @@ async function refreshMine() {
   renderMine();
 }
 async function load() {
+  $('clan-controls').disabled = true; $('clan-retry').disabled = true;
+  $('clan-register').querySelector('button').disabled = true;
   status('Carregando clãs…');
   try {
     await refreshMine();
@@ -108,6 +110,10 @@ async function load() {
     status(identity ? 'Seu perfil está pronto para participar.' : 'Salve seu perfil para criar um clã ou aceitar um convite.');
     return true;
   } catch (error) { renderMine(); status(error.message, true); return false; }
+  finally {
+    $('clan-controls').disabled = false; $('clan-retry').disabled = false;
+    $('clan-register').querySelector('button').disabled = false;
+  }
 }
 async function mutate(action, values = {}) {
   $('clan-controls').disabled = true;

@@ -74,7 +74,8 @@ const MUTANTE = val('mutante', '');
 
 const RAIZ = process.cwd();
 const FUNC = resolve('.vercel/output/functions/_render.func');
-const ENTRY = join(FUNC, 'dist/server/entry.mjs');
+const vcConfig = join(FUNC, '.vc-config.json');
+const ENTRY = join(FUNC, existsSync(vcConfig) ? JSON.parse(readFileSync(vcConfig, 'utf8')).handler : 'dist/server/entry.mjs');
 
 /* As rotas SSR saem do FONTE, não de lista escrita à mão: página nova com
    `prerender = false` entra nesta régua sozinha, no commit que a cria. Lista fechada
@@ -89,6 +90,8 @@ function rotasSSR(dir = 'src/pages', prefixo = '') {
     let rota = `${prefixo}/${nome.name.replace(/\.astro$/, '')}`;
     rota = rota.replace(/\/index$/, '/');
     // rota dinâmica vira um caminho de exemplo — o que importa é que ela RENDERIZE
+    // Clãs valida UUID antes de renderizar; 'exemplo' testa só o redirect, não o corpo SSR.
+    rota = rota.replace('/clans/[id]', '/clans/00000000-0000-4000-8000-000000000001');
     rota = rota.replace(/\[\.\.\.[^\]]+\]/g, 'exemplo').replace(/\[[^\]]+\]/g, 'exemplo');
     out.push(rota);
   }
@@ -155,12 +158,14 @@ for (const rota of rotas) {
     catch (e) { erro = e.message.split('\n')[0]; }
   } catch (e) { erro = e.message.split('\n')[0]; }
   if (erro) ssr2 = false;
-  if (!(status === 200 && bytes >= PISO)) ssr1 = false;
+  // A página de convite inexistente renderiza uma explicação com 404 por contrato.
+  const expectedStatus = rota === '/sala/exemplo' ? 404 : 200;
+  if (!(status === expectedStatus && bytes >= PISO)) ssr1 = false;
   linhas.push({ rota, status, bytes, erro });
 }
 process.chdir(RAIZ);
 
-console.log(`SSR1 · toda página prerender=false devolve corpo (>= ${PISO} bytes), não só status 200`);
+console.log(`SSR1 · toda página prerender=false devolve corpo (>= ${PISO} bytes) com status esperado (sala inexistente:404)`);
 for (const l of linhas) console.log(`   ${l.rota.padEnd(12)} status=${l.status ?? '—'}  ${String(l.bytes).padStart(7)} bytes${l.bytes < PISO ? '  ✗ CORPO VAZIO' : ''}`);
 console.log(`   ${ssr1 ? 'PASSA' : 'FALHA'}\n`);
 
