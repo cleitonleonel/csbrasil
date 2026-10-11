@@ -13,183 +13,40 @@
   "assets": [
     {
       "id": "upa_maca",
-      "file": "upa_maca.glb",
-      "sha256": "a862f06309d1bbbf1b94b3a7b6e17d96df30663eb8d34aa438e671027a0911b5",
-      "bytes": 1167392,
-      "dimensionsMeters": [
-        0.8258317025440315,
-        1.1516046990620412,
-        2
-      ],
-      "triangles": 4759,
-      "original": {
-        "file": "01-upa-maca-transport-stretcher.glb",
-        "sha256": "e8d6b9373038626a38f1f066dfac508e38c56175ebe174d54b62a8716158fec0",
-        "bytes": 2281636,
-        "pack": "vd7282g59ghphv0qgcq4x5befn8g21wr"
-      },
-      "processing": "Mint original→uniform clinical lengthZ2m/yaw+90→piecewise chassisY repair-frame-r1→texture1024",
-      "status": "Aprovado em isolamento; integração pendente"
+      "registryKey": "upa_maca"
     },
     {
       "id": "upa_longarina",
-      "file": "upa_longarina.glb",
-      "sha256": "c4c90a6dd4028cdaf6787c883cb995545de83ded2255ba3f9fa48db8ce154544",
-      "bytes": 947948,
-      "dimensionsMeters": [
-        1.772857142857143,
-        0.85,
-        0.5655102040816327
-      ],
-      "triangles": 4507,
-      "original": {
-        "file": "02-upa-longarina-clinic-waiting-bench.glb",
-        "sha256": "b698a6fe3a56d9a5dffe794495ec4fe9d53592e0bba9876344f3dcd7c7e40bc6",
-        "bytes": 1975404,
-        "pack": "vd7282g59ghphv0qgcq4x5befn8g21wr"
-      },
-      "processing": "Mint original→uniform heightY.85m yaw0→texture1024",
-      "status": "Aprovado em isolamento; integração pendente"
+      "registryKey": "upa_longarina"
     },
     {
       "id": "upa_oxigenio",
-      "file": "upa_oxigenio.glb",
-      "sha256": "cdfdf1f07d0b513cd6f1021728522ee23dcc46192b06676fd4bfdaf1e46d41be",
-      "bytes": 1133376,
-      "dimensionsMeters": [
-        0.4721135029354207,
-        1.25,
-        0.39383561643835613
-      ],
-      "triangles": 4962,
-      "original": {
-        "file": "03-upa-oxigenio-oxygen-cylinder-trolley.glb",
-        "sha256": "2cfac7181baa7f1a6784f432cc5ebee3a847c1edc40c1264041a1365a9a45cb4",
-        "bytes": 2149528,
-        "pack": "vd7btbbet2see334ne0555k8c18g31zh"
-      },
-      "processing": "MintVol2 original→uniformY1.25m yaw0→texture1024",
-      "status": "Aprovado em isolamento; integração pendente"
+      "registryKey": "upa_oxigenio"
     },
     {
       "id": "upa_biombo",
-      "file": "upa_biombo.glb",
-      "sha256": "99d7cf074f59dd07ca4a8855ab99a67643d6ff035d68cd79ccd5dbab3a8d117e",
-      "bytes": 926348,
-      "dimensionsMeters": [
-        0.8275324019369233,
-        1.8000000000000003,
-        2.389090791055988
-      ],
-      "triangles": 4491,
-      "original": {
-        "file": "04-upa-biombo-privacy-screen.glb",
-        "sha256": "3946875681d9b13b010195f76df28d41bae0b5eba3a7fee660c9158685559c49",
-        "bytes": 1661480,
-        "pack": "vd7btbbet2see334ne0555k8c18g31zh"
-      },
-      "processing": "MintVol2 original→uniformY1.8m yaw+90→texture1024",
-      "status": "Aprovado em isolamento; integração pendente"
+      "registryKey": "upa_biombo"
     },
     {
       "id": "upa_armario",
-      "file": "upa_armario.glb",
-      "sha256": "de5cc40a2fab19a342f13fbb664e6fd7230a564c73d0eb16042b3bed0a11c46f",
-      "bytes": 824476,
-      "dimensionsMeters": [
-        1.2634052313937132,
-        2.4,
-        0.6152641878669276
-      ],
-      "triangles": 4195,
-      "original": {
-        "file": "06-upa-armario-medicine-cabinet.glb",
-        "sha256": "2660d5778729c3db00a6de40b9b07bab423058f063f6e1570d4b2195ae780064",
-        "bytes": 1627632,
-        "pack": "vd7btbbet2see334ne0555k8c18g31zh"
-      },
-      "processing": "MintVol2 original→uniformY2.4m yaw0→texture1024",
-      "status": "Aprovado em isolamento; integração pendente"
+      "registryKey": "upa_armario"
     },
     {
       "id": "upa_monitor",
-      "file": "upa_monitor.glb",
-      "sha256": "80d881c99fdeba93d832969b9da4a0941cceec8896f1ab313b31615bca4d4475",
-      "bytes": 1018428,
-      "dimensionsMeters": [
-        0.8131115459882583,
-        1.5,
-        0.8131115459882583
-      ],
-      "triangles": 4817,
-      "original": {
-        "file": "upa-monitor-r2.glb",
-        "sha256": "48b9131ea0af36a8e8c3097c056d47b6bc185f002a7bdc2575b867017e0ae5ce",
-        "bytes": 1941392,
-        "pack": null
-      },
-      "processing": "MintR2 original→uniformY1.5m yaw0/front+Z→texture1024",
-      "status": "Aprovado em isolamento; integração pendente"
+      "registryKey": "upa_monitor"
     },
     {
       "id": "upa_cadeira_rodas",
-      "file": "upa_cadeira_rodas.glb",
-      "sha256": "a9bba0efb46d22c93e4655f159acc92d4adfda52abf1b86e4f73596542925e62",
-      "bytes": 1323208,
-      "dimensionsMeters": [
-        0.6802231237322515,
-        0.95,
-        0.9846856277806282
-      ],
-      "triangles": 4824,
-      "original": {
-        "file": "05-upa-cadeira-rodas-manual-wheelchair.glb",
-        "sha256": "eefe9b8039fc205b3bf016fd450d54ecf9192557182936068e7556f6d89855a9",
-        "bytes": 2579096,
-        "pack": "vd7btbbet2see334ne0555k8c18g31zh"
-      },
-      "processing": "MintVol2 original→uniformY.95m yaw−90/front+Z→texture1024",
-      "status": "Revisão R3 de materiais pendente"
+      "registryKey": "upa_cadeira_rodas"
     },
     {
       "id": "upa_soro",
-      "file": "upa_soro.glb",
-      "sha256": "08a775ec172a4807d5e52c2173176a65642369df75fdfe961bd85f940dcd7f87",
-      "bytes": 1109712,
-      "dimensionsMeters": [
-        0.7696673189823875,
-        1.9,
-        0.7399217221135029
-      ],
-      "triangles": 4688,
-      "original": {
-        "file": "02-upa-soro-iv-pole.glb",
-        "sha256": "8d40b6cbc81c9dde814d851b5043e63877161004a6331e77d94a92b29d7bc3f1",
-        "bytes": 2049328,
-        "pack": "vd7btbbet2see334ne0555k8c18g31zh"
-      },
-      "processing": "MintVol2 original→uniformY1.9m yaw0→rigid bag/loop/tube contact repair-r1→texture1024",
-      "status": "Aprovado em isolamento; integração pendente"
+      "registryKey": "upa_soro"
     },
     {
       "id": "upa_balcao",
-      "file": "upa_balcao.glb",
-      "sha256": "ae3f8d8720713af3e15760db9ab96e7d1dd07856d1404e23b70ac675e3ef0f73",
-      "bytes": 834352,
-      "dimensionsMeters": [
-        2.6317596566523607,
-        1.2,
-        0.9012875536480687
-      ],
-      "triangles": 4834,
-      "original": {
-        "file": "upa-balcao-r2.glb",
-        "sha256": "81a8dadc59067803ceecc9ea3d4c71e1211abf12b11f226f68b6f6c563134b1b",
-        "bytes": 1830308,
-        "pack": null
-      },
-      "processing": "MintR2 original→uniformY1.2m yaw0/candidatefront+Z→texture1024",
-      "status": "Revisão R3 de materiais pendente"
+      "registryKey": "upa_balcao"
     }
-  ]
+  ],
+  "registry": "../../../mint-assets.json"
 }

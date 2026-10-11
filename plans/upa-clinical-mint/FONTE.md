@@ -35,9 +35,10 @@ Os quatro prompts exatos observados na conversa estão em
 [GERACOES.json](GERACOES.json). IDs individuais não foram expostos pela UI;
 projeto/chat, packs, nomes e SHA-256 identificam os arquivos baixados.
 
-Registro dos nove candidatos derivados em
-[upa-mint-assets.json](../../public/models/props/upa-mint-assets.json), com hashes
-originais/finais, dimensões, processamento e estado de revisão. Originais,
+A coleção é identificada em
+[upa-mint-assets.json](../../public/models/props/upa-mint-assets.json). Hashes
+originais/finais, dimensões, processamento e estado de revisão ficam nas nove
+entradas `upa_*` do registro canônico [mint-assets.json](../../mint-assets.json). Originais,
 rejeições e renders estão preservados em
 `launch-media/2026-10-11-mapas/mint/` fora do Git. Os GLBs derivados só são
 liberados à integração após revisão independente; aprovação isolada não comprova
