@@ -11,6 +11,8 @@ em 5120×2880 e 3:2; revisão independente antes de aceitar os assets.
 
 - Branch: `codex/wallpapers-roster-5k-20261011`, base `261cf59a7` (alpha.67).
 - Worktree: `client/worktrees/wallpapers-roster-5k-20261011`.
+- Preview local Astro ativo em `http://127.0.0.1:8198/`; fixtures em 8197.
+  Captura final usou `?tela=menu&home=legacy&safe=1&lang=pt&debug=1`.
 - Checkout principal contém mudanças alheias e foi preservado.
 - Diagnóstico anterior por `sharp.metadata()`: loading-1 era 1536×1024; os demais eram
   1672×941. O `contain` de splash/loading expõe laterais no primeiro.
@@ -20,6 +22,7 @@ em 5120×2880 e 3:2; revisão independente antes de aceitar os assets.
   11/10/2026, após HTTP 402 do OpenRouter. Sprites: render do GLB real.
 - Checkpoint técnico: `7440abebc` (rotação, geradores, fichas e gates).
 - Checkpoint dos 19 pares de sprites e procedência: `5655c2e13`.
+- Checkpoint final dos wallpapers, loading e importação: `bbffc4d92`.
 - Artefatos persistidos em
   `/Volumes/Zenith/Projects/game/corosolto/csbrasil/launch-media/2026-10-11-wallpapers/`:
   `references/`, `sprites/`, `sprites-preview.png`, `prompts.json` e `evidence/`.
@@ -48,9 +51,9 @@ em 5120×2880 e 3:2; revisão independente antes de aceitar os assets.
 
 ## Próximo passo
 
-Lote visual aceito, pronto para revisão do dono no checkout isolado. Concluir
-a captura adicional do menu completo e o checkpoint final. Nenhum merge ou deploy
-autorizado; publicação fica fora deste escopo.
+Implementação local concluída, lote visual aceito e pronto para revisão do dono
+no checkout isolado. Checkpoints recuperáveis preservam código e assets.
+Próxima ação externa: eventual merge/deploy, que não foi autorizado neste pedido.
 
 ## Marco técnico validado
 
@@ -81,6 +84,14 @@ autorizado; publicação fica fora deste escopo.
   `evidence/docs-build-final.log`.
 - Build Astro final passou: `evidence/build-final.log`. Após refinar somente a
   imagem de Maria Bonita, gates do lote e das 37 variantes voltaram a passar.
+- Menu completo Astro local passou com driver Metal: manifesto com 37 fundos,
+  `__CS_MAIN_READY__` verdadeiro, wallpaper novo Barbudo exibido e zero pageerrors;
+  `evidence/wallpapers/menu-politico-real-3x2.png`. O enquadramento e a leitura dos
+  controles são visíveis nessa captura. A revisão independente também aprovou
+  o menu completo: corpo, arma e marca inteiros, controles sem sobreposição.
+- Tentativas com SwiftShader travaram na automação; mudar para Metal resolveu.
+  A primeira captura de menu antecedeu a aplicação do alvo; o script passou a
+  aguardar manifesto, decode e dois frames. Não foi mudança no runtime do produto.
 - 38 capturas CSS dos 19 wallpapers em dois formatos e loading-1 em 5K estão
   em `evidence/wallpapers/`; pranchas `wallpapers-3x2-preview.png` e
   `wallpapers-5k-preview.png`. Revisão: `evidence/REVIEW.md`.
@@ -95,4 +106,7 @@ integrada, uma geração por asset, preservar masters e referências no workspac
 20 masters finais persistidos no workspace. Os prompts efetivos e caminhos de
 geração e revisão Maria Bonita estão em `gpt-prompts.json`; `prompts.json` preserva a preparação padrão.
 Preparação retomável: `node tools/gen-roster-wallpapers.mjs --prepare-only`.
+O diretório padrão dos masters é resolvido pelo Git common-dir, igual no checkout
+principal e nos worktrees; `MASTERS` permite substituir explicitamente. Preparação
+validada após esse ajuste, sem regenerar ou sobrescrever artes.
 O comando sem essa flag continua sendo o pipeline OpenRouter original.

@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync } from 'node:fs';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import vm from 'node:vm';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -7,7 +7,8 @@ import sharp from 'sharp';
 const source = readFileSync('public/js/characters.js', 'utf8');
 const roster = vm.runInNewContext(source.match(/export const CHARACTERS = (\[[\s\S]*?\n\]);/)[1]).filter(c => c.team === 'P' || c.team === 'M');
 const weapons = vm.runInNewContext('(' + source.match(/export const CHAR_WEAPON = (\{[\s\S]*?\n\});/)[1] + ')');
-const masters = process.env.MASTERS || '../../../launch-media/2026-10-11-wallpapers';
+const repository = path.dirname(path.resolve(execFileSync('git', ['rev-parse', '--git-common-dir'], { encoding: 'utf8' }).trim()));
+const masters = process.env.MASTERS || path.resolve(repository, '..', 'launch-media', '2026-10-11-wallpapers');
 mkdirSync(masters, { recursive: true });
 mkdirSync('plans', { recursive: true });
 const jobs = [{
