@@ -24,7 +24,13 @@
       "localGlb": null,
       "rigVerified": false,
       "generationProvider": "TRIPO_P1",
-      "finalReview": "Close confirms teeth stayed white/gray; gold grillz need material correction before visual acceptance"
+      "finalReview": "Close confirms teeth stayed white/gray; gold grillz need material correction before visual acceptance",
+      "finishRevision": {
+        "status": "requested_in_mint_chat",
+        "target": "gold grillz",
+        "sourceAssetId": "p973vsch5wvrxhzqgs84d7bxa98g2fr3",
+        "requestedAt": "2026-10-11T12:10:00+01:00"
+      }
     },
     {
       "id": "bolsonaro-drip",
@@ -46,7 +52,19 @@
       "localGlb": null,
       "rigVerified": false,
       "generationProvider": "TRIPO_P1",
-      "finalReview": "General direction preserved; fine facial likeness/hands/rig unverified"
+      "finalReview": "General direction preserved; fine facial likeness/hands/rig unverified",
+      "animationGeneration": {
+        "status": "animating_in_mint",
+        "set": "Basic Movement (6)",
+        "clips": [
+          "Idle",
+          "Casual Walk inplace",
+          "run fast 3 inplace",
+          "Regular Jump",
+          "Idle Turn Left",
+          "Idle Turn Right"
+        ]
+      }
     },
     {
       "id": "senador-drip",
@@ -95,7 +113,13 @@
       "localGlb": null,
       "rigVerified": false,
       "generationProvider": "TRIPO_P1",
-      "finalReview": "Generated; glasses appear opaque/front reflection needs inspection before acceptance"
+      "finalReview": "Generated; glasses appear opaque/front reflection needs inspection before acceptance",
+      "finishRevision": {
+        "status": "requested_in_mint_chat",
+        "target": "transparent lenses and visible eyes",
+        "sourceAssetId": "p97bw80b5vw0qdbcmtcg29bx7h8g3ay2",
+        "requestedAt": "2026-10-11T12:10:00+01:00"
+      }
     },
     {
       "id": "michelle",

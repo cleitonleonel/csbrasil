@@ -92,3 +92,11 @@ Cinco cards finais TRIPO_P1 confirmados, com controles Download model/Animate e 
 ## Fechamento da etapa Mint autorizada
 
 Cinco modelos finais concluídos e verificados no visualizador3D; galeria filtrada do projeto contém exatamente os cinco. Evidência five-models-mint.jpg. Michelle4.862faces/6.602v/2,7MB informados. CloseLula em lula-model-mouth.jpg confirma dentes claros; material grillz precisa correção. Controle Model action do Mint oferece Animate/Retopo/Optimize, sem ajuste pontual de material nesse fluxo; não regenerar corpo só por isso. CríticoMichelle preserva direção geral, sem falha material inequívoca na captura. Saldo final observado18.515 (7.150 plano +11.365 usage); delta global12.065 inclui trabalho paralelo em outro projeto, custo exclusivo das skins desconhecido. Relatório docs/shop/MINT-DELIVERY.md com links de cada asset e limitações. Próximo passo do objetivo amplo: acabamento grillz/lentes/correntes, obtenção dos GLBs, rig/animações, equipamento e revisão real; somente a geração Mint pedida nesta retomada está concluída. Nenhum catálogo ativo, Blender, publicação ou deploy nesta etapa.
+
+## Retomada: finalizar acabamento no Mint
+
+Dono pediu “Termine a geração então”. Escopo atual continua sóMint com créditos existentes. Reabertos acabamento dos grillz/Lula e lentes/Janja; conferir correntes/Senador e opções de rig/animação suportadas. Aba Mint estava crashed (Error code5), recuperada pelo Reload visível do Chrome. Pedido de edição/retextura dos dentes do asset Lula original enviado uma vez com o próprio modelo selecionado; UI confirmou Understanding request. Não repetir o pedido durante atraso. Resultado ainda não inspecionado. Próximo: corrigir lentes/Janja, acompanhar resultados e finalizar os modelos revisados.
+
+## Marco: animações básicas em processamento
+
+Mint Run Animate abriu Animation Catalog, Basic Movement(6) seleciona Idle, Casual Walk inplace, run fast3 inplace, Regular Jump, Idle Turn Left/Right. Apply confirmado uma vez para Bolsonaro; card Animation · Idle+5 / Animating exibido. Michelle recebeu o mesmo pacote, aguardando card de processamento. Não afirmar rig concluído só pelo pedido. Correções Lula/Janja enviadas uma vez com os respectivos assets selecionados. Próximo: conferir resultado dos ajustes, finalizar modelos corrigidos e completar animações dos cinco.
