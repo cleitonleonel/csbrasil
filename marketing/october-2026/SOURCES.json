@@ -113,6 +113,32 @@
       "bytes": 61866,
       "sha256": "69ba39076fdeeabec46ab7ef37353baa1915f4fde35f3cc91c40322bcd705ea3",
       "kind": "arte caricatura 3D existente, tela de resultado"
+    },
+    {
+      "file": "assets/barbudo-estilizado.webp",
+      "source": "image_gen built-in style-transfer, 2026-10-11",
+      "inputs": [
+        "assets/barbudo-vitoria.webp",
+        "assets/canarinho-entrada.webp"
+      ],
+      "prompt": "GENERATION-PROMPTS.md#barbudo",
+      "derivation": "PNG generated with alpha, encoded WebP lossless; alpha preserved",
+      "kind": "variante promocional estilizada, não asset de gameplay",
+      "bytes": 921050,
+      "sha256": "2e323902befeded43aeb0b73288bb84a15d23449d886d6e4e562b00714e9aaf8"
+    },
+    {
+      "file": "assets/capitao-estilizado.webp",
+      "source": "image_gen built-in style-transfer, 2026-10-11",
+      "inputs": [
+        "assets/capitao-vitoria.webp",
+        "assets/canarinho-entrada.webp"
+      ],
+      "prompt": "GENERATION-PROMPTS.md#capitao",
+      "derivation": "PNG generated with alpha, encoded WebP lossless; alpha preserved",
+      "kind": "variante promocional estilizada, não asset de gameplay",
+      "bytes": 733058,
+      "sha256": "3b505171ea367705fcf7e23b074fb63c0103a62a7acb9bd192f94f8aa17facab"
     }
   ]
 }

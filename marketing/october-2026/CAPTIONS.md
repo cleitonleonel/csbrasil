@@ -14,13 +14,12 @@ Do menu pra treta. Escolhe o personagem e testa o CORO SOLTO no navegador. Jogo 
 
 ### instagram
 
-O Canarinho já tá pistola. Falta você entrar na partida. CORO SOLTO é um FPS grátis de navegador. A arte é do jogo; o combate você testa no link do perfil. #CoroSolto #JogoBrasileiro
+O Canarinho já tá pistola. Falta você entrar na partida. CORO SOLTO é um FPS grátis de navegador. Teste no link do perfil. #CoroSolto #JogoBrasileiro
 
 ### youtube
 
 Entre na troca de tiros | CORO SOLTO
 FPS grátis de navegador. Escolha personagem e mapa para testar: https://www.corosolto.com.br/?utm_source=youtube&utm_medium=organic_social&utm_campaign=outubro2026_01_troca_tiros
-Imagem: arte promocional do personagem.
 
 ## 02-escolha-personagem
 
@@ -34,13 +33,12 @@ Esse bico entrega o humor dele. Quem você escolhe pra treta? CORO SOLTO, gráti
 
 ### instagram
 
-Canarinho Pistola no retrato do menu. Escolha seu personagem e entre na partida. Depois conta qual você levou pra treta. Link do perfil. #CoroSolto
+Canarinho Pistola. Escolha seu personagem e entre na partida. Depois conta qual você levou pra treta. Link do perfil. #CoroSolto
 
 ### youtube
 
 Quem vai pra treta? | Canarinho Pistola
 Veja o elenco e escolha seu personagem no CORO SOLTO: https://www.corosolto.com.br/?utm_source=youtube&utm_medium=organic_social&utm_campaign=outubro2026_02_escolha_personagem
-Imagem: retrato promocional usado no menu, não captura do modelo em combate.
 
 ## 03-mapas
 

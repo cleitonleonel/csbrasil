@@ -20,10 +20,10 @@ Fonte escolhida: client main `261cf59a7` (alpha.67). Referência complementar: c
 
 ## Visual e procedência
 
-`SOURCES.json` registra caminho original, commit, tamanho, hash e recibo quando existe. Nenhuma foto externa, geração nova ou crédito HF. Os PNGs são composições tipográficas com arte existente; a conversão WebP→PNG é decodificação sem mudança de conteúdo.
+`SOURCES.json` registra caminho original, commit, tamanho, hash e recibo quando existe. Nenhuma foto externa ou crédito HF. Canarinho e mapas usam as fontes existentes; duas variantes políticas foram estilizadas com a ferramenta integrada image_gen em11/10/2026. Entradas, hashes e prompts são rastreáveis. A conversão PNG→WebP lossless preserva alpha; o exportador decodifica WebP→PNG.
 
-- Troca de tiros: `public/img/entrada/canarinho.webp`, arte existente identificada como arte do jogo. Não demonstra uma troca de tiros real.
-- Personagem: `public/img/chars-hero/canarinho.webp`, retrato usado no menu (`main.js:736`). O nome vem de `characters.js:488`. Arte do menu pode ter detalhe diferente do GLB; a legenda não promete fidelidade de gameplay.
+- Canarinho (troca de tiros, personagem e teste): `public/img/entrada/canarinho.webp`, arte existente identificada como arte do jogo. Não demonstra uma troca de tiros real.
+- Políticos: variantes estilizadas do Barbudo do Planalto e Capitão do Cercadinho, a partir das caricaturas existentes de resultado. Acabamento baseado no Canarinho; não são novos screenshots/modelos de gameplay. Prompts em GENERATION-PROMPTS.md, fontes anteriores conservadas para procedência.
 - Mapa: Velho Oeste, captura WebGL em 06/09/2026. SHA confere com `velho_oeste.capture.json`. A primary tinha outra versão, rejeitada como fonte desta peça.
 - Bastidor: Amazônia, captura WebGL em 06/09/2026. SHA confere com `amazonia.capture.json`.
 - Fontes: WOFF2 existentes. TTF derivadas pelo fontTools para o renderizador. Antes de redistribuir o kit como pacote genérico, conservar os termos dos assets/fontes do projeto; não declarar CC0 ou direitos externos retrospectivamente.
@@ -33,3 +33,5 @@ Fonte escolhida: client main `261cf59a7` (alpha.67). Referência complementar: c
 Editar `cards.json` e `tokens.json`. Rodar `tools/render.mjs`, depois `tools/prepare-queue.mjs`. Abrir `index.html` por servidor local para revisar PNG/texto/destino e exportar decisões. SVG preserva camadas e texto; editores externos precisam das fontes TTF incluídas para a mesma tipografia. A exportação PNG inclui a tipografia correta e é a referência visual.
 
 Não adicionar HUD, killfeed, placares ou números sintéticos à arte. Funcionalidades sociais em drafts, emblemas/cosméticos de apoiador e ads propostos não viram benefícios disponíveis na copy. Apoio existente pode ser comunicado apenas com a descrição pública verificada, sem inventar recompensa. Esta fila prioriza jogar e contribuir.
+
+Direção atual do dono: personagens de altura inteira, ocupando mais da metade da composição, fade lateral para preto atrás do texto. Rótulos de procedência saíram das peças e legendas; estes detalhes ficam neste documento e em SOURCES.json. O fundo é contínuo, sem janela de imagem no meio do card.

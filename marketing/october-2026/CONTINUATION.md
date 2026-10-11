@@ -62,3 +62,13 @@ Milestone: fonte e template atualizados, primeira renderização dos 24 PNG/SVG 
 Milestone validado:24PNG vistos individualmente pelo crítico clean-context, sem P0/P1/P2/P3. Auditoria114itens passou (15fontes,24exports,75linhas),12alternativas com referências corretas, URLoficial em todos os destinos/rodapés, Xaté244caracteres. Revisão adicional em REVIEW.md. Checkpoint958ffb9c6 publicado no fork e PRdraft811; pre-push obrigatório passou49s, worktree limpa depois dos gates. Título/descrição do PR atualizados para o kit final.
 
 Próximo passo: revisão humana do enquadramento ampliado e escolha entre as três alternativas políticas na fila local, nas datas12/17/23; publicação permanece pendente. OG/metadados do site fora do escopo. Nenhuma chamada de plataforma/merge/deploy/email. Checkpoint da revisão preservado junto à mesma branch; manter exports locais regeneráveis.
+
+## Direção visual corrigida pelo dono: personagem de altura inteira
+
+O dono rejeitou personagem preso a uma janela no meio do card e os rótulos "arte do jogo". Nova direção: personagem com100%da altura e mais de metade do card, fade contínuo para preto, políticos com acabamento estilizado equivalente ao Canarinho. Estes critérios substituem a aceitação anterior de enquadramento recortado; não declarar aquele layout como aprovado.
+
+Duas variantes promocionais geradas pela ferramenta integrada image_gen (sem CLI/API/Higgsfield), a partir das caricaturas de resultado e referência de estilo Canarinho. Cabelo, rostos caricatos, roupas/cores e silhuetas conferidos a olho; alpha presente e preservado. Prompts em GENERATION-PROMPTS.md. Nenhum asset do jogo será alterado. Próximo: incorporar fontes no kit, render de altura inteira/fade, remover rótulos públicos, conferir e revisar independentemente. Domínio oficial e calendário/alternativas mantidos.
+
+Milestone:24PNG/SVG regenerados, fonte17assets e fila75 conferidos por hashes/destinos; rótulos removidos das peças e legendas, alpha dos políticos preservado na codificação WebP lossless. Canarinho, políticos e dupla olhados no novo layout; corrigidos fade que escurecia rosto da dupla e margem superior do cabelo. Personagens continuam até a borda do card, sem janela/corte no meio. TítulosSVG sincronizados com alt atualizado, pixelsPNG preservados.
+
+Checkpoint de implementação a seguir: somente13arquivos da superfície marketing; exports regeneráveis continuam ignorados. Próximo: crítico clean-context com a direção atual do dono, registrar conclusão e atualizar PR811. Gates antigos não serão repetidos manualmente; pre-push obrigatório será executado sem bypass.
