@@ -249,13 +249,13 @@ O registro, gerado do `MAPS` de `public/js/maps.js`:
 | Id | Nome no menu | Abre em | Arquivo em `public/js/` | Linhas |
 |---|---|---|---|---:|
 | `campomorro` | Campinho do Morro | **captura** | `map_campomorro.js` | 815 |
-| `mansao` | Mansão do Joá | **captura** | `map_mansao.js` | 1.395 |
+| `mansao` | Mansão do Joá | **captura** | `map_mansao.js` | 1.399 |
 | `amazonia` | Treta na Amazônia | **captura** | `map_amazonia.js` | 1.265 |
-| `escadao` | Escadão (Morro) | **captura** | `map_escadao.js` | 1.408 |
-| `praca_poderes` | Praça dos Três Poderes | rodadas | `map_brasilia.js` | 1.978 |
+| `escadao` | Escadão (Morro) | **captura** | `map_escadao.js` | 1.409 |
+| `praca_poderes` | Praça dos Três Poderes | rodadas | `map_brasilia.js` | 1.987 |
 | `piscina_treta` | Piscina da Treta | rodadas | `map_piscina.js` | 1.193 |
-| `loja_h` | Loja H (Estacionamento) | **captura** | `map_havan.js` | 2.064 |
-| `ferro_velho` | Ferro Velho do Zé | **captura** | `map_ferrovelho.js` | 2.026 |
+| `loja_h` | Loja H (Estacionamento) | **captura** | `map_havan.js` | 2.060 |
+| `ferro_velho` | Ferro Velho do Zé | **captura** | `map_ferrovelho.js` | 2.028 |
 | `quebrada` | Quebrada (Rua do Baile) | **captura** | `map_quebrada.js` | 1.709 |
 | `corrego` | Córrego (Favela de SP) | **captura** | `map_corrego.js` | 1.796 |
 | `lajes` | Lajes (Comunidade) | **captura** | `map_lajes_authored.js` | 419 |
@@ -263,7 +263,7 @@ O registro, gerado do `MAPS` de `public/js/maps.js`:
 | `upa_24h` | UPA 24h da Treta | **captura** | `map_upa.js` | 338 |
 | `obras_prefeitura` | Obras da Prefeitura | **captura** | `map_obras.js` | 485 |
 | `atacadao_treta` | Atacadão da Treta | **captura** | `map_atacadao.js` | 792 |
-| `parque_treta` | Parque da Treta | **captura** | `map_parque.js` | 981 |
+| `parque_treta` | Parque da Treta | **captura** | `map_parque.js` | 991 |
 | `velho_oeste` | Sertão da Treta | **captura** | `map_velho_oeste.js` | 1.071 |
 | `penitenciaria` | CARANDIRU | **captura** | `map_penitenciaria.js` | 1.009 |
 

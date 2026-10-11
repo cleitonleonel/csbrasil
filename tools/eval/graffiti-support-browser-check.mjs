@@ -13,6 +13,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { measureGraffitiArea } from './graffiti-area-audit.mjs';
+import { MAP_SOURCES } from './graffiti-fingerprint.mjs';
 
 const args = process.argv.slice(2);
 const option = (name, fallback) => {
@@ -28,7 +29,7 @@ if (!Number.isInteger(photos) || photos < 0 || photos > 30) throw Error('--fotos
 const requested = option('maps', '').split(',').map(s => s.trim()).filter(Boolean);
 const limits = { samplesPerPiece: 25, halfQuadFraction: .49, originOffset: .02, supportDepth: .05, normalDot: .98 };
 mkdirSync(out, { recursive: true });
-const sourcePaths = ['public/js/maps.js', 'public/js/graffiti_pass.js', 'public/js/graffiti_layout.js', 'public/js/graffiti_surface.js', 'public/js/graffiti_coverage.js', 'tools/eval/graffiti-area-audit.mjs'];
+const sourcePaths = ['public/js/maps.js', 'public/js/graffiti_pass.js', 'public/js/graffiti_layout.js', 'public/js/graffiti_surface.js', 'public/js/graffiti_coverage.js', 'tools/eval/graffiti-area-audit.mjs', 'tools/eval/graffiti-fingerprint.mjs', ...Object.values(MAP_SOURCES)];
 const sources = Object.fromEntries(sourcePaths.map(file => {
   try { return [file, createHash('sha256').update(readFileSync(file)).digest('hex')]; }
   catch { return [file, null]; }
@@ -38,7 +39,7 @@ const save = () => writeFileSync(`${out}/receipt.json`, JSON.stringify(receipt, 
 
 // Serialized into the browser. Only the paintability predicate is shared; the
 // sampling, spatial index, nearest-hit, normals and verdict code are independent.
-const measure = async ({ limits, areaSource }) => {
+const measure = async ({ limits, areaSource, graffitiMapIds }) => {
   const areaAudit = new Function(`return (${areaSource})`)();
   const THREE = await import('three');
   const { superficieGrafitavel } = await import('./js/graffiti_surface.js');
@@ -58,6 +59,28 @@ const measure = async ({ limits, areaSource }) => {
   const meshes = [], allowed = [], pieces = [], unclassifiedArt = [];
   let batchMeshPieces = 0, realDrawnBatches = 0;
   const drawnBounds = new THREE.Box3(), batchVisibility = [], artworkPaths = new Set();
+  const batchGeometryVerdicts = new WeakMap();
+  const drawableBatch = (mesh, expected) => {
+    if (batchGeometryVerdicts.has(mesh)) return batchGeometryVerdicts.get(mesh);
+    const verdict = reason => { batchGeometryVerdicts.set(mesh, reason); return reason; };
+    const geometry = mesh.geometry, position = geometry?.attributes?.position, index = geometry?.index;
+    if (position?.count !== expected.length * 4 || index?.count !== expected.length * 6) return verdict('batch-geometry-count');
+    if (geometry.drawRange.start !== 0 || geometry.drawRange.count < index.count || geometry.groups.length) return verdict('batch-draw-range');
+    const pattern = [0, 2, 1, 2, 3, 1], actual = [];
+    for (let q = 0; q < expected.length; q++) {
+      for (let t = 0; t < 6; t++) if (index.getX(q * 6 + t) !== q * 4 + pattern[t]) return verdict('batch-triangle-topology');
+      actual.push(Array.from({ length: 4 }, (_, k) => new THREE.Vector3().fromBufferAttribute(position, q * 4 + k).applyMatrix4(mesh.matrixWorld)));
+    }
+    for (const p of expected) {
+      const ux = Math.cos(p.ry), uz = -Math.sin(p.ry);
+      const corners = [[-.5, .5], [.5, .5], [-.5, -.5], [.5, -.5]]
+        .map(([u, v]) => new THREE.Vector3(p.x + ux * u * p.w, p.y + v * p.h, p.z + uz * u * p.w));
+      const found = actual.findIndex(points => corners.every((corner, k) => corner.distanceToSquared(points[k]) < 1e-8));
+      if (found < 0) return verdict('batch-quad-missing-or-moved');
+      actual.splice(found, 1);
+    }
+    return verdict(null);
+  };
   const visibleArtwork = mesh => {
     if (!mesh?.isMesh || !visible(mesh)) return 'hidden-or-missing-mesh';
     if (!mesh.geometry?.attributes?.position?.count) return 'missing-drawable-geometry';
@@ -86,7 +109,9 @@ const measure = async ({ limits, areaSource }) => {
       for (const p of o.userData.graffitiPecas) {
         if (typeof p.f === 'string') artworkPaths.add(new URL(p.f.startsWith('poster:') ? `posters/${p.f.slice(7)}` : `img/decals/${p.f}`, location.href).pathname);
         const matching = o.children.filter(mesh => mesh.isMesh && mesh.name === `decal:${p.f}` && mesh.userData?.pecas);
-        const artVisibilityReason = matching.length === 1 ? visibleArtwork(matching[0]) : 'missing-or-ambiguous-batch-mesh';
+        const artVisibilityReason = matching.length === 1
+          ? visibleArtwork(matching[0]) || drawableBatch(matching[0], o.userData.graffitiPecas.filter(q => q.f === p.f))
+          : 'missing-or-ambiguous-batch-mesh';
         pieces.push({ ...p, owner: o.name || '(group)', source: 'batch', visible: !artVisibilityReason, artVisibilityReason });
       }
     }
@@ -204,9 +229,31 @@ const measure = async ({ limits, areaSource }) => {
     if (failedSamples.length || (area && !area.supported)) failures.push({ ...entry, failedSamples });
   }
   failures.sort((a, b) => b.failed - a.failed || a.index - b.index);
-  const declaredGraffiti = /\bgrafitar\s*\(\s*\{/.test(MAPS[window.__mapId].build.toString());
+  const declaredGraffiti = graffitiMapIds.includes(window.__mapId);
   const runtime = window.__grafite || null;
-  const baked = runtime?.mapa ? GRAFITE[runtime.mapa] : null;
+  const baked = GRAFITE[window.__mapId] || null;
+  const pieceKey = p => [p.f, ...['x', 'y', 'z', 'ry', 'w', 'h'].map(k => {
+    const value = k === 'ry' ? Math.atan2(Math.sin(p[k]), Math.cos(p[k])) : Number(p[k]);
+    return (Math.abs(value) < .0000005 ? 0 : value).toFixed(6);
+  })].join('|');
+  const drawnInventory = new Map();
+  for (const p of pieces) {
+    const key = pieceKey(p); drawnInventory.set(key, (drawnInventory.get(key) || 0) + 1);
+  }
+  const expected = [
+    ...(baked?.pecas || []).map(([a, x, y, z, ry, w, h]) => ({ f: baked.arquivos[a], x, y, z, ry, w, h })),
+    ...(baked?.murais || []).map(([f, x, y, z, ry, w, h]) => ({ f: 'mural:' + f, x, y, z, ry, w, h })),
+  ];
+  const missingBakedArtifacts = [];
+  for (const p of expected) {
+    const key = pieceKey(p), count = drawnInventory.get(key) || 0;
+    if (!count) missingBakedArtifacts.push(p);
+    else drawnInventory.set(key, count - 1);
+  }
+  const bakeApplied = !declaredGraffiti || (!!baked && runtime?.mapa === window.__mapId
+    && runtime.pass?.assado === true && runtime.hom?.assado === true
+    && runtime.pass.pecas === baked.pecas.length && runtime.hom.murais === (baked.murais?.length || 0)
+    && missingBakedArtifacts.length === 0);
   const totalArea = pieces.reduce((sum, p) => sum + (Number.isFinite(p.w * p.h) ? p.w * p.h : 0), 0);
   const visibleArea = pieces.filter(p => p.visible).reduce((sum, p) => sum + (Number.isFinite(p.w * p.h) ? p.w * p.h : 0), 0);
   const props = MAPS[window.__mapId].props;
@@ -214,7 +261,8 @@ const measure = async ({ limits, areaSource }) => {
   const rejectedArea = failures.reduce((sum, p) => sum + (Number.isFinite(p.w * p.h) ? p.w * p.h : 0), 0);
   return { actualMapId: window.__mapId, total: pieces.length, valid: pieces.length - failures.length,
     rejected: failures.length, sampledPoints: inspected.length * 25, candidateMeshes: meshes.length,
-    declaredGraffiti, runtimeGraffiti: runtime, buildMs: window.__buildMs,
+    declaredGraffiti, runtimeGraffiti: runtime, bakeApplied,
+    missingBakedCount: missingBakedArtifacts.length, missingBakedArtifacts: missingBakedArtifacts.slice(0, 30), buildMs: window.__buildMs,
     expectedBakedPieces: baked?.pecas?.length ?? null, expectedBakedMurals: baked?.murais?.length ?? null,
     realDrawnBatches, visibleArea, usedArtworkPaths: [...artworkPaths], visiblePieces: pieces.filter(p => p.visible).length, batchVisibility, unloadedTemplates,
     drawnBBox: drawnBounds.isEmpty() ? null : { min: drawnBounds.min.toArray(), max: drawnBounds.max.toArray() },
@@ -247,11 +295,12 @@ try {
       await page.goto(`${base}/mapview.html?map=${encodeURIComponent(id)}&capture=1&hud=0`, { waitUntil: 'domcontentloaded', timeout: 120000 });
       await page.waitForFunction(() => window.MAPEVAL?.ready === true && !!window.__scene, null, { timeout: 180000 });
       await page.waitForLoadState('networkidle', { timeout: 30000 });
-      const result = await page.evaluate(measure, { limits, areaSource: measureGraffitiArea.toString() });
+      const result = await page.evaluate(measure, { limits, areaSource: measureGraffitiArea.toString(), graffitiMapIds: Object.keys(MAP_SOURCES) });
       result.errors = errors; result.failedRequests = failedRequests; result.photos = [];
       result.relevantFailedRequests = failedRequests.filter(r => /\/models\/props\//.test(r.url) || result.usedArtworkPaths.includes(new URL(r.url).pathname));
       result.emptyIsAuthored = !result.declaredGraffiti && result.total === 0;
       result.ok = result.actualMapId === id && (result.total > 0 || result.emptyIsAuthored)
+        && result.bakeApplied
         && result.rejected === 0 && errors.length === 0 && result.unclassifiedArt.length === 0
         && result.batchMeshPieces === result.inventoriedBatchPieces
         && result.relevantFailedRequests.length === 0 && result.unloadedTemplates.length === 0;
