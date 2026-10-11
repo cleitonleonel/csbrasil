@@ -117,3 +117,31 @@ Mint reportado pelo responsável: 4.897 faces, 6.757 vértices e 3,1 MB; não s�
 Captura: 79.196 bytes; SHA-256 `97eba5043138f668d441ff0ea8be39415a5b731cf33e722996e99a26dd69ca33`.
 
 Estado: **8/8 modelos revisados visualmente nesta etapa: seis aprovados na preservação geral; Bolsonaro Mandrake e Zero Um reprovados por regressão das correntes.** Todos os pareceres são restritos às capturas estáticas do visualizador.
+
+## Rodada 2 de modelos — Bolsonaro Mandrake corrigido
+
+**APROVADO quanto à preservação visual geral e à correção das correntes na malha apresentada.** O modelo anterior reprovado acima permanece documentado como histórico.
+
+Evidência: `/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/bolsonaro-mandrake-chains-corrected-model.jpg`, contra `previews/bolsonaro-mandrake-chains-corrected.jpg`, refs. 07/10 e a ficha atual, que admite duas ou três correntes douradas de comprimentos diferentes.
+
+Conferido de verdade no visualizador 3D: três quedas douradas agora visíveis sobre a camiseta, duas menores e uma cubana grossa mais longa com pingente. O ouro mantém contraste contra a estampa; a camada inferior tem volume/elos discerníveis, resolvendo a perda completa das correntes do modelo anterior. Boné branco, lentes douradas, rosto adulto, conjunto estampado azul-claro/branco/carvão, relógio/anéis, meias e tênis azul/lilás preservados. Cabeça e solas completas, mãos vazias. Não observei nova perda material da direção.
+
+Asset Mint informado: `p9796a1e30etp3xncgs1czbbg18g3wz0`; 4.933 faces, 6.639 vértices, 3,9 MB. Metadados informados pelo responsável, sem contagem independente. Captura: 83.025 bytes; SHA-256 `911a7ace97a98acd7fda78acec3d7062ce90571f1375c33dc0533d1fbf19ead1`.
+
+Limite: aprovação da aparência na captura da malha; não certifica geometria individual das camadas finas/elos, material PBR exportado, rig, animações ou engine. Não foi analisado GLB local deste lote.
+
+Estado atualizado: **7/8 modelos aprovados na preservação visual geral; Zero Um ainda aguarda prova de malha corrigida com três camadas distintas.**
+
+## Rodada 2 de modelos — Zero Um Mandrake corrigido
+
+**APROVADO quanto à preservação visual geral e à legibilidade das três correntes na malha apresentada.** O modelo anterior reprovado acima permanece documentado como histórico.
+
+Evidência: `/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/zero-um-mandrake-chains-corrected-model.jpg`, contra `previews/zero-um-mandrake-chains-corrected.jpg`, ref. 11 e ficha do lote.
+
+Conferido de verdade no visualizador 3D: três curvas douradas grossas contáveis no peito — curta junto à gola, intermediária logo abaixo e longa junto ao medalhão — com intervalos visíveis entre as quedas. O ouro permanece em contraste com o preto, resolvendo a regressão anterior da camada intermediária. Medalhão retangular dourado com relevo aparente, boné preto lateral, lentes douradas, rosto adulto de contorno oval, conjunto preto com filetes dourados, relógio/anéis grandes e tênis preto/ouro preservados. Cabeça e solas completas; mãos vazias. Não observei nova perda material da direção.
+
+O desenho exato da gravação do medalhão e os elos individuais não são certificados por esta captura reduzida; o relevo está mais simplificado que na prévia. Também permanecem os limites de rosto pequeno e olhos encobertos pelos óculos. A aprovação cobre a preservação visual, sem equiparar a imagem à prova de geometria individual ou semelhança fotográfica literal.
+
+Asset Mint informado: `p978c5gpbzttzf0e62j2cm1bg18g3hks`; 4.915 faces, 6.944 vértices, 3,3 MB. Metadados informados pelo responsável, sem contagem independente. Captura: 80.298 bytes; SHA-256 `fc46135cea240b36456904df71b48e7318ddd8c3ba1a3245d719b8eb28082158`.
+
+Estado final desta revisão visual: **8/8 modelos aprovados quanto à preservação visual geral nas capturas atuais**, incluindo Jair e Zero Um corrigidos. As rejeições anteriores ficam preservadas como histórico. Não foram validados GLBs locais, topologia, pivô, escala, rig, animações, materiais exportados, engine ou gameplay deste lote.

@@ -251,7 +251,7 @@
     {
       "slug": "bolsonaro-mandrake",
       "name": "Bolsonaro Mandrake",
-      "status": "corrected_model_requested",
+      "status": "corrected_animation_requested",
       "references": [
         {
           "number": 7,
@@ -270,14 +270,16 @@
       "chatUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph71cm0szvjm2y9va99y2rt2298g3t39",
       "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/bolsonaro-mandrake-proof.jpg",
       "previewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/bolsonaro-mandrake-proof.jpg",
-      "assetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph71cm0szvjm2y9va99y2rt2298g3t39&panel=asset&assetId=p9733j8qmevj8t1gssh58wk3ys8g3j2k&variant=original",
+      "assetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph71cm0szvjm2y9va99y2rt2298g3t39&panel=asset&assetId=p9796a1e30etp3xncgs1czbbg18g3wz0&variant=original",
       "modelInfo": {
-        "faces": 4876,
-        "vertices": 6425,
-        "fileSizeMint": "3.7 MB"
+        "faces": 4933,
+        "vertices": 6639,
+        "fileSizeMint": "3.9 MB"
       },
       "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/bolsonaro-mandrake-model.jpg",
-      "correctedPreviewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/bolsonaro-mandrake-chains-corrected.jpg"
+      "correctedPreviewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/bolsonaro-mandrake-chains-corrected.jpg",
+      "rejectedAssetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph71cm0szvjm2y9va99y2rt2298g3t39&panel=asset&assetId=p9733j8qmevj8t1gssh58wk3ys8g3j2k&variant=original",
+      "correctedModelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/bolsonaro-mandrake-chains-corrected-model.jpg"
     },
     {
       "slug": "michelle-mandrake",
@@ -315,7 +317,7 @@
     {
       "slug": "zero-um-mandrake",
       "name": "Zero Um Mandrake",
-      "status": "corrected_model_requested",
+      "status": "corrected_animation_requested",
       "references": [
         {
           "number": 11,
@@ -329,13 +331,15 @@
       "proofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/zero-um-mandrake-proof.jpg",
       "previewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/zero-um-mandrake-proof.jpg",
       "correctedPreviewPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/previews/zero-um-mandrake-chains-corrected.jpg",
-      "assetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph75f4tvepjehrd2f5qfpmsey58g2wbb&panel=asset&assetId=p97c9w0a9mttqta4x5teb9njen8g2yd4&variant=original",
+      "assetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph75f4tvepjehrd2f5qfpmsey58g2wbb&panel=asset&assetId=p978c5gpbzttzf0e62j2cm1bg18g3hks&variant=original",
       "modelInfo": {
-        "faces": 4897,
-        "vertices": 6757,
-        "fileSizeMint": "3.1 MB"
+        "faces": 4915,
+        "vertices": 6944,
+        "fileSizeMint": "3.3 MB"
       },
-      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/zero-um-mandrake-model.jpg"
+      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/zero-um-mandrake-model.jpg",
+      "rejectedAssetUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph75f4tvepjehrd2f5qfpmsey58g2wbb&panel=asset&assetId=p97c9w0a9mttqta4x5teb9njen8g2yd4&variant=original",
+      "correctedModelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/zero-um-mandrake-chains-corrected-model.jpg"
     }
   ],
   "creditObservation": {

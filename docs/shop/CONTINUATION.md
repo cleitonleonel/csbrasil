@@ -144,3 +144,7 @@ Oito modelos reais gerados, capturas models/*-model.jpg e metadados noJSON. Crí
 ## Marco lote2: seis rigs e36clipes Mint concluídos
 
 Lula naRegua, Lula Cyborg, Bolsonaro Cyborg, Aljuiz, Lula Mandrake e Michelle enumeram6clipesBasicMovement e reproduzemIdle com playhead/Pauseanimation no viewer. Capturas animations/*-six-clips.jpg; IDs/batches em animationUrl JSON. Nao existem GLBs locais deste lote ainda: Chrome informa bloqueio de multiplos downloads automaticos para mint.gg. Pergunta especifica ao dono viaasync sobre Alwaysallowpendente; nao alterarconfig nem contornar. Corrigidos Jair/ZeroUm gerados e aguardam revisao malha. Próximo: revisar2correcoes, Animate6emcada, fechar48clipes; baixar/verificar/pacotear quando permissao chegar.
+
+## Marco lote2: oito malhas finais aceitas, ultimos dois pacotes pedidos
+
+Jair corrigido p9796a1e30etp3xncgs1czbbg18g3wz0 e ZeroUm corrigido p978c5gpbzttzf0e62j2cm1bg18g3hks aceitos na critica3D, preservadas correntes e identidade. Modelproofs corrigidos privados,8/8aprovados visualmente. BasicMovement6Apply uma vez nos dois, Jair exibe AnimatingIdle+5. IDs/batches dos seis concluidos noJSON; entrega MINT-BATCH2-DELIVERY.md checkpointparcial. Proximo: aguardar2pacotes, confirmarenum6/playback, atualizarentrega; downloads dependem resposta permissao Chrome.
