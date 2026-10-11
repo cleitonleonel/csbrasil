@@ -19,6 +19,10 @@ Referências e provas privadas: /Volumes/Zenith/Projects/game/corosolto/csbrasil
 
 Revisoes: MINT-BATCH2-PREVIEW-REVIEW.md e MINT-BATCH2-MODEL-REVIEW.md. IDs/estados/hashes: MINT-BATCH2-JOBS.json. Malhas reprovadas anteriores preservadas apenas como histórico; animações dos corrigidos usam os assets finais.
 
-GLBs locais aguardam permissão do Chrome para downloads múltiplos do Mint, pergunta específica pendente ao dono; nenhuma configuração alterada. Não existe ZIP/GLB offline deste lote verificado. Rigs/animações observados no Mint, sem inspeção binária local. Não é aprovação de retarget/grip/engine/gameplay. Lote1 eZIP anteriores preservados.
+Dono autorizou downloads múltiplos do Mint; Allow aplicado no prompt Chrome e oito GLBs Idle baixados pela UI. Todos passaram revisão binária independente:24juntas, pesos/índices válidos,23/66canais variáveis reais, Idle4s e skinning amostrado não constante. Relatório: MINT-BATCH2-RIG-REVIEW.md.
+
+[Pacote privado com oito skins rigadas + Idle](/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/treta-skins-batch2-rigged-idle.zip) — 27,037,214B, SHA256 `b573aa6b57b8cd367431b288bd83034e43b3a103962021f0295d58592844f7c1`. ZIP reaberto,11entradas/CRC e hashes dos8GLBs conferidos. Os40outros clipes existem noMint, mas NÃO estão noZIP. Rigs não possuem ossos individuais dos dedos. Head existe nos8; adornos não são nodes separados. Não equivale a aprovação de retarget/grip/engine/gameplay. Lote1 eZIP anteriores preservados.
+
+[Prova Mint final](/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/animations/rigged-delivery-proof.jpg). Nova UI/loja/itens/packs BRL em chat separado solicitado pelo dono:01a12cc7-e78d-7ec1-b2e3-3210df5efd6b, ficha plans/UI-LOJA-TRETA.md.
 
 Saldo global observado após pedidos:5532creditos, sem compra/ressubscrição; não atribuir delta global exclusivamente a esta tarefa.

@@ -73,7 +73,7 @@
     {
       "slug": "lula-na-regua",
       "name": "Lula na Régua",
-      "status": "six_animations_completed_idle_exported",
+      "status": "six_animations_completed_idle_verified",
       "references": [
         {
           "number": 1,
@@ -117,12 +117,13 @@
           "Armature|Idle|baselayer"
         ],
         "joints": 24
-      }
+      },
+      "rigReview": "APROVADO structural checks; gameplay not validated"
     },
     {
       "slug": "lula-cyborg",
       "name": "Lula Cyborg",
-      "status": "six_animations_completed_idle_exported",
+      "status": "six_animations_completed_idle_verified",
       "references": [
         {
           "number": 2,
@@ -172,12 +173,13 @@
           "Armature|Idle|baselayer"
         ],
         "joints": 24
-      }
+      },
+      "rigReview": "APROVADO structural checks; gameplay not validated"
     },
     {
       "slug": "bolsonaro-cyborg",
       "name": "Bolsonaro Cyborg",
-      "status": "six_animations_completed_idle_exported",
+      "status": "six_animations_completed_idle_verified",
       "references": [
         {
           "number": 3,
@@ -221,12 +223,13 @@
           "Armature|Idle|baselayer"
         ],
         "joints": 24
-      }
+      },
+      "rigReview": "APROVADO structural checks; gameplay not validated"
     },
     {
       "slug": "aljuiz-toga-mandrake",
       "name": "Aljuiz da Toga Mandrake",
-      "status": "six_animations_completed_idle_exported",
+      "status": "six_animations_completed_idle_verified",
       "references": [
         {
           "number": 5,
@@ -272,12 +275,13 @@
           "Armature|Idle|baselayer"
         ],
         "joints": 24
-      }
+      },
+      "rigReview": "APROVADO structural checks; gameplay not validated"
     },
     {
       "slug": "lula-mandrake",
       "name": "Lula Mandrake",
-      "status": "six_animations_completed_idle_exported",
+      "status": "six_animations_completed_idle_verified",
       "references": [
         {
           "number": 6,
@@ -327,12 +331,13 @@
           "Armature|Idle|baselayer"
         ],
         "joints": 24
-      }
+      },
+      "rigReview": "APROVADO structural checks; gameplay not validated"
     },
     {
       "slug": "bolsonaro-mandrake",
       "name": "Bolsonaro Mandrake",
-      "status": "six_animations_completed_idle_exported",
+      "status": "six_animations_completed_idle_verified",
       "references": [
         {
           "number": 7,
@@ -387,12 +392,13 @@
           "Armature|Idle|baselayer"
         ],
         "joints": 24
-      }
+      },
+      "rigReview": "APROVADO structural checks; gameplay not validated"
     },
     {
       "slug": "michelle-mandrake",
       "name": "Michelle Bolsonaro Mandrake",
-      "status": "six_animations_completed_idle_exported",
+      "status": "six_animations_completed_idle_verified",
       "references": [
         {
           "number": 7,
@@ -436,12 +442,13 @@
           "Armature|Idle|baselayer"
         ],
         "joints": 24
-      }
+      },
+      "rigReview": "APROVADO structural checks; gameplay not validated"
     },
     {
       "slug": "zero-um-mandrake",
       "name": "Zero Um Mandrake",
-      "status": "six_animations_completed_idle_exported",
+      "status": "six_animations_completed_idle_verified",
       "references": [
         {
           "number": 11,
@@ -490,7 +497,8 @@
           "Armature|Idle|baselayer"
         ],
         "joints": 24
-      }
+      },
+      "rigReview": "APROVADO structural checks; gameplay not validated"
     }
   ],
   "creditObservation": {
@@ -511,5 +519,14 @@
     "note": "Global account balance after requests; no purchases or resubscription"
   },
   "mintGenerationStatus": "complete_8_models_48_clips",
-  "localExportStatus": "eight_Idle_GLBs_exported_independent_binary_review_pending"
+  "localExportStatus": "complete_eight_rigged_Idle_GLBs_independently_verified",
+  "localPackage": {
+    "path": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/treta-skins-batch2-rigged-idle.zip",
+    "bytes": 27037214,
+    "sha256": "b573aa6b57b8cd367431b288bd83034e43b3a103962021f0295d58592844f7c1",
+    "files": 11,
+    "glbCount": 8,
+    "clipsLocal": 8,
+    "clipsMint": 48
+  }
 }
