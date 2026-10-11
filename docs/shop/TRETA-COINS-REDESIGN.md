@@ -1,5 +1,8 @@
 # Moedas TRETA$: redesign após rejeição do dono
 
+> Direção atual: a foto enviada pelo dono depois desta prévia substitui a frente
+> fotográfica v3 por cunhagem clássica de perfil. Ver `TRETA-COINS-CLASSIC-PROFILE.md`.
+
 Em 11/10/2026, o dono rejeitou o design das sete moedas portrait-v2. A aprovação
 técnica/visual anterior não representa aceite do dono. Os arquivos públicos v2
 continuam preservados, mas não são a direção aprovada para produção.
