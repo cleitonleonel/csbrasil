@@ -757,7 +757,7 @@ export function buildFerroVelho(scene, T) {
       const t = (i + 0.5) / n - 0.5, px = cx + dx * t * len, pz = cz + dz * t * len;
       const s = ((i * 2654435761 + (cx * 71 + cz * 13)) >>> 0) % 1000 / 1000;
       fenceP.push({ x: px, z: pz, ry: ry + (s - 0.5) * 0.09, w: w * 1.06, h: 2.9 + s * 1.25, tint: s });
-      if (i % (LOWQ ? 3 : 2) === 0) fencePost.push({ x: px - dx * w * 0.5, z: pz - dz * w * 0.5, ry, h: 3.4 + s * 0.9, lean: (s - 0.5) * 0.1 });
+      if (i % (LOWQ ? 4 : 2) === 0) fencePost.push({ x: px - dx * w * 0.5, z: pz - dz * w * 0.5, ry, h: 3.4 + s * 0.9, lean: (s - 0.5) * 0.1 });
     }
   };
   addBox(2 * HALF_X, 3.2, 1, MAT.zincDark, 0, 0, -HALF_Z);                 // fundo (norte)
