@@ -20,9 +20,9 @@ Entregar loja dentro do jogo, imediatamente depois de JOGAR, com direção visua
 - Blender instalado em `/Applications/Blender.app/Contents/MacOS/Blender`; serviço MCP 9876 sem listener. Usar processo headless isolado sem tocar a cena aberta.
 - Supabase social local está em Docker, independente de produção. Nenhuma migration remota/deploy/merge autorizado por esta solicitação.
 
-## Próximo passo
+## Estado atual e próximo passo
 
-Corrigir relevo/referências das três moedas reprovadas; comprovar giro/recompensa e saldo no navegador desktop/mobile; finalizar integração cosmética por jogador e validar builds. Gerar skins via sessão Mint depois de receber teto de gasto em créditos, finalizar/rigar no Blender e testar equipamento real. A campanha continua inativa até janela de lançamento definida; nenhum merge/deploy foi feito.
+Implementação client em `f3cb79f2d`; backend em `48d2e35` (economia `5a790de`/`bd5df0e`). Sete moedas corrigidas e aprovadas na vista frontal, wallet/toasts WebGL validados em fixtures locais, contrato cosmético assinado e gates locais aprovados. A geração das cinco skins reais continua pendente do teto em créditos Mint; prompts/roteiros prontos. Próximo passo: executar Mint dentro do teto aprovado, finalizar/rigar no Blender, testar equipamento real e produzir capturas/vídeos. Campanha inativa até janela de lançamento; sem migration remota, merge/deploy ou publicação. Relatos abaixo preservam a evolução e os resultados rejeitados, e são superados pelo estado atual quando indicado.
 
 ## Marco: carteira SQL validada
 
