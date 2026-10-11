@@ -145,6 +145,7 @@ export function buildMansao(scene, T) {
   const col = (x0, x1, y0, y1, z0, z1) => colliders.push({ minX: Math.min(x0, x1), maxX: Math.max(x0, x1), minY: y0, maxY: y1, minZ: Math.min(z0, z1), maxZ: Math.max(z0, z1) });
   const addFloor = (w, d, x, z, mat, y = 0) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat); m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); m.receiveShadow = true; root.add(m); return m; };
   const PB = new PropBatch({ bucket: 24 });
+  const PB_FOLHAS = new PropBatch({ bucket: 24 });
   const GLB_ON = QP.get('glb') !== '0';
   function propComFallback(id, x, z, h, ry, fallback) {
     const proxy = fallback();
@@ -622,9 +623,9 @@ export function buildMansao(scene, T) {
   clusterSpecs.forEach(([gx,gz,familia],clusterIndex)=>{
     const cluster=new THREE.Group(); cluster.position.set(gx,0,gz);
     cluster.userData.mansaoFeature='garden-cluster'; cluster.userData.gardenFamily=familia; cluster.userData.clusterIndex=clusterIndex;
-    const glbOk = familia==='heliconia' ? GLB_ON && PB.add('heliconia',{x:gx,z:gz,targetH:1.35,ry:clusterIndex*1.7})
-      : familia==='filodendro' ? GLB_ON && PB.add('costela_adao',{x:gx,z:gz,targetH:1.15,ry:clusterIndex*2.3})
-      : GLB_ON && PB.add('agave',{x:gx,z:gz,targetH:.95,ry:clusterIndex*1.1});
+    const glbOk = familia==='heliconia' ? GLB_ON && PB_FOLHAS.add('heliconia',{x:gx,z:gz,targetH:1.35,ry:clusterIndex*1.7})
+      : familia==='filodendro' ? GLB_ON && PB_FOLHAS.add('costela_adao',{x:gx,z:gz,targetH:1.15,ry:clusterIndex*2.3})
+      : GLB_ON && PB_FOLHAS.add('agave',{x:gx,z:gz,targetH:.95,ry:clusterIndex*1.1});
     if (!glbOk) {
       if(familia==='heliconia') for(let i=0;i<7;i++) {
       const a=-.9+i*.3, caule=new THREE.Mesh(new THREE.CylinderGeometry(.035,.05,.75+i*.09,6),lam({color:0x397343,roughness:1}));
@@ -649,9 +650,9 @@ export function buildMansao(scene, T) {
     mass.userData.mansaoFeature='garden-mass';
     const glbMass = GLB_ON && hasProp('costela_adao') && hasProp('heliconia') && hasProp('agave');
     if (glbMass) {
-      PB.add('costela_adao',{x:mx,z:mz,targetH:1.5,ry:rot});
-      PB.add('heliconia',{x:mx+.9,z:mz+.45,targetH:1.6,ry:rot+2.1});
-      if (!LOWQ) PB.add('agave',{x:mx-.85,z:mz+.6,targetH:.8,ry:rot+4.2});
+      PB_FOLHAS.add('costela_adao',{x:mx,z:mz,targetH:1.5,ry:rot});
+      PB_FOLHAS.add('heliconia',{x:mx+.9,z:mz+.45,targetH:1.6,ry:rot+2.1});
+      if (!LOWQ) PB_FOLHAS.add('agave',{x:mx-.85,z:mz+.6,targetH:.8,ry:rot+4.2});
     } else {
       for(let i=0;i<24;i++) {
         const a=i*Math.PI*2/24+mi*.31,r=.38+(i%6)*.17;
@@ -680,7 +681,7 @@ export function buildMansao(scene, T) {
   }
   // Bromélias em manchas curvas amarram canteiros, espelho d'água e caminho.
   for (const [x, z, c] of [[-11.2,19.4,0xb84132],[-7.4,20.8,0xd1842f],[6.7,21.7,0xb84132],[10.6,24.1,0xd1842f],[-13.3,28.9,0xb84132],[-6.1,31.2,0xd1842f],[7.9,27.4,0xb84132],[14.1,32.2,0xd1842f]]) {
-    if (GLB_ON && PB.add('ixora', { x, z, targetH: .95, ry: (x * 5 + z * 11) % 6.283 })) continue;   // BUG-64: ixora florida no lugar dos cones
+    if (GLB_ON && PB_FOLHAS.add('ixora', { x, z, targetH: .95, ry: (x * 5 + z * 11) % 6.283 })) continue;   // BUG-64: ixora florida no lugar dos cones
     const g = new THREE.Group();
     g.userData.mansaoFeature = 'bromelia';
     for (let i = 0; i < 11; i++) {
@@ -701,7 +702,7 @@ export function buildMansao(scene, T) {
   // inclinações para não ler como as copas esféricas existentes.
   const folhaPalma = lam({ color: 0x2c713c, roughness: 1 });
   for (const [px,pz,sgn] of [[-17.2,22.5,1],[17.2,24,-1]]) {
-    if (GLB_ON && PB.add('palmeira_ravenala', { x: px, z: pz, targetH: 5.0, ry: sgn > 0 ? .45 : 2.69 })) continue;   // BUG-64: ravenala em leque no lugar das esferas
+    if (GLB_ON && PB_FOLHAS.add('palmeira_ravenala', { x: px, z: pz, targetH: 5.0, ry: sgn > 0 ? .45 : 2.69 })) continue;   // BUG-64: ravenala em leque no lugar das esferas
     const palm = new THREE.Group(); palm.position.set(px,0,pz); palm.userData.mansaoFeature = 'palmeira';
     const tropicalTag=new THREE.Group(); tropicalTag.userData.mansaoFeature='tropical-3d'; palm.add(tropicalTag);
     for (let i=0;i<5;i++) {
@@ -719,7 +720,7 @@ export function buildMansao(scene, T) {
   }
   // Bananeiras no primeiro plano: folhas altas, largas e em leque, não estrelas 2D.
   for(const [bx,bz,ry] of [[-9.8,24.8,.3],[11.6,26.5,-.45]]){
-    if (GLB_ON && PB.add('bananeira', { x: bx, z: bz, targetH: 2.3, ry })) continue;   // BUG-64
+    if (GLB_ON && PB_FOLHAS.add('bananeira', { x: bx, z: bz, targetH: 2.3, ry })) continue;   // BUG-64
     const banana=new THREE.Group(); banana.position.set(bx,0,bz); banana.rotation.y=ry;
     banana.userData.mansaoFeature='tropical-3d';
     for(let i=0;i<7;i++){ const a=-1.1+i*.36, folha=new THREE.Mesh(new THREE.SphereGeometry(.52,9,5),lam({color:i%2?0x4b8b45:0x35783c,roughness:1})); folha.scale.set(.28,.08,2.25); folha.rotation.set(-.55,a,0); folha.position.set(Math.sin(a)*.55,1.45+i*.12,Math.cos(a)*.55); banana.add(folha); }
@@ -760,7 +761,7 @@ export function buildMansao(scene, T) {
     morro.scale.set(sx,sy,sz); morro.position.set(x,.55,z); morro.rotation.y = x < 0 ? .24 : -.3; morro.receiveShadow = true;
     morro.userData.nonSolidSurface = true; encosta.add(morro);
     // BUG-64: coroamento quebra a silhueta de poliedro chapado
-    if (GLB_ON) { PB.add('agave', { x: x * .96, y: 1.0, z: z - 1.1, targetH: .9, ry: x }); PB.add('samambaia', { x: x * .98, y: .8, z: z + 1.5, targetH: .85, ry: z }); }
+    if (GLB_ON) { PB_FOLHAS.add('agave', { x: x * .96, y: 1.0, z: z - 1.1, targetH: .9, ry: x }); PB_FOLHAS.add('samambaia', { x: x * .98, y: .8, z: z + 1.5, targetH: .85, ry: z }); }
   }
   root.add(encosta);
   // Pergolado do lounge: quatro pilares chegam ao solo; cinco travessas e duas
@@ -791,9 +792,9 @@ export function buildMansao(scene, T) {
       for (let i = 0; i < n; i++) {
         const a = i * 2.399963 + rndJardim() * .5, r = .42 * Math.sqrt(i + .5) + rndJardim() * .25;
         const fx = dx + Math.cos(a) * r, fz = dz + Math.sin(a) * r, fry = rndJardim() * 6.283;
-        if (i % 3 === 2) PB.add('ixora', { x: fx, z: fz, targetH: .8 + rndJardim() * .3, ry: fry });
-        else if ((i + di) % 2 === 0) PB.add('costela_adao', { x: fx, z: fz, targetH: 1.0 + rndJardim() * .45, ry: fry });
-        else PB.add('samambaia', { x: fx, z: fz, targetH: .7 + rndJardim() * .35, ry: fry });
+        if (i % 3 === 2) PB_FOLHAS.add('ixora', { x: fx, z: fz, targetH: .8 + rndJardim() * .3, ry: fry });
+        else if ((i + di) % 2 === 0) PB_FOLHAS.add('costela_adao', { x: fx, z: fz, targetH: 1.0 + rndJardim() * .45, ry: fry });
+        else PB_FOLHAS.add('samambaia', { x: fx, z: fz, targetH: .7 + rndJardim() * .35, ry: fry });
       }
     }
     for (const [dx, dz] of driftsJardim) {
@@ -801,9 +802,9 @@ export function buildMansao(scene, T) {
       for (let i = 0; i < n; i++) {
         const a = i * 2.399963 + rndJardim() * .6, r = .34 * Math.sqrt(i + .6) + rndJardim() * .2;
         const fx = dx + Math.cos(a) * r, fz = dz + Math.sin(a) * r, fh = .55 + rndJardim() * .45, fry = rndJardim() * 6.283;
-        if (i % 3 === 0) PB.add('samambaia', { x: fx, z: fz, targetH: fh, ry: fry });
-        else if (i % 3 === 1) PB.add('ixora', { x: fx, z: fz, targetH: fh + .15, ry: fry });
-        else PB.add('heliconia', { x: fx, z: fz, targetH: fh + .5, ry: fry });
+        if (i % 3 === 0) PB_FOLHAS.add('samambaia', { x: fx, z: fz, targetH: fh, ry: fry });
+        else if (i % 3 === 1) PB_FOLHAS.add('ixora', { x: fx, z: fz, targetH: fh + .15, ry: fry });
+        else PB_FOLHAS.add('heliconia', { x: fx, z: fz, targetH: fh + .5, ry: fry });
       }
     }
   } else {
@@ -1337,6 +1338,9 @@ export function buildMansao(scene, T) {
     const ms = Array.isArray(c.material) ? c.material : [c.material];
     if (ms.some((m) => m && m.visible !== false && !(m.transparent && (m.opacity === undefined || m.opacity < 0.9)))) occluders.push(c);
   }
+  const folhagem = new THREE.Group();
+  folhagem.userData.nonSolidSurface = true; folhagem.userData.mansaoFeature = 'folhagem-decorativa';
+  PB_FOLHAS.build(folhagem); root.add(folhagem);
   SKIRT.build(root);
 
   /* Pixo no muro externo, sem o folha-pixaca-01 ("MORTE" — veto editorial da mansão,

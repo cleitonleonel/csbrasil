@@ -344,7 +344,7 @@ export function buildEscadao(scene, T) {
 
   /* ===================== HELPERS DE GEOMETRIA ===================== */
   /* ===== CASARIO DE MOLDE (kit Mint favela_r3) =====
-     O molde é pele sobre o prisma: o colisor invisível segue em `occluders` (BUG-54) e
+     O molde substitui a pele e a bala testa suas malhas; o prisma conserva a colisão de movimento e
      sem GLB a fachada procedural volta. Régua: `eval:escala-casario`, via `casario`. */
   const casario = [];
   function instanciaCasa(spec, x, z, y, w, h, d, col) {
@@ -367,6 +367,7 @@ export function buildEscadao(scene, T) {
       obj.position.z += z - (b.min.z + b.max.z) / 2;
       obj.userData.casario = spec.molde;
       root.add(obj);
+      obj.traverse(mesh => { if (mesh.isMesh) occluders.push(mesh); });
     }
     const reg = { molde: spec.molde, pav: spec.pav, x, z, y, ry, larg: w, prof: d, alt: h, sx: e.sx, sz: e.sz, col, obj };
     casario.push(reg);

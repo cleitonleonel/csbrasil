@@ -1,3 +1,4 @@
+import { withVisibleShotOccluders } from './shot_surfaces.js';
 import { preloadMansaoAmbience } from './mansao_ambience.js';
 import { buildMansao, MANSAO_PROPS, MANSAO_AMBIENCE } from './map_mansao.js';
 import { buildAmazonia, AMAZONIA_PROPS, AMAZONIA_AMBIENCE } from './map_amazonia.js';
@@ -96,6 +97,7 @@ export const MAPS = {
   velho_oeste: { name: 'Sertão da Treta', build: buildVelhoOeste, props: VELHO_OESTE_PROPS, ambience: VELHO_OESTE_AMBIENCE, ctfMode: true },
   penitenciaria: { name: 'CARANDIRU', build: buildPenitenciaria, props: PENITENCIARIA_PROPS, ambience: PENITENCIARIA_AMBIENCE, ctfMode: true },
 };
+for (const map of Object.values(MAPS)) map.build = withVisibleShotOccluders(map.build);
 export const MAP_IDS = Object.keys(MAPS);
 export const DEFAULT_MAP = 'praca_poderes';
 
