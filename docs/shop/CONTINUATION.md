@@ -119,4 +119,12 @@ Bolsonaro, Michelle, Lula corrigido e Janja corrigida têm seis clipes BasicMove
 
 ## Marco: Senador corrigido aceito visualmente no3D
 
-Asset p97bdwctkpvh37hn2zkct5sykn8g31x3 Violet Chain Street Baron,4.824faces/7.068v/2,7MB. Crítico aprovou três camadas de correntes pesadas legíveis e direção preservada. Prova senador-model-chains-corrected.jpg. BasicMovement6 Apply acionado uma vez nesse asset. Próximo: confirmar sexto pacote/baixar GLB Idle, verificar os cinco arquivos e fechar relatório.
+Asset p97bdwctkpvh37hn2zkct5sykn8g31x3 Violet Chain Street Baron,4.824faces/7.068v/2,7MB. Crítico aprovou três camadas de correntes pesadas legíveis e direção preservada. Prova senador-model-chains-corrected.jpg. BasicMovement6 Apply acionado uma vez nesse asset. Próximo: confirmar quinto pacote/baixar GLB Idle, verificar os cinco arquivos e fechar relatório.
+
+## Marco final: cinco skins corrigidas, rigadas e30clipes concluídos noMint
+
+Finalização pedida pelo dono concluída: Lula p978szcm8y7h62zwzaq86a2w6h8g2gq2, Bolsonaro p97a7w9nkmqgs3aa7ztm4twqpx8g3y96, Senador p97bdwctkpvh37hn2zkct5sykn8g31x3, Janja p97f2vydpmmj5jkjtxpdp5p6a58g21pw, Michelle p97096kq8s8mqajjzva3k0s75x8g2a80. Todos têm seis clipes BasicMovement na UI. Senador Idle reproduzido com playhead ativo, screenshot senador-animated-idle.jpg; enumeração senador-animations-six-final.jpg. Cinco GLBs Idle locais,24juntas cada; crítica independente confirmou header/accessors/pesos/canais fisicamente variáveis. Intervalo0,033333→4,033333 tem duração4s; endpoint não é duração. MINT-RIG-REVIEW.md registra resultado/limites e hashes.
+
+Pacote privado private-assets/treta-store/mint/treta-skins-mint-rigged-idle.zip contém cinco modelos rigados com Idle, README,manifest e crítica. Outros25clipes disponíveis noMint, não baixar/prometer estes noZIP. Relatório/links finais MINT-DELIVERY.md; IDs/batches/hashes MINT-JOBS.json. Saldo15.918após os pedidos, delta global desta retomada2.597sem custo exclusivo comprovado. Nada comprado/ressubscrito. Checkout preservado, sódocs nesta retomada.
+
+Definição de pronto da geração somenteMint atingida. Objetivo amplo continua aberto: integração/retarget das skins noengine, grip/clips de combate, equipamento e partida real, aceite humano, campanha real/datas, vídeos, expansãoTrump/Vorcaro; catálogo continua fechado até esses gates. Nenhum Blender, merge/deploy/publicação. Próximo passo autorizado nesta unidade é entrega dos links/arquivos; eventual integração precisa continuidade do objetivo amplo.

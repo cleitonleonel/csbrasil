@@ -1,19 +1,21 @@
-# Entrega Mint — cinco skins TRETA
+# Entrega final Mint — skins TRETA
 
-Os cinco modelos3D foram gerados em11/10/2026 no projeto CORO SOLTO Loja TRETA, usando créditos existentes. Preço previsto no jogo:800T$ por skin. Assets não ativados no catálogo e sem aceite de rig/jogabilidade.
+Cinco skins concluídas no Mint, com rig e seis clipes Basic Movement por personagem (30 clipes gerados). Lula recebeu grillz dourados, Janja óculos com olhos visíveis e Senador correntes mais grossas; as três correções foram aprovadas pelo crítico na malha3D. Preço previsto no jogo:800T$ cada.
 
-| Skin | Modelo Mint | Faces / vértices informados | Arquivo informado |
-| --- | --- | --- | --- |
-| [Lula do Drip](https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7azn60zfk9j2amd87f06vhdd8g3kcv&panel=asset&assetId=p973vsch5wvrxhzqgs84d7bxa98g2fr3&variant=original) | Burgundy Goldbraid Boss | 4642 / 3610 | 2.8 MB |
-| [Bolsonaro do Drip](https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7f4qjk9ww0n3533j9911nc198g2cck&panel=asset&assetId=p97a7w9nkmqgs3aa7ztm4twqpx8g3y96&variant=original) | Emerald Varsity Dripster | 4951 / 6932 | 3.3 MB |
-| [Senador do Drip](https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7ba48kge0gsw267a8dvtzbpd8g38s9&panel=asset&assetId=p97at9cp8yxbxmee0784t0ecys8g3y86&variant=original) | Flavio Face Corrected | 4876 / 6290 | 2.5 MB |
-| [Janja](https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7cnh5y7g71netxwjajjyg2gh8g3fkx&panel=asset&assetId=p97bw80b5vw0qdbcmtcg29bx7h8g3ay2&variant=original) | Janja Mature Face Corrected | 4986 / 6717 | 2.7 MB |
-| [Michelle Bolsonaro](https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7fr1dc9v0wv4z2vfk16swh5d8g2je9&panel=asset&assetId=p97096kq8s8mqajjzva3k0s75x8g2a80&variant=original) | Michelle Bolsonaro Corrected Face | 4862 / 6602 | 2.7 MB |
+| Skin | Modelo final / animações Mint | GLB local |
+| --- | --- | --- |
+| Lula do Drip | [Burgundy Goldbraid Boss](https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7azn60zfk9j2amd87f06vhdd8g3kcv&panel=asset&assetId=p978szcm8y7h62zwzaq86a2w6h8g2gq2&animationBatchId=w571s7k33d0r0gvzqfjhxdbryn8g2716&animationClipId=w97ceh82vmwn99w8fcrqrbjn618g217w) | `lula-drip-idle.glb` |
+| Bolsonaro do Drip | [Emerald Varsity Dripster](https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7f4qjk9ww0n3533j9911nc198g2cck&panel=asset&assetId=p97a7w9nkmqgs3aa7ztm4twqpx8g3y96&animationBatchId=w574pr4pn17n7yvb002spj1ds58g2m61&animationClipId=w97eq9qm4b6csfacy4skzyskq18g24yn) | `bolsonaro-drip-idle.glb` |
+| Senador do Drip | [Violet Chain Street Baron](https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7ba48kge0gsw267a8dvtzbpd8g38s9&panel=asset&assetId=p97bdwctkpvh37hn2zkct5sykn8g31x3&animationBatchId=w572w80gky2v2jbnq43qjhjwa18g37dh&animationClipId=w97bs2vweagw94pa4c2q08y4ps8g3bde) | `senador-idle.glb` |
+| Janja | [Burgundy Hoop Executive](https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7cnh5y7g71netxwjajjyg2gh8g3fkx&panel=asset&assetId=p97f2vydpmmj5jkjtxpdp5p6a58g21pw&animationBatchId=w576q9tdf6rr8rad2b4m56gnzx8g21yw&animationClipId=w97amxex7cjb77g0be1mbw72c58g311r) | `janja-idle.glb` |
+| Michelle Bolsonaro | [Michelle Bolsonaro Corrected Face](https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7fr1dc9v0wv4z2vfk16swh5d8g2je9&panel=asset&assetId=p97096kq8s8mqajjzva3k0s75x8g2a80&animationBatchId=w5763y5d7pn5cwfwc71bckz1hx8g3j8g&animationClipId=w97bdrmcd62brd4kc6e3jpjre58g2vyy) | `michelle-idle.glb` |
 
-Os números acima vêm do visualizador Mint. Não foram conferidos em GLB local: o download foi acionado, mas a captura do arquivo expirou.
+Cada pacote Mint contém Idle, Casual Walk inplace, run fast3 inplace, Regular Jump, Idle Turn Left e Idle Turn Right. Cada GLB local contém o personagem rigado e **somente Idle**, com duração efetiva4s. Os demais cinco clipes por skin estão concluídos no Mint; não foram baixados nesta entrega.
 
-Pendências do aceite visual: close confirmou dentes claros no Lula, corrigir material dourado dos grillz; reflexo/transparência das lentes da Janja; espessura das correntes do Senador e detalhes faciais/joias/mãos em close. Prévias corrigidas de Senador, Janja e Michelle aprovadas como direção antes da geração.
+Os cinco GLBs passaram revisão independente de header/chunks/accessors, mesh–skin,24juntas, pesos válidos e canais com movimento físico. Relatório: [MINT-RIG-REVIEW.md](MINT-RIG-REVIEW.md). Isso não confirma retarget, grip, compatibilidade com o rig do jogo ou gameplay. Catálogo permanece indisponível até integração e validação.
 
-Evidências privadas: `private-assets/treta-store/mint/five-models-mint.jpg` e as cinco capturas `*-model-mint.jpg`. Prompts, referências e IDs: `MINT-JOBS.json`. Lula B foi rejeitado e não finalizado.
+Arquivos privados: `/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint`. Pacote `treta-skins-mint-rigged-idle.zip` contém os cinco GLBs Idle, este relatório e manifest de links/hashes. Assets originais substituídos e prévias rejeitadas permanecem no histórico do Mint; não equipar esses assets no lugar dos IDs finais.
 
-Sem compra de novos créditos, assinatura, Blender ou deploy nesta retomada. Saldo inicial observado:30.580; saldo final observado:18.515 (7.150 plano +11.365 usage). Diferença da conta12.065, sem atribuição exclusiva às skins: outro projeto Mint gera props em paralelo.
+Evidências: lula-model-grillz-corrected.jpg, janja-model-lenses-corrected.jpg, senador-model-chains-corrected.jpg; *-animated-idle.jpg e senador-animations-six-final.jpg mostram reprodução/enumeração na UI.
+
+Saldo observado antes desta finalização18.515, após os pedidos15.918 (4.553plano+11.365usage), delta global2.597. Não atribuir valor exclusivo às skins: a conta também tem atividade de outro projeto. Nenhuma compra, ressubscrição, Blender, merge, deploy ou publicação nesta etapa.
