@@ -1,0 +1,17 @@
+# Revisão independente do kit
+
+11/10/2026. Crítico com contexto limpo, somente leitura, sem justificativa do construtor. Pedido original e correção do dono fornecidos: URL pública sempre www.corosolto.com.br.
+
+Veredito atual: nenhum achado P0/P1/P2/P3 pendente no recorte.
+
+- Os 15 PNGs foram vistos. Paleta, tipografia, logo, cortes e legibilidade conferidos. Rodapés usam domínio do dono. Arte promocional e captura histórica identificadas; dev orienta Código no menu Sobre o jogo.
+- 13 assets/fontes conferidos por hash/tamanho; originais comparados com commit261cf59a7 e recibos de mapas. Dimensões/hashes de 15PNG e63vínculos da fila conferem.
+- URLs públicos conferidos no site do dono. Contrato UTM mantém source/medium/campaign, sem utm_content e sem alegação de atribuição de retorno.
+- Diagnóstico independente em Node VM com DOM simulado: alteração de SHA/URL/copy da fila invalida decisão e exporta needs_re_review. Editar legenda invalida imediatamente pelo oninput e muda aviso. Filtro vazio limpa prévia/legenda/aviso e desabilita aprovação.
+- Calendário11–25out e quatro semanas seguintes; sem métricas privadas ou benefício social/monetização draft na copy.
+
+Achados corrigidos: sobreposição de rótulo/título; seta sem glifo; área de destino story; aprovação reaproveitada após regeneração; aviso de aprovação persistindo durante edição. Revalidação da revisão final sem novo achado.
+
+Limites: sem navegador, partida real, produção ou plataformas sociais. DOM simulado confirma lógica, não a interação visual de index.html. Nenhuma aprovação humana de layout/publicação inferida da revisão. Welcome continua prévia com link de preferências a integrar pela frente social, sem transporte/email-client certificado.
+
+Hash revisado do index.html: abc746377fdc0f32bfc04e7c484fb3583288ae7d705a51aaf8cf056252631dc3.
