@@ -130,6 +130,8 @@
     "eval:matchoptions": "node tools/eval/match-options-check.mjs",
     "eval:charvoice": "node tools/eval/character-select-voice-check.mjs",
     "eval:mat": "node tools/eval/mat-check.mjs",
+    "//eval:game-pages": "Contrato do HTML de todas as páginas do lobby e cobertura AEO, com mutações que quebram canonical, shell e índice.",
+    "eval:game-pages": "node tools/eval/game-pages-check.mjs && node tools/eval/game-pages-check.mjs --mutate",
     "eval:seo": "node tools/eval/seo-check.mjs",
     "eval:pwa-install": "node tools/eval/pwa-install-contract.mjs",
     "eval:seo:mutate": "node tools/eval/seo-check.mjs --mutate",

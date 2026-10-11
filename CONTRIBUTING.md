@@ -221,12 +221,12 @@ mesmo commit (metade trocada é pior que nenhuma). A tabela é gerada:
 | rodapé do site | `src/layouts/Layout.astro` | 1×  |
 | JSON-LD do jogo | `src/pages/index.astro` | 1×  |
 | página `/sobre` | `src/pages/sobre.astro` | 3×  |
-| `llms.txt` (resposta para LLM) | `public/llms.txt` | 2×  |
+| `llms.txt` (resposta para LLM) | `public/llms.txt` | **arquivo não existe**  |
 | rodapé desta documentação | `docs/docusaurus.config.js` | — (não nomeia a licença)  |
 
-**29 ocorrências** de `AGPL-3.0` em **7** das 8 superfícies declaradas. Trocar a licença é mudar **todas elas no mesmo commit**: metade trocada é pior que nenhuma, porque cada arquivo passa a responder uma coisa diferente para quem pergunta.
+**27 ocorrências** de `AGPL-3.0` em **6** das 8 superfícies declaradas. Trocar a licença é mudar **todas elas no mesmo commit**: metade trocada é pior que nenhuma, porque cada arquivo passa a responder uma coisa diferente para quem pergunta.
 
-**Outros nomes de licença citados nessas superfícies:** `MIT` em `README.md` (4×), `MIT` em `CONTRIBUTING.md` (4×), `MIT` em `src/pages/sobre.astro` (1×), `MIT` em `public/llms.txt` (1×), `MIT` em `docs/docusaurus.config.js` (1×). Citar não é declarar — essas linhas são histórico da migração ou crédito a dependência de terceiro. A regra continua a mesma: **só o `LICENSE` declara**, e hoje ele diz `AGPL-3.0`.
+**Outros nomes de licença citados nessas superfícies:** `MIT` em `README.md` (4×), `MIT` em `CONTRIBUTING.md` (4×), `MIT` em `src/pages/sobre.astro` (1×), `MIT` em `docs/docusaurus.config.js` (1×). Citar não é declarar — essas linhas são histórico da migração ou crédito a dependência de terceiro. A regra continua a mesma: **só o `LICENSE` declara**, e hoje ele diz `AGPL-3.0`.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep -n dos nomes de licença conhecidos, nas superfícies declaradas em tools/gen-docs.mjs`
 

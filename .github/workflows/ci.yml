@@ -130,6 +130,9 @@ jobs:
       # todos os casos. Roda DEPOIS do build porque o arnês sobe o `astro dev`,
       # que precisa das deps instaladas — e checa o caminho de degradação SEM
       # Supabase, que é exatamente o estado do CI.
+      - name: Páginas do lobby e cobertura SEO/AEO
+        run: npm run eval:game-pages
+
       - name: Smoke do site (13 rotas, contrato + JSON-LD)
         run: node tools/eval/site-smoke.mjs
   # O bloco de autoria sai do shortlog e o squash reescreve o autor: num PR ele não é

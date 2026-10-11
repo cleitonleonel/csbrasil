@@ -34,10 +34,10 @@ const url = abs(`/faccoes/${faccao.id}`);
    um import cruzado entre duas páginas por uma tabela de nome de arquivo é pior
    de achar do que a duplicação. Se virar 3 lugares, aí vai pro data/jogo.ts. */
 const PLACA: Record<string, string> = {
-  E: 'petistas', B: 'bolsonaristas', urbanas: 'tribos',
+  E: 'time-e', B: 'time-b', urbanas: 'tribos',
   palhacos: 'palhacos', funkeiros: 'funkeiros', mitico: 'mitico',
 };
-const placa = PLACA[faccao.id] ? `/img/team-${PLACA[faccao.id]}.webp` : null;
+const placa = PLACA[faccao.id] ? `/img/faccoes/${PLACA[faccao.id]}.webp` : null;
 
 const jsonld = [
   {
@@ -67,7 +67,7 @@ const jsonld = [
 ---
 <Layout
   title={`${faccao.nome} - os ${elenco.length} personagens da facção | ${BRAND_FULL}`}
-  description={`${faccao.nota} Conheça os ${elenco.length} personagens jogáveis da facção ${faccao.nome} no ${BRAND_FULL}, com o lema “${faccao.lema}”.`}
+  description={`${faccao.nota} Conheça os ${elenco.length} personagens do catálogo da facção ${faccao.nome} no ${BRAND_FULL}, com o lema “${faccao.lema}”.`}
   jsonld={jsonld}
   h1={faccao.nome}
   kicker={`facção · ${elenco.length} personagens`}

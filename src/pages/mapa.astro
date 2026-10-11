@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { LIVE_MAP } from '../data/live-map.mjs';
 import { supabaseAdmin } from '../lib/supabase';
 import { BRAND_FULL, GAME_ID, abs } from '../lib/site';
 import { FACCOES } from '../data/jogo';
@@ -59,8 +60,8 @@ const mapData = { online: online.filter(o => o.lat && o.lon), cities: cities.fil
 ---
 <Layout
   title={`Mapa da treta ao vivo - quem está jogando agora | ${BRAND_FULL}`}
-  description={`Jogadores online agora e partidas por cidade no ${BRAND_FULL}. Localização aproximada, nível cidade - nenhum IP é exibido.`}
-  jsonld={[{ '@id': GAME_ID }, {
+  description={LIVE_MAP.description}
+  jsonld={[{ '@id': GAME_ID }, { '@type': 'FAQPage', '@id': abs('/mapa') + '#faq', mainEntity: LIVE_MAP.faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }, {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Início', item: abs('/') },
@@ -90,10 +91,10 @@ const mapData = { online: online.filter(o => o.lat && o.lon), cities: cities.fil
     .map-pop a{color:#b8d94a}
   </style>
   {configured && (
-    <div style="display:flex;gap:22px;flex-wrap:wrap;font-family:Consolas,monospace;font-size:14px;color:#c9bfa4;margin-bottom:10px">
-      <span><b style="color:var(--yellow);font-size:20px">{totals.players}</b> jogadores</span>
-      <span><b style="color:var(--yellow);font-size:20px">{totals.matches}</b> partidas</span>
-      <span><b style="color:var(--yellow);font-size:20px">{totals.kills}</b> kills</span>
+    <div class="tstat" aria-label="Histórico registrado">
+      <div><b>{totals.players}</b><span>jogadores registrados</span></div>
+      <div><b>{totals.matches}</b><span>partidas registradas</span></div>
+      <div><b>{totals.kills}</b><span>abates registrados</span></div>
     </div>
   )}
   {configured && (
@@ -115,13 +116,13 @@ const mapData = { online: online.filter(o => o.lat && o.lon), cities: cities.fil
         : 'O histórico por facção ainda está indisponível no banco; os números E/B acima são o legado do ranking.'}</p>
     </section>
   )}
-  <p><strong style="color:#7de08f">{online.length}</strong> jogadores online agora · em amarelo, o histórico total de partidas por cidade (localização aproximada, nível cidade - sem IP).</p>
+  <p>{configured ? <><strong style="color:var(--green)">{online.length}</strong> jogadores online agora · em amarelo, o histórico total de partidas por cidade.</> : 'Dados de presença indisponíveis neste ambiente.'}</p>
   {/* Presença nominal cobre somente jogadores registrados. */}
   <p style="font-size:12px;color:var(--bone-dim);margin-top:-6px">
     Conta só quem escolheu um nick - jogar sem nick não registra presença.
   </p>
   {!configured && <p>Mapa ainda não configurado.</p>}
-  <div id="map" style="height:520px;border-radius:10px;border:1px solid #3a3325;background:#10130c"></div>
+  <div id="map" style="height:520px;border:1px solid var(--line);background:var(--panel)"></div>
   <script src="/vendor/leaflet/leaflet.js" is:inline></script>
   <script is:inline define:vars={{ mapData }}>
     // Dados do banco precisam ser escapados antes de entrar no HTML do Leaflet.
@@ -157,6 +158,10 @@ const mapData = { online: online.filter(o => o.lat && o.lon), cities: cities.fil
       }).addTo(map).bindPopup(`<b>${esc(o.nick)}</b> online agora${o.city ? ' · ' + esc(o.city) : ''}`);
     }
   </script>
+  <section aria-labelledby="map-faq-title">
+    <h2 id="map-faq-title">Entenda o mapa ao vivo</h2>
+    {LIVE_MAP.faq.map(([q, a]) => <details><summary>{q}</summary><p>{a}</p></details>)}
+  </section>
 </Layout>
 
 <style>

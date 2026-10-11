@@ -15,7 +15,6 @@
 // nome certo. O domínio segue csbrasil.online: trocar domínio no dia do
 // release custa todo o histórico de indexação por zero ganho.
 
-import { MAPAS } from '../data/jogo';
 
 export const SITE = 'https://www.csbrasil.online';
 
@@ -30,9 +29,14 @@ export const DESC_SHORT =
   'com Esquerda, Direita e outras facções originais.';
 
 export const DESC_LONG =
-  'Jogo FPS gratuito de navegador: arena de sniper estilo praca_poderes do CS 1.6 numa Brasília ' +
-  'fictícia e satírica. Esquerda, Direita, Tribos Urbanas, Palhaços, Funkeiros e Mítico, ' +
-  `${MAPAS.length} mapas, 26 armas, bots, rounds, CTF, placar e rádio de voz. Beta web com controles de toque no celular; sem cadastro.`;
+  'Jogo FPS gratuito de navegador com sátira brasileira, facções originais, arenas, armas, bots, rounds e Capture the Flag. Multiplayer beta e controles de toque no celular; sem cadastro.';
+
+export const RANKING_DESCRIPTION_PT = import.meta.env.RANKING_ON === 'true'
+  ? 'O ranking soma a pontuação das partidas. Cada abate confirmado soma um ponto; abates multiplayer entre perfis distintos recebem um ponto extra. Consulte o ranking para ver os resultados.'
+  : 'O ranking global está indisponível por enquanto. Os stats de partida ficam salvos no seu navegador e aparecem no menu RANKING do jogo.';
+export const RANKING_DESCRIPTION_EN = import.meta.env.RANKING_ON === 'true'
+  ? 'The leaderboard adds up match scores. Each confirmed kill earns one point; multiplayer kills between distinct profiles earn one extra point. Check the leaderboard for results.'
+  : 'The global leaderboard is currently unavailable. Your match stats are saved in your browser and appear in the game’s LEADERBOARD menu.';
 
 // @id estável do nó VideoGame. É o que evita que o mesmo jogo apareça como
 // DUAS entidades quando index.astro e sobre.astro emitem JSON-LD cada um: com

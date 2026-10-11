@@ -3259,3 +3259,15 @@ html[data-ui="legacy"] #load-map{font-family:var(--font);font-weight:700}
 @media(prefers-reduced-motion:reduce){
   .chat-linha,.chat-divisor{animation:chat-some 12.6s step-end forwards;animation-duration:12.6s!important}
 }
+
+.hub-faq{max-width:960px;margin-top:24px}.hub-faq h3{font:700 18px/1.3 var(--font);color:#f3b958;margin-bottom:12px}.hub-faq details{padding:14px 18px;margin-bottom:8px;border:1px solid #34302b;background:#0d0e11ed}.hub-faq summary{cursor:pointer;font:700 18px/1.3 var(--font);color:#f0f0ed}.hub-faq summary::marker{color:#b4d92e}.hub-faq details p{margin-top:10px;font:400 18px/1.5 var(--font);color:#d3d3d1}
+
+/* Guias públicos consultados dentro da seção SOBRE O JOGO. */
+.hub-content-tabs{display:flex;gap:6px;overflow-x:auto;margin:16px 0 20px;border-bottom:1px solid #34302b;scrollbar-width:thin}
+.hub-content-tabs>[role="tab"]{flex:none;padding:11px 12px;border:0;background:#0d0e11c9;color:#bcbab6;font:700 15px/1 var(--font);letter-spacing:.5px;text-decoration:none;cursor:pointer}
+.hub-content-tabs>[aria-selected="true"]{color:#b4d92e;box-shadow:inset 0 -2px #b4d92e}
+.hub-content-tabs>[role="tab"]:focus-visible{outline:2px solid #b4d92e;outline-offset:-2px}
+.hub-about-content[hidden],#hub-about-overview[hidden],#hub-guide-frame[hidden]{display:none!important}
+#hub-guide-frame{display:block;border:0;width:100%;min-height:400px;background:transparent}
+.hub-guide-loading{color:#f3b958;font:14px var(--mono);padding:20px 0}
+@media(max-width:600px){.hub-content-tabs>[role="tab"]{padding:10px;font-size:13px}}

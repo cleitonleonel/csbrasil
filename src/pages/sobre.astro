@@ -14,7 +14,7 @@
 import Layout from '../layouts/Layout.astro';
 import pkg from '../../package.json';
 import { ARMAS, MAPAS, PERSONAGENS, FACCOES } from '../data/jogo';
-import { BRAND_FULL, BRAND_ALT, DESC_LONG, GAME_ID, abs } from '../lib/site';
+import { BRAND_FULL, BRAND_ALT, DESC_LONG, GAME_ID, abs, RANKING_DESCRIPTION_PT } from '../lib/site';
 
 const jsonld = [
   {
@@ -49,7 +49,7 @@ const jsonld = [
   <Fragment slot="sub">
     Esquerda × Direita numa Brasília fictícia e satírica: urna gigante quebrada no meio da
     arena, boteco, pastel, acampamento e o Congresso no horizonte. {PERSONAGENS.length} personagens
-    originais em {FACCOES.length} facções, {MAPAS.length} mapas, {ARMAS.length} armas, bots,
+    no catálogo de {FACCOES.length} grupos, {MAPAS.length} mapas, {ARMAS.length} armas, bots,
     rounds, CTF, headshots e multikills estilo Unreal Tournament.
   </Fragment>
 
@@ -79,10 +79,9 @@ const jsonld = [
 
   <div class="tstat" style="margin-top:26px">
     <div><b>{PERSONAGENS.length}</b><span>personagens</span></div>
-    <div><b>{FACCOES.length}</b><span>facções</span></div>
+    <div><b>{FACCOES.length}</b><span>grupos no catálogo</span></div>
     <div><b>{MAPAS.length}</b><span>mapas</span></div>
     <div><b>{ARMAS.length}</b><span>armas</span></div>
-    <div><b>0</b><span>pessoas reais</span></div>
   </div>
 
   <h2>O nome</h2>
@@ -95,7 +94,7 @@ const jsonld = [
   <h2>Perguntas frequentes</h2>
   <details open><summary><strong>O que é {BRAND_FULL}?</strong></summary>
     <p>Um jogo FPS gratuito que roda no navegador: arena de sniper estilo praca_poderes do CS 1.6,
-      ambientada numa Brasília fictícia e satírica, com {FACCOES.length} facções,{' '}
+      ambientada numa Brasília fictícia e satírica, com {FACCOES.length} grupos no catálogo,{' '}
       {PERSONAGENS.length} personagens originais, {MAPAS.length} mapas, {ARMAS.length} armas, bots,
       sistema de rounds e Capture the Flag.</p></details>
   <details><summary><strong>Preciso instalar ou pagar algo?</strong></summary>
@@ -105,8 +104,7 @@ const jsonld = [
     <p>Sim. O beta web tem controles de toque; jogue na horizontal. O desempenho varia conforme o
       aparelho e o navegador.</p></details>
   <details><summary><strong>Quais são as facções?</strong></summary>
-    <p>{FACCOES.map(f => f.nome).join(', ')}. Duas delas não têm nada de política. Todos os
-      personagens são arquétipos fictícios e originais, sem pessoas reais.</p></details>
+    <p>{FACCOES.map(f => f.nome).join(', ')}. O catálogo também tem grupos culturais e de folclore. O elenco mistura sátira brasileira, folclore e caricaturas políticas.</p></details>
   <details><summary><strong>É um jogo oficial da Valve ou do Counter-Strike?</strong></summary>
     <p>Não. É uma paródia independente feita por fãs, sem qualquer afiliação com a Valve.
       Counter-Strike é marca da Valve Corporation.</p></details>
@@ -114,14 +112,9 @@ const jsonld = [
     <p>Não. É sátira leve distribuída igualmente para todos os lados - sem gore, sem ódio,
       celebrando a cultura brasileira.</p></details>
   <details><summary><strong>Tem ranking global?</strong></summary>
-    <p>Ainda não. O jogo está em <strong>alpha</strong> e o ranking global está desligado até o
-      placar ser confiável - o modelo atual é forjável, e classificação forjável é número errado
-      publicado. Os seus stats de partida ficam salvos no navegador e aparecem no menu RANKING do
-      jogo. Quando voltar, cada jogador ganha de novo a página pública em{' '}
-      <code>/u/&lt;id&gt;/&lt;nick&gt;</code>, com badge PNG gerada na hora.</p></details>
+    <p>{RANKING_DESCRIPTION_PT}</p></details>
   <details><summary><strong>Dá pra jogar com outras pessoas?</strong></summary>
-    <p>Ainda não. Hoje todas as partidas são contra bots, de 1 a 8 por lado (4 contra 4 é o
-      padrão). O multiplayer é a próxima grande frente do projeto.</p></details>
+    <p>Sim. O multiplayer está em beta. Abra MULTIPLAYER para entrar por JOGO RÁPIDO, escolher uma sala ou usar um convite. Você também pode criar uma sala pública ou privada.</p></details>
 
   {/* LICENÇA: AGPL-3.0 desde 07/08/2026 (o degrau 3 do plans/08 rodou - LICENSE,
       README, CONTRIBUTING, llms.txt e JSON-LD trocaram no MESMO commit).
@@ -142,14 +135,3 @@ const jsonld = [
     <a href="https://github.com/corosolto/client/issues" rel="noopener"> issues</a>.
   </p>
 </Layout>
-
-<script>
-  // espelho do /about: usuário em EN cai na gêmea (mesmas regras do i18n.js)
-  try {
-    const q = new URLSearchParams(location.search).get('lang');
-    const ls = localStorage.getItem('cs_lang');
-    const lang = (q === 'pt' || q === 'en') ? q : (ls === 'pt' || ls === 'en') ? ls
-      : (/^pt/i.test(navigator.language || '') ? 'pt' : 'en');
-    if (lang === 'en') location.replace('/about');
-  } catch { /* fica */ }
-</script>

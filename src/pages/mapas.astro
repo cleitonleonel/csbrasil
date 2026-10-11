@@ -80,7 +80,7 @@ const jsonld = [
 
   {/* ARENA DE ABERTURA: imagem à esquerda, texto à direita - o enquadramento da
       tela de escolha de mapa do jogo. As outras entram na grade. */}
-  <article class="card wide">
+  <article class="card wide" id={destaque.id}>
     <div class="fig">
       <img src={preview(destaque.id)} width="640" height="640" alt={`Vista aérea da arena ${destaque.nome}`} loading="eager" decoding="async">
     </div>
@@ -88,7 +88,7 @@ const jsonld = [
       <h2 class="map-nome">{destaque.nome}</h2>
       <p class="meta">
         <b>4v4</b><i>·</i>{destaque.ctf ? 'CTF' : 'Rounds'}<i>·</i>
-        {destaque.ctf ? '4 bandeiras' : '1:39 por round'}<i>·</i><code>{destaque.id}</code>
+        {destaque.ctf ? 'captura de bandeiras' : '1:39 por round'}<i>·</i><code>{destaque.id}</code>
       </p>
       <p class="lead">{destaque.resumo}</p>
       <p>{destaque.detalhe}</p>
@@ -97,7 +97,7 @@ const jsonld = [
 
   <div class="grid cards">
     {resto.map(m => (
-      <article class="card">
+      <article class="card" id={m.id}>
         <div class="fig">
           <img src={preview(m.id)} width="640" height="640" alt={`Vista aérea da arena ${m.nome}`} loading="lazy" decoding="async">
 
@@ -106,7 +106,7 @@ const jsonld = [
           <h3 class="map-nome">{m.nome}</h3>
           <p class="meta">
             <b>4v4</b><i>·</i>{m.ctf ? 'CTF' : 'Rounds'}<i>·</i>
-            {m.ctf ? '4 bandeiras' : '1:39 por round'}<i>·</i><code>{m.id}</code>
+            {m.ctf ? 'captura de bandeiras' : '1:39 por round'}<i>·</i><code>{m.id}</code>
           </p>
           <p class="lead">{m.resumo}</p>
           <p>{m.detalhe}</p>
@@ -120,7 +120,7 @@ const jsonld = [
     <li><strong>Rounds:</strong> 4×4 por padrão (o menu vai de 1 a 8 por lado), com respawn de
       2,2 s. Round de 1:39; leva o round o time com mais abates quando o relógio zera; 3 rounds
       vencem a partida, e a 5ª rodada é o teto.</li>
-    <li><strong>Capture the Flag:</strong> quatro bandeiras espalhadas pela arena. A geometria
+    <li><strong>Capture the Flag:</strong> bandeiras espalhadas pela arena, com quantidade e posição próprias de cada mapa. A geometria
       de{' '}{CTF_NOMES.join(', ')} foi desenhada em volta delas - por isso essas {nCtf} abrem
       em CTF. Em CTF a rodada acaba por captura, não por relógio.</li>
     <li>O mapa é sorteado ou escolhido na tela de seleção, antes de começar.</li>
@@ -128,14 +128,3 @@ const jsonld = [
 
   <p style="margin-top:26px"><a class="btn-play" style="margin-left:0;display:inline-block" href="/">▶ Entrar na arena</a></p>
 </Layout>
-
-<script>
-  // espelho do /maps: usuário em EN cai na gêmea (mesmas regras do i18n.js)
-  try {
-    const q = new URLSearchParams(location.search).get('lang');
-    const ls = localStorage.getItem('cs_lang');
-    const lang = (q === 'pt' || q === 'en') ? q : (ls === 'pt' || ls === 'en') ? ls
-      : (/^pt/i.test(navigator.language || '') ? 'pt' : 'en');
-    if (lang === 'en') location.replace('/maps');
-  } catch { /* fica */ }
-</script>

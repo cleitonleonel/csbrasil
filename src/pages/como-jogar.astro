@@ -24,28 +24,28 @@
 // são CONTADOS de `MAPAS[].ctf` - digitar a divisão à mão é o que a quebrou.
 import Layout from '../layouts/Layout.astro';
 import { CONTROLES, MAPAS } from '../data/jogo';
-import { BRAND_FULL, GAME_ID, abs } from '../lib/site';
+import { BRAND_FULL, GAME_ID, abs, RANKING_DESCRIPTION_PT } from '../lib/site';
 import { FACTIONS } from '../../public/js/factions.js';
 
 const nCtf = MAPAS.filter(m => m.ctf).length;
 const nRounds = MAPAS.length - nCtf;
 const CTF_NOMES = MAPAS.filter(m => m.ctf).map(m => m.nome);
-const porExtenso = ['zero', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
+const porExtenso = (n: number) => String(n);
 const faccoesProntas = FACTIONS.filter((f) => f.ready);
 
 const PASSOS = [
   { nome: 'Abra o jogo no navegador',
     texto: 'Entre em www.csbrasil.online no Chrome, Edge, Firefox ou Safari. No computador, use mouse e teclado; no celular, jogue na horizontal com os controles de toque. O desempenho depende do aparelho e do navegador.' },
   { nome: 'Escolha um nick',
-    texto: 'O nick tem de 2 a 14 caracteres e fica salvo no navegador: é o nome que aparece no placar da partida e nos anúncios de abate. Não é obrigatório para jogar.' },
+    texto: 'O nick tem de 2 a 14 caracteres e fica salvo no navegador: é o nome que aparece no placar da partida e nos anúncios de abate. O menu pede esse apelido local antes de iniciar; isso não exige conta nem cadastro.' },
   { nome: 'Escolha a facção e o personagem',
-    texto: `${FACTIONS.length} facções no catálogo, com ${faccoesProntas.length} já jogáveis: ${faccoesProntas.map((f) => f.name).join(', ')}. Todos os personagens jogam sob a mesma base competitiva - a escolha é de estilo, não de vantagem.` },
+    texto: `${FACTIONS.length} facções no catálogo, com ${faccoesProntas.length} já jogáveis: ${faccoesProntas.map((f) => f.name).join(', ')}. Consulte o catálogo para conhecer os personagens e escolha o seu no menu.` },
   { nome: 'Escolha o mapa e o modo',
-    texto: `${porExtenso[MAPAS.length][0].toUpperCase()}${porExtenso[MAPAS.length].slice(1)} arenas: ${MAPAS.map(m => m.nome).join(', ')}. ${porExtenso[nRounds][0].toUpperCase()}${porExtenso[nRounds].slice(1)} abrem em rounds e ${porExtenso[nCtf]} em Capture the Flag, mas dá pra trocar o modo de qualquer mapa antes de começar. O tamanho dos times também é seu: de 1 contra 1 até 8 contra 8, com 4 contra 4 como padrão.` },
+    texto: `${porExtenso(MAPAS.length)} arenas: ${MAPAS.map(m => m.nome).join(', ')}. ${porExtenso(nRounds)} abrem em rounds e ${porExtenso(nCtf)} em Capture the Flag, mas dá pra trocar o modo de qualquer mapa antes de começar. O tamanho dos times também é seu: de 1 contra 1 até 8 contra 8, com 4 contra 4 como padrão.` },
   { nome: 'Mire, agache, atire',
     texto: 'WASD move, mouse mira, clique esquerdo atira e clique direito abre a luneta. Agachar com Ctrl (ou C) deixa a mira bem mais estável - é a diferença entre acertar e errar com a AWP sem luneta.' },
   { nome: 'Ganhe o round',
-    texto: 'Round de 1 minuto e 39 segundos; leva o round o time com mais abates quando o relógio zera. Três rounds vencem a partida, e a quinta rodada é o teto - se ninguém chegar a três, ganha quem tiver mais rounds.' },
+    texto: 'Round de 1 minuto e 39 segundos; leva o round o time com mais abates quando o relógio zera. No padrão mata-mata, três rounds vencem a partida e a quinta rodada é o teto; o menu permite escolher melhor de 1, 3, 5 ou 7; vence quem ganhar mais rounds.' },
 ];
 
 const MP_PASSOS = [
@@ -61,15 +61,15 @@ const FAQ: [string, string][] = [
   ['Quais são os controles?',
    'WASD move, mouse mira, clique esquerdo atira, clique direito abre a luneta, Ctrl (ou C) agacha e melhora a mira, Shift corre, Espaço pula, R recarrega, 1/2/3 trocam primária, pistola e faca, Z/X/V abrem os comandos de voz, M troca de time e Tab mostra o placar.'],
   ['Como funciona um round?',
-   'O padrão é 4 contra 4 - você e 3 bots aliados contra 4 bots inimigos - com respawn de 2,2 segundos. Cada round dura 1 minuto e 39 segundos e leva o round quem tiver mais abates no fim do relógio. Três rounds vencem a partida, com a quinta rodada como teto. No menu dá pra mudar o tamanho dos times de 1 a 8 por lado.'],
+   'O padrão é 4 contra 4 - você e 3 bots aliados contra 4 bots inimigos - com respawn de 2,2 segundos. Cada round dura 1 minuto e 39 segundos e leva o round quem tiver mais abates no fim do relógio. No padrão mata-mata, três rounds vencem a partida, com a quinta rodada como teto. O menu permite escolher melhor de 1, 3, 5 ou 7. No menu dá pra mudar o tamanho dos times de 1 a 8 por lado.'],
   ['Tem ranking global?',
-   'Ainda não. O jogo está em alpha e o ranking global está desligado até o placar ser confiável - publicar classificação que dá pra forjar seria publicar número errado. Os seus stats de partida ficam salvos no seu navegador e aparecem no menu RANKING do jogo.'],
+   RANKING_DESCRIPTION_PT],
   ['Funciona no celular?',
    'Sim. O beta web tem controles de toque; use o celular na horizontal. O desempenho varia conforme o aparelho e o navegador.'],
   ['Dá pra jogar com amigos?',
    'Sim. Abra MULTIPLAYER e entre por JOGO RÁPIDO, pela lista de salas ou por código/link de convite. Você também pode criar uma sala pública ou privada e convidar amigos.'],
   ['O jogo tem lado político?',
-   'Não. É sátira leve distribuída igualmente para todos os lados, sem gore e sem ódio, com personagens 100% fictícios. Tribos Urbanas, Funkeiros, Míticos e as novas facções culturais nem são lados políticos.'],
+   'Não. É sátira leve distribuída igualmente para todos os lados, sem gore e sem ódio, com arquétipos satíricos, folclore brasileiro e caricaturas de figuras políticas públicas. Tribos Urbanas, Funkeiros, Míticos e as novas facções culturais nem são lados políticos.'],
 ];
 
 const jsonld = [
@@ -164,13 +164,13 @@ const jsonld = [
     <li><strong>Formato:</strong> 4×4 por padrão - você mais 3 bots aliados contra 4 bots inimigos -
       com respawn de 2,2 s. No menu o time vai de 1 a 8 por lado.</li>
     <li><strong>Round:</strong> 1:39. Leva o round o time com mais abates quando o relógio zera;
-      3 rounds vencem a partida, e a 5ª rodada é o teto.</li>
-    <li><strong>Capture the Flag:</strong> quatro bandeiras. É o padrão em {CTF_NOMES.join(', ')}.
+      No padrão mata-mata, 3 rounds vencem a partida e a 5ª rodada é o teto; o menu permite melhor de 1, 3, 5 ou 7.</li>
+    <li><strong>Capture the Flag:</strong> bandeiras com quantidade e posição próprias de cada mapa. É o padrão em {CTF_NOMES.join(', ')}.
       Qualquer mapa aceita qualquer modo. Em CTF a rodada acaba por captura, não por relógio.</li>
     <li><strong>AWP:</strong> mata com um tiro em qualquer lugar do corpo. É a única arma do jogo com essa propriedade.</li>
     <li><strong>Multikill:</strong> 2 a 6+ kills seguidas disparam anúncio estilo Unreal Tournament; 5 kills sem morrer é <em>killing spree</em>.</li>
     <li><strong>Placar:</strong> os stats da partida ficam salvos no seu navegador e aparecem no menu
-      RANKING do jogo. O ranking global entre jogadores está desligado enquanto o jogo está em alpha.</li>
+      RANKING do jogo. {RANKING_DESCRIPTION_PT}</li>
   </ul>
 
   <h2>Dicas que mudam o resultado</h2>
@@ -195,14 +195,3 @@ const jsonld = [
     <a class="btn-cta btn-2" href="/mapas">Ver as arenas</a>
   </div>
 </Layout>
-
-<script>
-  // espelho do /how-to-play: usuário em EN cai na gêmea (mesmas regras do i18n.js)
-  try {
-    const q = new URLSearchParams(location.search).get('lang');
-    const ls = localStorage.getItem('cs_lang');
-    const lang = (q === 'pt' || q === 'en') ? q : (ls === 'pt' || ls === 'en') ? ls
-      : (/^pt/i.test(navigator.language || '') ? 'pt' : 'en');
-    if (lang === 'en') location.replace('/how-to-play');
-  } catch { /* fica */ }
-</script>

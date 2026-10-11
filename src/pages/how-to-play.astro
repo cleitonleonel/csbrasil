@@ -6,14 +6,13 @@
 // cada página manda pro par quando o idioma resolvido não bate (regras do i18n.js).
 import Layout from '../layouts/Layout.astro';
 import { CONTROLES, MAPAS } from '../data/jogo';
-import { BRAND_FULL, GAME_ID, abs } from '../lib/site';
+import { BRAND_FULL, GAME_ID, abs, RANKING_DESCRIPTION_EN } from '../lib/site';
 import { FACTIONS } from '../../public/js/factions.js';
 
 const nCtf = MAPAS.filter(m => m.ctf).length;
 const nRounds = MAPAS.length - nCtf;
 const CTF_NOMES = MAPAS.filter(m => m.ctf).map(m => m.nome);
-const porExtenso = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
-const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+const porExtenso = (n: number) => String(n);
 const faccoesProntas = FACTIONS.filter((f) => f.ready);
 
 // Nomes de mapa são marca própria (aparecem assim no menu do jogo): ficam em PT.
@@ -21,15 +20,15 @@ const PASSOS = [
   { nome: 'Open the game in a browser',
     texto: 'Go to www.csbrasil.online in Chrome, Edge, Firefox or Safari. On a phone, play in landscape with the on-screen touch controls. Performance depends on your device and browser.' },
   { nome: 'Pick a nick',
-    texto: 'The nick is 2 to 14 characters and stays saved in your browser: it’s the name shown on the match scoreboard and in kill announcements. Not required to play.' },
+    texto: 'The nick is 2 to 14 characters and stays saved in your browser: it’s the name shown on the match scoreboard and in kill announcements. The menu asks for this local nickname before starting; no account or registration is needed.' },
   { nome: 'Pick a faction and a character',
-    texto: `${FACTIONS.length} factions in the catalogue, ${faccoesProntas.length} already playable: ${faccoesProntas.map((f) => f.name).join(', ')}. Every character uses the same competitive base - your pick is style, not advantage.` },
+    texto: `${FACTIONS.length} factions in the catalogue, ${faccoesProntas.length} already playable: ${faccoesProntas.map((f) => f.name).join(', ')}. Check the character catalogue and choose your character in the menu.` },
   { nome: 'Pick the map and the mode',
-    texto: `${cap(porExtenso[MAPAS.length])} arenas: ${MAPAS.map(m => m.nome).join(', ')}. ${cap(porExtenso[nRounds])} open in rounds and ${porExtenso[nCtf]} in Capture the Flag, but you can switch any map’s mode before starting. Team size is yours too: from 1v1 up to 8v8, with 4v4 as the default.` },
+    texto: `${porExtenso(MAPAS.length)} arenas: ${MAPAS.map(m => m.nome).join(', ')}. ${porExtenso(nRounds)} open in rounds and ${porExtenso(nCtf)} in Capture the Flag, but you can switch any map’s mode before starting. Team size is yours too: from 1v1 up to 8v8, with 4v4 as the default.` },
   { nome: 'Aim, crouch, shoot',
     texto: 'WASD moves, the mouse aims, left click shoots and right click opens the scope. Crouching with Ctrl (or C) makes your aim much steadier - it’s the difference between hitting and missing with a no-scope AWP.' },
   { nome: 'Win the round',
-    texto: 'Rounds last 1 minute and 39 seconds; the team with more kills when the clock hits zero takes the round. Three rounds win the match, and the fifth round is the cap - if nobody reaches three, whoever has more rounds wins.' },
+    texto: 'Rounds last 1 minute and 39 seconds; the team with more kills when the clock hits zero takes the round. In the default deathmatch setup, three rounds win the match and the fifth round is the cap; the menu offers best of 1, 3, 5 or 7; the team with more rounds wins.' },
 ];
 
 const MP_STEPS = [
@@ -45,15 +44,15 @@ const FAQ: [string, string][] = [
   ['What are the controls?',
    'WASD moves, mouse aims, left click shoots, right click opens the scope, Ctrl (or C) crouches and steadies your aim, Shift runs, Space jumps, R reloads, 1/2/3 switch between primary, pistol and knife, Z/X/V open the voice commands, M switches teams and Tab shows the scoreboard.'],
   ['How does a round work?',
-   'The default is 4v4 - you and 3 allied bots against 4 enemy bots - with a 2.2-second respawn. Each round lasts 1 minute and 39 seconds, and the team with more kills when the clock ends takes it. Three rounds win the match, with the fifth round as the cap. In the menu you can change team size from 1 to 8 per side.'],
+   'The default is 4v4 - you and 3 allied bots against 4 enemy bots - with a 2.2-second respawn. Each round lasts 1 minute and 39 seconds, and the team with more kills when the clock ends takes it. In the default deathmatch setup, three rounds win the match, with the fifth round as the cap. The menu offers best of 1, 3, 5 or 7. In the menu you can change team size from 1 to 8 per side.'],
   ['Is there a global ranking?',
-   'Not yet. The game is in alpha and the global ranking is off until the scoreboard is trustworthy - publishing a leaderboard that can be forged would be publishing wrong numbers. Your match stats stay saved in your browser and show up in the game’s RANKING menu.'],
+   RANKING_DESCRIPTION_EN],
   ['Does it work on mobile?',
    'Yes. The web beta has touch controls; use your phone in landscape. Performance varies by device and browser.'],
   ['Can I play with friends?',
    'Yes. Open MULTIPLAYER and use QUICK PLAY, the room list, or an invite code or link. You can also create a public or private room and invite friends.'],
   ['Does the game take a political side?',
-   'No. It’s light satire distributed equally to all sides, with no gore and no hate, and 100% fictional characters. Urban Tribes, Funkeiros, Mythics and the new cultural factions are not political sides.'],
+   'No. It’s light satire distributed equally to all sides, with no gore and no hate, and satirical archetypes, Brazilian folklore and caricatures of public political figures. Urban Tribes, Funkeiros, Mythics and the new cultural factions are not political sides.'],
 ];
 
 // CONTROLES vem do dataset PT; aqui só a coluna "ação" é traduzida (a tecla é a mesma).
@@ -164,13 +163,13 @@ const jsonld = [
     <li><strong>Format:</strong> 4v4 by default - you plus 3 allied bots against 4 enemy bots -
       with a 2.2 s respawn. In the menu, team size goes from 1 to 8 per side.</li>
     <li><strong>Round:</strong> 1:39. The team with more kills when the clock hits zero takes the round;
-      3 rounds win the match, and the 5th round is the cap.</li>
-    <li><strong>Capture the Flag:</strong> four flags. It’s the default on {CTF_NOMES.join(', ')}.
+      In the default deathmatch setup, 3 rounds win the match and the 5th round is the cap; the menu offers best of 1, 3, 5 or 7.</li>
+    <li><strong>Capture the Flag:</strong> flag numbers and positions depend on each map. It’s the default on {CTF_NOMES.join(', ')}.
       Any map accepts any mode. In CTF the round ends by capture, not by the clock.</li>
     <li><strong>AWP:</strong> kills with one shot anywhere on the body. It’s the only weapon in the game with that property.</li>
     <li><strong>Multikill:</strong> 2 to 6+ kills in a row trigger Unreal Tournament-style announcements; 5 kills without dying is a <em>killing spree</em>.</li>
     <li><strong>Scoreboard:</strong> your match stats stay saved in your browser and show up in the game’s
-      RANKING menu. The global ranking between players is off while the game is in alpha.</li>
+      RANKING menu. {RANKING_DESCRIPTION_EN}</li>
   </ul>
 
   <h2>Tips that change the outcome</h2>
@@ -195,15 +194,3 @@ const jsonld = [
     <a class="btn-cta btn-2" href="/maps">See the arenas</a>
   </div>
 </Layout>
-
-<script>
-  // idioma resolvido = ?lang > localStorage > navigator (mesmas regras do i18n.js do jogo);
-  // quem chega aqui em pt vai pra /como-jogar (e o par faz o inverso).
-  try {
-    const q = new URLSearchParams(location.search).get('lang');
-    const ls = localStorage.getItem('cs_lang');
-    const lang = (q === 'pt' || q === 'en') ? q : (ls === 'pt' || ls === 'en') ? ls
-      : (/^pt/i.test(navigator.language || '') ? 'pt' : 'en');
-    if (lang === 'pt') location.replace('/como-jogar');
-  } catch { /* storage bloqueado: fica onde está */ }
-</script>
