@@ -2,7 +2,7 @@
 
 Objetivo completo: restaurar a UPA reestruturada, corrigir tiros bloqueados por caixas invisíveis e manter grafite integralmente sobre paredes, sem plantas, lonas, veículos ou pintura suspensa. A etapa atual corrige o cartão opaco do mural de Lajes, preserva fotos opacas e exige novo bake e inventário integral nos 18 mapas, em média e baixa. Revisão visual, gates geométricos e partida real são evidências distintas; não há autorização de merge/deploy.
 
-Branch: `codex/mapas-upa-tiros-grafites-20261011`. Checkpoint anterior de ferramentas: `7b8825d14`. Coordenação: root possui Córrego/mapprops e assets UPA; este agente possui graffiti_pass, Lajes, suas réguas e layouts gerados. Browser local Playwright autorizado e coordenado; Mint/Chrome CUA permanece com root.
+Branch: `codex/mapas-upa-tiros-grafites-20261011`. Checkpoint de material e gate: `115eb360b`; inventário e montagem Córrego: `7b8825d14`; Córrego/mapprops congelados no `c12f6416d`. Coordenação: root possui Córrego/mapprops e assets UPA; este agente possui graffiti_pass, Lajes, suas réguas e layouts gerados. Browser local Playwright autorizado e coordenado; Mint/Chrome CUA permanece com root.
 
 ## Baseline validado
 
@@ -20,6 +20,8 @@ Capturas antes/depois em `launch-media/2026-10-11-mapas/others-review/lajes-alph
 
 Helper aplicado nos dois caminhos. Gate real ficou verde: duas montagens pixo com transparent=true, alphaTest0.24, depthWrite=false; dois controles JPG com transparent=false, alphaTest0 e depthWrite=true. Mutante em memória desliga a decisão do helper e reproduz o cartão azul em ambos os caminhos. `graffiti-support-check.mjs --self-test` também terminou exit0, preservando seus controles de área e obstáculos.
 
-Seis capturas reais salvas, três antes e três depois, com zero pageerrors e textura real decodificada288×512. Receipts incluem parâmetros de material e hash da passada. O agente viu a frente3:2: antes havia cartão azul, depois os vazios mostram o mesmo tijolo e a tinta continua desenhada. Browser local fechado. Arte, geometria e fotos não foram editadas. Essa revisão técnica não é aprovação visual do usuário.
+Seis capturas reais salvas, três antes e três depois, com zero pageerrors e textura real decodificada288×512. Receipts incluem parâmetros de material e hash da passada. O agente viu frente3:2, oblíqua16:9 e baixa3:2: antes havia cartão azul, depois os vazios mostram o mesmo tijolo e a tinta continua desenhada. Browser local fechado. Arte, geometria e fotos não foram editadas. Essa revisão técnica não é aprovação visual do usuário.
 
 Próximo passo: checkpoint focado e freeze dos assets UPA/demais fontes, seguido do bake14 recuperável e auditoria18 med/low com detector ampliado. A mudança da passada invalida o fingerprint global; o layout atual ainda não pode ser chamado final. Auditoria expandida piloto anterior está REPROVADA por inventário assado ausente depois da exclusão de veículos; não relaxar contagens nem tratar como final.
+
+Plano executável de validação preparado em `launch-media/2026-10-11-mapas/others-review/final-validation-plan.json`:10etapas,18mapas nas duas qualidades,4mutantes de desenho em cada auditoria, gate Ferro sobre layout novo e quatro poses do Córrego acima dos beirais. As poses antigas devem ser reassociadas às peças reais do novo receipt, pois retirar pintura de veículos muda índices. A assinatura do receipt agora inclui o próprio auditor e o detector ampliado de arte.
