@@ -284,8 +284,8 @@ export function buildPoolDay(scene, T) {
       batch.renderOrder = first.renderOrder;
       batch.name = 'piscina:static-batch';
       batch.visible = first.visible;
-      // The batch name loses each member's exclusion by name/ancestor. Keep
-      // painting eligibility separately, without changing physical collision.
+      // O lote perde nomes e ancestrais dos membros; preserva a permissão de
+      // pintura separadamente, sem alterar a colisão física.
       batch.userData.graffitiSupportExcluded = !superficieGrafitavel(first);
       list.forEach((mesh, i) => {
         mesh.updateMatrix();
@@ -1118,8 +1118,8 @@ export function buildPoolDay(scene, T) {
      A passada acha parede por raio a partir dos waypoints e pinta o que achar, então
      armário, pilastra, bloco de partida e mureta entram sem ninguém escrever
      coordenada. Ver `public/js/graffiti_pass.js` pro porquê de ser assado. */
-  // Instance matrices are Float32 and may change exact seams by micrometers.
-  // Placement must validate the same triangles that remain in the final scene.
+  // Matrizes Float32 podem abrir microfrestas; pintura mede os triângulos
+  // que permanecem na cena após o agrupamento.
   batchStaticBoxes();
   grafitar({
     id: 'piscina_treta',
@@ -1160,8 +1160,8 @@ export function buildPoolDay(scene, T) {
     ],
   });
 
-  /* References retain the authored dimensions; graffiti has already measured
-     the final batched geometry used by rendering and hitscan. */
+  /* Referências guardam as dimensões autorais; grafite já mediu a geometria
+     final dos lotes usada pelo renderizador e pelos tiros. */
   root.userData.piscinaTrimContract = {
     layout: trimLayout,
     constructionMutant: trimConstructionMutant,
