@@ -25,3 +25,9 @@ Seis capturas reais salvas, três antes e três depois, com zero pageerrors e te
 Próximo passo: checkpoint focado e freeze dos assets UPA/demais fontes, seguido do bake14 recuperável e auditoria18 med/low com detector ampliado. A mudança da passada invalida o fingerprint global; o layout atual ainda não pode ser chamado final. Auditoria expandida piloto anterior está REPROVADA por inventário assado ausente depois da exclusão de veículos; não relaxar contagens nem tratar como final.
 
 Plano executável de validação preparado em `launch-media/2026-10-11-mapas/others-review/final-validation-plan.json`:10etapas,18mapas nas duas qualidades,4mutantes de desenho em cada auditoria, gate Ferro sobre layout novo e quatro poses do Córrego acima dos beirais. As poses antigas devem ser reassociadas às peças reais do novo receipt, pois retirar pintura de veículos muda índices. A assinatura do receipt agora inclui o próprio auditor e o detector ampliado de arte.
+
+## Piloto ampliado — não final
+
+Checkpoint de assinatura/continuidade `31ab2c6c2`. Rodadas locais Lajes med/low aprovaram32desenhos em cada uma, zero rejeições, zero peças assadas ausentes, cinco materiais artísticos inventoriados e zero sem classificação. Instrumentação de canvas ativa; quatro mutantes reais de drawRange/índices/material foram detectados em cada qualidade. Receipts preservados em `launch-media/2026-10-11-mapas/audit-lajes-alpha-pilot{,-low}/receipt.json`. Browser fechado após cada rodada.
+
+Nenhum layout público foi escrito ou reassinado. O root reiterou espera pelo freeze dos nove GLBs UPA, incluindo monitor em revisão, antes do bake global final. Estado atual: material Lajes validado e congelado; plano final preparado; próxima ação depende apenas dessa liberação de fonte pelo root, não de aprovação adicional do usuário.
