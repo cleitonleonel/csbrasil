@@ -106,7 +106,7 @@
     {
       "slug": "lula-cyborg",
       "name": "Lula Cyborg",
-      "status": "animation_requested",
+      "status": "six_animations_completed_download_pending",
       "references": [
         {
           "number": 2,
@@ -131,12 +131,21 @@
         "vertices": 3414,
         "fileSizeMint": "3.6 MB"
       },
-      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/lula-cyborg-model.jpg"
+      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/lula-cyborg-model.jpg",
+      "animationUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7cp5tsajbamw1p77wwk37dcd8g3816&panel=asset&assetId=p972pdktja57x75rez615askgd8g3m8v&animationBatchId=w571326wc09b5x9yx5e0q665m98g376h&animationClipId=w9707nv9nm24whf9wt4ss2fd0h8g2xvp",
+      "clips": [
+        "Idle",
+        "Casual Walk inplace",
+        "run fast 3 inplace",
+        "Regular Jump",
+        "Idle Turn Left",
+        "Idle Turn Right"
+      ]
     },
     {
       "slug": "bolsonaro-cyborg",
       "name": "Bolsonaro Cyborg",
-      "status": "animation_requested",
+      "status": "six_animations_completed_download_pending",
       "references": [
         {
           "number": 3,
@@ -155,12 +164,21 @@
         "vertices": 3384,
         "fileSizeMint": "3 MB"
       },
-      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/bolsonaro-cyborg-model.jpg"
+      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/bolsonaro-cyborg-model.jpg",
+      "animationUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph79wez5bpx9vpar3gc6tc4pxh8g2jhr&panel=asset&assetId=p970a04c3pr20txpch0nceseb98g3byj&animationBatchId=w57fv29zhmewek8xsak4ep7cbx8g2yre&animationClipId=w9790wxfacect9vbpsnapjmr798g3tdv",
+      "clips": [
+        "Idle",
+        "Casual Walk inplace",
+        "run fast 3 inplace",
+        "Regular Jump",
+        "Idle Turn Left",
+        "Idle Turn Right"
+      ]
     },
     {
       "slug": "aljuiz-toga-mandrake",
       "name": "Aljuiz da Toga Mandrake",
-      "status": "animation_requested",
+      "status": "six_animations_completed_download_pending",
       "references": [
         {
           "number": 5,
@@ -180,12 +198,21 @@
         "vertices": 6804,
         "fileSizeMint": "3.1 MB"
       },
-      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/aljuiz-toga-mandrake-model.jpg"
+      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/aljuiz-toga-mandrake-model.jpg",
+      "animationUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7fe84hgkqdrby8gqm7fbf9ph8g2vtg&panel=asset&assetId=p97f0w08n90bw0eya5qqrj897h8g22xq&animationBatchId=w578xk9whd16zfjvdqdrv9b2m98g3txk&animationClipId=w9767ekna1attnrez5enefhcmd8g31dw",
+      "clips": [
+        "Idle",
+        "Casual Walk inplace",
+        "run fast 3 inplace",
+        "Regular Jump",
+        "Idle Turn Left",
+        "Idle Turn Right"
+      ]
     },
     {
       "slug": "lula-mandrake",
       "name": "Lula Mandrake",
-      "status": "animation_requested",
+      "status": "six_animations_completed_download_pending",
       "references": [
         {
           "number": 6,
@@ -210,7 +237,16 @@
         "vertices": 6778,
         "fileSizeMint": "3.1 MB"
       },
-      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/lula-mandrake-model.jpg"
+      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/lula-mandrake-model.jpg",
+      "animationUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph76x0ezx1gf2777qvqwcjhy858g36hy&panel=asset&assetId=p97cw4hb2hp7bc204c8tfmfm8n8g29r5&animationBatchId=w5795pmvbe851frxgv345kpeyh8g3fcd&animationClipId=w97a1zgrs90cb5f3e8tb4q9g4n8g32cn",
+      "clips": [
+        "Idle",
+        "Casual Walk inplace",
+        "run fast 3 inplace",
+        "Regular Jump",
+        "Idle Turn Left",
+        "Idle Turn Right"
+      ]
     },
     {
       "slug": "bolsonaro-mandrake",
@@ -246,7 +282,7 @@
     {
       "slug": "michelle-mandrake",
       "name": "Michelle Bolsonaro Mandrake",
-      "status": "animation_requested",
+      "status": "six_animations_completed_download_pending",
       "references": [
         {
           "number": 7,
@@ -265,7 +301,16 @@
         "vertices": 7312,
         "fileSizeMint": "2.7 MB"
       },
-      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/michelle-mandrake-model.jpg"
+      "modelProofPath": "/Volumes/Zenith/Projects/game/corosolto/csbrasil/private-assets/treta-store/mint/batch2-cyborg-mandrake/models/michelle-mandrake-model.jpg",
+      "animationUrl": "https://mint.gg/project/zd782bweh7fqxhtyryrcg32ryx8g2zhc?chat=ph7f3w6kfaa8gwpyjkww5xf94n8g2g1p&panel=asset&assetId=p97exva6vgjfsm62xc907yh9th8g3y3r&animationBatchId=w572kav7b0xf2y5dxb6jmtqhz18g366f&animationClipId=w97ctfcf4d1y0gzjanpp84d1eh8g3rp5",
+      "clips": [
+        "Idle",
+        "Casual Walk inplace",
+        "run fast 3 inplace",
+        "Regular Jump",
+        "Idle Turn Left",
+        "Idle Turn Right"
+      ]
     },
     {
       "slug": "zero-um-mandrake",
@@ -298,5 +343,6 @@
     "plan": 3169,
     "usage": 11365,
     "note": "Observed after 8 previews; account total, not per-skin cost"
-  }
+  },
+  "downloadBlocker": "Chrome blocks automatic multiple downloads for mint.gg; permission question pending, no setting changed"
 }
