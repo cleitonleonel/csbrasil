@@ -5,8 +5,9 @@ import { decalIds } from './map_decals.js';
 import { grafitar } from './graffiti_pass.js';
 import { createFavelaAmbience } from './ambientlife.js';
 import { AMB_LOOPS } from './soundscape.js';
+import { hasProp, placeProp } from './mapprops.js';
 
-export const UPA_PROPS = [];
+export const UPA_PROPS = ['upa_maca', 'upa_monitor', 'upa_soro', 'upa_oxigenio', 'upa_biombo', 'upa_longarina', 'upa_cadeira_rodas', 'upa_armario', 'upa_balcao'];
 
 const HALF_X = 30, HALF_Z = 36, CEIL = 4.2, WH = 4.2, WT = 0.3, DH = 2.4;   // pé-direito 4,2 m; porta 2,4 m
 
@@ -93,15 +94,34 @@ export function buildUpa(scene, T) {
     return m;
   }
   const col = (x, z, hx, hz, h) => colliders.push({ minX: x - hx, maxX: x + hx, minY: 0, maxY: h, minZ: z - hz, maxZ: z + hz });
+  let clinicalIndex = 0;
+  const clinicalProp = (id, x, z, ry = 0, parent = root) => {
+    if (!hasProp(id)) return null;
+    const group = placeProp(id, { x, z, ry, targetH: 1 });
+    // Os GLBs clínicos já têm escala e pivô corrigidos offline (ficha 27).
+    group.scale.setScalar(1); group.position.set(x, 0, z);
+    group.name = `upa-prop-${id}-${++clinicalIndex}`;
+    group.userData.upaProp = { id, ry };
+    parent.add(group); root.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(group);
+    colliders.push({ minX: box.min.x, maxX: box.max.x, minY: box.min.y, maxY: box.max.y, minZ: box.min.z, maxZ: box.max.z, tag: group.name });
+    group.traverse(mesh => { if (mesh.isMesh) occluders.push(mesh); });
+    return group;
+  };
   let coverIndex = 0;
   const cover = (kind, x, z, mesh) => {
     const name = `upa-cover-${kind}-${++coverIndex}`;
+    const oldName = mesh?.name;
     if (mesh) mesh.name = name;
-    for (let i = colliders.length - 1; i >= 0; i--) {
-      const c = colliders[i];
-      if (x >= c.minX && x <= c.maxX && z >= c.minZ && z <= c.maxZ) { c.tag = name; break; }
+    const tags = [];
+    if (mesh?.userData.upaModules) tags.push(...mesh.userData.upaModules);
+    else {
+      for (let i = colliders.length - 1; i >= 0; i--) {
+        const c = colliders[i];
+        if ((oldName && c.tag === oldName) || (x >= c.minX && x <= c.maxX && z >= c.minZ && z <= c.maxZ)) { c.tag = name; tags.push(name); break; }
+      }
     }
-    upaClinicalCover.push({ kind, x, z, name });
+    upaClinicalCover.push({ kind, x, z, name, colliderTags: tags });
   };
   const signMesh = (w, h, tx2, x, y, z, ry) => {
     const g = new THREE.Group(); const geo = new THREE.PlaneGeometry(w, h);
@@ -170,21 +190,36 @@ export function buildUpa(scene, T) {
   label('FARMÁCIA', 3.3, -25, -Math.PI / 2, '#2f6fb0'); label('TRIAGEM', 3.3, 0, -Math.PI / 2, '#e0902a'); label('EMERGÊNCIA', 3.3, 25, -Math.PI / 2, '#c0392b');
 
   // móveis: todo helper sai com collider REAL — sem colisor, o corpo atravessa o móvel.
-  const maca = (x, z, ry = 0) => { const m = addBox(0.9, 0.7, 2.0, MAT.maca, x, 0.3, z, { ry }); addBox(0.7, 0.15, 0.5, lam({ color: 0xdfe6ec }), x, 1.0, z + Math.cos(ry) * -0.7, { collide: false, ry }); cover('maca', x, z, m); };
-  const soro = (x, z) => addBox(0.24, 1.5, 0.24, MAT.aco, x, 0, z);   // suporte de soro (poste)
+  const maca = (x, z, ry = 0) => { let m = clinicalProp('upa_maca', x, z, ry); if (!m) { m = addBox(0.9, 0.7, 2.0, MAT.maca, x, 0.3, z, { ry }); addBox(0.7, 0.15, 0.5, lam({ color: 0xdfe6ec }), x, 1.0, z + Math.cos(ry) * -0.7, { collide: false, ry }); } cover('maca', x, z, m); return m; };
+  const soro = (x, z) => clinicalProp('upa_soro', x, z) || addBox(0.24, 1.5, 0.24, MAT.aco, x, 0, z);
+  const soroAoLeito = (bed, x, z, side) => {
+    if (!bed.userData.upaProp || !hasProp('upa_soro')) return soro(x, z);
+    const template = placeProp('upa_soro', { targetH: 1 }); template.scale.setScalar(1);
+    const size = new THREE.Box3().setFromObject(template).getSize(new THREE.Vector3());
+    const bounds = new THREE.Box3().setFromObject(bed);
+    const group = soro(bounds.max.x + size.x / 2 - .02, side < 0 ? bounds.min.z - size.z / 2 + .02 : bounds.max.z + size.z / 2 - .02);
+    group.userData.upaBedside = bed.name;
+    return group;
+  };
   const mesa = (x, z, ry = 0) => { const m = addBox(1.4, 0.75, 0.8, MAT.mesa, x, 0, z, { ry }); const cx = x + Math.sin(ry) * 0.85, cz = z + Math.cos(ry) * 0.85; addBox(0.5, 0.9, 0.5, MAT.cadeira, cx, 0, cz); cover('mesa', x, z, m); };   // mesa + cadeira (cadeira colide)
-  const armario = (x, z, ry = 0) => { const m = addBox(1.2, 1.9, 0.6, MAT.armario, x, 0, z, { ry }); addBox(1.24, 0.5, 0.62, MAT.verde, x, 1.9, z, { collide: false, ry }); cover('armario-clinico', x, z, m); };
-  const biombo = (x, z, ry = 0) => { const m = addBox(0.12, 1.8, 2.2, MAT.armario, x, 0, z, { ry }); cover('biombo', x, z, m); };   // divisória/esconderijo
+  const armario = (x, z, ry = 0) => { let m = clinicalProp('upa_armario', x, z, ry); if (!m) { m = addBox(1.2, 1.9, 0.6, MAT.armario, x, 0, z, { ry }); addBox(1.24, 0.5, 0.62, MAT.verde, x, 1.9, z, { collide: false, ry }); } cover('armario-clinico', x, z, m); };
+  const biombo = (x, z, ry = 0) => { const m = clinicalProp('upa_biombo', x, z, ry) || addBox(0.12, 1.8, 2.2, MAT.armario, x, 0, z, { ry }); cover('biombo', x, z, m); };
   const planta = (x, z) => { addBox(0.5, 0.5, 0.5, MAT.armario, x, 0, z); addBox(0.85, 1.0, 0.85, MAT.verde, x, 0.5, z, { collide: false }); };
-  const banco = (x, z, ry = 0) => { const m = addBox(2.2, 0.5, 0.55, MAT.cadeira, x, 0, z, { ry }); cover('banco', x, z, m); };   // banco de espera (colide)
+  const banco = (x, z, ry = 0) => { const m = clinicalProp('upa_longarina', x, z, ry) || addBox(2.2, 0.5, 0.55, MAT.cadeira, x, 0, z, { ry }); cover('banco', x, z, m); };
   // fileira de cadeiras de espera: o col() da faixa é o bloqueador; os assentos são só visual
-  const cadeiras = (x, z, n, ry = 0) => { for (let i = 0; i < n; i++) { const dx = ry ? 0 : (i - (n - 1) / 2) * 0.7, dz = ry ? (i - (n - 1) / 2) * 0.7 : 0; addBox(0.55, 0.45, 0.55, MAT.cadeira, x + dx, 0.15, z + dz, { collide: false }); addBox(0.55, 0.6, 0.08, MAT.cadeira, x + dx, 0.65, z + dz - (ry ? 0 : 0.24), { collide: false, ry }); } col(x, z, ry ? 0.4 : n * 0.35, ry ? n * 0.35 : 0.4, 0.6); };
+  const cadeiras = (x, z, n, ry = 0) => { if (clinicalProp('upa_longarina', x, z, ry)) return; for (let i = 0; i < n; i++) { const dx = ry ? 0 : (i - (n - 1) / 2) * 0.7, dz = ry ? (i - (n - 1) / 2) * 0.7 : 0; addBox(0.55, 0.45, 0.55, MAT.cadeira, x + dx, 0.15, z + dz, { collide: false }); addBox(0.55, 0.6, 0.08, MAT.cadeira, x + dx, 0.65, z + dz - (ry ? 0 : 0.24), { collide: false, ry }); } col(x, z, ry ? 0.4 : n * 0.35, ry ? n * 0.35 : 0.4, 0.6); };
 
   const cyl = (r, h, mat, x, y, z, o = {}) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, o.seg || 16), mat); m.position.set(x, y + h / 2, z); if (o.rz) m.rotation.z = o.rz; if (o.rx) m.rotation.x = o.rx; m.castShadow = o.cast !== false; m.receiveShadow = true; root.add(m); occluders.push(m); return m; };
   const MTELA = lam({ color: 0x0d1722 }), GLOW_G = new THREE.MeshBasicMaterial({ color: 0x35e07a }), GLOW_R = new THREE.MeshBasicMaterial({ color: 0xff5555 }), MRODA = lam({ color: 0x15181c });
   const caster = (x, z, ry, w, d) => { for (const sx of [-1, 1]) for (const sz of [-1, 1]) addBox(0.1, 0.14, 0.1, MRODA, x + sx * w, 0, z + sz * d, { collide: false, ry, cast: false }); };
   // monitor de sinais vitais num carrinho (tela escura + traço de ECG verde)
-  const monitor = (x, z, ry = 0) => { addBox(0.42, 0.9, 0.42, MAT.aco, x, 0.14, z, { ry, name: 'upa-monitor' }); caster(x, z, ry, 0.16, 0.16); addBox(0.5, 0.42, 0.12, MTELA, x, 1.06, z, { collide: false, ry }); addBox(0.4, 0.04, 0.13, GLOW_G, x, 1.09, z, { collide: false, ry }); col(x, z, 0.24, 0.24, 1.3); };
+  const monitor = (x, z, ry = 0) => { const group = clinicalProp('upa_monitor', x, z, ry); if (group) return group; addBox(0.42, 0.9, 0.42, MAT.aco, x, 0.14, z, { ry, name: 'upa-monitor' }); caster(x, z, ry, 0.16, 0.16); addBox(0.5, 0.42, 0.12, MTELA, x, 1.06, z, { collide: false, ry }); addBox(0.4, 0.04, 0.13, GLOW_G, x, 1.09, z, { collide: false, ry }); col(x, z, 0.24, 0.24, 1.3); };
+  const monitorAoLeito = (bed, x, z) => {
+    if (!bed.userData.upaProp || !hasProp('upa_monitor')) return monitor(x, z);
+    const template = placeProp('upa_monitor', { targetH: 1 }); template.scale.setScalar(1);
+    const width = new THREE.Box3().setFromObject(template).getSize(new THREE.Vector3()).x;
+    return monitor(new THREE.Box3().setFromObject(bed).min.x - width / 2 + .02, z);
+  };
   // respirador/ventilador (gabinete alto + tela + traqueia)
   const respirador = (x, z, ry = 0) => { addBox(0.55, 1.2, 0.5, MAT.armario, x, 0.14, z, { ry }); caster(x, z, ry, 0.22, 0.18); addBox(0.46, 0.3, 0.1, MTELA, x, 1.42, z, { collide: false, ry }); addBox(0.36, 0.04, 0.11, GLOW_G, x, 1.45, z, { collide: false, ry }); cyl(0.04, 0.7, MRODA, x + 0.28, 0.9, z, { rz: 1.1, cast: false }); col(x, z, 0.3, 0.28, 1.6); };
   // carrinho de emergência vermelho (gavetas) com desfibrilador em cima
@@ -192,15 +227,25 @@ export function buildUpa(scene, T) {
   // desfibrilador de bancada / DEA na parede
   const desfib = (x, y, z, ry = 0) => { addBox(0.4, 0.5, 0.16, lam({ color: 0xe0b81a }), x, y, z, { collide: false, ry }); addBox(0.3, 0.04, 0.17, GLOW_R, x, y + 0.42, z, { collide: false, ry }); };
   // cadeira de rodas (rodas grandes de verdade)
-  const cadeiraRodas = (x, z, ry = 0) => { addBox(0.5, 0.12, 0.5, MAT.aco, x, 0.42, z, { collide: false, ry }); addBox(0.5, 0.55, 0.06, MAT.aco, x, 0.5, z + Math.cos(ry) * -0.22 + Math.sin(ry) * 0, { collide: false, ry }); for (const s of [-1, 1]) cyl(0.28, 0.05, MRODA, x + Math.cos(ry) * s * 0.3, 0.28, z + Math.sin(ry) * s * 0.3, { rz: Math.PI / 2 + (ry ? ry : 0), seg: 18, cast: false }); col(x, z, 0.34, 0.34, 0.9); };
+  const cadeiraRodas = (x, z, ry = 0) => { if (clinicalProp('upa_cadeira_rodas', x, z, ry)) return; addBox(0.5, 0.12, 0.5, MAT.aco, x, 0.42, z, { collide: false, ry }); addBox(0.5, 0.55, 0.06, MAT.aco, x, 0.5, z + Math.cos(ry) * -0.22 + Math.sin(ry) * 0, { collide: false, ry }); for (const s of [-1, 1]) cyl(0.28, 0.05, MRODA, x + Math.cos(ry) * s * 0.3, 0.28, z + Math.sin(ry) * s * 0.3, { rz: Math.PI / 2 + (ry ? ry : 0), seg: 18, cast: false }); col(x, z, 0.34, 0.34, 0.9); };
   // balança com coluna e display
   const balanca = (x, z) => { addBox(0.5, 0.12, 0.62, MAT.aco, x, 0, z); addBox(0.08, 1.05, 0.08, MAT.aco, x, 0.12, z - 0.26, { collide: false }); addBox(0.32, 0.2, 0.1, MTELA, x, 1.2, z - 0.26, { collide: false }); col(x, z, 0.28, 0.33, 0.9); };
   // cilindro de oxigênio verde no carrinho
-  const cilindroO2 = (x, z) => { addBox(0.42, 0.1, 0.42, MAT.aco, x, 0, z, { collide: false }); cyl(0.14, 0.95, MAT.verde, x, 0.1, z); addBox(0.12, 0.16, 0.12, MAT.aco, x, 1.05, z, { collide: false }); col(x, z, 0.2, 0.2, 1.1); };
+  const cilindroO2 = (x, z) => { if (clinicalProp('upa_oxigenio', x, z)) return; addBox(0.42, 0.1, 0.42, MAT.aco, x, 0, z, { collide: false }); cyl(0.14, 0.95, MAT.verde, x, 0.1, z); addBox(0.12, 0.16, 0.12, MAT.aco, x, 1.05, z, { collide: false }); col(x, z, 0.2, 0.2, 1.1); };
   // negatoscópio (visor de raio-x aceso na parede)
   const negato = (x, y, z, ry = 0) => addBox(0.95, 0.72, 0.06, LUZ, x, y, z, { collide: false, ry });
 
-  const balcaoRecepcao = addBox(6, 1.1, 1.0, MAT.armario, -18, 0, -17, { name: 'upa-clinical-recepcao' }); addBox(6.2, 0.1, 1.1, MAT.mesa, -18, 1.1, -17, { collide: false }); cover('balcao-recepcao', -18, -17, balcaoRecepcao);
+  const balcao = (x, z, modules, w, h, d) => {
+    if (!hasProp('upa_balcao')) return addBox(w, h, d, MAT.armario, x, 0, z);
+    if (modules === 1) return clinicalProp('upa_balcao', x, z);
+    const template = placeProp('upa_balcao', { targetH: 1 }); template.scale.setScalar(1);
+    const width = new THREE.Box3().setFromObject(template).getSize(new THREE.Vector3()).x;
+    const group = new THREE.Group(); group.position.set(x, 0, z); root.add(group);
+    group.userData.upaModules = [];
+    for (let i = 0; i < modules; i++) group.userData.upaModules.push(clinicalProp('upa_balcao', (i - (modules - 1) / 2) * width, 0, 0, group).name);
+    return group;
+  };
+  const balcaoRecepcao = balcao(-18, -17, 2, 6, 1.1, 1); if (!hasProp('upa_balcao')) addBox(6.2, 0.1, 1.1, MAT.mesa, -18, 1.1, -17, { collide: false }); cover('balcao-recepcao', -18, -17, balcaoRecepcao);
   monitor(-15, -17);
   cadeiras(-24, -23, 4); cadeiras(-24, -20, 4);                                        // espera oeste (encostada na parede)
   banco(-9, -24); banco(-9, -21);                                                      // bancos perto da porta do corredor
@@ -212,13 +257,13 @@ export function buildUpa(scene, T) {
   for (const cz of [-7, 7]) { maca(-25, cz, 0); soro(-23, cz + 1); mesa(-9, cz, Math.PI); armario(-27, cz + 5); biombo(-16, cz); monitor(-22.5, cz); negato(-29.3, 2.1, cz, Math.PI / 2); }
   balanca(-12, -11); cadeiraRodas(-12, 11, Math.PI); planta(-6, 0);
 
-  for (const mx of [-26, -20, -14, -8]) { maca(mx, 22, 0); soro(mx + 1.0, 20.6); }
-  for (const mx of [-26, -18, -10]) { maca(mx, 30, Math.PI); soro(mx + 1.0, 31.6); }
+  for (const mx of [-26, -20, -14, -8]) soroAoLeito(maca(mx, 22, 0), mx + 1, 20.6, -1);
+  for (const mx of [-26, -18, -10]) soroAoLeito(maca(mx, 30, Math.PI), mx + 1, 31.6, 1);
   monitor(-23, 22); monitor(-11, 22); cilindroO2(-28, 26); cilindroO2(-6, 20); negato(-29.3, 2.1, 26, Math.PI / 2);
-  armario(-28, 33); biombo(-4.6, 26); planta(-28, 17);
+  armario(-28, 33); biombo(hasProp('upa_biombo') ? -4.05 : -4.6, 26); planta(-28, 17);
 
   for (const gz of [-32, -28, -24, -20]) { armario(11, gz, Math.PI / 2); armario(22, gz, Math.PI / 2); }
-  addBox(5, 1.1, 1.0, MAT.armario, 16, 0, -16); signMesh(3.2, 0.7, signTex('#2f6fb0', '#fff', 'DISPENSA CLÍNICA', '', 640, 150), 16, 2.0, -15.4, 0);
+  balcao(16, -16, 2, 5, 1.1, 1); signMesh(3.2, 0.7, signTex('#2f6fb0', '#fff', 'DISPENSA CLÍNICA', '', 640, 150), 16, 2.0, -15.4, 0);
   cilindroO2(28, -18); cilindroO2(6, -14); planta(6, -33); planta(28, -33);
 
   mesa(10, -9, Math.PI); armario(27, -11); biombo(6, -9);   // triagem
@@ -226,15 +271,15 @@ export function buildUpa(scene, T) {
   addBox(2.0, 2.4, 1.4, MAT.armario, 24, 0, 8); addBox(1.4, 2.0, 0.9, MAT.aco, 22.2, 0, 8, { collide: false }); maca(16, 8, Math.PI / 2);   // raio-x
   negato(29.3, 2.1, 8, -Math.PI / 2); respirador(8, 11); biombo(19, 10); label('RAIO-X', 12, 12, -Math.PI / 2, '#e0902a'); planta(6, 8);
 
-  for (const mx of [8, 14, 20]) { maca(mx, 22, 0); soro(mx + 1.0, 20.6); monitor(mx - 0.65, 22); }   // macas + monitores de sinais vitais
+  for (const mx of [8, 14, 20]) { const bed = maca(mx, 22, 0); soroAoLeito(bed, mx + 1, 20.6, -1); monitorAoLeito(bed, mx - .65, 22); }
   crashCart(24, 22); respirador(4.6, 20); desfib(29.2, 1.7, 22, -Math.PI / 2);
-  const bancadaEmergencia = addBox(4, 1.0, 1.5, MAT.armario, 27, 0, 18, { name: 'upa-clinical-emergencia' }); cover('bancada-emergencia', 27, 18, bancadaEmergencia); biombo(7, 26); armario(26, 16);
+  const bancadaEmergencia = balcao(27, 18, 1, 4, 1, 1.5); cover('bancada-emergencia', 27, 18, bancadaEmergencia); biombo(7, 26); armario(26, 16);
   cadeiraRodas(8, 27, 0);
   planta(6, 33); planta(28, 33);
 
   // Duas ilhas baixas quebram a visada do hall sem bloquear o fluxo dos quatro spawns.
-  const ilhaObservacao = addBox(1.8, 1.05, 0.8, MAT.armario, -7, 0, -19, { name: 'upa-clinical-observacao' }); cover('ilha-enfermagem', -7, -19, ilhaObservacao);
-  const ilhaTriagem = addBox(1.8, 1.05, 0.8, MAT.armario, 7, 0, -19, { name: 'upa-clinical-triagem' }); cover('ilha-enfermagem', 7, -19, ilhaTriagem);
+  const ilhaObservacao = balcao(-7, -19, 1, 1.8, 1.05, .8); cover('ilha-enfermagem', -7, -19, ilhaObservacao);
+  const ilhaTriagem = balcao(7, -19, 1, 1.8, 1.05, .8); cover('ilha-enfermagem', 7, -19, ilhaTriagem);
   signMesh(3.4, 1.0, signTex('#c0392b', '#fff', 'CADÊ O MÉDICO?', '', 512, 200), 14, 2.6, wZ - 0.5, Math.PI);
 
   for (const cz of [-20, -8, 8, 20]) { maca(cz % 16 ? -2.6 : 2.6, cz, 0); banco(cz % 16 ? 2.6 : -2.6, cz + 3, Math.PI / 2); }
