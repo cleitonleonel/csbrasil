@@ -562,6 +562,13 @@ export function pintarParedes(opts) {
    Devolve o mesmo relatório da passada viva, pra régua não precisar saber qual dos
    dois caminhos rodou.
    ============================================================================ */
+function materialMural(nome, map) {
+  return new THREE.MeshLambertMaterial({
+    map, polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -5,
+    ...(nome === 'pixo-lajes-01.png' ? { transparent: true, alphaTest: 0.24, depthWrite: false } : {}),
+  });
+}
+
 export function aplicarGrafite(root, T, layout, muraisTex) {
   if (!root || !T || !layout || !T.decalFiles) return { pecas: 0, murais: 0 };
   const suporte = criarSuporteGrafite(root, gradeEspacial);
@@ -602,9 +609,7 @@ export function aplicarGrafite(root, T, layout, muraisTex) {
     if (!suporte(nominal) || !drawn || !suporte(drawn)) continue;
     const t = muraisTex && muraisTex[nome];
     if (!t) continue;
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshLambertMaterial({
-      map: t, polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -5,
-    }));
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), materialMural(nome, t));
     m.position.set(x, y, z); m.rotation.y = ry;
     m.renderOrder = 2; m.receiveShadow = true;
     m.name = 'mural:' + nome;
@@ -806,9 +811,7 @@ export function pendurarMurais(opts) {
     const quad = quantizarGrafite({ x: px, y: yc, z: pz, ry: c.A.ry, w, h }, suporte, true);
     if (!quad) continue;
     const i = feitos.length;
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(quad.w, quad.h), new THREE.MeshLambertMaterial({
-      map: texturas[i], polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -5,
-    }));
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(quad.w, quad.h), materialMural(nomes[i], texturas[i]));
     mesh.position.set(quad.x, quad.y, quad.z); mesh.rotation.y = quad.ry;
     mesh.renderOrder = 2; mesh.receiveShadow = true;
     mesh.name = 'mural:' + (nomes[i] || ('homenagem-' + i));
