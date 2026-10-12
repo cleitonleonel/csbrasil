@@ -170,3 +170,14 @@ com borda interna3px e Tab real confirmado. Capturas/review no ledger privado.
 Contato Gmail mantido até encaminhamento desejado ser ativado e verificado.
 Alias preparado no Cloudflare, sem ativação ou envio; confirmação de acesso
 pendente. Gates legais e de publicação anteriores continuam; nenhum deploy/merge.
+
+### Contato oficial recebido e ajuste editorial — 2026-10-12
+
+Titular confirmou ativação Cloudflare. Alias fale@corosolto.com.br -> Gmail do
+projeto salvo Active, destino verificado por email, catch-all Disabled. DNS
+apex3MX+SPF conferidos, MX Resend send.auth preservado. Teste único chegou ao
+Gmail: inicialmente Spam, marcado legítimo e movido para Inbox. Prova de entrega
+não garante classificação de todos os remetentes futuros. Contact legal.ts agora
+fale@corosolto.com.br. Tag CORO SOLTO / DOCUMENTOS removida por pedido do titular,
+inclusive CSS sem uso. Ambas rotas locais conferidas; sem publicação/deploy.
+Evidências e continuidade integral no ledger privado growth-readiness.
