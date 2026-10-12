@@ -416,3 +416,8 @@ interseções. Estampas/cores podem reutilizar malha; mudança de corte exige
 peça3D. Não tratar roupas fundidas nas13skins como peças removíveis prontas.
 Próximo da frente itens: uma família de corpo e um conjunto modular completo,
 testado correndo/agachando/saltando antes de ampliar compatibilidade.
+
+Checkpoint a167e10b7: categorias incluídas. Sintaxe e docs verdes; listas
+desktop1200x800/mobile390x844 conferidas no Astro real com conta de fixture
+(só apresentação, sem DB/compra). Capturas clothing-categories-*.png e log
+/tmp/treta-clothing-preview.log. Não prova peças3D nem equipamento modular.
