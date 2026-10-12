@@ -72,6 +72,16 @@ frame?.addEventListener('load', () => {
     const link = event.target.closest?.('a[href]');
     if (!link || link.target === '_blank' || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const url = new URL(link.href);
+    const current = new URL(frame.contentWindow.location.href);
+    if (url.hash && url.pathname === current.pathname && url.origin === current.origin) {
+      const target = doc.getElementById(decodeURIComponent(url.hash.slice(1)));
+      if (target) {
+        event.preventDefault();
+        const top = window.scrollY + frame.getBoundingClientRect().top + target.getBoundingClientRect().top;
+        window.scrollTo({ top: Math.max(0, top - 16), behavior: 'smooth' });
+        return;
+      }
+    }
     if (url.origin !== location.origin) {
       link.target = '_blank';
       link.rel = 'noopener noreferrer';

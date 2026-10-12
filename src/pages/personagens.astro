@@ -118,7 +118,7 @@ const jsonld = [
       <div class="grid roster">
         {g.elenco.map(p => (
           <article class="pcard">
-            {p.id && <img class="pfoto" src={`/img/chars/${p.faccao === 'mitico' ? 'avatars/' : ''}${p.id}.webp`} width="180" height="231"
+            {p.id && <img class="pfoto" src={`/img/chars/avatars/${p.id}.webp`} width="256" height="256"
               loading="lazy" decoding="async" alt={`${p.nome} - personagem do ${BRAND_FULL}`} />}
             <strong>{p.nome}</strong>
             <p>{p.blurb}</p>
@@ -183,7 +183,7 @@ const jsonld = [
     .grid.roster{grid-template-columns:1fr}
   }
   .pcard{text-align:center}
-  .pfoto{width:100%;max-width:180px;aspect-ratio:7/9;object-fit:cover;object-position:top;
+  .pfoto{width:100%;height:auto;max-width:180px;aspect-ratio:1;object-fit:cover;object-position:center;
     border-radius:6px;border:1px solid var(--line-2,#333);margin:0 auto 8px;display:block;
     background:#1c1a20}
 </style>

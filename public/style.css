@@ -3271,3 +3271,13 @@ html[data-ui="legacy"] #load-map{font-family:var(--font);font-weight:700}
 #hub-guide-frame{display:block;border:0;width:100%;min-height:400px;background:transparent}
 .hub-guide-loading{color:#f3b958;font:14px var(--mono);padding:20px 0}
 @media(max-width:600px){.hub-content-tabs>[role="tab"]{padding:10px;font-size:13px}}
+
+/* Guias acompanham a rolagem do documento; o jogo mantém seu viewport fixo. */
+html[data-home-ui="hub"]:has(#main-menu[data-hub-tab="sobre"]:not(.hidden)),
+html[data-home-ui="hub"]:has(#main-menu[data-hub-tab="sobre"]:not(.hidden)) body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
+html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"]{position:relative;inset:auto;display:block;min-height:100dvh}
+html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] .hub-ui{position:relative;inset:auto;display:flex;flex-direction:column;min-height:100dvh;width:100%}
+html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] .hub-header{position:relative;inset:auto;padding-inline:clamp(14px,2vw,32px)}
+html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] #hub-about{position:relative;inset:auto;flex:1;width:100%;max-width:none;overflow:visible;padding:24px clamp(14px,2vw,32px) 44px}
+html[data-home-ui="hub"] #hub-about .hub-faq{max-width:none}
+html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] .hub-footer{position:relative;inset:auto;margin-top:auto;padding-inline:clamp(14px,2vw,32px)}
