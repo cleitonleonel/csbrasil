@@ -14,6 +14,10 @@ const MIGRADAS = new Set([
   'submit-match', 'telemetry', 'train-frames',
 ]);
 
+/* social/social-auth/social-avatar dependem do rollout do backend#70; enquanto ele não
+   chega, o 404 upstream é indisponibilidade (503), não rota do site quebrada. */
+const EM_ROLLOUT = ['social', 'social-auth', 'social-avatar'];
+
 const handler: APIRoute = async ({ params, url, request, clientAddress }) => {
   const rota = String(params.rota || '').replace(/\/+$/, '');
   if (!MIGRADAS.has(rota)) {
@@ -21,13 +25,20 @@ const handler: APIRoute = async ({ params, url, request, clientAddress }) => {
       status: 404, headers: { 'content-type': 'application/json' },
     });
   }
-  return proxyApiRequest(
+  const resposta = await proxyApiRequest(
     request,
     `${BACKEND.replace(/\/$/, '')}/api/${rota}${url.search}`,
     clientAddress,
     fetch,
     { segredo: SEGREDO, session: ['social','social-auth','social-avatar','register','avatar','mp-ticket'].includes(rota) },
   );
+  if (resposta.status === 404 && EM_ROLLOUT.includes(rota)) {
+    await resposta.body?.cancel().catch(() => {});
+    return new Response(JSON.stringify({ error: 'upstream_unavailable' }), {
+      status: 503, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
+    });
+  }
+  return resposta;
 };
 
 export const GET = handler;
