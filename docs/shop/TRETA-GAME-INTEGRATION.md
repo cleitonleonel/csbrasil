@@ -24,6 +24,9 @@ Bonés/óculos separados são viáveis por encaixe no osso Head. Bonés fundidos
 precisam de variante sem boné. Correntes precisam encaixe no torso. Para armas,
 começar por acabamentos cosméticos sem mudar dano, recuo, ADS ou animação.
 Itens futuros ainda sem assets ou preços; faixa de skins de personagem800T$.
+Categorias de roupas pedidas: camisetas, calças, bermudas e tênis. As quatro
+já aparecem nas propostas de acessórios; calça/bermuda compartilham um slot,
+tênis são um par, e peças exigem encaixe por corpo e ocultação da roupa base.
 
 UI desktop e tela móvel simulada:34capturas sem erros. Mutantes UI3/3,
 recompensas3/3, skins2/2 e moeda2/2 detectados. Build e verificações de

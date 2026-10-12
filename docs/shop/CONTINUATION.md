@@ -405,3 +405,14 @@ Client:4be68deb2 (13GLBs+manifest),420453be5 (posters/Saci),e0dac2956
 (runtime/equipamento/UI),41586b5ba (pipeline/réguas/API→SP/MP).
 Backend:3fe9f52 (migration049 fechada; arquivo local, não aplicada remoto).
 Docs/checkpoint subsequente registra validações finais. Não refazer Mint.
+
+## Extensão do catálogo: roupas e tênis
+
+Dono acrescentou camisetas, calças/bermudas e tênis. As quatro categorias
+entraram na aba de acessórios como propostas sem venda/asset/preço ativo.
+Contrato futuro: camiseta no torso, calça OU bermuda no mesmo slot inferior,
+tênis como par; rig/encaixe por corpo e ocultação da roupa base para impedir
+interseções. Estampas/cores podem reutilizar malha; mudança de corte exige
+peça3D. Não tratar roupas fundidas nas13skins como peças removíveis prontas.
+Próximo da frente itens: uma família de corpo e um conjunto modular completo,
+testado correndo/agachando/saltando antes de ampliar compatibilidade.
