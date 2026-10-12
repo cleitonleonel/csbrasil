@@ -9,7 +9,7 @@ const mutants = [
   'sem-install', 'sem-patch', 'tri-flat', 'lam-flat',
   'urna-color', 'urna-clearcoat', 'urna-anisotropy', 'urna-instancing', 'urna-segunda',
   'sombra-extra', 'sombra-condicional', 'sombra-pontual', 'sombra-reativada', 'spot-map',
-  'cache-antigo', 'cache-omitido', 'cache-constante', 'cache-podado', 'cache-entry-site',
+  'cache-antigo', 'cache-omitido', 'cache-constante', 'cache-podado', 'cache-entry-site', 'cache-layout-site',
 ];
 if (mutant && !mutants.includes(mutant)) {
   throw new Error(`mutante desconhecido: ${mutant}`);
@@ -172,6 +172,7 @@ if (mutant === 'spot-map') {
   );
   if (brasilia === before) throw new Error('MUTANTE NAO APLICOU: spot-map');
 }
+if (mutant === 'cache-layout-site') layoutPage += '\n<script type="module" src="/js/site-bg.js"></script>';
 if (mutant === 'cache-antigo') {
   indexPage = indexPage.replaceAll('?v=${V}-${JS_REV}', '?v=${V}');
   layoutPage = layoutPage.replaceAll('?v=${V}-${JS_REV}', '?v=${V}');
@@ -366,7 +367,7 @@ const publishedGraphComplete = cachedModules.length === expectedPublishedModules
   && expectedPublishedModules.every((module, index) => cachedModules[index] === module);
 const moduleCache = buildCacheContract
   && injectedCacheContract(indexPage)
-  && injectedCacheContract(layoutPage)
+  && (!/\/js\/|__MANIFESTO_JS__/.test(layoutPage) || injectedCacheContract(layoutPage))
   && evalCacheContract
   && [...reachableModules].every((module) => cachedModules.includes(module))
   && publishedModulesOnly
@@ -411,6 +412,7 @@ const mutantClause = {
   'cache-constante': 'SB7',
   'cache-podado': 'SB7',
   'cache-entry-site': 'SB7',
+  'cache-layout-site': 'SB7',
 };
 if (mutant && !failed.some(([id]) => id === mutantClause[mutant])) {
   failed.push(['MUT', false, `mutação ${mutant} não acendeu ${mutantClause[mutant]}`]);
