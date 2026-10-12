@@ -186,3 +186,23 @@ masters PNG ficam fora do Git. `check:fast` amplo em execução. `npm run check`
 não existe no package atual. Índice ARCH regenerado para a alteração prévia em
 main.js (4411 linhas/333 símbolos), e arch:check passou. Próximo passo: concluir
 checks amplos, registrar limitações, publicar branch e abrir/anexar draft.
+
+
+### Checks para o draft
+
+Checkpoint da revisão: `7162b5490`. `check:fast` terminou em 412 s com 172/186
+passos verdes. ARCH foi regenerado e seu check isolado passou. As 13 falhas
+restantes foram reproduzidas em checkout temporário limpo da base `261cf59a7`
+(0/13 verdes, 21,8 s): mapid; audio:check; grafite; eval:grafite; eval:grafite:ar;
+eval:grafite-editorial; eval:audiofablocal; eval:audiovoicemix; eval:grafitelayout;
+changelog:check; eval:lajes-identidade; eval:amazonia; eval:mansao. Envolvem
+referências de mapas/grafite já presentes na base, perfis e regras de áudio,
+áudio privado ausente no worktree, contagem de PRs da versão atual, geometria de
+Lajes e fixtures/props de Amazônia/Mansão. Não foram ampliadas correções para
+essas frentes. Logs e comparação estão em `style-revision-2026-10-12/evidence/`.
+
+A execução ampla alterou só o timestamp de `tools/eval/pickup_check.json`;
+saída preservada fora do Git e arquivo restaurado. Build passou; ficha específica,
+manifesto, lote19, variantes37, docs e arch passaram. Estado visual completo e
+aprovado; merge/deploy continuam pendentes. Próximo passo: push com hook padrão,
+abrir draft (sem duplicata), anexar artefato e registrar URL.
