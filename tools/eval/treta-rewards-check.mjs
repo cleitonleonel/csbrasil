@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {spawnSync} from 'node:child_process';
+import {TRETA_COIN_ART} from '../../public/js/treta-catalog.js';
 if(process.argv.includes('--mutations')){for(const id of ['dedup','balance','modal']){const r=spawnSync(process.execPath,[new URL(import.meta.url).pathname,'--mutant='+id],{encoding:'utf8'});assert.notEqual(r.status,0,`surviving mutation: ${id}`);}console.log('PASS: 3/3 reward mutations detected');process.exit(0);}
 const elements=new Map(),timers=[],storage=new Map();let blocked=true;
 class Node{constructor(){this.hidden=true;this.textContent='';this.children=[];}setAttribute(){}append(child){this.children.push(child);}replaceChildren(){this.children=[];}remove(){}}
 const get=id=>{if(!elements.has(id))elements.set(id,new Node());return elements.get(id);};
 const document={body:new Node(),hidden:false,getElementById:id=>id==='boot-splash'?null:get(id),createElement:()=>new Node(),querySelector:()=>blocked?{}:null};
-const context={document,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},setInterval:fn=>{timers.push(fn);return 1;},setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout:()=>{},Intl,Set,Number,console};
-let source=fs.readFileSync(new URL('../../public/js/treta-rewards.js',import.meta.url),'utf8').replaceAll('export function','function');
+const context={TRETA_COIN_ART,document,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},setInterval:fn=>{timers.push(fn);return 1;},setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout:()=>{},Intl,Set,Number,console};
+let source=fs.readFileSync(new URL('../../public/js/treta-rewards.js',import.meta.url),'utf8').replace(/^import[^\n]+\n/m,'').replaceAll('export function','function');
 const mutation=process.argv.find(x=>x.startsWith('--mutant='))?.split('=')[1];
 if(mutation==='dedup')source=source.replace('!seen.has(reward.id)','true');
 if(mutation==='balance')source=source.replace('format(state.wallet.balance)','format(0)');

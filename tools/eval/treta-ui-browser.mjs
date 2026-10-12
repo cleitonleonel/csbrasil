@@ -12,7 +12,7 @@ const mutant=process.argv.find(a=>a.startsWith('--mutant='))?.split('=')[1];
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',args:['--mute-audio','--use-angle=metal']});
 const report={fixture:true,environment:'Chrome desktop ANGLE Metal; mobile viewport/touch emulation, not physical hardware',base,captures:[],errors:[],performance:[],requests:[]};
 let balance=1600,inventory=[],ledger=[],mode='normal',purchases=0,authenticated=true,manifestOpen=true,modelFailure=false;
-const state=()=>({authenticated,accountId:authenticated?'fixture-account':null,wallet:authenticated?{balance,referral_code:'00000000-0000-4000-8000-000000000001'}:null,inventory,ledger,campaign:TRETA_DEFAULT_REWARDS,catalog:TRETA_SKINS.map(s=>({id:s.id,character_id:s.character,price:800,available:true,model_path:`/__fixture__/${s.id}.glb`}))});
+const state=()=>({authenticated,accountId:authenticated?'fixture-account':null,wallet:authenticated?{balance,referral_code:'00000000-0000-4000-8000-000000000001'}:null,inventory,ledger,campaign:TRETA_DEFAULT_REWARDS,catalog:TRETA_SKINS.map(s=>({id:s.id,character_id:s.character,price:800,available:true,model_path:`/models/skins/${s.id}-fixture.glb`}))});
 try {
  for(const [name,viewport] of [['desktop',{width:1536,height:1024}],['mobile',{width:390,height:844}]]) {
   balance=1600;inventory=[];ledger=[];mode='normal';purchases=0;authenticated=true;manifestOpen=true;
@@ -22,7 +22,7 @@ try {
   if(mutant)await page.route('**/js/treta-'+(mutant==='framing'?'stage':'store')+'.js*',async r=>{
    const filename=mutant==='framing'?'treta-stage.js':'treta-store.js';
    let source=readFileSync(new URL('../../public/js/'+filename,import.meta.url),'utf8');
-   source=mutant==='preview'?source.replaceAll('(!owned(selected.id) && !previewReady)','false'):mutant==='framing'?source.replace('*1.3','*.1'):source.replace(/const available=id=>[^;]+;/,'const available=id=>item(id)?.available===true;');
+   source=mutant==='preview'?source.replaceAll('(!owned(selected.id) && !previewReady)','false'):mutant==='framing'?source.replace('*(this.coin?1.2:1.3)','*.1'):source.replace(/const available=id=>[^;]+;/,'const available=id=>item(id)?.available===true;');
    await r.fulfill({contentType:'text/javascript',body:source});
   });
   await page.route('**/api/**',async route=>{
@@ -43,14 +43,13 @@ try {
    if(url.pathname==='/api/social-auth')return route.fulfill({json:{authenticated,accountId:authenticated?'fixture-account':null,profile:authenticated?{nick:'TESTE UI',id:'fixture-profile'}:null,providers:[],email:false}});
    return route.fulfill({json:{profile:{avatar_url:'/img/chars/barbudo.webp',socials:['fixture']},rooms:[],entries:[],online:0}});
   });
-  await page.route('**/models/skins/manifest.json',r=>r.fulfill({json:{skins:manifestOpen?Object.fromEntries(TRETA_SKINS.map(s=>[s.id,{approved:true,character:s.character,model:`/__fixture__/${s.id}.glb` }])):{}}}));
-  await page.route('**/__fixture__/*.glb',async r=>{
+  await page.route('**/models/skins/manifest.json',r=>r.fulfill({json:{skins:Object.fromEntries(TRETA_SKINS.map(s=>[s.id,{approved:manifestOpen,preview:true,character:s.character,model:`/models/skins/${s.id}-fixture.glb` }]))}}));
+  await page.route('**/models/skins/*-fixture.glb',async r=>{
    report.requests.push({name,model:new URL(r.request().url()).pathname});
    if(modelFailure)return r.fulfill({status:503,body:'Fixture preview failure'});
-   const id=new URL(r.request().url()).pathname.split('/').pop();
-   const file={'lula-drip.glb':'lula-drip-idle.glb','bolsonaro-drip.glb':'bolsonaro-drip-idle.glb','senador-drip.glb':'senador-idle.glb','janja.glb':'janja-idle.glb','michelle-bolsonaro.glb':'michelle-idle.glb'}[id];
-   if(privateRoot && existsSync(resolve(privateRoot,file)))return r.fulfill({path:resolve(privateRoot,file),contentType:'model/gltf-binary'});
-   return r.fulfill({status:404,body:'Fixture GLB unavailable'});
+   const id=new URL(r.request().url()).pathname.split('/').pop().replace('-fixture.glb','');
+   const actual=JSON.parse(readFileSync('public/models/skins/manifest.json')).skins[id];
+   return r.fulfill({path:resolve('public'+actual.model),contentType:'model/gltf-binary'});
   });
   page.setDefaultTimeout(15000);
   await page.goto(`${base}/?debug=1&nav=1&secao=jogar`,{waitUntil:'commit',timeout:30000});
@@ -135,7 +134,7 @@ try {
   const stages=await page.evaluate(()=>window.__tretaMeasures || []);
   report.performance.push({name,stages});
   assert(stages.length>=4 && stages.every(s=>s.fitsViewport),`All 3D bounds must fit the rendered viewport: ${JSON.stringify(stages)}`);
-  assert(stages.filter(s=>s.host==='treta-purchase-stage').every(s=>s.count===(name==='mobile'?1:4)),'Mobile must avoid four copies of the coin mesh');
+  assert(stages.filter(s=>s.host==='treta-purchase-stage').every(s=>s.count===1),'Mobile must avoid four copies of the coin mesh');
   await page.locator('#treta-earned-close').click();
   authenticated=false;ledger=[];inventory=[];
   await page.evaluate(()=>document.dispatchEvent(new CustomEvent('cs-account-change',{detail:{authenticated:false}})));

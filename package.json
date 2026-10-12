@@ -486,7 +486,10 @@
     "eval:asset-pago-resil": "node tools/eval/asset-pago-resiliencia-check.mjs",
     "eval:versaoorigem": "node tools/eval/versao-origem-check.mjs",
     "eval:autoReload": "node tools/eval/auto-reload-check.mjs",
-    "eval:piscina-trim": "node tools/eval/piscina-trim-check.mjs && ! node tools/eval/piscina-trim-check.mjs --mutante=coplanar"
+    "eval:piscina-trim": "node tools/eval/piscina-trim-check.mjs && ! node tools/eval/piscina-trim-check.mjs --mutante=coplanar",
+    "eval:treta-rewards": "node tools/eval/treta-rewards-check.mjs && node tools/eval/treta-rewards-check.mjs --mutations",
+    "eval:treta-skins": "node tools/eval/treta-skins-check.mjs && node tools/eval/treta-skins-check.mjs --mutations",
+    "eval:treta-classic": "node tools/eval/treta-classic-coin-check.mjs && node tools/eval/treta-classic-coin-check.mjs --mutations"
   },
   "repository": {
     "type": "git",
