@@ -16,7 +16,7 @@ const MIGRADAS = new Set([
 ]);
 
 // Social e avatar usam 404 para perfis ausentes ou privados; preservar esse status.
-const EM_ROLLOUT = ['social-auth'];
+const EM_ROLLOUT = ['social-auth','treta'];
 
 const handler: APIRoute = async ({ params, url, request, clientAddress }) => {
   const rota = String(params.rota || '').replace(/\/+$/, '');

@@ -28,7 +28,7 @@ import { stripTypeScriptTypes } from 'node:module';
 const mut = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
 if (mut && ![
   'lista-divergente', 'rota-ressuscitada', 'supabase-de-volta', 'destinos-divergentes',
-  'preview-direto', 'proxy-vaza-cookie', 'perfil-card-supabase', 'perfil-404',
+  'preview-direto', 'proxy-vaza-cookie', 'perfil-card-supabase', 'perfil-404', 'treta-rollout',
 ].includes(mut)) {
   throw new Error(`mutante desconhecido: ${mut}`);
 }
@@ -80,6 +80,7 @@ try {
   let route=stripTypeScriptTypes(redirect).replaceAll('import.meta.env','({})')
     .replace('../../lib/api-proxy.mjs','data:text/javascript;base64,'+Buffer.from(proxy).toString('base64'));
   if(mut==='perfil-404')route=route.replace('return resposta;',"return resposta.status===404 ? new Response(null,{status:503}) : resposta;");
+  if(mut==='treta-rollout')route=route.replace("['social-auth','treta']","['social-auth']");
   const {GET}=await importaFonte(route);
   globalThis.fetch=async()=>new Response('{"error":"not_found"}',{status:404,headers:{'content-type':'application/json'}});
   for(const endpoint of ['social','social-avatar']) {
@@ -87,6 +88,9 @@ try {
     const response=await GET({params:{rota:endpoint},url,request:new Request(url),clientAddress:'203.0.113.8'});
     if(response.status!==404 || (await response.json()).error!=='not_found')falhas.push(`proxy altera 404 legítimo de ${endpoint}`);
   }
+  const url=new URL('https://preview.vercel.app/api/treta');
+  const response=await GET({params:{rota:'treta'},url,request:new Request(url),clientAddress:'203.0.113.8'});
+  if(response.status!==503 || (await response.json()).error!=='upstream_unavailable')falhas.push('proxy apresenta carteira ainda não publicada como rota inexistente');
 } finally {globalThis.fetch=fetchOriginal;}
 const locationOriginal = globalThis.location;
 try {
