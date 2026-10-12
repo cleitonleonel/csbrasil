@@ -433,8 +433,15 @@ test.describe('chat de sala', () => {
       await expect(page.locator('#chat-contador')).toHaveText('5/160');
     });
 
-    await test.step('Enter envia pelo net, o eco desenha a própria linha, o compositor fecha e devolve o foco', async () => {
+    await test.step('Enter só publica com o aceite das regras; o eco desenha a própria linha e o compositor fecha', async () => {
       await page.locator('#chat-entrada').fill('  oi   galera  ');
+      await page.keyboard.press('Enter');
+      expect(await page.evaluate(() => window.__chatNet.enviados.length), 'sem o aceite das regras nada sai pelo net').toBe(0);
+      await expect(page.locator('#chat-aviso')).toContainText(/regras/i);
+      await expect(page.locator('#chat-regras-aceite')).toBeFocused();
+      expect(await chatAberto(page)).toBe(true);
+      await page.locator('#chat-regras-aceite').check();
+      await page.locator('#chat-entrada').focus();
       await page.keyboard.press('Enter');
       const enviados = await page.evaluate(() => window.__chatNet.enviados);
       expect(enviados).toHaveLength(1);
@@ -797,6 +804,11 @@ test.describe('chat de sala', () => {
         expect(await chatAberto(page)).toBe(true);
       });
       await page.locator('#chat-entrada').fill('do toque');
+      await page.locator('#chat-enviar').tap();
+      expect(await page.evaluate(() => window.__chatNet.enviados.length), 'sem o aceite das regras o ENVIAR não publica').toBe(0);
+      expect(await chatAberto(page)).toBe(true);
+      await page.locator('#chat-regras-aceite').tap();
+      await expect(page.locator('#chat-regras-aceite')).toBeChecked();
       await page.locator('#chat-enviar').tap();
       expect(await page.evaluate(() => window.__chatNet.enviados.map((e) => e.txt))).toEqual(['do toque']);
       expect(await chatAberto(page)).toBe(false);
