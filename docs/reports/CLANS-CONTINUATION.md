@@ -116,3 +116,9 @@ HTTP e nós MP, então frontend. Merge/migration pública/deploy não autorizado
 A aprovação visual do usuário, navegador com fundo 3D sob carga normal e
 uma partida humana real permanecem pendentes.
 Ranking de clãs e desafios fora desta v1.
+
+## PRs autorizados e abertos — 12/10/2026
+
+Dono autorizou abrir PRs em todos os chats. Coordenação confirmou checkpoints limpos e publicou client/backend sem migration ou deploy. Frontend draft https://github.com/corosolto/client/pull/817 (base main); backend draft https://github.com/corosolto/backend/pull/72 (base main). Push do frontend passou hooks normais sem bypass; evidência /tmp/csbr-clans-client-pr-push.log. Checkpoints publicados client09871950d e backend6581b70 antes deste registro.
+
+Revisar em conjunto com #807/#70: migration040_clans e040_social_community pertencem a frentes independentes e precisam de sequência/schema conciliados antes do release. Backend deve anteceder client; aprovação visual/partida humana e limpeza identificada dos perfis sintéticos continuam pendentes. Próximo: revisão dos drafts, sem merge, migration produtiva ou deploy nesta autorização.
