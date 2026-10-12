@@ -159,3 +159,14 @@ confirmar responsável e fechar gates antes de publicar URLs e testar OAuth real
 Checkpoint assinado83937415acf9162fd521c1813a083d8bb9fe5e15,14arquivos próprios/271adições/23remoções, árvore limpa. Primeiro envio foi recusado pelo hook: mapcontrato passa; check:deploy48/49 em257s, SB7 RED social-serve servidor não respondeu exitnull durante inicialização. Log completo preservado og-stylized-deploy-first.log e og-stylized-push.log. Nenhum objeto/head remoto atualizado e nenhum bypass.
 
 A mesma prova social-serve standalone, mesmoHEAD e mesmos60s, passou integralmente depois: og-stylized-serve-baseline.log. Não há causa de lentidão certificada; não alterar timeout/compressão/produto a partir dessa hipótese. Build/SEO/10testes/63fontes/revisão não foram invalidados por código novo. Próximo: repetir hook completo em checkpoint suplementar de continuidade, registrar resultado, atualizar PRdraft807 e fechamento persistente em artifacts/social/PROFILE-SHARE-DELIVERY.md. Uniformização62artes continua bloqueada porHTTP402; backendf49/PR70 e gates deinfra permanecem intactos.
+
+### Documentos legais no novo design — 2026-10-12
+
+Pedido posterior corrige o marco anterior: LegalPage agora usa identidade/CSS real
+do hub, sem Layout antigo; ambas as rotas mantidas. Links no footer desktop e aba
+Sobre (também mobile). Browser8137: páginas200, nav e leitura ao fim, texto
+selecionável;390px sem overflow. Revisão independente fechou P2 de foco do CTA
+com borda interna3px e Tab real confirmado. Capturas/review no ledger privado.
+Contato Gmail mantido até encaminhamento desejado ser ativado e verificado.
+Alias preparado no Cloudflare, sem ativação ou envio; confirmação de acesso
+pendente. Gates legais e de publicação anteriores continuam; nenhum deploy/merge.
