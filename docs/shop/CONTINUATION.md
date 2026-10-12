@@ -421,3 +421,57 @@ Checkpoint a167e10b7: categorias incluídas. Sintaxe e docs verdes; listas
 desktop1200x800/mobile390x844 conferidas no Astro real com conta de fixture
 (só apresentação, sem DB/compra). Capturas clothing-categories-*.png e log
 /tmp/treta-clothing-preview.log. Não prova peças3D nem equipamento modular.
+
+## Marco: pesquisa e coleção comum de 30 itens (12/10/2026)
+
+Pedido atual: pesquisa visual e mecânica de bonés, camisetas, calças/bermudas
+ e tênis nos corpos existentes. Resultado: plans/TRETA-COMMON-30.md e JSON
+com30IDs (8bonés,12camisetas,3calças,3bermudas,4pares). Preço null,
+available=false, compatibleBodies vazio; nenhuma geração Mint/compra de item.
+As cinco camisetas regionais, Salve o SUS e bonés Brasil/MAGA/Master/SUS/
+Zé Gotinha estão incluídos. Master é conceito; boné real não confirmado.
+
+Painel original docs/shop/TRETA-COMMON-30.html: filtros e pesquisa, estudos
+vetoriais de forma/cor/texto e links de procedência. Fotos Brasil, MAGA e
+Zé Gotinha consultadas ficam privadas em references/treta-common-30, com
+FONTE.md e hashes. Manual SUS completo, imagem regional e logo Master ainda
+não inspecionados visualmente; não confundir fonte localizada com arte final.
+
+Auditoria estrutural16GLBs em docs/shop/ITEM-COMPATIBILITY-AUDIT.json:
+um mesh/primitive/material por modelo; Head e ossos dos pés disponíveis.
+Não existem roupas separadas prontas, nem garantia de corpo sob a roupa.
+Plano: corpo Esquerdomacho modular piloto, Head para boné, SkinnedMesh e
+máscaras por faces para roupas, tênis como par. Calça e bermuda compartilham
+bottom. Servidor ainda precisa de equipamento por slots e posse/compatibilidade
+assinadas para MP; contrato atual equipa uma skin. Cerca de7famílias de
+geometria propostas; encaixe por corpo, revisão em movimento antes de venda.
+
+Painel verificado em1536x1024 e390x844:30IDs únicos, filtro8bonés, busca5regiões,
+sem overflow nem erros de página. Evidência privada runtime-integration/
+common-30/report.json, desktop.png, mobile.png e hero.png. É validação do
+estudo, não de peça3D. Servidor de consulta local4353 expõe só docs/shop;
+Astro4351/API8097/MP8799 mantidos. Próximo: produzir o conjunto piloto
+SUS/Nordeste/bermuda de quadra/tênis branco e conferir as animações antes
+de adaptar outros corpos. Portões de assets ainda pendentes nesta frente.
+
+## Publicação dos drafts autorizados pelo dono
+
+Autorização humana conferida no chat01a12cc7-e78d-7ec1-b2e3-3210df5efd6b,
+turn01a12da0-8199-7390-a165-cee757c58eea: abrir PRs em todos os chats ativos.
+Client draft https://github.com/corosolto/client/pull/819, branch
+codex/treta-skin-store-20261011, checkpoint anterior e039c4f89; backend draft
+https://github.com/corosolto/backend/pull/73, checkpoint3fe9f52, mesma branch.
+Ambos anexados ao chat. Sem merge/deploy/migrations remotas/cobrança.
+
+Client usa main: a branch social de #807 pertence ao fork do autor e não
+existe como base upstream; tentativa de base feat/social-community recusada
+pelo GitHub. Diff ainda contém os commits sociais e deve ser recortado/rebaseado
+após a dependência #807. Backend #73 empilhado sobre feat/social-community,
+depende de #70. UI original já incorporada nesta lane; evitar duplicar diff.
+
+Push client passou com pre-push ativo: check:deploy48/48 e contrato de mapa
+verdes usando /opt/homebrew/bin/node23. Primeiro hook usou Node16 do PATH e
+falhou; nenhuma dispensa do hook aplicada. Logs /tmp/treta-checkdeploy-pr.log
+ e /tmp/treta-client-push2.log. Gitleaks client45commits/525KB e backend5commits
+verdes. CI remoto/revisão do draft ainda pendentes. Os12portões gerais de
+mapas/áudio/grafite já registrados continuam fora do escopo; vendas fechadas.

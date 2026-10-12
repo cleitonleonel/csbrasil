@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-12",
+  "scope": "3 corpos atuais e 13 skins Mint derivadas. Estrutura GLB; não é teste de encaixe.",
+  "models": [
+    {"id":"esquerdomacho","meshes":[{"name":"char1","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"barbudo","meshes":[{"name":"White Bearded Sash President Mesh","primitives":1}],"materials":1,"joints":24,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"capitao","meshes":[{"name":"Yellow Collar Gentleman Mesh","primitives":1}],"materials":1,"joints":24,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"lula-drip","meshes":[{"name":"Burgundy Goldbraid Boss Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"bolsonaro-drip","meshes":[{"name":"Emerald Varsity Dripster Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"senador-drip","meshes":[{"name":"Violet Chain Street Baron Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"janja","meshes":[{"name":"Burgundy Hoop Executive Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"michelle-bolsonaro","meshes":[{"name":"Michelle Bolsonaro Corrected Face Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"lula-na-regua","meshes":[{"name":"Gray Beard Statesman Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"lula-cyborg","meshes":[{"name":"Chrome Sash Cyborg Elder Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"bolsonaro-cyborg","meshes":[{"name":"Chrome Eyed Patriot Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"aljuiz-toga-mandrake","meshes":[{"name":"Gold Shades Mid-Thigh Toga Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"lula-mandrake","meshes":[{"name":"Gold Chain Mandrake 马会 Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"bolsonaro-mandrake","meshes":[{"name":"Gold Chain Mandrake Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"michelle-mandrake","meshes":[{"name":"Crimson Rose Chainwear Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]},
+    {"id":"zero-um-mandrake","meshes":[{"name":"Triple Chain Track King Mesh","primitives":1}],"materials":1,"joints":26,"head":["Head","head_end","headfront"],"feet":["LeftFoot","LeftToeBase","RightFoot","RightToeBase"],"skinnedNodes":["char1"]}
+  ]
+}
