@@ -110,3 +110,24 @@ O diretório padrão dos masters é resolvido pelo Git common-dir, igual no chec
 principal e nos worktrees; `MASTERS` permite substituir explicitamente. Preparação
 validada após esse ajuste, sem regenerar ou sobrescrever artes.
 O comando sem essa flag continua sendo o pipeline OpenRouter original.
+
+## Revisão de estilo — 12/10/2026
+
+O dono aprovou o lote, mas apontou que os novos personagens precisam receber
+a mesma estilização GPT das artes antigas, especialmente o palhaço. O lote
+inicial preservou demais a aparência de render GLB: volumes de boneco nos
+políticos e facetas no Lobisomem. Nova etapa: reinterpretar os 19 personagens
+como arte cinematográfica ilustrada, com textura e detalhes orgânicos,
+preservando identidade, figurino, armas, proporção e margens 5K.
+
+Originais recuperáveis: commit `bbffc4d92` e
+`launch-media/2026-10-11-wallpapers/style-revision-2026-10-12/previous-webp/`.
+Loading do palhaço permanece referência aprovada. Clarificação sobre aplicar
+a mesma revisão aos sprites do cabeçalho está pendente; wallpapers avançam.
+Marco validado: Barbudo (wall-38) e Lobisomem (wall-29) reinterpretados por GPT
+e aprovados pelo crítico limpo `/root/style_review`, comparando referências de
+estilo, GLB/arma e quatro capturas CSS em 3:2/5K. Pelagem, pele, barba, tecido
+e anatomia orgânicos; identidade, arma, corpo e logo preservados. Masters e
+prompts estão em `style-revision-2026-10-12/`; ainda não importados no runtime.
+Próximo passo: estender o tratamento aos outros 17 wallpapers, importar o lote,
+capturar servido e obter crítica independente final.
