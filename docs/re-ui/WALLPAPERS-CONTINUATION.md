@@ -206,3 +206,19 @@ saída preservada fora do Git e arquivo restaurado. Build passou; ficha específ
 manifesto, lote19, variantes37, docs e arch passaram. Estado visual completo e
 aprovado; merge/deploy continuam pendentes. Próximo passo: push com hook padrão,
 abrir draft (sem duplicata), anexar artefato e registrar URL.
+
+
+### PR draft aberto
+
+https://github.com/corosolto/client/pull/820, branch
+`codex/wallpapers-roster-5k-20261011`, base main `261cf59a7`. O draft inclui a frente
+completa e a revisão de estilo. Checkpoint de arte `7162b5490`, comparação ampla
+`fbbbba35a`. Push inicial passou pelo hook padrão (mapcontrato/check:deploy e
+trailers), 44 s, sem bypass. PR anexado a este chat. Descrição registra validação
+visual, resolução nativa, limitações dos checks amplos e ausência de dependência
+entre PRs. Nenhum master, referência privada, segredo ou PNG de evidência subiu.
+
+Próxima ação: revisão do draft/CI e decisão humana sobre merge. Sem merge ou
+deploy nesta sessão. Pedido opcional sobre revisar também o acabamento dos
+sprites não recebeu resposta; eles seguem no lote animado validado anteriormente.
+A revisão de acabamento GPT concluída aqui cobre os 19 wallpapers.
