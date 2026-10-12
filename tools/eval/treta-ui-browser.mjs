@@ -72,7 +72,7 @@ try {
   if(baseline) {await page.close();continue;}
   assert.equal(await page.locator('[data-treta-view="packs"]').count(),1,'Packs need a separate view');
   assert.equal(report.requests.filter(r=>r.name===name && r.model).length,0,'Skin GLBs are lazy until detail opens');
-  if(mutant==='manifest'){manifestOpen=false;await page.reload({waitUntil:'commit'});await page.locator('#splash-enter:not(.hidden)').waitFor({timeout:90000});await page.locator('#boot-splash').click();await page.locator('button[data-hub-tab="loja"]').click();await page.locator('.treta-card').first().click();assert.match(await page.locator('#treta-detail-production').textContent(),/Em produção/,'Unapproved manifest must keep the skin in production');assert.equal(await page.locator('#treta-buy').isEnabled(),false,'Unapproved manifest must block purchase');await page.close();continue;}
+  if(mutant==='manifest'){manifestOpen=false;await page.reload({waitUntil:'commit'});await page.locator('#splash-enter:not(.hidden)').waitFor({timeout:90000});await page.locator('#boot-splash').click();await page.locator('button[data-hub-tab="loja"]').click();await page.locator('.treta-card').first().click();await page.waitForFunction(()=>!document.getElementById('treta-detail-production').textContent.includes('Carregando'));assert.match(await page.locator('#treta-detail-production').textContent(),/Venda em preparação/,'Unapproved manifest must keep the skin in production');assert.equal(await page.locator('#treta-buy').isEnabled(),false,'Unapproved manifest must block purchase');await page.close();continue;}
   modelFailure=true;
   await page.locator('.treta-card').first().click();
   await page.locator('#treta-detail-production').filter({hasText:'indisponível'}).waitFor({timeout:5000});
@@ -148,7 +148,7 @@ try {
   await page.locator('#splash-enter:not(.hidden)').waitFor({timeout:90000});await page.locator('#boot-splash').click();
   await page.locator('button[data-hub-tab="loja"]').click();
   await page.locator('.treta-card').first().click();
-  await page.locator('#treta-detail-production').filter({hasText:'Em produção'}).waitFor();
+  await page.locator('#treta-detail-production').filter({hasText:'Venda em preparação'}).waitFor();
   assert.equal(await page.locator('#treta-buy').isEnabled(),false,'Unapproved manifest must block purchase even when API advertises availability');
   await shot('catalog-closed');
   await page.close();

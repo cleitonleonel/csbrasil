@@ -24,7 +24,17 @@ Entregar loja dentro do jogo, imediatamente depois de JOGAR, com direção visua
 
 ## Estado atual e próximo passo
 
-Implementação client em `f3cb79f2d`; backend em `48d2e35` (economia `5a790de`/`bd5df0e`). Sete moedas portrait-v2 rejeitadas pelo dono por design: rosto/cabeça na frente, valor/T$ atrás, ouro e dois clipes mantidos; checks técnicos anteriores aprovados, mas insuficientes para aceite estético. Referência enviada pelo dono após v3 define cunhagem clássica: perfil esculpido, legenda serifada em arco, mesma liga dourada, aro fino. V3 frontal não é aceite dessa direção. Um estudo Saci/1 profile-v4 está privado e ainda não pronto; outras seis não refeitas. Evidência/limites em TRETA-COINS-CLASSIC-PROFILE.md; fonte/capturas/parecer em coins/profile-v4. Face, leitura no verso e otimização/performance precisam de solução antes de lote ou consumo na UI. Fontes/ficha em `507864bc1`, assets em `4acce51a4`; relatório `TRETA-COINS-PORTRAIT-REVIEW.md`. Wallet/toasts WebGL anteriormente validados em fixtures locais. Cinco skins Drip com rigs/30 clipes Mint e cinco Idle GLBs privados verificados; oito skins do lote2 com rigs/48 clipes Mint e oito Idle GLBs offline/ZIP verificados. Nova UI/loja, proposta de packs BRL e acessórios no chat solicitado `01a12cc7-e78d-7ec1-b2e3-3210df5efd6b`. Próximo objetivo amplo: consumir os novos assets na lane UI, retarget/equipamento real e performance mobile, depois vídeos/expansão Trump/Vorcaro. Campanha inativa até janela de lançamento; sem migration remota, merge/deploy ou publicação. Relatos históricos abaixo são superados por este estado e marcos mais recentes.
+Integração local em 12/10:13GLBs/posts reais e Saci clássico corrente; compra,
+equipamento persistido, solo e MP com tickets reais validados em34checks.
+12skins aprovadas visualmente no escopo estático; Lula na Régua sópreview
+por fade/brinco. Catálogo mantém vendas fechadas. UI34capturas desktop/mobile
+emulado; skin grips13/13estáticos; clipes/solo medidos. Continuidade/commits
+nos marcos finais. Originais e provas em private-assets/treta-store/mint/runtime-integration.
+Moedas clássicas6/7pendentes; sem lote antigo rejeitado na UI. Próximo: fade,
+transições, verso/giro visual e aparelho físico; depois seis moedas, campanha,
+packs e vídeos. Trump/Vorcaro/itens separados ainda não gerados. UI do chat
+01a12cc7-e78d-7ec1-b2e3-3210df5efd6b incorporada. Sem SQL remoto, merge,
+deploy ou cobrança. Relatos históricos abaixo são superados por este estado.
 
 ## Marco: carteira SQL validada
 
@@ -290,3 +300,108 @@ recompensas por conta/partida/convite e saldo, loja/UI, campanha/compra packs
 autoritativas, desempenho mobile, revisão independente e vídeos.
 Nesta integração não há merge principal/deploy/cobrança/migration remota.
 Próximo: incorporar UI, assar clipes por skin e inspecionar poses no runtime.
+
+## Marco local: UI incorporada e 13 rigs derivados
+
+Branch mantida; HEAD5a6a20fdb incorpora as três entregas da UI (originais
+1901898ed/c4e3ae5d9/3386f4ee6), sem editar aquela lane. Treze GLBs derivados
+em public/models/skins e treze posters WebP reais; manifest permite preview,
+mas approved=false e vendas fechadas até revisão do jogo. Cada modelo tem
+showroomIdle + onze estados retargetados no próprio rig, 26 juntas incluindo
+flexão simples das mãos. Sem simplificar geometria de skinning. Fontes Mint
+privadas intactas; derivações antigas guardadas em rejected-iterations.
+Medição no loader/CharController real, oito estados por skin a40% do clipe:
+estados em solo entre -1mm e 0mm; salto entre19 e30cm. Não substitui validação
+contínua, transições nem revisão em partida. Relatórios/capturas em
+private-assets/treta-store/mint/runtime-integration; log final
+/tmp/treta-qa-final.log. Inspeção estruturada Blender confirma ossos/malhas.
+
+Backend local isolado8097, nó MP8799 e Astro real4351 com cookies/tickets;
+Supabase local54321 restaurado, sem alterar DB remoto. Catálogo local tem13
+entries fechadas; migration049 na lane backend registra hashes/preços800T$.
+Próximo: compra/equipamento/recarga e SP/MP reais com contas temporárias e
+créditos simulados, revisão independente e checkpoints. Não há pagamento
+real, campanha ativada, merge ou deploy. Moedas clássicas: Saci/1 aprovado
+como direção, outras seis pendentes; lote antigo rejeitado não virou aprovado.
+
+## Marco: compra/equipamento e solo reais; revisão do grip
+
+QA real Astro4351 → API8097 → Supabase local:13compras/equipamentos, débito
+exato800 cada, equipamento único e isolamento de conta. Saldo simulado10400;
+contas removidas e catálogo restaurado fechado no finally. Relatório/fotos
+runtime-integration/game-e2e; /tmp/treta-e2e-final.log:31checks, solo real com
+playerDef.skinId=lula-drip e corpo26juntas. Recompra e preço forjado não mudam
+saldo; equipamento inexistente409. Login hidratava nick mas não habilitava
+JOGAR: syncPlayState no onSession corrige o vermelho observado. Equipamento
+agora persiste personagem/lado na recarga. MP com tickets reais ainda em teste.
+
+Varredura completa31amostras/clipe detectou fim de death enterrado7–20cm:
+LoopRepeat na medição voltava ao primeiro quadro. Bake agora LoopOnce/clamp;
+GLBs derivados regenerados e migration049 atualizada. Segunda varredura de
+solo (excetojump) ficou inteira abaixo do teto15mm para13skins. Salto preservado.
+Régua de assets confirma12clipes/26juntas/pesos/hash/79082vértices e14.02MB;
+mutações sem-combate/sem-flexao reprovam pelo motivo esperado.
+
+Crítico independente skin_runtime_review viu26capturas e reprovou13grips,
+sem pedir regeneração das roupas; Lula na Régua também precisa fade mais
+legível. Não carimbar como approved. A/B de curl e ponto de apoio em Lula:
+gripProfile mint24-curl-v1 (curl1.4, apoio1.35z/+35mmy) está em revisão; armas
+canônicas por personagem e movimento ainda devem ser capturados.
+Saci clássico derivado só-texturas e simplificação conservadora(error1e-4):
+47744tri/1447556B, SHA82ad26210cf84dfad894d8a0eb2d501b3f6b0b813ba60ff93eef85f7c19744fd.
+UI usa só essa arte em giro/compra; outras seis denominações EM PRODUÇÃO.
+Fonte/protótipo integral privado; não declarar lote7 pronto nem mobile medido.
+Próximo: confirmar MP e grip/coin no browser, testes UI, parecer novo e checkpoint.
+
+## Marco: integração SP/MP validada e checkpoint de entrega local
+
+A régua game-e2e passou34verificações:13compras/equipamentos com créditos
+simulados, persistência na recarga, corpo próprio no solo e skin replicada
+para outra conta em sala MP privada com cookies/tickets/servidor reais.
+Contas temporárias removidas e catálogo local restaurado fechado. Evidência:
+private-assets/treta-store/mint/runtime-integration/game-e2e/report.json;
+log /tmp/treta-e2e-mp6.log. API backend29assertivas e contrato cosmético verdes.
+
+Revisão independente:13/13grips estáticos aprovados após apoio especial
+LulaDrip (curlL2.5/+70mmy) e Senador/ZeroUm (curlL2.5). Capturas finais
+*-armed-grip-final.png e grip3-*.png. Lula na Régua continua reprovado na
+estética: fade/brinco não legíveis. Manifesto marca12assets aprovados dentro
+DO ESCOPO ESTÁTICO documentado; na-régua sópreview. Nenhuma venda ativada
+pelo arquivo: migration049 mantém available=false para todos13. Transições,
+outras armas, aceitação humana em partida e mobile físico continuam pendentes.
+
+Saci clássico otimizado aprovado pelo crítico nas vistas frontais da UI;
+verso otimizado e movimento contínuo ainda precisam de revisão visual.
+Giro e reveal medidos pelo loader real; dois mutantes detectados. SóSaci/1
+é a arte corrente, incluindo saldo/recompensa/compra/packs. Seis outras
+moedas EM PRODUÇÃO; versões antigas rejeitadas não são usadas na UI.
+
+UI:34capturas desktop3:2 e viewport390x844, sem erros de página. Falha real
+na consulta era sobrescrita pela conclusão assíncrona do preview: corrigida,
+retentativa e compra bloqueada conferidas. Mutantes preview/framing/manifest
+3/3detectados depois de atualizar o arnês ao novo estágio/preview em revisão.
+Régua de recompensas verde com3mutantes, skins2mutantes e moeda2mutantes.
+Build, syntax, modgraph, docs e arch verdes. check:fast original170/186;
+docs/arch/autoria corrigidos por geração, comentário corrigido no checkpoint.
+Outros12portões permanecem vermelhos na lane: mapid, audio:check, grafite,
+eval:grafite, eval:grafite:ar, grafite-editorial, audiofablocal, audiovoicemix,
+grafitelayout, lajes-identidade, amazonia e mansao (assets/contratos fora deste
+escopo). Não chamar branch inteira/release de verde. /tmp/treta-checkfast.log.
+
+Itens: bonés/óculos por socket Head com catálogo/inventário autoritativo;
+bonés fundidos Mandrake exigem variante sem boné. Correntes precisam encaixe
+no torso. Armas primeiro acabamentos PBR, preservando stats, recuo, ADS,
+grip e animação. Nenhum novo item/arma/boné gerado ou preço decidido.
+Próximo: corrigir estética na-régua; revisar transições/movimento/verso/mobile,
+produzir seis moedas clássicas, abrir rollout/campanha/packs somente em
+etapa autorizada e preparar vídeos. Trump/Vorcaro ainda não gerados.
+Sem merge, deploy, cobrança ou SQL remoto. Astro local4351/API8097/MP8799
+mantidos para revisão; dependem do Supabase Docker local54321 e env privado
+em /tmp (recriar do Docker, nunca versionar chaves). Commits na seção abaixo.
+
+### Commits recuperáveis da integração
+
+Client:4be68deb2 (13GLBs+manifest),420453be5 (posters/Saci),e0dac2956
+(runtime/equipamento/UI),41586b5ba (pipeline/réguas/API→SP/MP).
+Backend:3fe9f52 (migration049 fechada; arquivo local, não aplicada remoto).
+Docs/checkpoint subsequente registra validações finais. Não refazer Mint.
