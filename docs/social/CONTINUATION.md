@@ -140,6 +140,19 @@ Consulta de créditos OpenRouter retornou saldo~US$0,239; tentativa Barbudo pelo
 
 Normal final PASS63/63 e mutante other-character-small RED365!==614 (og-stylized-contract-final.log/og-stylized-other-small.log). Adendo crítico og-review-frame-coverage próprio confirma guardado contrato/63 SVGs; coberturaP3 fechada paraframe, raster59+4sem relaxar. Plano executado/verificado63jobs62candidates; docs derivadas6arquivos e docs:check PASS; syntax/diff e gitleaks staged PASS. Checkpoint seguinte inclui14arquivos próprios, sem assets bulk/segredos/trailer; envio deve executar hook completo.
 
+## Páginas legais candidatas — 2026-10-12
+
+Lane isolada codex/ranking-launch-20261012, base2f13a18. /privacidade revisada e
+/termos criada, layout compartilhado e links no rodapé. HTTP Astro real200 para
+ambas, navegação entre documentos e visual mobile sem overflow; build/SEO PASS.
+Revisão adversarial editorial fechou bases, telemetria pseudônima, destinatários,
+DPAs, expiração distinta de exclusão e caricaturas. Não é liberação jurídica ou
+operacional: identidade/contato do titular, escolha ou exceção de analítica,
+retenção/exclusão executáveis, proteção de menores e contratos/regiões efetivos
+continuam gates. Sem deploy/merge nem aceite obrigatório inserido no login.
+Continuação integral e evidências no ledger privado growth-readiness; próximo:
+confirmar responsável e fechar gates antes de publicar URLs e testar OAuth real.
+
 
 ### Checkpoint e envio recusado pelo gate real
 
