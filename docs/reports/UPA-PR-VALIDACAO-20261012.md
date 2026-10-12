@@ -27,3 +27,7 @@ Staging, gameplay humano e performance repetida em hardware isolado continuam pe
 [Origem e integração Mint](UPA-MINT-INTEGRACAO-20261011.md) · [Retorno da UPA](UPA-RETORNO-20261011.md) · [Suporte dos grafites](GRAFITES-SUPORTE-20261011.md) · [Oclusão dos tiros](TIROS-OCLUSAO-20261011.md).
 
 Preparado com assistência de OpenAI Codex (GPT-6). Revisar o SHA atual em staging antes de promover o lote.
+
+## Correção do contrato em checkout limpo
+
+O primeiro CI do PR816 falhou com ERR_MODULE_NOT_FOUND para three: o import estático de graffiti_pass.js em map-contrato-check.mjs era resolvido antes de harness.mjs criar a ponte para a engine vendorizada. A correção aguarda o harness e usa import dinâmico nessa entrada do teste. A árvore isolada reproduziu a falha antes e aprovou MC1/MC2/MC3 nos 18 mapas depois, sem npm install ou dependência de checkout vizinho. Fontes de runtime e assets permanecem iguais à R3 capturada.

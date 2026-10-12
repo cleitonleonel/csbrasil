@@ -13,7 +13,7 @@
  *   node tools/eval/map-contrato-check.mjs --mutante=sem-waypoints|grafo-partido
  */
 import { THREE, MAPS, initTextures } from './harness.mjs';
-import { grafiteNoDedicado } from '../../public/js/graffiti_pass.js';
+const { grafiteNoDedicado } = await import('../../public/js/graffiti_pass.js');
 
 grafiteNoDedicado(true);
 
