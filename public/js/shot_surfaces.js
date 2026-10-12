@@ -1,5 +1,6 @@
 /* Proxies de movimento permanecem físicos; a bala registra somente superfícies renderizadas. */
 const guarded = new WeakSet();
+const construtores = new WeakMap();
 const renders = material => material && material.visible !== false && material.colorWrite !== false && (material.opacity ?? 1) > 0;
 const visibleNode = object => {
   for (let node = object; node; node = node.parent) if (node.visible === false) return false;
@@ -10,6 +11,8 @@ export function isVisibleShotObject(object) {
   return visibleNode(object) && materials.some(renders);
 }
 export function withVisibleShotOccluders(build) {
+  const registrado = construtores.get(build);
+  if (registrado) return registrado;
   const wrapped = (...args) => {
     const world = build(...args);
     const meshes = [], seen = new Set();
@@ -41,5 +44,6 @@ export function withVisibleShotOccluders(build) {
     return world;
   };
   Object.defineProperty(wrapped, 'name', { value: build.name });
+  construtores.set(build, wrapped);
   return wrapped;
 }
