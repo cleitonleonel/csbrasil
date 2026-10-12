@@ -49,6 +49,7 @@
 .treta-coins{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
 .treta-coin-card{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--treta-panel);padding:16px 8px;border:0;border-radius:4px;cursor:pointer;min-width:0}
 .treta-coin-card img{width:72px;height:72px;object-fit:contain}.treta-coin-card b{display:block;color:var(--treta-gold);font-size:20px}.treta-coin-card small{display:block;font-size:13px;color:var(--treta-muted);margin-top:4px}
+.treta-coin-pending{display:grid;place-items:center;width:72px;height:72px;color:var(--treta-gold);font-size:32px;border:1px solid currentColor;border-radius:50%;opacity:.45}.treta-coin-card:disabled{cursor:default}
 .treta-next{font:400 13px/1.6 system-ui,sans-serif;color:var(--treta-muted);margin:24px 0}.treta-next span{color:#fff;margin-left:12px}
 .treta-packs,.treta-accessories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 .treta-pack,.treta-accessory{background:var(--treta-panel);border-radius:4px;padding:24px;min-width:0}
@@ -73,7 +74,7 @@
 .treta-info>button:not(.treta-close),.treta-purchase>button:not(.treta-close){margin:8px 4px}
 .treta-info-coin{height:120px;position:relative}.treta-info-coin img,.treta-info-coin canvas{height:100%;width:100%;object-fit:contain}
 .treta-purchase-stage{height:160px;position:relative}.treta-purchase-stage canvas,.treta-purchase-stage>img{height:100%;width:100%;object-fit:contain}
-.treta-purchase-item{display:block;width:100%;height:160px;object-fit:contain;animation:treta-item-in .6s ease-out both}
+.treta-purchase-item{display:block;width:100%;height:220px;object-fit:contain;animation:treta-item-in .6s ease-out both}
 @keyframes treta-item-in{from{opacity:0;transform:scale(.8) translateY(12px)}to{opacity:1;transform:none}}
 .treta-dialog button:focus-visible,.treta-store button:focus-visible,.hub-header button:focus-visible{outline:3px solid var(--treta-gold,#ffdb70);outline-offset:3px}
 .treta-dialog[data-busy=true] .treta-primary{opacity:.7}

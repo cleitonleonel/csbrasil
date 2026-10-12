@@ -1,5 +1,5 @@
 import {initTretaRewards,updateTretaRewards} from './treta-rewards.js';
-import {TRETA_SKINS,TRETA_COINS,TRETA_DEFAULT_REWARDS,tretaChange} from './treta-catalog.js';
+import {TRETA_SKINS,TRETA_COINS,TRETA_DEFAULT_REWARDS,TRETA_COIN_ART} from './treta-catalog.js';
 import {TRETA_PACK_PROPOSALS,TRETA_FUTURE_PACK,TRETA_ACCESSORY_PROPOSALS} from './treta-proposals.js';
 import {loadAccount,socialApi} from './account-entry.js';
 
@@ -10,17 +10,26 @@ const money=value=>`T$ ${new Intl.NumberFormat('pt-BR').format(value)}`;
 const stored=(key,value)=>{try{if(value===undefined)return localStorage.getItem(key);localStorage.setItem(key,value);}catch{return null;}};
 let state=null,manifest={skins:{}},selected=null,filter='all',stage=null,purchaseStage=null,refreshPromise=null,account=null;
 let onEquip=()=>{},infoStage=null,infoVersion=0;
+let equipmentRevision='';
 let accountEpoch=0,refreshEpoch=-1,loading=false,refreshFailed=false,purchasePending=false,view='skins',detailVersion=0,previewReady=false,previewLoading=false;
 const $=id=>document.getElementById(id);
 const owned=id=>state?.inventory?.some(s=>s.skin_id===id);
 const equipped=id=>state?.inventory?.some(s=>s.skin_id===id && s.equipped);
 const item=id=>state?.catalog?.find(s=>s.id===id);
 const available=id=>item(id)?.available===true && manifest.skins[id]?.approved===true && manifest.skins[id]?.character===item(id).character_id && item(id).model_path===manifest.skins[id].model;
+// A vitrine pode mostrar um modelo real ainda em revisão; venda/equipamento
+// continuam dependendo do catálogo do servidor e da aprovação no manifesto.
+const previewable=id=>Boolean((manifest.skins[id]?.preview || manifest.skins[id]?.approved) && /^\/models\/skins\/[a-z0-9-]+\.glb$/.test(manifest.skins[id].model));
 export function equippedTretaSkin(characterId) {
   const skin=state?.inventory?.find(s=>s.equipped && available(s.skin_id));
   return skin && item(skin.skin_id)?.character_id===characterId?skin.skin_id:null;
 }
 const portrait=skin=>manifest.skins[skin.id]?.poster || `/img/chars/${skin.character}.webp`;
+function notifyEquipment() {
+  const revision=`${state?.accountId || ''}:${state?.inventory?.filter(s=>s.equipped && available(s.skin_id)).map(s=>s.skin_id).join(',') || ''}`;
+  if(revision===equipmentRevision)return;
+  equipmentRevision=revision;document.dispatchEvent(new CustomEvent('cs-treta-inventory-change'));
+}
 
 function rewards(container) {
   const campaign=state?.campaign || TRETA_DEFAULT_REWARDS;
@@ -87,7 +96,7 @@ async function refresh() {
       if($('treta-status').textContent===errorText({}))$('treta-status').textContent='';
       $('treta-status').textContent=state?.wallet?'Seu saldo e armário estão sincronizados com a conta.':'Entre na conta para guardar seus T$ e suas skins.';
     }catch(e){if(epoch!==accountEpoch)return;state=null;refreshFailed=true;$('treta-status').textContent=errorText(e);}
-    if(epoch!==accountEpoch)return;loading=false;draw();updateBuy();
+    if(epoch!==accountEpoch)return;loading=false;draw();updateBuy();notifyEquipment();
   })().finally(()=>{if(refreshPromise===request)refreshPromise=null;});
   refreshPromise=request;return request;
 }
@@ -100,17 +109,17 @@ async function visual(host,{model,poster,coin=false,celebrate=false,count=1}) {
 }
 async function detail(skin) {
   const version=++detailVersion;
-  selected=skin;stage?.dispose();stage=null;previewReady=false;previewLoading=available(skin.id);
+  selected=skin;stage?.dispose();stage=null;previewReady=false;previewLoading=previewable(skin.id);
   $('treta-preview-retry').hidden=true;
   $('treta-detail-name').textContent=skin.name;$('treta-detail-series').textContent=skin.series;
   $('treta-detail-description').textContent=skin.description;$('treta-detail-price').textContent=money(item(skin.id)?.price ?? skin.price);
-  $('treta-detail-production').textContent=previewLoading?'Carregando prévia 3D da skin…':refreshFailed?'Consulta indisponível. Feche o detalhe e tente atualizar a carteira.':'Em produção. A imagem abaixo é a referência do personagem base; o visual final terá roupas e acessórios novos.';
+  $('treta-detail-production').textContent=refreshFailed?'Consulta indisponível. Feche o detalhe e tente atualizar a carteira.':previewLoading?'Carregando prévia 3D da skin…':'Em produção. A imagem abaixo é a referência do personagem base; o visual final terá roupas e acessórios novos.';
   $('treta-buy-status').textContent='';updateBuy();openDialog($('treta-detail'));
-  const loaded=await visual($('treta-stage'),{model:available(skin.id)?manifest.skins[skin.id].model:null,poster:portrait(skin)});
+  const loaded=await visual($('treta-stage'),{model:previewable(skin.id)?manifest.skins[skin.id].model:null,poster:portrait(skin)});
   if(version!==detailVersion || !$('treta-detail').open){loaded.dispose();return;}
   stage=loaded;previewLoading=false;previewReady=loaded.loaded || !!manifest.skins[skin.id]?.poster;
-  if(available(skin.id)){
-    $('treta-detail-production').textContent=loaded.loaded?'Prévia 3D da skin.':previewReady?'Prévia 3D indisponível. Veja a imagem da skin.':'Prévia 3D indisponível. Esta imagem é do personagem base. Tente novamente para ver a skin antes de comprar.';
+  if(previewable(skin.id)){
+    $('treta-detail-production').textContent=refreshFailed?'Consulta indisponível. Feche o detalhe e tente atualizar a carteira.':loaded.loaded?(available(skin.id)?'Prévia 3D da skin.':'Modelo 3D da skin. Venda em preparação.') :previewReady?'Prévia 3D indisponível. Veja a imagem da skin.':'Prévia 3D indisponível. Esta imagem é do personagem base. Tente novamente para ver a skin antes de comprar.';
     $('treta-preview-retry').hidden=loaded.loaded;
   }
   updateBuy();
@@ -134,7 +143,7 @@ async function equip(skin) {
   const result=await socialApi('/api/treta',{action:'equip',skinId:skin.id});
   if(epoch!==accountEpoch || result.accountId!==owner)return false;
   state=result;
-  draw();updateBuy();
+  draw();updateBuy();notifyEquipment();
   onEquip({...skin,model:manifest.skins[skin.id].model});
   document.dispatchEvent(new CustomEvent('cs-skin-equipped',{detail:{skinId:skin.id,characterId:skin.character,model:manifest.skins[skin.id].model}}));
   return true;
@@ -143,7 +152,7 @@ async function buy() {
   if(purchasePending || loading || refreshFailed || !selected || !available(selected.id) || (!owned(selected.id) && !previewReady))return;
   if(!state?.authenticated){$('treta-detail').close();login();return;}
   const skin=selected,epoch=accountEpoch,owner=state.accountId;
-  let revealPoster=portrait(skin);try{if(stage)revealPoster=stage.snapshot();}catch{}
+  const revealPoster=portrait(skin);
   purchasePending=true;updateBuy();
   try {
     if(owned(skin.id)){if(!await equip(skin))return;$('treta-buy-status').textContent='Skin equipada para a próxima partida.';return;}
@@ -155,10 +164,9 @@ async function buy() {
     $('treta-purchase-copy').textContent=result.purchase.owned?'A skin já estava no seu armário.':`${money(result.purchase.spent)} investidos no drip. Saldo: ${money(result.wallet.balance)}.`;
     $('treta-purchase-equip').onclick=async()=>{const b=$('treta-purchase-equip');b.disabled=true;try{if(!await equip(skin))return;$('treta-purchase-copy').textContent='Skin equipada para a próxima partida.';$('treta-purchase').close();}catch(e){$('treta-purchase-copy').textContent=errorText(e);}finally{b.disabled=false;}};
     openDialog($('treta-purchase'));purchaseStage?.dispose();
-    const coin=tretaChange(result.purchase.spent || 0)[0];
     const display=result.purchase.owned
       ? {model:manifest.skins[skin.id].model,poster:portrait(skin)}
-      : {model:`/models/treta/coin-${coin.value}.glb`,poster:`/img/treta/coin-${coin.value}.png`,coin:true,celebrate:true,count:coin.count};
+      : {...TRETA_COIN_ART,coin:true,celebrate:true};
     const loaded=await visual($('treta-purchase-stage'),display);
     if(epoch!==accountEpoch || !$('treta-purchase').open)loaded.dispose();else purchaseStage=loaded;
   }catch(e){if(epoch===accountEpoch)$('treta-buy-status').textContent=errorText(e);}
@@ -168,7 +176,7 @@ async function buy() {
 function initProposals() {
   const brl=cents=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(cents/100);
   $('treta-packs').replaceChildren(...TRETA_PACK_PROPOSALS.map(pack=>{
-    const card=node('article','','treta-pack'),image=node('img');image.src='/img/treta/coin-1000.png';image.alt='Moeda TRETA$';image.loading='lazy';
+    const card=node('article','','treta-pack'),image=node('img');image.src=TRETA_COIN_ART.poster;image.alt='Moeda TRETA$';image.loading='lazy';
     const button=node('button','EM PREPARAÇÃO','treta-primary');button.type='button';button.disabled=true;
     card.append(node('small',pack.label),image,node('strong',money(pack.amount)),node('b',brl(pack.brlCents)),node('span',pack.priceStatus==='owner'?'PREÇO DEFINIDO':'PREÇO PROPOSTO','treta-pack-status'),node('p',`${money(pack.amount)} no total. ${pack.priceStatus==='owner'?'Valor definido para este pack.':'Valor em revisão.'}`),button);return card;
   }));
@@ -199,21 +207,21 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   const explain=async(value=200)=>{
     const version=++infoVersion;infoStage?.dispose();infoStage=null;
     rewards($('treta-info-rewards'));stored('cs_treta_intro','v1');openDialog($('treta-info'));
-    const loaded=await visual($('treta-info-coin'),{model:`/models/treta/coin-${value}.glb`,poster:`/img/treta/coin-${value}.png`,coin:true});
+    const loaded=await visual($('treta-info-coin'),{...TRETA_COIN_ART,coin:true});
     if(version!==infoVersion || !$('treta-info').open)loaded.dispose();else infoStage=loaded;
   };
   $('treta-how').onclick=()=>void explain();$('treta-balance').onclick=()=>void explain();
   $('treta-solo').onclick=()=>{if(!state?.authenticated){login();return;}document.dispatchEvent(new CustomEvent('cs-treta-solo'));};
   $('treta-info-login').onclick=()=>{$('treta-info').close();login();};
-  const introCoin=node('img');introCoin.src='/img/treta/coin-200.png';introCoin.alt='Moeda TRETA$ do Canarinho Pistola';$('treta-info-coin').append(introCoin);
-  $('treta-coins').replaceChildren(...TRETA_COINS.map(c=>{const e=node('button','','treta-coin-card'),img=node('img');e.type='button';e.onclick=()=>void explain(c.value);img.src=`/img/treta/coin-${c.value}.png`;img.alt=`Moeda ${money(c.value)} com ${c.name}`;img.loading='lazy';const text=node('div');text.append(node('b',money(c.value)),node('small',c.name));e.append(img,text);return e;}));
+  const introCoin=node('img');introCoin.src=TRETA_COIN_ART.poster;introCoin.alt='Moeda TRETA$ do Saci';$('treta-info-coin').append(introCoin);
+  $('treta-coins').replaceChildren(...TRETA_COINS.map(c=>{const e=node('button','','treta-coin-card');e.type='button';e.disabled=c.value!==1;e.onclick=()=>void explain(c.value);const text=node('div');text.append(node('b',money(c.value)),node('small',c.value===1?c.name:`${c.name} · EM PRODUÇÃO`));if(c.value===1){const img=node('img');img.src=TRETA_COIN_ART.poster;img.alt='Moeda T$ 1 com Saci';img.loading='lazy';e.append(img);}else e.append(node('span','T$','treta-coin-pending'));e.append(text);return e;}));
   for(const button of document.querySelectorAll('[data-treta-filter]'))button.onclick=()=>{filter=button.dataset.tretaFilter;for(const b of document.querySelectorAll('[data-treta-filter]'))b.setAttribute('aria-pressed',String(b===button));draw();};
   $('treta-invite').onclick=async()=>{if(!state?.wallet){login();return;}const url=new URL('/',location.origin);url.searchParams.set('treta',state.wallet.referral_code);try{await navigator.clipboard.writeText(url.href);$('treta-status').textContent='Convite copiado. Envie para sua turma!';}catch{$('treta-status').textContent=`Seu convite: ${url.href}`;}};
   setInterval(()=>{if(account?.authenticated && !document.hidden)void refresh();},30000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden && account?.authenticated)void refresh();});
   document.addEventListener('cs-match-end',()=>{for(const delay of [2000,12000,30000])setTimeout(()=>{if(account?.authenticated)void refresh();},delay);});
   document.addEventListener('cs-shop-open',()=>void refresh());
-  document.addEventListener('cs-account-change',event=>{accountEpoch++;account=event.detail;state=null;selected=null;updateTretaRewards(null);for(const id of ['treta-detail','treta-purchase'])if($(id).open)$(id).close();draw();updateBuy();void refresh();});
+  document.addEventListener('cs-account-change',event=>{accountEpoch++;account=event.detail;state=null;selected=null;updateTretaRewards(null);for(const id of ['treta-detail','treta-purchase'])if($(id).open)$(id).close();draw();updateBuy();notifyEquipment();void refresh();});
   $('account-entry-dialog')?.addEventListener('close',()=>{if(!skipPrompt && !stored('cs_treta_intro'))explain();});
   let accountReady=false;
   const introObserver=new MutationObserver(()=>{
@@ -222,7 +230,7 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   });
   introObserver.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});
   draw();
-  void fetch('/models/skins/manifest.json').then(r=>{if(!r.ok)throw new Error('manifest_unavailable');return r.json();}).then(data=>{manifest=data;draw();}).catch(()=>{});
+  void fetch('/models/skins/manifest.json').then(r=>{if(!r.ok)throw new Error('manifest_unavailable');return r.json();}).then(data=>{manifest=data;draw();notifyEquipment();}).catch(()=>{});
   void loadAccount().then(auth=>{account=auth;}).catch(()=>{}).finally(()=>{accountReady=true;});
   void refresh();
 }

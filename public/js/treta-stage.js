@@ -40,7 +40,7 @@ export class TretaStage {
       asset.updateMatrixWorld(true);
       if(gltf.animations.length && !this.reduced){
         const mixer=new THREE.AnimationMixer(asset);this.mixers.push(mixer);
-        const spin=gltf.animations.find(c=>/idle|spin/i.test(c.name)) || gltf.animations[0];
+        const spin=gltf.animations.find(c=>c.name===(this.coin?'CoinSpin':'showroomIdle')) || gltf.animations.find(c=>/idle|spin/i.test(c.name)) || gltf.animations[0];
         const reveal=this.celebrate && gltf.animations.find(c=>c.name==='PurchaseReveal');
         if(reveal){const action=mixer.clipAction(reveal);action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;action.play();mixer.addEventListener('finished',()=>{if(!this.disposed){action.stop();mixer.clipAction(spin).play();}});}else mixer.clipAction(spin).play();
         if(!this.coin)mixer.update(0);
@@ -49,6 +49,7 @@ export class TretaStage {
       asset.traverse(o=>{if(o.isSkinnedMesh){o.skeleton.update();o.computeBoundingBox();}});
       const bounds=new THREE.Box3().setFromObject(asset),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
       asset.position.sub(center);
+      if(!this.coin && Number.isFinite(gltf.scene.userData.showroomYaw))holder.rotation.y=gltf.scene.userData.showroomYaw;
       holder.position.x=(i-(this.count-1)/2)*size.x*.68;
       if(this.coin && this.count>1)holder.position.z=-Math.abs(i-(this.count-1)/2)*.12;
     }

@@ -1,3 +1,4 @@
+import {TRETA_COIN_ART} from './treta-catalog.js';
 const reason={email:'EMAIL CONFIRMADO',referral:'AMIGO NA TRETA',singleplayer:'PARTIDA SOLO CONCLUÍDA',multiplayer:'PARTIDA MULTIPLAYER CONCLUÍDA'};
 const format=amount=>new Intl.NumberFormat('pt-BR').format(amount);
 let owner=null,queue=[],queued=new Set(),seen=new Set(),active=null,stage=null,expiry=null,pump=null;
@@ -11,12 +12,12 @@ function next(){
   document.getElementById('treta-earned-value').textContent=`+T$ ${format(reward.amount)}`;
   document.getElementById('treta-earned-reason').textContent=reason[reward.kind];
   box.hidden=false;host.replaceChildren();
-  const value=[1000,200,100,50,10,5,1].find(v=>v<=reward.amount),image=document.createElement('img');
-  image.src=`/img/treta/coin-${value}.png`;image.alt='Moeda TRETA$ girando';host.append(image);
+  const image=document.createElement('img');
+  image.src=TRETA_COIN_ART.poster;image.alt='Moeda TRETA$ girando';host.append(image);
   void import('./treta-stage.js').then(async({TretaStage})=>{
     if(active!==reward)return;
     let display;
-    try{display=new TretaStage(host,{coin:true});stage=display;await display.load(`/models/treta/coin-${value}.glb`);if(active!==reward)display.dispose();else image.remove();}catch{display?.dispose();if(stage===display)stage=null;}
+    try{display=new TretaStage(host,{coin:true});stage=display;await display.load(TRETA_COIN_ART.model);if(active!==reward)display.dispose();else image.remove();}catch{display?.dispose();if(stage===display)stage=null;}
   }).catch(()=>{ /* Keep the spinning poster if the 3D module is unavailable. */ });
   expiry=setTimeout(()=>{hide();next();},6500);
 }
@@ -32,7 +33,7 @@ export function updateTretaRewards(state){
 }
 export function initTretaRewards(){
   if(pump)return;
-  // The menu is hidden during combat; rewards belong to the page overlay.
+  // O menu fica oculto em combate; as recompensas aparecem na camada da página.
   document.body.append(document.getElementById('treta-earned'));
   document.getElementById('treta-earned-close').onclick=()=>{hide();next();};
   document.getElementById('hub-treta-wallet').onclick=()=>document.querySelector('[data-hub-tab="loja"]')?.click();

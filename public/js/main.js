@@ -870,6 +870,7 @@ function snapThumb(obj, fallbackUrl) {
 // CHAR_WEAPON/charWeapon live in characters.js, shared with game.js (initial loadout).
 let pvToken = 0;
 function pvSetChar(def) {
+  def = {...def, skinId:equippedTretaSkin(def.id)};
   if (staticPreviews) { showStaticPreview(def); return; }
   const p = ensurePreview();
   if (!p) { showStaticPreview(def); return; }
@@ -887,7 +888,7 @@ function pvSetChar(def) {
   if (GLB_CHARS.has(def.id)) {
     // Keep the PREVIOUS model visible while the real GLB streams in — never flash the
     // blocky placeholder for a character that has a real model (the pop-in bug).
-    preloadCharacterAssets([def.id]).then(() => {
+    Promise.all([preloadCharacterAssets([def.id]),preloadCosmeticAssets([def.skinId])]).then(() => {
       if (my !== pvToken) return;
       // preview: porte de EXIBIÇÃO — arma atravessada no peito (estilo vitrine do CS) em
       // vez do porte funcional que aponta o cano pra câmera e esconde a silhueta da arma
@@ -4423,8 +4424,9 @@ if (HUB_ENABLED) {
 }
 window.__CS_MAIN_READY__ = true;
 window.__gameLaunch?.ready('boot');
-void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}renderPlayerPlate();}});
-initTretaStore({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onEquipped:skin=>{currentChar=skin.character;syncHomeCharacter();}});
+void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}syncPlayState();}});
+initTretaStore({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onEquipped:skin=>{currentChar=skin.character;const def=CHARACTERS.find(c=>c.id===currentChar);currentTeam=ladoValido(def,currentTeam);currentFaction=currentTeam;localStorage.setItem('csbr-home-character',currentChar);localStorage.setItem('csbr-home-side',currentTeam);syncHomeCharacter();}});
+document.addEventListener('cs-treta-inventory-change',()=>syncHomeCharacter());
 if (inspectionScreen) {
   openInspectionScreen(inspectionScreen).catch((error) => window.__gameLaunch?.fail(error, 'screen-query'));
 } else if (testMode && params.get('auto')) {

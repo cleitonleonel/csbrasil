@@ -189,7 +189,7 @@ export async function preloadCosmeticAssets(ids = []) {
       }
       const compatible = entry.rigCompatibleWith === entry.character;
       if (!compatible && !STATES.every(name => clips[name])) throw new Error('skin_requires_animations');
-      _skins.set(id, {character:entry.character, model:g.scene, clips:compatible?null:clips});
+      _skins.set(id, {character:entry.character, model:g.scene, clips:compatible?null:clips,gripProfile:entry.gripProfile});
     })().catch(e => console.warn(`[skins] ${id}: ${e.message}`)).finally(() => _skinRequests.delete(id));
     _skinRequests.set(id, request); return request;
   }));
@@ -508,7 +508,8 @@ export function buildCharacterModel(def, opts = {}) {
   const clips = skin?.clips || _clipsByChar[def.id] || _clips;   // clipes retargetados por personagem
   for (const name of [...STATES, ...OPT_STATES]) if (clips[name]) actions[name] = mixer.clipAction(clips[name]);
 
-  const ctrl = new CharController(mixer, actions, group, headBone, head, def.id, model);
+  // Skins assam contato no próprio clipe; offsets da base têm outro rig.
+  const ctrl = new CharController(mixer, actions, group, headBone, head, skin ? def.skinId : def.id, model);
   ctrl.shadow = shadow;   // antes do settle loop abaixo (ctrl.update já a atualiza)
   // Arma de 1 mão (pistol/deagle/revolver38/knife): usa idle1h/walk1h quando carregados.
   ctrl.oneHanded = !!(opts.weaponId && ONE_HANDED.has(opts.weaponId));
@@ -657,10 +658,12 @@ export function buildCharacterModel(def, opts = {}) {
     const CURL_MAX = { lobisomem: 0.50 };
     const tetoCurl = CURL_MAX[def.id];
     let curl = gunObj ? curlPara(gunObj) : 0.5;
+    if (skin?.gripProfile === 'mint24-curl-v1') curl = 1.4;
     if (tetoCurl != null) curl = Math.min(curl, tetoCurl);
     // fecha TODOS os ossos de curl com peso (nos 18 rigs transplantados eles vêm em par)
     for (const b of curlRs) b.rotation.x += curl;
-    if (twoHanded) for (const b of curlLs) b.rotation.x += curl;
+    const supportCurl = skin?.gripProfile === 'mint24-curl-v1' && ['lula-drip', 'senador-drip', 'zero-um-mandrake'].includes(def.skinId) ? 2.5 : curl;
+    if (twoHanded) for (const b of curlLs) b.rotation.x += supportCurl;
     // IK da mão de apoio (FASE 2): em armas de 2 mãos, o CharController trava a palma L
     // no guarda-mão depois de cada mixer.update — vale pra idle/walk dos bots E pro
     // preview da tela de seleção (mesmo ctrl.update). Posicional apenas: os clipes já
@@ -669,6 +672,7 @@ export function buildCharacterModel(def, opts = {}) {
       let lArm = null, lFore = null;
       model.traverse(o => { if (o.isBone) { if (o.name === 'LeftArm') lArm = o; if (o.name === 'LeftForeArm') lFore = o; } });
       const gp = gripPoints(opts.weaponId || 'awp');
+      if (skin?.gripProfile === 'mint24-curl-v1' && gp.fore) { gp.fore.z *= 1.35; gp.fore.y += def.skinId === 'lula-drip' ? 0.07 : 0.035; }
       if (lArm && lFore && gp.fore && gunObj && !IK_L_SKIP.has(def.id)) ctrl.ikL = { chain: [lArm, lFore], end: lhandBone, endOffset: measurePalmLocal(model, lhandBone, curlLs), gun: gunObj, fore: gp.fore.clone() };
     }
   }
