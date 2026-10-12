@@ -1,12 +1,12 @@
 // Boot, menus, settings, logo, main loop.
 import * as THREE from 'three';
 import { initTextures } from './textures.js';
-import { CHARACTERS, buildCharacter, charWeapon } from './characters.js';
+import { CHARACTERS, buildCharacter, charWeapon, ladosDe, podeNoLado } from './characters.js';
 import { preloadCharacterAssets, buildCharacterModel, hasModel, GLB_CHARS } from './glbchars.js';
 import { preloadFPArms } from './fparms.js';
 import { preloadMapProps } from './mapprops.js';
 import { preloadAmbientLife } from './ambientlife.js';   // fauna do mapa (MAPS[id].ambience)
-import { apiUrl, fetchComRetry } from './apibase.js';   // rotas /api de banco moram no backend (docs/APIS.md)
+import { apiUrl, fetchComRetry, versaoComOrigem } from './apibase.js';   // rotas /api de banco moram no backend (docs/APIS.md)
 import { MAPS, DEFAULT_MAP, resolveMapId, mapaDaSessao, mapasDoMenu, MAPAS_PARADOS } from './maps.js';
 import { PALETA } from './paleta.js';
 import { setHavanCarSeed } from './map_havan.js';
@@ -24,22 +24,22 @@ import { enableStylize } from './stylize.js';
 import { FACTIONS } from './factions.js';
 /* Literal exigido pela régua UIR1 (redesign-check lê a declaração, não o uso);
    a fonte dos nomes é factions.js — mantenha os dois em sincronia. */
-const FACTION_NAME = { E: 'TIME E', B: 'TIME B', U: 'TRIBOS URBANAS', C: 'PALHACOS', F: 'FUNKEIROS', M: 'MITICOS', N: 'NERDOLAS', R: 'PROFISSIONAIS DO CORRE', O: 'NOIAS', T: 'TV' };
+const FACTION_NAME = { E: 'ESQUERDA', B: 'DIREITA', U: 'TRIBOS URBANAS', C: 'PALHACOS', F: 'FUNKEIROS', M: 'MITICOS', N: 'NERDOLAS', R: 'PROFISSIONAIS DO CORRE', O: 'NOIAS', T: 'TV', P: 'POLÍTICOS' };
 import { resolveInspectionScreen } from './screenquery.js';
 import { LoadingCharacterStage } from './loading3d.js';
 import { MENU_MUSIC_ACTIVE_IDS } from './menu-music-selection.js';
 import { createMapPreview, VIDEO_MAPS } from './map_preview.js';
 /* Multiplayer. O game.js NÃO importa nada disto: o netcode é injetado por aqui
    (`new Game({ mpFactory, net })`), e sem sessão de rede nenhuma linha dele executa. */
-import { NOS, NO_RE, ordenarNos, melhorNoParaJogar, mpUrls, sondarNos, listRooms, listMaps, createRoom, NetClient, parseConvite, linkDeConvite, salaPorConvite, httpDoNo, resolvePlayerSide, transitionSlot } from './net.js';
+import { NOS, NO_RE, ordenarNos, melhorNoParaJogar, mpUrls, sondarNos, listRooms, listMaps, createRoom, NetClient, parseConvite, linkDeConvite, salaPorConvite, httpDoNo, resolvePlayerSide, ladoOnline, transitionSlot } from './net.js';
+import { montarChatSala } from './chat-painel.js';
 import { makeNetcode } from './netgame.js';
-import { FACCAO_NOME_UI } from './mapcat.js';
 
 /* ---------------- settings & nickname ---------------- */
 const SETTINGS_KEY = 'awpbr_settings';
 const savedSettings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
 if (savedSettings.invertY == null && savedSettings.invY != null) savedSettings.invertY = savedSettings.invY;
-const settings = Object.assign({ sens: 1, invertY: false, vol: 0.7, quality: 'med', speech: true, map: DEFAULT_MAP, wpnMode: 'all', bots: 4, rounds: 5, ctfRounds: 3, difficulty: 'normal', fxFlash: 'normal', camView: 'first' }, savedSettings);
+const settings = Object.assign({ sens: 1, invertY: false, vol: 0.7, menuMusic: true, quality: 'med', speech: true, map: DEFAULT_MAP, wpnMode: 'all', bots: 4, rounds: 5, ctfRounds: 3, difficulty: 'normal', fxFlash: 'normal', camView: 'first' }, savedSettings);
 if (!['first', 'third', 'shoulder'].includes(settings.camView)) settings.camView = 'first';
 let preferredQuality = null;
 const saveSettings = () => localStorage.setItem(SETTINGS_KEY, JSON.stringify({
@@ -350,7 +350,7 @@ function loadMenuBackdrop() {
 loadMenuBackdrop().then(_splashSetReady).catch(_splashSetReady);
 
 /* ---------------- screens ---------------- */
-const screens = ['mobile-warning', 'main-menu', 'map-screen', 'team-select', 'char-select', 'settings-panel', 'howto-panel', 'ranking-panel', 'mp-panel', 'feedback-panel', 'support-panel', 'pause-menu', 'match-end'];
+const screens = ['main-menu', 'map-screen', 'team-select', 'char-select', 'settings-panel', 'howto-panel', 'ranking-panel', 'mp-panel', 'feedback-panel', 'support-panel', 'pause-menu', 'match-end'];
 function show(id) {
   const hubMpRoute = HUB_ENABLED && id === 'mp-panel';
   if (hubMpRoute) {
@@ -506,6 +506,15 @@ fetch(`/audio/manifest.json?v=${VERSION}`)
   })
   .catch(() => {});
 let menuMusic = null, musicArmed = false, musicFade = null, tracksTrocadas = false;
+function syncMenuMusicToggle() {
+  const button = $('hub-music-toggle');
+  if (!button) return;
+  const enabled = settings.menuMusic !== false;
+  button.setAttribute('aria-pressed', String(enabled));
+  button.setAttribute('aria-label', tr(enabled ? 'Desligar música do menu' : 'Ligar música do menu'));
+  button.title = button.getAttribute('aria-label');
+  button.querySelector('b').textContent = tr(enabled ? 'MÚSICA LIGADA' : 'MÚSICA DESLIGADA');
+}
 const _menuTrackId = (url) => url.match(/([^/]+)\.\w+$/)?.[1] || 'desconhecida';
 function _ensureMusic() {
   if (menuMusic && !tracksTrocadas) return menuMusic;
@@ -526,6 +535,7 @@ function _ensureMusic() {
   return menuMusic;
 }
 function startMenuMusic() {
+  if (settings.menuMusic === false) return;
   const m = _ensureMusic();
   if (musicFade) { clearInterval(musicFade); musicFade = null; }
   if (!musicArmed) {
@@ -534,12 +544,12 @@ function startMenuMusic() {
     // fluxo atual: mudo no load + desmute com fade no 1º gesto. Sem promise não tratada.
     m.muted = false; m.volume = MENU_MUSIC_VOL;
     const p = m.play();
-    if (p && p.then) p.then(() => { musicArmed = true; }, () => {
-      if (m.paused) { m.muted = true; m.play().catch(() => {}); }   // fallback gracioso
+    if (p && p.then) p.then(() => { musicArmed = true; if (settings.menuMusic === false) m.pause(); }, () => {
+      if (settings.menuMusic !== false && m.paused) { m.muted = true; m.play().catch(() => {}); }   // fallback gracioso
     });
     // o play() do boot nem sempre "gruda" (rede/dev server lento, readyState 0) —
     // re-tenta quando houver dados, enquanto a intenção for tocar no menu
-    if (!m._cpHook) { m._cpHook = 1; m.addEventListener('canplay', () => { if (!menuMusic || menuMusic.paused) m.play().catch(() => {}); }); }
+    if (!m._cpHook) { m._cpHook = 1; m.addEventListener('canplay', () => { if (settings.menuMusic !== false && menuMusic === m && m.paused) m.play().catch(() => {}); }); }
     return;
   }
   m.muted = false; m.volume = MENU_MUSIC_VOL;
@@ -557,6 +567,7 @@ function stopMenuMusic() {   // fade rápido pra não cortar seco ao entrar na p
 // então o som "entra" instantâneo, como se fosse autoplay de verdade
 const _armMusic = () => {
   if (musicArmed) return; musicArmed = true;
+  if (settings.menuMusic === false) return;
   const m = _ensureMusic();
   m.muted = false;
   let v = 0.02; m.volume = v;
@@ -578,8 +589,7 @@ function dismissSplash(e) {
   setTimeout(focusMenu, 120);   // pós-splash: dá foco ao 1º botão pra ↑/↓ navegarem SEM precisar de Tab
   musicArmed = true;
   if (musicFade) { clearInterval(musicFade); musicFade = null; }
-  const m = _ensureMusic();
-  m.muted = false; m.volume = MENU_MUSIC_VOL; m.play().catch(() => {});
+  startMenuMusic();
 }
 /* Foco no 1º item visível do menu CS: o handler de setas vive no #cs-menu e só dispara com
    o foco lá dentro. Guardas: não rouba foco de campo de texto nem do painel de setup. */
@@ -598,6 +608,18 @@ window.addEventListener('pointerdown', dismissSplash, true);
 window.addEventListener('keydown', dismissSplash, true);
 window.addEventListener('pointerdown', _armMusic);
 window.addEventListener('keydown', _armMusic);
+const menuMusicToggle = $('hub-music-toggle');
+if (menuMusicToggle) menuMusicToggle.onclick = () => {
+  settings.menuMusic = settings.menuMusic === false;
+  saveSettings();
+  syncMenuMusicToggle();
+  if (settings.menuMusic) startMenuMusic();
+  else {
+    if (musicFade) { clearInterval(musicFade); musicFade = null; }
+    if (menuMusic) { menuMusic.pause(); menuMusic.muted = true; }
+  }
+};
+syncMenuMusicToggle();
 startMenuMusic();   // boot: começa MUDA imediatamente (loop rolando antes do 1º clique)
 
 /* Laboratório local de curadoria (?menumusiclab=1). O jogo normal continua escolhendo uma
@@ -896,7 +918,9 @@ function pvThumb(def) {
 const routeChar = HUB_ENABLED ? new URLSearchParams(location.search).get('personagem') : null;
 const rememberedChar = (routeChar && CHARACTERS.some((c) => c.id === routeChar) ? routeChar : null) || localStorage.getItem('csbr-home-character');
 const initialChar = CHARACTERS.find((c) => c.id === rememberedChar) || CHARACTERS[0];
-let game = null, currentTeam = initialChar.team === 'B' ? 'B' : 'E', currentFaction = initialChar.team, currentChar = initialChar.id, selChar = null;
+const ladoValido = (def, lado) => (podeNoLado(def, lado) ? lado : ladosDe(def)[0]);
+const initialSide = ladoValido(initialChar, localStorage.getItem('csbr-home-side') === 'B' ? 'B' : 'E');
+let game = null, currentTeam = initialSide, currentFaction = initialSide, currentChar = initialChar.id, selChar = null;
 function returnPreviewToSelection() {
   const box = document.querySelector('.char-preview-box');
   const marker = $('char-preview-return');
@@ -908,13 +932,14 @@ function syncHomeCharacter() {
   const host = $('hub-character');
   if (box && host && box.parentElement !== host) host.appendChild(box);
   const def = CHARACTERS.find((c) => c.id === currentChar) || CHARACTERS[0];
-  $('hub-character-name').textContent = `${tr(FACTION_NAME[def.team] || def.team)} · ${def.name}`;
-  $('hub-character-crest').src = `/img/brasoes/${def.team.toLowerCase()}.png`;
-  $('hub-change-character').style.setProperty('--hub-faction', PALETA[def.team]?.base || '#b4d92e');
+  const lado = ladoValido(def, currentTeam);
+  $('hub-character-name').textContent = `${tr(FACTION_NAME[lado])} · ${def.name}`;
+  $('hub-character-crest').src = `/img/brasoes/${lado.toLowerCase()}.png`;
+  $('hub-change-character').style.setProperty('--hub-faction', PALETA[lado]?.base || '#b4d92e');
   pvSetChar(def);
 }
 let hubMapReturnQuick = false;
-let hubRosterFaction = null;
+let hubRosterLado = 'E', hubRosterCat = null;
 function closeHubMap(updateRoute = true) {
   $('hub-map-modal').hidden = true;
   if (hubMapReturnQuick) { hubMapReturnQuick = false; openHubQuick(updateRoute); }
@@ -957,18 +982,35 @@ function closeHubRoster(updateRoute = true) {
   if (updateRoute) hubNavigate({ janela: null });
 }
 function openHubRoster(updateRoute = true) {
-  hubRosterFaction = (CHARACTERS.find((c) => c.id === currentChar) || CHARACTERS[0]).team;
-  const filters = $('hub-roster-factions'), grid = $('hub-roster-grid');
+  hubRosterLado = ladoValido(CHARACTERS.find((c) => c.id === currentChar) || CHARACTERS[0], currentTeam);
+  const temPoliticos = (lado) => CHARACTERS.some((c) => c.team === 'P' && podeNoLado(c, lado));
+  hubRosterCat = temPoliticos(hubRosterLado) ? 'P' : null;
+  const lados = $('hub-roster-lados'), filters = $('hub-roster-factions'), grid = $('hub-roster-grid');
   const render = () => {
-    filters.replaceChildren(); grid.replaceChildren();
-    for (const faction of ['E', 'B', 'U', 'C', 'F', 'M']) {
+    lados.replaceChildren(); filters.replaceChildren(); grid.replaceChildren();
+    for (const lado of ['E', 'B']) {
+      const button = document.createElement('button'); button.type = 'button'; button.setAttribute('role', 'tab');
+      const crest = document.createElement('img'); crest.src = `/img/brasoes/${lado.toLowerCase()}.png`; crest.alt = '';
+      button.append(crest, tr(FACTION_NAME[lado]));
+      button.style.setProperty('--lado', PALETA[lado].base);
+      button.setAttribute('aria-selected', String(lado === hubRosterLado));
+      button.onclick = () => { hubRosterLado = lado; hubRosterCat = temPoliticos(lado) ? 'P' : null; render(); };
+      lados.appendChild(button);
+    }
+    const doLado = CHARACTERS.filter((c) => podeNoLado(c, hubRosterLado));
+    const cats = [...new Set(doLado.map((c) => c.team))];
+    // Políticos abre primeiro e já vem filtrado quando há elenco político para este lado.
+    const orderedCats = cats.includes('P')
+      ? ['P', ...cats.filter((cat) => cat !== 'P'), null]
+      : [null, ...cats];
+    for (const cat of orderedCats) {
       const button = document.createElement('button'); button.type = 'button';
-      button.textContent = tr(FACTION_NAME[faction] || faction);
-      button.setAttribute('aria-pressed', String(faction === hubRosterFaction));
-      button.onclick = () => { hubRosterFaction = faction; render(); };
+      button.textContent = cat ? tr(FACTION_NAME[cat] || cat) : tr('TODOS');
+      button.setAttribute('aria-pressed', String(cat === hubRosterCat));
+      button.onclick = () => { hubRosterCat = cat; render(); };
       filters.appendChild(button);
     }
-    for (const def of CHARACTERS.filter((c) => c.team === hubRosterFaction)) {
+    for (const def of doLado.filter((c) => !hubRosterCat || c.team === hubRosterCat)) {
       const button = document.createElement('button'); button.type = 'button';
       button.setAttribute('aria-pressed', String(def.id === currentChar));
       const avatar = document.createElement('img'); avatar.src = `/img/chars/avatars/${def.id}.webp`;
@@ -976,21 +1018,22 @@ function openHubRoster(updateRoute = true) {
       const name = document.createElement('span'); name.textContent = def.name;
       button.append(avatar, name);
       button.onclick = () => {
-        ui.click(); currentChar = def.id; currentFaction = def.team;
-        currentTeam = def.team === 'B' ? 'B' : 'E'; currentEnemyFaction = null;
+        ui.click(); currentChar = def.id; currentTeam = hubRosterLado; currentFaction = hubRosterLado;
+        currentEnemyFaction = null;
         localStorage.setItem('csbr-home-character', currentChar);
+        localStorage.setItem('csbr-home-side', currentTeam);
         syncHomeCharacter(); closeHubRoster(false);
         hubNavigate({ personagem: currentChar, janela: null });
       };
       grid.appendChild(button);
     }
     const selected = CHARACTERS.find((c) => c.id === currentChar) || CHARACTERS[0];
-    $('hub-roster-selected').textContent = `Selecionado: ${tr(FACTION_NAME[selected.team] || selected.team)} · ${selected.name}`;
+    $('hub-roster-selected').textContent = `Selecionado: ${tr(FACTION_NAME[ladoValido(selected, currentTeam)])} · ${selected.name}`;
   };
   render(); $('hub-roster-modal').hidden = false; $('hub-roster-close').focus();
   if (updateRoute) hubNavigate({ secao: 'jogar', partida: 'singleplayer', janela: 'personagens' });
 }
-let pickingEnemy = false, currentEnemyFaction = null;   // 2º passo do team-select: escolher o adversário
+let currentEnemyFaction = null;
 let submitted = true;   // stats da partida atual já enviados?
 
 /* RÉGUA:launch-race início — extraído por `tools/eval/launch-race-check.mjs` */
@@ -1094,8 +1137,10 @@ let heartbeatOff = false;
    zero mentiroso quando o backend está fora/local. Atualiza a cada 60 s só no menu. */
 // o idioma por país resolve ANTES de traduzir o menu (o fetch começou no <head>)
 await resolveGeoLang();
+document.documentElement.lang = LANG === 'en' ? 'en' : 'pt-BR';
 // EN por camada: varre o menu estático UMA vez (PT é a fonte; i18n.js explica o desenho)
 translateDom(document.body);
+syncMenuMusicToggle();
 // links do rodapé por idioma: EN vai pras gêmeas que EXISTEM (characters, how-to-play,
 // weapons, maps, about, whats-new, docs/en); /mapa continua só PT (issue #54)
 if (LANG === 'en') for (const a of document.querySelectorAll('.menu-footer a')) {
@@ -1238,7 +1283,7 @@ function _perfFinish(bootMs, frames) {
   } catch { /* GPU info é melhor-esforço */ }
   const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   const payload = {
-    anonId: getAnonId(), version: VERSION,
+    anonId: getAnonId(), version: versaoComOrigem(VERSION),
     sessionId: getSessionId(), ...telemetryGameContext,
     fps: frames, bootMs, loadMs: _perfLoadMs,
     cores: navigator.hardwareConcurrency || null,
@@ -1269,7 +1314,7 @@ function sendMatchEvent(result) {
   const top = Object.entries(wk).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
   const payload = {
     anonId: getAnonId(),
-    sessionId: getSessionId(), eventId: _matchEventId, version: VERSION,
+    sessionId: getSessionId(), eventId: _matchEventId, version: versaoComOrigem(VERSION),
     ...telemetryGameContext,
     map: currentMap, mode: matchMode === 'ctf' ? 'ctf' : 'rounds',
     character: currentChar, team: g.playerTeam,
@@ -1405,11 +1450,15 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
   _matchEventId = clientUuid();
   // MOBILE: não bloqueia mais — entra com controles de toque. No retrato o overlay
   // "gire o celular" (CSS) cobre a tela até deitar.
-  // facção = time do personagem ('E'/'B'/'U'). O jogador ESCOLHE o adversário (enemyFaction);
-  // default = oposto político. Mesma facção dos dois lados = mirror (inimigo roxo no HUD).
-  const faction = (CHARACTERS.find(c => c.id === charId) || {}).team || team || 'E';
+  // Offline a identidade visual é o próprio lado (E Esquerda, B Direita) e o adversário é o
+  // lado oposto; online a facção ainda vem da sala do servidor.
+  if (sessao) team = ladoOnline(team, sessao.net);
+  const charDef = CHARACTERS.find(c => c.id === charId) || {};
+  if (!online && !podeNoLado(charDef, team)) team = ladosDe(charDef)[0];
+  let faction = charDef.team || team || 'E';
   const side = resolvePlayerSide(team, faction, online);
-  const enemyFac = enemyFaction || currentEnemyFaction || (side === 'B' ? 'E' : 'B');
+  if (!online) faction = side;
+  const enemyFac = online ? (enemyFaction || currentEnemyFaction || (side === 'B' ? 'E' : 'B')) : (side === 'B' ? 'E' : 'B');
   currentFaction = faction; currentTeam = side; currentChar = charId; currentEnemyFaction = enemyFac;
   // o lote de escolha da partida — 5 contadores numa chamada (ver /api/pick)
   _picks([
@@ -1547,6 +1596,8 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
   /* `applyCinematicScreen` morreu no 495a6d889 e a chamada ficou: o `ReferenceError` dentro
      de `setPaused(true)` matava o M em partida (pilha no BUG-179, item 7). */
   game.onPauseChange = () => resetConfirms();
+  // chat de sala (#686): Y/U do game.js abrem o compositor; a troca de cena fecha e guarda o rascunho
+  if (sessao?.chat) { game.onAbrirChat = (ch) => sessao.chat.abrir(ch); sessao.chat.aoTrocarJogo(game); }
   game.onToggleSpeech = () => {
     settings.speech = !settings.speech;
     sfx.speechEnabled = settings.speech;
@@ -1969,6 +2020,7 @@ if (HUB_ENABLED) {
   const mpPanel = $('mp-panel');
   $('hub-mp-host').appendChild(mpPanel);
   $('mp-panel').querySelector('.mp-corpo').prepend($('mp-quick'));
+  $('mp-quick').after($('mp-amigos'));   // nas duas abas (pública e privada), logo no topo
   $('mp-panel').querySelector('.mp-corpo').appendChild($('mp-panel').querySelector('.mp-criar'));
   const tabs = [...document.querySelectorAll('.hub-tabs [data-hub-tab]')];
   const panes = { jogar: $('hub-play'), ranking: $('hub-ranking'), sobre: $('hub-about'), feedback: $('hub-feedback'), apoie: $('hub-support') };
@@ -2093,7 +2145,7 @@ if (HUB_ENABLED) {
   restoreHubRoute = () => {
     const query = new URLSearchParams(location.search);
     const section = query.get('secao');
-    const tab = Object.hasOwn(panes, section) ? section : 'jogar';
+    const tab = Object.prototype.hasOwnProperty.call(panes, section) ? section : 'jogar';
     const net = query.get('partida') === 'multiplayer' ? 'mp' : 'sp';
     const server = query.get('servidor') === 'privado' ? 'private' : 'public';
     const modal = query.get('janela');
@@ -2106,7 +2158,7 @@ if (HUB_ENABLED) {
     const map = query.get('map');
     if (map && MAPAS_MENU.includes(map) && map !== currentMap) gotoMap(MAPAS_MENU.indexOf(map), false);
     const char = CHARACTERS.find((c) => c.id === query.get('personagem'));
-    if (char && char.id !== currentChar) { currentChar = char.id; currentFaction = char.team; currentTeam = char.team === 'B' ? 'B' : 'E'; currentEnemyFaction = null; }
+    if (char && char.id !== currentChar) { currentChar = char.id; currentTeam = ladoValido(char, currentTeam); currentFaction = currentTeam; currentEnemyFaction = null; }
     setHubNet(net, false);
     setHubMpTab(server, false);
     setHubTab(tab, false);
@@ -2537,11 +2589,12 @@ $('settings-close').onclick = closeSettings;
 $('settings-apply').onclick = () => { ui.click(); saveSettings(); if (game) game.applySettings(); };
 $('settings-restore').onclick = () => {
   ui.click();
-  settings.quality = 'med'; settings.sens = 1; settings.invertY = false; settings.vol = 0.7; settings.speech = true; settings.xhair = '#4fe8e0'; settings.camView = 'first';
+  settings.quality = 'med'; settings.sens = 1; settings.invertY = false; settings.vol = 0.7; settings.menuMusic = true; settings.speech = true; settings.xhair = '#4fe8e0'; settings.camView = 'first';
   $('set-quality').value = settings.quality; $('set-sens').value = settings.sens; $('set-vol').value = settings.vol;
   $('set-speech').checked = true; $('set-invert-y').checked = false; $('set-xhair').value = settings.xhair; $('set-camera').value = 'first';
   if (game) game.setCamView('first');
-  sfx.speechEnabled = true; sfx.setVolume(settings.vol); applyXhair(); updLabels(); saveSettings();
+  sfx.speechEnabled = true; sfx.setVolume(settings.vol); applyXhair(); updLabels(); saveSettings(); syncMenuMusicToggle();
+  if (settingsReturn === 'main-menu') startMenuMusic();
   if (game) game.applySettings();
 };
 // Abas das configurações: troca o pane visível; os inputs nunca são re-criados,
@@ -2557,8 +2610,7 @@ document.querySelectorAll('.set-tab').forEach(tab => {
     });
   };
 });
-$('mobile-ok').onclick = () => { sfx.uiClick(); show('main-menu'); };
-$('team-back').onclick = () => { ui.back(); pickingEnemy = false; setEnemyPickMode(false); setTeamStep('side'); show('main-menu'); };
+$('team-back').onclick = () => { ui.back(); setEnemyPickMode(false); setTeamStep('side'); show('main-menu'); };
 $('char-back').onclick = () => {
   ui.back();
   if (switchMode && game) {
@@ -2672,10 +2724,18 @@ $('btn-menu').onclick = () => { sfx.uiClick(); quitToMenu(); };
 let switchMode = false;
 function armSwitchHook() {
   game.onRequestSwitch = () => {
+    if (mpSessao) return abrirTrocaOnline();
     game.setPaused(true);
     switchMode = true;
     pickTeam(game.enemyFaction);
   };
+}
+// Online o lado é do servidor: M só troca o personagem, e só se o servidor aceitar.
+function abrirTrocaOnline() {
+  if (!mpSessao.net?.aceitaPersonagem?.() || mpSessao.net.espectador) return;
+  game.setPaused(true);
+  switchMode = 'mp';
+  pickTeam(currentTeam);
 }
 $('char-confirm').onclick = () => {
   sfx.uiClick();
@@ -2683,6 +2743,13 @@ $('char-confirm').onclick = () => {
   // Only take the in-match "switch team" path when there's a live game to switch;
   // a stale switchMode flag (e.g. backed out of M) must NOT hit game._switchTeam on a
   // disposed game — that used to throw and leave the next match unable to load.
+  if (switchMode === 'mp' && game && mpSessao) {
+    switchMode = false;
+    localStorage.setItem('csbr-home-character', selChar.id);
+    mpSessao.net.pedirPersonagem(selChar.id);
+    show(null); game.resume();
+    return;
+  }
   if (switchMode && game) {
     switchMode = false;
     currentChar = selChar.id;
@@ -2697,21 +2764,19 @@ $('char-confirm').onclick = () => {
   } else if (HUB_ENABLED) {
     switchMode = false;
     currentChar = selChar.id;
-    currentFaction = selChar.team;
-    currentTeam = currentFaction === 'B' ? 'B' : 'E';
+    currentTeam = ladoValido(selChar, currentTeam);
+    currentFaction = currentTeam;
     currentEnemyFaction = null;
     localStorage.setItem('csbr-home-character', currentChar);
+    localStorage.setItem('csbr-home-side', currentTeam);
     show('main-menu');
   } else {
     switchMode = false;
-    // 2º passo: escolher o ADVERSÁRIO (reusa o team-select com título trocado).
-    // O card da SUA facção é escondido — adversário só entre os outros 2 (sem mirror).
+    // O adversário é sempre o outro lado: o personagem confirmado já começa a partida.
     currentChar = selChar.id;
-    pickingEnemy = true;
-    setEnemyPickMode(true, currentFaction);
-    setTeamStep('enemy', currentFaction);
-    show('team-select');
-    ensureTeamPreviews();   // no-op se já rodou (previews ficam cacheados nos cards)
+    currentTeam = ladoValido(selChar, currentTeam);
+    currentFaction = currentTeam;
+    startGame(currentTeam, currentChar, null);
   }
 };
 
@@ -3117,24 +3182,16 @@ function pickTeam(faction) {
   /* Facção sem elenco não abre lista vazia: guarda única, cobre clique e teclado
      (o card já nasce `aria-disabled` no laço do contador). */
   if (!CHARACTERS.some(c => c.team === faction)) { ui.back(); return; }
-  // 2º passo: se está escolhendo o ADVERSÁRIO, grava e começa a partida.
-  // (o card da sua facção fica escondido nessa tela — adversário é sempre um dos outros 2)
-  if (pickingEnemy) {
-    pickingEnemy = false; currentEnemyFaction = faction;
-    setEnemyPickMode(false);
-    setTeamStep('side');
-    startGame(currentTeam, currentChar, faction);
-    return;
-  }
-  // faction = FACÇÃO escolhida (P/B/U). O LADO físico é P (petista/tribos) ou B (bolsonarista).
-  currentFaction = faction;
-  currentTeam = faction === 'B' ? 'B' : 'E';
+  // Card E/B escolhe o LADO e lista quem pode jogar nele; os outros cards são categorias do elenco.
+  const lado = faction === 'E' || faction === 'B' ? faction : null;
+  if (lado) currentTeam = lado;
+  currentFaction = currentTeam;
   // estado de seleção persistente nos cards: ao voltar do personagem, a tela diz qual é o SEU lado
   for (const f of ['e', 'b', 'u', 'c', 'f', 'm']) {
     const b = $('btn-team-' + f);
     if (b) b.setAttribute('aria-pressed', String(f.toUpperCase() === faction));
   }
-  const chars = CHARACTERS.filter(c => c.team === faction);   // roster da facção escolhida
+  const chars = CHARACTERS.filter(c => (lado ? podeNoLado(c, lado) : c.team === faction));
   // ?nav=1 pula o preload 3D do roster (lento) — thumbnails caem no fallback pvThumb, que
   // nunca dispara GLB. A transição #char-select é o que o smoke de navegação quer provar.
   const mountCharList = () => {
@@ -3475,25 +3532,6 @@ function loop() {
 }
 loop();
 
-/* ---------------- boot ---------------- */
-/* Guarda igual à da linha de baixo, e não é zelo: esta escrita roda em escopo de
-   módulo DUAS linhas antes do `show()`. Se o redesign mexer na única `.footnote`
-   do documento (index.astro, dentro do #pause-menu), o TypeError acontece ANTES
-   de qualquer tela aparecer — o sintoma seria "o menu não abre", que não parece
-   com "alguém renomeou uma classe no pause". */
-{
-  const fn = document.querySelector('.footnote');
-  if (fn) fn.textContent =
-    `v${VERSION} · Sátira política fictícia. Nenhum político real foi consultado (ou poupado).`;
-}
-{ const sv = document.getElementById('splash-ver'); if (sv) sv.textContent = `v${VERSION}`; }
-show('main-menu');   // mobile agora entra no menu normal (fase 1: controles de toque)
-if (HUB_ENABLED) {
-  hubNavigate({ map: currentMap, personagem: currentChar }, true);
-  restoreHubRoute();
-}
-window.__CS_MAIN_READY__ = true;
-window.__gameLaunch?.ready('boot');
 function showInspectionResult(won, character) {
   const end = $('match-end');
   end.classList.toggle('win', won);
@@ -3567,18 +3605,6 @@ async function openInspectionScreen(target) {
   }
   if (target.screen === 'pause') game?.setPaused(true);
 }
-if (inspectionScreen) {
-  openInspectionScreen(inspectionScreen).catch((error) => window.__gameLaunch?.fail(error, 'screen-query'));
-} else if (testMode && params.get('auto')) {
-  const [team, char] = params.get('auto').split(',');
-  startGame(team || 'E', char || CHARACTERS[0].id);
-} else if (params.get('sala')) {
-  /* Chegou por LINK de convite (/sala/BR-7K3M redireciona pra cá). Espera a splash sair antes
-     de abrir a rede: sem gesto do usuário o áudio nem inicia e o jogo abre mudo. */
-  const entrarQuandoPuder = () => window.__mpConvite?.(params.get('sala'));
-  if (document.getElementById('boot-splash')) document.addEventListener('click', entrarQuandoPuder, { once: true });
-  else entrarQuandoPuder();
-}
 
 /* MULTIPLAYER — navegador de servidores, salas e sessão de rede. Aqui só se escolhe ONDE e
    EM QUE sala; a autoridade é do servidor. Desenho e decisões: docs/MULTIPLAYER.md. */
@@ -3603,12 +3629,53 @@ let mpConectando = false;   // trava de reentrada do mpEntrar (BUG-88)
 let mpNos = [];
 let mpTimerLista = null;
 let mpTicketIdentityUid = null;
+let mpIdentityTimer = null;
+
+function mpLimparIdentidade() {
+  clearTimeout(mpIdentityTimer);
+  mpIdentityTimer = null;
+  for (const id of ['mp-identity-toast', 'mp-identity-pause']) {
+    const card = document.getElementById(id);
+    if (card) card.hidden = true;
+  }
+}
+
+function mpMostrarIdentidade(estado) {
+  mpLimparIdentidade();
+  const espectador = !!estado.espectador || estado.yourEnt == null;
+  const roster = Array.isArray(estado.roster) ? estado.roster : [];
+  const corpo = espectador ? null : roster.find((r) => r && r.id === estado.yourEnt && r.team === estado.yourTeam);
+  const def = corpo ? CHARACTERS.find((c) => c.id === corpo.char) : null;
+  // O personagem usado para preload é um fallback técnico; não anunciá-lo como atribuição.
+  const nome = espectador ? 'Espectador' : def?.name || 'Personagem não identificado';
+  const detalhe = espectador ? 'Aguardando vaga em um time'
+    : def ? tr(FACTION_NAME[def.team] || def.team) : 'O servidor ainda não informou seu personagem';
+  for (const id of ['mp-identity-toast', 'mp-identity-pause']) {
+    const card = document.getElementById(id);
+    if (!card) continue;
+    const img = card.querySelector('.mp-identity-portrait');
+    card.querySelector('small').textContent = espectador ? 'SUA POSIÇÃO NA PARTIDA' : 'SEU PERSONAGEM NO MULTIPLAYER';
+    card.querySelector('strong').textContent = nome;
+    card.querySelector('.mp-identity-copy > span').textContent = detalhe;
+    img.hidden = !def;
+    img.removeAttribute('src');
+    if (def) {
+      img.onerror = () => {
+        if (img.src.includes('/chars-hero/')) img.src = portraitFallbackUrl(def);
+        else { img.onerror = null; img.hidden = true; }
+      };
+      img.src = portraitUrl(def);
+    }
+    card.hidden = false;
+  }
+  mpIdentityTimer = setTimeout(() => { const toast = document.getElementById('mp-identity-toast'); if (toast) toast.hidden = true; }, 5000);
+}
 
 async function obterMpTicket(action) {
-  /* Nó local explícito (?mp=1/localhost) roda com MP_TICKET_REQUIRED=0. Pedir o ticket à API
-     pública com node=xx fazia o fluxo de desenvolvimento morrer ANTES do WebSocket. */
+  /* Um ?mp= pode apontar a staging ou a um nó oficial. Só o nó de teste selecionado
+     dispensa ticket público; trocar para BR/US/EU na lista exige ticket normalmente. */
   const localMp = new URLSearchParams(location.search).get('mp') || '';
-  if (localMp === '1' || /^(?:localhost|127\.0\.0\.1)(?::\d+)?$/i.test(localMp)) return '';
+  if (localMp && mpNoAtual?.id === 'url' && !NOS.some((no) => no.url === mpNoAtual.url)) return '';
   const node = String(mpNoAtual?.ticketNode || mpNoAtual?.id || '').toLowerCase();
   if (!NO_RE.test(node)) return '';   // forma do id em nos.js; 'br2' é nó, não erro de digitação
   const uid = getAnonId();
@@ -3650,6 +3717,7 @@ function mpErro(msg, comRetry = false) {
 function noServeMapaParado(id, net) {
   if (oficina || !MAPAS_PARADOS.has(resolveMapId(id))) return false;
   try { net?.close?.(); } catch { /* fechar é cortesia; a recusa vale de qualquer jeito */ }
+  mpSessao?.chat?.destruir();
   mpSessao = null;
   mpErro(`Este servidor sorteou "${MAPS[resolveMapId(id)]?.name || id}", que saiu do jogo para retrabalho. `
     + 'O nó ainda não foi atualizado — escolha outra sala ou outra região.', true);
@@ -3876,6 +3944,11 @@ function mpModalSalaCriada(sala, senha = '') {
   const m = mpEl('mp-modal');
   if (!m || !sala.convite) return mpEntrar(sala, 'auto', senha);   // sem modal ou sem código, o fluxo antigo vale
   mpEl('mp-modal-convite').textContent = sala.convite;
+  /* a sala só por convite NÃO está na lista (o nó a esconde): a nota não pode prometer "na lista" */
+  const nota = m.querySelector('.mp-modal-nota');
+  if (nota) nota.textContent = tr(sala.private && sala.senha === false
+    ? 'ESC ou clique fora só fecham este aviso - a sala continua criada. Ela não aparece na lista: só entra quem tem o código.'
+    : 'ESC ou clique fora só fecham este aviso - a sala continua criada, na lista.');
   const lot = mpEl('mp-modal-lot');
   if (lot) lot.textContent = `${sala.players | 0}/${sala.max || 10} na sala · ${sala.name || 'SALA'}`;
   const fecha = () => {
@@ -3903,6 +3976,13 @@ function mpModalSalaCriada(sala, senha = '') {
     try { await navigator.clipboard.writeText(linkDeConvite(sala.convite)); rotula(link, 'COPIADO!'); }
     catch { mpErro(`Copie à mão: ${linkDeConvite(sala.convite)}`); fecha(); }
   };
+  /* WhatsApp: `wa.me/?text=` abre o app no celular e o WhatsApp Web no computador, com a
+     mensagem pronta e o link dentro — sem pedir número, a pessoa escolhe o grupo lá. */
+  const zap = mpEl('mp-modal-zap');
+  if (zap) {
+    zap.href = `https://wa.me/?text=${encodeURIComponent(frase('conviteZap', linkDeConvite(sala.convite)))}`;
+    zap.onclick = () => ui.click();
+  }
   const entrar = mpEl('mp-modal-entrar');
   if (entrar) entrar.onclick = () => { ui.click(); fecha(); mpEntrar(sala, 'auto', senha); };
   m.classList.remove('hidden');
@@ -3927,15 +4007,6 @@ async function mpEntrarPorConvite(txt) {
 window.__mpConvite = mpEntrarPorConvite;
 
 function mpMontarFormulario() {
-  const e = mpEl('mp-fac-e'), b = mpEl('mp-fac-b');
-  if (e && !e.options.length) {
-    for (const [id, nome] of Object.entries(FACCAO_NOME_UI)) {
-      e.add(new Option(nome, id)); b.add(new Option(nome, id));
-    }
-    e.add(new Option('SORTEAR A CADA PARTIDA', 'random'));
-    b.add(new Option('SORTEAR A CADA PARTIDA', 'random'));
-    e.value = 'E'; b.value = 'B';
-  }
   const priv = mpEl('mp-privada'), wrap = mpEl('mp-senha-wrap');
   if (priv && wrap) priv.onchange = () => { wrap.hidden = !priv.checked; };
   const rot = mpEl('mp-rotacao');
@@ -3964,7 +4035,6 @@ function mpMontarFormulario() {
         // com a lista a dedo a rotação vira só o plano B do servidor (lista inválida = recorte)
         rotacao: aDedo ? 'todos' : mpEl('mp-rotacao').value,
         ...(aDedo ? { mapas: escolhidos, mapId: escolhidos[0] } : {}),
-        faccaoE: mpEl('mp-fac-e').value, faccaoB: mpEl('mp-fac-b').value,
         ctf: mpEl('mp-modo').value === 'ctf', private: privada, password: senha, maxPlayers: 10,
         teamSize: +mpEl('mp-teamsize').value || 5,   // teamSize do criador: 1 = X1 sem bots (backend #29, relato 21/09)
         creatorNick: ($('nick-input').value || '').trim() || null,
@@ -3983,6 +4053,42 @@ function mpMontarFormulario() {
       mpErro(err && err.message === 'http_429'
         ? 'Esse servidor está no limite de salas. Tente outra região.'
         : 'Não deu pra criar a sala. Tente de novo.');
+    }
+  };
+  /* JOGAR COM AMIGOS: sala privada SEM senha (o código é a chave, backend#62) com o padrão de
+     quem não quer configurar nada, direto no modal do convite. Escolher fica no MAIS OPÇÕES. */
+  const amigos = mpEl('mp-amigos');
+  if (amigos) amigos.onclick = async () => {
+    ui.click(); mpErro('');
+    if (amigos.disabled) return;
+    if (!mpNoAtual) return mpErro(tr('Escolha um servidor primeiro.'));
+    /* nó sem `salaConvite` listaria a sala com o código e abriria pelo id: só nó que anuncia;
+       nenhum = o formulário, que exige senha */
+    const no = mpNoAtual.salaConvite ? mpNoAtual : mpNos.find((n) => n.online && n.salaConvite);
+    if (!no) {
+      const criar = mpEl('mp-panel').querySelector('.mp-criar');
+      if (criar) criar.open = true;
+      return mpErro(tr('Este servidor ainda não cria sala só com convite. Use MAIS OPÇÕES e crie com senha.'));
+    }
+    if (no !== mpNoAtual) mpSelecionarNo(no);
+    const nick = ($('nick-input').value || '').trim();
+    amigos.disabled = true;   // dois cliques não criam duas salas
+    try {
+      const ticket = await obterMpTicket('create');
+      const sala = await createRoom(mpNoAtual.http, {
+        // vazio = o nó dá nome ("SALA R7"); o tamanho de time fica no padrão do servidor
+        name: nick ? `SALA DE ${nick}`.toUpperCase().slice(0, 24) : '',
+        rotacao: 'todos',
+        ctf: false, private: true, password: '', maxPlayers: 10,
+        creatorNick: nick || null,
+      }, ticket);
+      mpModalSalaCriada({ ...sala, id: sala.room || sala.id });
+    } catch (err) {
+      mpErro(err && err.message === 'http_429'
+        ? tr('Esse servidor está no limite de salas. Tente outra região.')
+        : tr('Não deu pra criar a sala. Tente de novo.'));
+    } finally {
+      amigos.disabled = false;
     }
   };
   const at = mpEl('mp-atualizar'); if (at) at.onclick = () => { ui.click(); mpAtualizarSalas(); };
@@ -4010,7 +4116,7 @@ function mpMontarFormulario() {
     try {
       const ticket = await obterMpTicket('create');
       const sala = await createRoom(mpNoAtual.http, {
-        name: 'TRETA RÁPIDA', rotacao: 'todos', faccaoE: 'random', faccaoB: 'random',
+        name: 'TRETA RÁPIDA', rotacao: 'todos',
         ctf: false, private: false, password: '', maxPlayers: 10,
         creatorNick: ($('nick-input').value || '').trim() || null,
       }, ticket);
@@ -4040,7 +4146,10 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
   if (mpConectando) return;   // dois cliques em ENTRAR não podem abrir dois sockets
   mpErro('');
   const nick = ($('nick-input').value || '').trim();
-  if (sala.private && !senha) {
+  /* sala só por convite (`senha: false`, backend#62): entra pelo CÓDIGO, sem senha; pelo id o
+     nó responde que ela não existe. Nó antigo não manda `senha` e a privada segue pedindo. */
+  const soConvite = sala.private && sala.senha === false && !!sala.codigo;
+  if (sala.private && !soConvite && !senha) {
     senha = (prompt('Essa sala é privada. Senha:') || '').trim();
     if (!senha) return;
   }
@@ -4053,7 +4162,7 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
     return mpErro('Não deu para autorizar a conexão. Tente novamente.');
   }
   const net = new NetClient(mpNoAtual.url.replace(/\/ws.*$/, '') + '/ws', {
-    nome: nick || null, room: sala.id, pw: senha, team, ticket,
+    nome: nick || null, room: sala.id, codigo: soConvite ? sala.codigo : null, pw: senha, team, ticket,
     csha: String(window.__CS_BUILD?.sha || ''),   // mp_session grava o build do navegador (backend#22)
   });
   /* Espera COM feedback: o connect pode levar segundos numa região longe, e tela parada sem
@@ -4084,6 +4193,8 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
   mpEstado('on', `NA SALA · ${sala.name || sala.convite || ''}`);
   clearInterval(mpTimerLista);
   mpSessao = { net, sala, no: mpNoAtual };
+  // chat de sala (#686): inerte sem welcome.chat; vive na sessão, não no Game, então sobrevive à troca de mapa
+  mpSessao.chat = montarChatSala({ net, obterJogo: () => game, tr, frase, convite: sala.convite || sala.id || '', toque: TOUCH });
   /* O SERVIDOR dita o cenário. `currentMap`/`matchMode` são as variáveis que o startGame lê.
      Nó desatualizado ainda sorteia mapa PARADO: recusar é a única saída honesta — trocar o
      mapa por conta própria dessincroniza do servidor. Contrato: docs/maps/MAPAS-PARADOS.md. */
@@ -4093,6 +4204,7 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
   modoEscolhido = true;
   net.onClose = () => mpDesconectou();
   net.onSlot = async (m) => {
+    if (mpSessao?.net === net) mpSessao.chat?.aoMudarSlot(m);
     await transitionSlot(m, net.meta, {
       team: currentTeam, faction: currentFaction, enemyFaction: currentEnemyFaction, char: currentChar,
     }, (id) => CHARACTERS.some((c) => c.id === id), async (next) => {
@@ -4100,12 +4212,24 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
       currentEnemyFaction = next.enemyFaction; currentChar = next.char;
       mpAtualizarBarraSpec(m);
       if (mpSessao?.net === net) await startGame(currentTeam, currentChar, currentEnemyFaction, true);
+      if (mpSessao?.net === net && net.yourEnt === m.yourEnt && game?.online) {
+        mpMostrarIdentidade({ ...net.meta, ...m });
+        mpPedirPersonagemPreferido(net);
+      }
+    });
+  };
+  net.onPersonagem = (m) => {
+    if (m.ent !== net.yourEnt) return;
+    currentChar = m.char;
+    if (mpSessao?.net === net && game?.online) mpMostrarIdentidade({
+      ...net.meta, yourEnt: net.yourEnt, yourTeam: net.yourTeam, espectador: net.espectador,
     });
   };
   // Nova partida no servidor (mapa girou): mesmo conteúdo do welcome, remonta por cima.
   // Sem isto o cliente ficava no mapa velho com ids mortos — BUG-112 (KNOWN-BUGS.md).
   net.onPartida = async (m) => {
     if (mpSessao?.net !== net) return;
+    mpSessao.chat?.aoMudarMeta(net.meta);
     if (noServeMapaParado(m.map, net)) return;
     if (MAPS[m.map]) currentMap = m.map;
     matchMode = m.ctf ? 'ctf' : 'rounds';
@@ -4125,14 +4249,29 @@ async function mpMontarPartida(net, m) {
   const personagem = (meuNoRoster && CHARACTERS.some((c) => c.id === meuNoRoster.char) ? meuNoRoster.char : null)
     || (CHARACTERS.find((c) => c.team === faccaoMinha) || CHARACTERS[0]).id;
   await startGame(lado, personagem, faccaoDele, true);
-  if (mpSessao?.net === net) mpAtualizarBarraSpec(m);
+  if (mpSessao?.net === net && net.yourEnt === m.yourEnt && game?.online) {
+    mpAtualizarBarraSpec(m);
+    mpMostrarIdentidade(m);
+    mpPedirPersonagemPreferido(net);
+  }
+}
+
+/* O personagem escolhido no hub vale no multiplayer: o servidor troca o corpo herdado do bot. */
+function mpPedirPersonagemPreferido(net) {
+  const lado = net.yourTeam;
+  if (!net.aceitaPersonagem() || net.espectador || (lado !== 'E' && lado !== 'B')) return;
+  const pref = CHARACTERS.find((c) => c.id === localStorage.getItem('csbr-home-character'));
+  if (!pref || pref.id === currentChar || !podeNoLado(pref, lado)) return;
+  net.pedirPersonagem(pref.id);
 }
 
 /* Conexão caiu no meio da partida. Nada de "reconectar sozinho e fingir que não houve nada":
    o jogador precisa SABER, porque o corpo dele já voltou a ser bot no servidor. */
 function mpDesconectou() {
   if (!mpSessao) return;
+  mpLimparIdentidade();
   try { if (game) { sendTelemetry(); sendMatchEvent('quit'); } } catch { /* diagnóstico não bloqueia a saída */ }
+  mpSessao.chat?.destruir();
   mpSessao = null;
   clearTelemetryGameContext();
   mpFecharBarraSpec();
@@ -4159,8 +4298,8 @@ function mpAtualizarBarraSpec(estado) {
     bar.innerHTML = '<span>ASSISTINDO <b id="mp-spec-quem">—</b></span>'
       + '<button id="mp-spec-prev" type="button">◂ ANTERIOR</button>'
       + '<button id="mp-spec-next" type="button">PRÓXIMO ▸</button>'
-      + '<button id="mp-spec-e" type="button">ENTRAR NO TIME E</button>'
-      + '<button id="mp-spec-b" type="button">ENTRAR NO TIME B</button>'
+      + '<button id="mp-spec-e" type="button">ENTRAR NA ESQUERDA</button>'
+      + '<button id="mp-spec-b" type="button">ENTRAR NA DIREITA</button>'
       + '<button id="mp-spec-sair" type="button">SAIR</button>';
     document.body.appendChild(bar);
     bar.querySelector('#mp-spec-prev').onclick = () => window.__game?._mp?.trocarAlvo(-1);
@@ -4178,7 +4317,7 @@ function mpAtualizarBarraSpec(estado) {
       const be = document.getElementById('mp-spec-e'), bb = document.getElementById('mp-spec-b');
       // nome da FACÇÃO, não a letra do lado (BUG-110)
       const meta = mpSessao?.net?.meta || {};
-      const nomeE = meta.nomeE || 'TIME E', nomeB = meta.nomeB || 'TIME B';
+      const nomeE = meta.nomeE || 'ESQUERDA', nomeB = meta.nomeB || 'DIREITA';
       if (be) { be.disabled = !(vagas && vagas.E > 0); be.textContent = `ENTRAR: ${nomeE}${vagas ? ` (${vagas.E})` : ''}`; }
       if (bb) { bb.disabled = !(vagas && vagas.B > 0); bb.textContent = `ENTRAR: ${nomeB}${vagas ? ` (${vagas.B})` : ''}`; }
     }, 400);
@@ -4190,6 +4329,8 @@ function mpFecharBarraSpec() {
 }
 function mpEncerrarSessao() {
   const s = mpSessao; mpSessao = null;
+  mpLimparIdentidade();
+  s?.chat?.destruir();
   mpFecharBarraSpec();
   try { s?.net.close(); } catch { /* já fechado */ }
 }
@@ -4203,4 +4344,37 @@ function mpSair() {
   soltarPartida();
   try { if (document.pointerLockElement) document.exitPointerLock(); } catch { /* sem lock */ }
   show('main-menu');
+}
+
+/* ---------------- boot ---------------- */
+/* Guarda igual à da linha de baixo, e não é zelo: esta escrita roda em escopo de
+   módulo DUAS linhas antes do `show()`. Se o redesign mexer na única `.footnote`
+   do documento (index.astro, dentro do #pause-menu), o TypeError acontece ANTES
+   de qualquer tela aparecer — o sintoma seria "o menu não abre", que não parece
+   com "alguém renomeou uma classe no pause". */
+{
+  const fn = document.querySelector('.footnote');
+  if (fn) fn.textContent =
+    `v${VERSION} · Sátira política fictícia. Nenhum político real foi consultado (ou poupado).`;
+}
+{ const sv = document.getElementById('splash-ver'); if (sv) sv.textContent = `v${VERSION}`; }
+// Boot no fim do módulo: `restoreHubRoute()` pode abrir o multiplayer, que lê `mpEl`/`mpNos` (#707).
+show('main-menu');   // mobile agora entra no menu normal (fase 1: controles de toque)
+if (HUB_ENABLED) {
+  hubNavigate({ map: currentMap, personagem: currentChar }, true);
+  restoreHubRoute();
+}
+window.__CS_MAIN_READY__ = true;
+window.__gameLaunch?.ready('boot');
+if (inspectionScreen) {
+  openInspectionScreen(inspectionScreen).catch((error) => window.__gameLaunch?.fail(error, 'screen-query'));
+} else if (testMode && params.get('auto')) {
+  const [team, char] = params.get('auto').split(',');
+  startGame(team || 'E', char || CHARACTERS[0].id);
+} else if (params.get('sala')) {
+  /* Chegou por LINK de convite (/sala/BR-7K3M redireciona pra cá). Espera a splash sair antes
+     de abrir a rede: sem gesto do usuário o áudio nem inicia e o jogo abre mudo. */
+  const entrarQuandoPuder = () => window.__mpConvite?.(params.get('sala'));
+  if (document.getElementById('boot-splash')) document.addEventListener('click', entrarQuandoPuder, { once: true });
+  else entrarQuandoPuder();
 }

@@ -8,14 +8,36 @@ export { NOS, parseConvite, linkDeConvite, httpDoNo, NO_RE, ordenarNos, FAIXA_PI
 import { NOS } from './nos.js';
 import { decodeSnapshot, MAX_SNAPSHOT_BYTES, SNAPSHOT_PROTOCOLS } from './netcodec.js';
 import { TransporteWS, TransporteWT } from './transporte.js';
-import { VERSION } from './version.js';
+import * as versao from './version.js';
+const { VERSION } = versao;
+// ausente em árvore anterior ao fingerprint: degrada para comparar VERSION
+const SIM_HASH = versao.SIM_HASH || null;
 
 /* PARIDADE DE SIMULAÇÃO (incidente da frota, KNOWN-BUGS): protocolo igual não é jogo
-   igual. O nó diz no `welcome` que versão simula; `?mpversao=0` libera no local. */
-export const versaoCompativel = (doNo, nossa = VERSION) => !doNo || doNo === nossa;
+   igual. O nó diz no `welcome` que versão simula; `?mpversao=0` libera no local.
 
-export const resolvePlayerSide = (team, faction, online) =>
-  online ? (team === 'B' ? 'B' : 'E') : (faction === 'B' ? 'B' : 'E');
+   Quando os DOIS lados trazem `SIM_HASH` (scripts/sim-hash.mjs), compara-se o código que o
+   nó simula, não o rótulo: release de menu ou chat muda VERSION e não muda a física, e não
+   pode deixar todo mundo fora do multiplayer até o nó ser reimplantado. Sem hash de um dos
+   lados, vale a regra antiga de versão idêntica. */
+export const versaoCompativel = (doNo, nossa = VERSION, simNo = null, nossoSim = SIM_HASH) => {
+  if (simNo && nossoSim) return simNo === nossoSim;
+  return !doNo || doNo === nossa;
+};
+
+/* CHAT DE SALA (docs/chat-de-sala.md §6): frames que chegam antes de existir painel ficam
+   em `_chatFila`; o teto é o `filaClienteMax` da tabela, cobrado por eval:chat (CC7). */
+export const CHAT_FILA_MAX = 64;
+const CHAT_CID_RE = /^[A-Za-z0-9_-]{1,12}$/;
+const CHAT_CANAIS = ['sala', 'time'];
+const formaChat = (m) => Number.isInteger(m.id) && typeof m.txt === 'string' && typeof m.h === 'string' && CHAT_CANAIS.includes(m.ch);
+// `espera` fora de número finito e positivo vira '(NaN s)' no aviso: cai antes do painel
+const nackLimpo = (m) => (Number.isFinite(m.espera) && m.espera > 0 ? m : { type: m.type, cid: m.cid, motivo: m.motivo });
+
+// Online o lado vem do servidor; offline, da aba escolhida. A facção nunca decide o lado.
+export const resolvePlayerSide = (team) => (team === 'B' ? 'B' : 'E');
+// Lado local velho (REINICIAR/REVANCHE) monta o elenco do servidor do avesso: 6×5 (#785).
+export const ladoOnline = (team, net) => (net && (net.yourTeam === 'E' || net.yourTeam === 'B') ? net.yourTeam : team);
 
 export async function transitionSlot(m, meta, current, validChar, remount) {
   const next = { ...current, spectator: !!m.espectador };
@@ -92,7 +114,9 @@ export async function sondarNos(nos = NOS, timeoutMs = 2500, amostras = 2) {
     } catch { /* a amostra que faltou não apaga a que veio */ }
     finally { cancelaPrazo(); }
     if (!h) return { ...no, http, ping: null, online: false, jogadores: 0, salas: 0 };
-    return { ...no, http, ticketNode: h.regiao || no.id, ping: Math.round(ping), online: true, jogadores: h.players | 0, salas: h.rooms | 0 };
+    /* `salaConvite`: o nó guarda sala privada SEM senha só para quem tem o código (backend#62).
+       Nó sem o campo listaria essa sala aberta, então o JOGAR COM AMIGOS não a cria nele. */
+    return { ...no, http, ticketNode: h.regiao || no.id, ping: Math.round(ping), online: true, jogadores: h.players | 0, salas: h.rooms | 0, salaConvite: h.salaConvite === true };
   }));
 }
 
@@ -119,9 +143,12 @@ export class NetClient {
     this.prev = null;
     this.seq = 0;
     this.onWelcome = null; this.onSnapshot = null; this.onSlot = null; this.onPartida = null; this.onClose = null;
+    this.onPersonagem = null;
+    this.onChat = null; this._chatFila = [];
     // ── diagnóstico de rede (overlay do jogo) ──
     this.stats = { hz: 0, kbps: 0, gapMax: 0, sinceLast: 0, ents: 0, tick: 0, ping: 0, snaps: 0, bytes: 0 };
     this._snapT = []; this._byteT = []; this._lastSnapT = 0;
+    this._rttSamples = []; this._gapSamples = [];
     this._pingTimer = null;
   }
 
@@ -145,6 +172,8 @@ export class NetClient {
     this._pingTimer = setInterval(bate, intervalMs);
   }
   stopPing() { if (this._pingTimer) { clearInterval(this._pingTimer); this._pingTimer = null; } }
+  drainRttSamples() { return this._rttSamples.splice(0); }
+  drainGapSamples() { return this._gapSamples.splice(0); }
 
   /* NEGOCIAÇÃO DE TRANSPORTE. WebSocket continua o PADRÃO: o datagrama só vira padrão
      depois que o canário provar, e até lá quem pede é `?wt=`. Prazo curto e queda em
@@ -185,7 +214,7 @@ export class NetClient {
         try { m = binary ? decodeSnapshot(dados) : JSON.parse(dados); }
         catch { if (binary) this.tp.fechar(1002, 'snapshot_invalid'); return; }
         if (m.type === 'welcome') {
-          if (!versaoCompativel(m.clientVersion)
+          if (!versaoCompativel(m.clientVersion, VERSION, m.simHash)
             && new URLSearchParams(location.search).get('mpversao') !== '0') {
             const e = new Error('versao_incompativel');
             e.detalhe = { no: m.clientVersion, jogo: VERSION };
@@ -199,7 +228,12 @@ export class NetClient {
         } else if (m.type === 'error') {
           assenta(reject, new Error(m.error || 'erro'));
         } else if (m.type === 'pong') {
-          this.stats.ping = performance.now() - m.t;
+          const rtt = performance.now() - m.t;
+          if (Number.isFinite(rtt) && rtt >= 0 && rtt <= 60000) {
+            this.stats.ping = rtt;
+            this._rttSamples.push(+rtt.toFixed(1));
+            if (this._rttSamples.length > 32) this._rttSamples.shift();
+          }
         } else if (m.type === 'partida') {
           // o servidor girou o mapa: meta NOVA (roster, ids, mapa, facções) + o seu slot (BUG-112)
           this.meta = m; this.yourEnt = m.yourEnt; this.yourTeam = m.yourTeam; this.espectador = !!m.espectador;
@@ -210,6 +244,13 @@ export class NetClient {
           // entrou em campo / virou espectador (o servidor confirma; a UI nunca decide sozinha)
           this.yourEnt = m.yourEnt; this.yourTeam = m.yourTeam; this.espectador = !!m.espectador;
           this.onSlot?.(m);
+        } else if (m.type === 'personagem') {
+          // um corpo trocou de personagem: o roster da partida acompanha, o netgame remonta a malha
+          if (Number.isInteger(m.ent) && typeof m.char === 'string') {
+            const r = (this.meta?.roster || []).find((x) => x.id === m.ent);
+            if (r) r.char = m.char;
+            this.onPersonagem?.(m);
+          }
         } else if (m.type === 'ev') {
           // eventos do servidor (acerto/abate com autor): texto, drenados pelo netgame no tick deles
           if (Array.isArray(m.list) && Number.isInteger(m.tick)) {
@@ -221,11 +262,25 @@ export class NetClient {
           this.prev = this.snap; this.snap = m;
           const now = performance.now();
           this.stats.tick = m.tick | 0; this.stats.ents = (m.ents && m.ents.length) || 0;
-          if (this._lastSnapT) { const gap = now - this._lastSnapT; this.stats.gapMax = Math.max(gap, this.stats.gapMax * 0.92); }
+          if (this._lastSnapT) {
+            const gap = now - this._lastSnapT;
+            this.stats.gapMax = Math.max(gap, this.stats.gapMax * 0.92);
+            this._gapSamples.push(+gap.toFixed(1));
+            if (this._gapSamples.length > 512) this._gapSamples.shift();
+          }
           this._lastSnapT = now;
           this._snapT.push(now); this._byteT.push({ t: now, b: bytes });
           this.stats.snaps++; this.stats.bytes += bytes;
           this.onSnapshot?.(m);
+        } else if (m.type === 'chat') {
+          // chat de sala: sem meta.chat o cliente é inerte, e frame malformado é descartado
+          if (this.chatLigado() && formaChat(m)) this._entregaChat(m);
+        } else if (m.type === 'chat_hist') {
+          if (this.chatLigado() && Array.isArray(m.list)) this._entregaChat({ type: 'chat_hist', list: m.list.filter((x) => x && formaChat(x)) });
+        } else if (m.type === 'chat_nack') {
+          if (this.chatLigado() && typeof m.cid === 'string' && typeof m.motivo === 'string') this._entregaChat(nackLimpo(m));
+        } else if (m.type === 'chat_denuncia') {
+          if (this.chatLigado() && Number.isInteger(m.id) && typeof m.estado === 'string') this._entregaChat(m);
         }
       };
     });
@@ -246,8 +301,31 @@ export class NetClient {
   }
   // pedir vaga num time ('E' | 'B' | 'auto'); o servidor responde com `slot`.
   pedirTime(team = 'auto') { this.tp?.enviar(JSON.stringify({ type: 'time', team })); }
+  /* Só servidor que anuncia o recurso troca o corpo; servidor antigo ignora tipo desconhecido. */
+  aceitaPersonagem() { return Array.isArray(this.meta?.recursos) && this.meta.recursos.includes('personagem'); }
+  pedirPersonagem(id) { if (typeof id === 'string') this.tp?.enviar(JSON.stringify({ type: 'personagem', id })); }
   // sair de campo e assistir: o corpo volta a ser bot e a partida segue cheia.
   espectar() { this.tp?.enviar(JSON.stringify({ type: 'espectar' })); }
+
+  /* ── chat de sala (docs/chat-de-sala.md) ── versão desconhecida da meta vale como ausente;
+     tudo sai por `enviar` (confiável), nunca por `enviarInseguro`. */
+  chatLigado() { const c = this.meta?.chat; return !!c && c.v === 1; }
+  _chatPronto() { return this.chatLigado() && !!this.tp?.pronto; }
+  _entregaChat(m) {
+    if (this.onChat) { this.onChat(m); return; }
+    this._chatFila.push(m);
+    if (this._chatFila.length > CHAT_FILA_MAX) this._chatFila.splice(0, this._chatFila.length - CHAT_FILA_MAX);
+  }
+  drenarChat() { return this._chatFila.splice(0, this._chatFila.length); }
+  enviarChat(ch, txt, cid) {
+    if (!this._chatPronto() || !this.meta.chat.pode) return false;
+    if (typeof txt !== 'string' || !CHAT_CID_RE.test(String(cid)) || !(this.meta.chat.canais || []).includes(ch)) return false;
+    return this.tp.enviar(JSON.stringify({ type: 'chat', ch, txt, cid }));
+  }
+  denunciarChat(id, motivo) {
+    if (!this._chatPronto() || !Number.isInteger(id) || !(this.meta.chat.denuncia || []).includes(motivo)) return false;
+    return this.tp.enviar(JSON.stringify({ type: 'chat_report', id, motivo }));
+  }
 
   close() {
     this.stopPing();

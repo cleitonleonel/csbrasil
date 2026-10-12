@@ -51,6 +51,10 @@ const DICT = {
   'SINGLE PLAYER': 'SINGLE PLAYER',
   'CAPTURE THE FLAG': 'CAPTURE THE FLAG',
   'CONFIGURAÇÕES': 'SETTINGS',
+  'MÚSICA LIGADA': 'MUSIC ON',
+  'MÚSICA DESLIGADA': 'MUSIC OFF',
+  'Desligar música do menu': 'Turn off menu music',
+  'Ligar música do menu': 'Turn on menu music',
   'Automático (país)': 'Automatic (country)',
   'RANKING': 'LEADERBOARD',
   'MAPA': 'MAP', 'DE': 'OF',
@@ -88,6 +92,15 @@ const DICT = {
   'ENTRAR': 'JOIN',
   'Recebeu um convite? Cola o código aqui.': 'Got an invite? Paste the code here.',
   'CRIAR MINHA SALA': 'CREATE MY ROOM',
+  'JOGAR COM AMIGOS': 'PLAY WITH FRIENDS',
+  'MAIS OPÇÕES · CRIAR MINHA SALA': 'MORE OPTIONS · CREATE MY ROOM',
+  'Escolha um servidor primeiro.': 'Pick a server first.',
+  'Este servidor ainda não cria sala só com convite. Use MAIS OPÇÕES e crie com senha.':
+    'This server cannot make invite-only rooms yet. Use MORE OPTIONS and set a password.',
+  'Esse servidor está no limite de salas. Tente outra região.': 'This server is at its room limit. Try another region.',
+  'Não deu pra criar a sala. Tente de novo.': 'Could not create the room. Try again.',
+  'ESC ou clique fora só fecham este aviso - a sala continua criada. Ela não aparece na lista: só entra quem tem o código.':
+    'ESC or clicking outside only closes this notice - the room stays created. It is not in the list: only people with the code can join.',
   'SALAS ABERTAS': 'OPEN ROOMS',
   'ATUALIZAR': 'REFRESH',
   'NOME': 'NAME', 'MAPAS': 'MAPS', 'MODO': 'MODE', 'SENHA': 'PASSWORD',
@@ -96,6 +109,7 @@ const DICT = {
   'SALA CRIADA': 'ROOM CREATED',
   'COPIAR CÓDIGO': 'COPY CODE',
   'COPIAR LINK': 'COPY LINK',
+  'MANDAR NO WHATSAPP': 'SEND ON WHATSAPP',
   '▶ ENTRAR NA SALA': '▶ JOIN THE ROOM',
   'ESC ou clique fora só fecham este aviso - a sala continua criada, na lista.':
     'ESC or clicking outside only closes this notice - the room stays created, in the list.',
@@ -109,7 +123,7 @@ const DICT = {
   'O PALCO DA TRETA': 'THE STAGE',
   // map screen (abas de categoria — tela 04 do redesign)
   'ESCOLHA DO MAPA': 'PICK THE MAP',
-  'TODOS': 'ALL', 'ARENA': 'ARENA', 'FAVELA': 'FAVELA', 'CIDADES': 'CITIES', 'COMUNIDADE': 'COMMUNITY', 'AI': 'AI',
+  'TODOS': 'ALL', 'ARENA': 'ARENA', 'FAVELA': 'FAVELA', 'CIDADES': 'CITIES', 'AMAZONIA': 'AMAZONIA', 'COMUNIDADE': 'COMMUNITY', 'AI': 'AI',
   'OFICIAL': 'OFFICIAL', 'por': 'by',
   // descrições de categoria da tela de mapas (a chave é o texto PT exato do CAT_DESC)
   'O acervo inteiro: oficial e comunidade, arena e cidade.': 'The whole roster: official and community, arena and city.',
@@ -253,6 +267,28 @@ const DICT = {
     'Seventh son, crossroads curse. The black wolf wakes strong, fanged and unchained.',
   'Cangaceira de precisão. Parou, mirou, acertou — a rainha do primeiro tiro.':
     'Cangaço markswoman. Stop, aim, hit — the queen of the first shot.',
+  'Discurso de três horas e o microfone nunca cansa. Faixa no peito, churrasco no domingo.':
+    'Three-hour speeches and the mic never gets tired. Sash on the chest, barbecue on Sunday.',
+  'Camisa amarela, cercadinho lotado e live toda quinta. Não leva desaforo pra casa.':
+    'Yellow jersey, packed fan pen and a live stream every Thursday. Never lets an insult slide.',
+  'Estoca vento e saúda a mandioca. Ninguém entende a frase, todo mundo lembra.':
+    'Stocks up on wind and salutes the cassava. Nobody gets the sentence, everybody remembers it.',
+  'Calcula o arcabouço de cabeça e ainda acha tempo de explicar a conta pro time.':
+    'Runs the fiscal framework in his head and still finds time to explain the math to the team.',
+  'O 01 da família. Sorriso de campanha e broche sempre no lugar.':
+    'The family\'s number 01. Campaign smile and lapel pin always in place.',
+  'A toga é capa e o despacho sai antes do café. Joga pelo Time E e ninguém discute.':
+    'The robe is a cape and the ruling is out before coffee. Plays for Team E and nobody argues.',
+  'Sobe na tribuna de peruca loira e vira meme antes de terminar a frase.':
+    'Takes the podium in a blond wig and becomes a meme before finishing the sentence.',
+  'Carro de som, cabelo ao vento e uma convocação por minuto. Briga com os dois lados.':
+    'Sound truck, hair in the wind and a rally call every minute. Fights with both sides.',
+  'Ex-juiz de sotaque marcado. O conje confirma: ele não perde um prazo.':
+    'Former judge with a thick accent. The missus confirms: he never misses a deadline.',
+  'Tiara de flores, blazer fúcsia e presença de plenário. A treta começa com pose e termina no placar.':
+    'Flower tiara, fuchsia blazer and a commanding floor presence. The drama starts with a pose and ends on the scoreboard.',
+  'Óculos vinho, coque grisalho e vestido verde-petróleo. A conversa é calma; a mira, firme.':
+    'Burgundy glasses, a grey bun and a petrol-green dress. Calm words; steady aim.',
   'Moleque de uma perna só. Redemoinho de fumaça e some — o gorro vermelho é hitbox.':
     'One-legged trickster boy. A whirl of smoke and he is gone — the red cap is the hitbox.',
   'Cangaço no gatilho. Quanto mais segura o tiro, mais dano faz — Virgem Maria!':
@@ -269,7 +305,7 @@ const DICT = {
     'Fire-haired boy with backwards feet. The footprints point the wrong way.',
   'Guardiã da mata, cabelo de fogo e pintura de guerra. Quem caça demais vira caça.':
     'Guardian of the forest, fire hair and war paint. Hunt too much and you become the hunt.',
-  'TIME E': 'TEAM E', 'TIME B': 'TEAM B',
+  'ESQUERDA': 'LEFT', 'DIREITA': 'RIGHT', 'ESQ': 'LFT', 'DIR': 'RGT', 'POLÍTICOS': 'POLITICIANS',
   'os seus': 'your crew',
   'TRIBOS URBANAS': 'URBAN TRIBES', 'PALHAÇOS': 'CLOWNS', 'FUNKEIROS': 'FUNKEIROS', 'MÍTICO': 'MYTHIC',
   '"A treta se faz na praça!"': '"The fight is at the square!"',
@@ -407,6 +443,8 @@ const DICT = {
   '🌐 FORA DO BRASIL': '🌐 OUTSIDE BRAZIL',
   'ABRIR PÁGINA DE APOIO': 'OPEN THE SUPPORT PAGE',
   'AWP / Pistola / Faca': 'AWP / Pistol / Knife',
+  'RODINHA': 'MOUSE WHEEL',
+  'Próxima / anterior arma': 'Next / previous weapon',
   'CTRL ou C': 'CTRL or C',
   'Gire o celular na horizontal pra jogar': 'Turn your phone sideways to play',
   'com respawn: cada round dura 1:39 ou fecha quando um time chega no alvo de abates; o time com mais kills leva o round. Por padrão, vence quem ganhar 3 rounds (melhor de 5); o teto pode ser escolhido na tela de mapas.':
@@ -425,6 +463,13 @@ const DICT = {
   'SEGURAR PARA VER': 'HOLD TO VIEW', 'ATIVAR CURSOR': 'ENABLE CURSOR',
   'Armas e utilitários': 'Weapons and utilities',
   'Fumaça (tecla 4)  ·  Frag (tecla 5)': 'Smoke (key 4)  ·  Frag (key 5)',
+  // chat de sala (#686). ENVIAR, FECHAR, TODOS e VOLTAR já existem acima: a UIR5 reprova duplicata.
+  'CHAT': 'CHAT', 'Y SALA': 'Y ROOM', 'U TIME': 'U TEAM', 'Chat da sala': 'Room chat', 'OCULTAR': 'HIDE', 'BLOQUEADOS': 'BLOCKED',
+  'BLOQUEAR': 'BLOCK', 'DENUNCIAR': 'REPORT', 'CANCELAR': 'CANCEL', 'DESBLOQUEAR': 'UNBLOCK', 'Bloqueados': 'Blocked',
+  'Ações da mensagem': 'Message actions', 'MOTIVO DA DENÚNCIA': 'REPORT REASON', 'Mensagem': 'Message', 'Canal': 'Channel',
+  'Mensagens anteriores': 'Earlier messages', 'Bloquear também?': 'Block too?', 'Ninguém bloqueado': 'Nobody blocked',
+  'Ao denunciar, a mensagem e um identificador anônimo ficam guardados por 90 dias para moderação.':
+    'When you report, the message and an anonymous identifier are kept for 90 days for moderation.',
   // rodapé / links
   'Links do jogo': 'Game links', 'Menu principal': 'Main menu', 'Abrir seu perfil': 'Open your profile',
   'Discord do CORO SOLTO': 'CORO SOLTO Discord', 'Telegram do CORO SOLTO': 'CORO SOLTO Telegram',
@@ -489,6 +534,43 @@ const FRASES = {
     pt: (r1, r2, k, nome, d) => `<div><b>${r1} × ${r2}</b>rounds</div><div><b>${k}</b>kills de ${nome}</div><div><b>${d}</b>suas mortes</div>`,
     en: (r1, r2, k, nome, d) => `<div><b>${r1} × ${r2}</b>rounds</div><div><b>${k}</b>kills by ${nome}</div><div><b>${d}</b>your deaths</div>`,
   },
+  // chat de sala (#686): os motivos de nack e de denúncia são os do contrato, docs/chat-de-sala.md §2
+  // mensagem que o botão MANDAR NO WHATSAPP do modal de sala deixa pronta
+  conviteZap: {
+    pt: (link) => `Bora uma treta no CORO SOLTO? Entra na minha sala: ${link}`,
+    en: (link) => `Up for a fight in CORO SOLTO? Join my room: ${link}`,
+  },
+  chatAnonimo: { pt: () => 'Anônimo', en: () => 'Anonymous' },
+  chatCanal: { pt: (c) => (c === 'time' ? 'TIME' : 'SALA'), en: (c) => (c === 'time' ? 'TEAM' : 'ROOM') },
+  chatContador: { pt: (n, max) => `${n}/${max}`, en: (n, max) => `${n}/${max}` },
+  chatNaoLidas: { pt: (n) => `${n} nova${n === 1 ? '' : 's'}`, en: (n) => `${n} new` },
+  chatNack: {
+    pt: (m, espera) => ({
+      vazia: 'Mensagem vazia', longa: 'Mensagem longa demais', rapido: 'Devagar: espere um pouco',
+      repetida: 'Você acabou de dizer isso', sem_time: 'Espectador só fala com a sala', silenciado: 'Silenciado por um minuto',
+      sala_rapida: 'A sala está falando rápido demais', invalida: 'Mensagem inválida',
+    }[m] || 'Mensagem não enviada') + (espera ? ` (${Math.ceil(espera / 1000)} s)` : ''),
+    en: (m, espera) => ({
+      vazia: 'Empty message', longa: 'Message too long', rapido: 'Slow down a bit',
+      repetida: 'You just said that', sem_time: 'Spectators can only talk to the room', silenciado: 'Muted for a minute',
+      sala_rapida: 'The room is talking too fast', invalida: 'Invalid message',
+    }[m] || 'Message not sent') + (espera ? ` (${Math.ceil(espera / 1000)} s)` : ''),
+  },
+  chatDenuncia: {
+    pt: (estado, motivo) => (estado === 'recebida' ? 'Denúncia recebida' : estado === 'repetida' ? 'Você já denunciou essa mensagem'
+      : ({ limite: 'Limite de denúncias atingido', propria: 'Não dá pra denunciar a própria mensagem', desconhecida: 'Mensagem não encontrada' }[motivo] || 'Denúncia recusada')),
+    en: (estado, motivo) => (estado === 'recebida' ? 'Report received' : estado === 'repetida' ? 'You already reported this message'
+      : ({ limite: 'Report limit reached', propria: 'You cannot report your own message', desconhecida: 'Message not found' }[motivo] || 'Report refused')),
+  },
+  chatMotivo: {
+    pt: (m) => ({ ofensa: 'Ofensa', odio: 'Ódio', assedio: 'Assédio', spam: 'Spam', outro: 'Outro' }[m] || m),
+    en: (m) => ({ ofensa: 'Insult', odio: 'Hate', assedio: 'Harassment', spam: 'Spam', outro: 'Other' }[m] || m),
+  },
+  chatBloqueado: { pt: (h) => `#${h} bloqueado`, en: (h) => `#${h} blocked` },
+  chatBloqueioFalhou: { pt: () => 'Não deu pra bloquear', en: () => 'Could not block' },
+  chatIndisponivel: { pt: () => 'Chat indisponível agora', en: () => 'Chat unavailable right now' },
+  chatPropria: { pt: () => 'Essa mensagem é sua', en: () => 'That is your own message' },
+  chatDenunciaEnviada: { pt: () => 'Denúncia enviada', en: () => 'Report sent' },
 };
 export const frase = (id, ...args) => {
   const f = FRASES[id];
