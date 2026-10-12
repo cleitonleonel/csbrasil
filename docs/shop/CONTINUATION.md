@@ -475,3 +475,8 @@ falhou; nenhuma dispensa do hook aplicada. Logs /tmp/treta-checkdeploy-pr.log
  e /tmp/treta-client-push2.log. Gitleaks client45commits/525KB e backend5commits
 verdes. CI remoto/revisão do draft ainda pendentes. Os12portões gerais de
 mapas/áudio/grafite já registrados continuam fora do escopo; vendas fechadas.
+
+Checkpoint da pesquisa4119bd732 publicado no client#819. Push de acompanhamento
+passou com hook ativo em45s; docs:check e scan de1commit/63,49KB sem segredos.
+CI remoto no novo HEAD ainda enfileirado na consulta; não declarar aprovado.
+O painel local4353 e os artefatos privados de captura ficam para consulta.
