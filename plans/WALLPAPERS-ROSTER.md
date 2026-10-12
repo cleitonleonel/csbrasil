@@ -155,5 +155,5 @@
 
 ## Vetos e aceite
 
-Caricaturas políticas seguem CONTRIBUTING.md; sem foto real, copyright externo ou gore.
+Caricaturas políticas seguem CONTRIBUTING.md; sem foto real, copyright externo ou gore. Acabamento ilustrado deve acompanhar loading-1 e wall-20; identidade não obriga copiar o material ou a geometria do GLB.
 Menu 3:2; loading 16:9; sprite transparente quadrado; revisão independente no tamanho servido.

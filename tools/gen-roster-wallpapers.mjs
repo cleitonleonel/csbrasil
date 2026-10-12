@@ -46,7 +46,12 @@ if (process.argv.includes('--import-masters')) {
     if (!existsSync(previous)) copyFileSync(output, previous);
     await sharp(previous).resize(1664, 936, { fit: 'cover', position: 'centre' }).webp({ quality: 90, smartSubsample: true }).toFile(output);
   }
-  writeFileSync('public/img/roster-wallpapers-FONTE.md', '# Wallpapers do elenco — 11/10/2026\n\nGPT integrado do Codex, autorizado pelo dono após OpenRouter HTTP 402.\nReferências: GLBs versionados, renders de charvideo.html, wall-20 e thumbnails\ndas armas de CHAR_WEAPON. Sem foto externa. Os políticos são caricaturas do jogo.\nMasters e prompts: launch-media/2026-10-11-wallpapers/ no workspace.\nImportação: tools/gen-roster-wallpapers.mjs --import-masters; menu 1536×1024,\nloading 1664×936. A normalização conserva proporção e não estica a arte.\n\n' + wallpapers.map(w => `- ${w.wall}: ${w.name} (${w.id})`).join('\n') + '\n\nloading-1: recomposição GPT do palhaço original; loading-2..6: enquadramento\n16:9 das artes existentes, com originais preservados fora do Git.\n');
+  const styleRevision = existsSync(path.join(masters, 'gpt-style-prompts.json'));
+  const masterLocation = path.relative(path.dirname(repository), masters);
+  const provenance = styleRevision
+    ? 'Revisão de estilo em 12/10/2026: os 19 wallpapers recebem o acabamento\ncinematográfico ilustrado de loading-1 e wall-20. Identidade, roupa e arma\nseguem o elenco; facetas e materiais plásticos do GLB não são referências de acabamento.\nPrompts efetivos: gpt-style-prompts.json; referências anteriores: previous-webp/.\n'
+    : 'Referências: GLBs versionados, renders de charvideo.html, wall-20, loading-1\ne thumbnails das armas de CHAR_WEAPON. Prompts efetivos: gpt-prompts.json.\n';
+  writeFileSync('public/img/roster-wallpapers-FONTE.md', '# Wallpapers do elenco\n\nGPT integrado do Codex, autorizado pelo dono após OpenRouter HTTP 402.\n' + provenance + 'Sem foto externa. Os políticos são caricaturas do jogo.\nMasters e prompts: ' + masterLocation + '/ no workspace.\nImportação: tools/gen-roster-wallpapers.mjs --import-masters; menu 1536×1024,\nloading 1664×936. A normalização conserva proporção e não estica a arte.\nA captura 5120×2880 verifica o enquadramento por cover; não é resolução nativa.\n\n' + wallpapers.map(w => `- ${w.wall}: ${w.name} (${w.id})`).join('\n') + '\n\nloading-1: recomposição GPT do palhaço original; loading-2..6: enquadramento\n16:9 das artes existentes, importados em 11/10. A revisão de estilo muda só wallpapers.\n');
   console.log(requested.length ? `masters importados: ${requested.join(', ')}` : `${wallpapers.length} wallpapers importados; 6 loadings normalizados`);
   process.exit(0);
 }

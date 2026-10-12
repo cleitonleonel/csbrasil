@@ -1,11 +1,15 @@
-# Wallpapers do elenco — 11/10/2026
+# Wallpapers do elenco
 
 GPT integrado do Codex, autorizado pelo dono após OpenRouter HTTP 402.
-Referências: GLBs versionados, renders de charvideo.html, wall-20 e thumbnails
-das armas de CHAR_WEAPON. Sem foto externa. Os políticos são caricaturas do jogo.
-Masters e prompts: launch-media/2026-10-11-wallpapers/ no workspace.
+Revisão de estilo em 12/10/2026: os 19 wallpapers recebem o acabamento
+cinematográfico ilustrado de loading-1 e wall-20. Identidade, roupa e arma
+seguem o elenco; facetas e materiais plásticos do GLB não são referências de acabamento.
+Prompts efetivos: gpt-style-prompts.json; referências anteriores: previous-webp/.
+Sem foto externa. Os políticos são caricaturas do jogo.
+Masters e prompts: launch-media/2026-10-11-wallpapers/style-revision-2026-10-12/ no workspace.
 Importação: tools/gen-roster-wallpapers.mjs --import-masters; menu 1536×1024,
 loading 1664×936. A normalização conserva proporção e não estica a arte.
+A captura 5120×2880 verifica o enquadramento por cover; não é resolução nativa.
 
 - /img/wall-29.webp: Lobisomem (lobisomem)
 - /img/wall-30.webp: Maria Bonita (mariabonita)
@@ -28,4 +32,4 @@ loading 1664×936. A normalização conserva proporção e não estica a arte.
 - /img/wall-47.webp: Dona Floresta (marina-silva)
 
 loading-1: recomposição GPT do palhaço original; loading-2..6: enquadramento
-16:9 das artes existentes, com originais preservados fora do Git.
+16:9 das artes existentes, importados em 11/10. A revisão de estilo muda só wallpapers.

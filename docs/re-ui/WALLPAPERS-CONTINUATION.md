@@ -131,3 +131,58 @@ e anatomia orgânicos; identidade, arma, corpo e logo preservados. Masters e
 prompts estão em `style-revision-2026-10-12/`; ainda não importados no runtime.
 Próximo passo: estender o tratamento aos outros 17 wallpapers, importar o lote,
 capturar servido e obter crítica independente final.
+
+
+### Lote ilustrado e refinamentos
+
+Os 19 masters foram gerados com GPT integrado e persistidos em
+`style-revision-2026-10-12/`; `gpt-style-prompts.json` registra os prompts efetivos,
+referências e saídas. Candidatos iniciais de Dama e Deputada da Tiara foram
+rejeitados por cortar os sapatos no crop 16:9; novas versões recuam a figura.
+O crítico também rejeitou a arma de Saci (silhueta M4); edição localizada troca
+pela MP5 da ficha. Candidatos rejeitados e respectivas capturas ficam em
+`wall-*-rejected-*.png` e `evidence/rejected/`, fora do Git. Crítica final pendente.
+
+Checagens nesta etapa: sintaxe do gerador, ficha WALLPAPERS-ROSTER e mutação da
+ficha passaram; `docs:check` passou. `spec:check` geral falha em 12 seções ausentes
+de planos 24-LAJES-SANTOS-DUMONT e 25-PISCINA-DA-TRETA-REWORK, ambos idênticos
+a HEAD. `changelog:check` geral falha na contagem da versão alpha.67 (4 PRs na
+seção, 3 no Git); a seção da versão atual também é idêntica a HEAD. Nenhuma dessas
+falhas foi causada ou corrigida pela revisão de arte.
+
+
+Marco final dos masters: todos os 19 aprovados por `/root/style_review` em
+12/10, incluindo a MP5 corrigida do Saci e o recuo adicional do Bandeirante e
+Capitão, cujas solas interceptavam a borda 5K. As quatro recomposições de margem
+(Dama, Tiara, Bandeirante e Capitão) preservaram identidade/figurino/arma/estilo.
+Todos foram importados em WebP; variantes 3:2 estão sendo geradas. Gate do lote
+passou com 19 personagens/zero falhas; manifesto passou com 37 walls/6 loadings;
+ficha específica passou novamente. Próximo passo: confirmar variantes por hash,
+capturar WebP/menu servido, crítica final de apresentação e checkpoint Git.
+
+
+### Apresentação final validada
+
+Os 19 wallpapers e suas variantes 3:2 estão importados. Gate de hashes confirma
+37 variantes atualizadas; loading/sprites da etapa anterior permanecem íntegros.
+Build Astro final desta revisão passou (`style-build.log`). Captura final servida
+em `style-revision-2026-10-12/evidence/served/`: 38 crops (3:2/5120×2880) e menu
+completo 3:2, total 39/zero pageerrors. Prancha com nomes: `style-served-preview.png`.
+Crítico independente aprovou a apresentação final em 12/10: compressão, logo,
+armas, corpos, menu e controles legíveis. Margens de Lobisomem/Lampião/Juiz são
+apertadas no crop 16:9, sem corte observado. Fontes 1536×1024, não nativas 5K.
+
+Primeira tentativa de WebP servidos teve screenshots parcialmente pintados,
+apesar de arquivos completos e zero pageerrors. Arquivada em
+`evidence/served-partial-capture/`; repetição aguardando decode + 2 frames +
+500 ms resolveu as capturas. Isso mudou apenas o script de evidência externo.
+
+Autorização recebida para push/PR draft desta branch, sem merge/deploy.
+Base remota confirmada em 12/10: main `261cf59a7bbc0a7e50352a84d6ba5cb8313eec95`,
+sem commits posteriores. Não existe PR desta branch. O PR inclui toda a frente
+dos commits 7440abebc, 5655c2e13, 442f313e1, bbffc4d92, 8a12faf45 e 07b7056cf,
+mais esta revisão. Nenhuma dependência entre PRs conhecida; assets privados e
+masters PNG ficam fora do Git. `check:fast` amplo em execução. `npm run check`
+não existe no package atual. Índice ARCH regenerado para a alteração prévia em
+main.js (4411 linhas/333 símbolos), e arch:check passou. Próximo passo: concluir
+checks amplos, registrar limitações, publicar branch e abrir/anexar draft.

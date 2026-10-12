@@ -23,6 +23,11 @@
 > O conteúdo e as datas das entradas continuam intactos; só o rótulo mudou, porque chamar de
 > 3.3.0 um build com P0 em aberto promete ao jogador uma estabilidade que ele não tem.
 
+## Não lançado — 2026-10-12
+
+### Alterado
+- Os 19 wallpapers de Políticos e Míticos recebem o acabamento ilustrado das artes antigas, com pele, pelagem, tecidos e luz mais detalhados. Identidade, figurino e armas permanecem reconhecíveis; o enquadramento conserva o personagem inteiro em 3:2 e 16:9.
+
 ## Não lançado — 2026-10-11
 
 ### Adicionado
