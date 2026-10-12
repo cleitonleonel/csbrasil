@@ -39,6 +39,7 @@ try {
  check(refreshed.status===200 && refreshed.body.wallet.balance===200,'Confirmed email quest credits exactly 200, including replay');
  check(refreshed.body.quests.email===1,'Server reports email completion');
  check(refreshed.body.topUpsEnabled===false && refreshed.body.acquisition==='quests','Quest-only acquisition policy');
+ check(refreshed.body.campaign.daily_match_cap===250,'Server applies the approved 250 daily match cap');
  check(refreshed.body.ledger.length===1 && refreshed.body.ledger[0].kind==='email','No fixture/refund credit used');
  for(const body of [{action:'topup',amount:10000,paid:true},{action:'claim',quest:'singleplayer',completed:true,amount:10000}])check((await request(body)).status===400,'Forged credit route rejected: '+body.action);
  await page.locator('[data-treta-view="quests"]').click();

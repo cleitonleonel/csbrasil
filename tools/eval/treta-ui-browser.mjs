@@ -99,7 +99,7 @@ try {
   assert.equal(await page.locator('.treta-quest').count(),4);
   assert.equal(await page.locator('[data-quest="email"] button').isDisabled(),true,'Confirmed email quest is already complete');
   assert.match(await page.locator('[data-quest="referral"] small').textContent(),/2\/10/,'Quest progress comes from server');
-  assert.match(await page.locator('#treta-quest-limit').textContent(),/70.*100/,'Shared daily match cap visible');
+  assert.match(await page.locator('#treta-quest-limit').textContent(),new RegExp(`70.*${state().campaign.daily_match_cap}`),'Shared daily match cap visible');
   assert.equal(await page.locator('#treta-packs').count(),0,'No purchasable currency offer rendered');
   await page.locator('[data-treta-view="quests"]').press('ArrowRight');
   assert.equal(await page.locator('[data-treta-view="accessories"]').getAttribute('aria-selected'),'true');

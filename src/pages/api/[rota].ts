@@ -15,9 +15,8 @@ const MIGRADAS = new Set([
   'submit-match', 'telemetry', 'train-frames',
 ]);
 
-/* social/social-auth/social-avatar dependem do rollout do backend#70; enquanto ele não
-   chega, o 404 upstream é indisponibilidade (503), não rota do site quebrada. */
-const EM_ROLLOUT = ['social', 'social-auth', 'social-avatar'];
+// Social e avatar usam 404 para perfis ausentes ou privados; preservar esse status.
+const EM_ROLLOUT = ['social-auth'];
 
 const handler: APIRoute = async ({ params, url, request, clientAddress }) => {
   const rota = String(params.rota || '').replace(/\/+$/, '');

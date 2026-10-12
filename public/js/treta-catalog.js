@@ -25,7 +25,7 @@ export const TRETA_SKINS = [
   {id:'zero-um-mandrake',name:'Zero Um Mandrake',character:'senador',color:'#d7ac51',series:'MANDRAKE',description:'Conjunto preto e dourado, boné virado e três correntes pesadas.',price:800,ready:false},
 ];
 export const TRETA_NEXT = ['Daniel Vorcaro','Donald Trump'];
-export const TRETA_DEFAULT_REWARDS = {email_reward:200,referral_reward:100,sp_reward:10,mp_reward:25,daily_match_cap:100,referral_cap:10,starts_at:null,ends_at:null};
+export const TRETA_DEFAULT_REWARDS = {email_reward:200,referral_reward:100,sp_reward:10,mp_reward:25,daily_match_cap:250,referral_cap:10,starts_at:null,ends_at:null};
 
 export function tretaChange(amount) {
   if(!Number.isSafeInteger(amount) || amount<0)throw new RangeError('invalid_treta_amount');
