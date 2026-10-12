@@ -181,3 +181,47 @@ não garante classificação de todos os remetentes futuros. Contact legal.ts ag
 fale@corosolto.com.br. Tag CORO SOLTO / DOCUMENTOS removida por pedido do titular,
 inclusive CSS sem uso. Ambas rotas locais conferidas; sem publicação/deploy.
 Evidências e continuidade integral no ledger privado growth-readiness.
+
+### Entrada, vínculo de contas e escolhas opcionais — 2026-10-13
+
+Candidato em codex/ranking-launch-20261012, base15d269851; preserva corte integral
+ranking + Email/Google/Discord/X/LinkedIn + newsletter antes da campanha. Modal
+antigo alto/estreito rejeitado pelo titular. Novo modal920px com login e escolhas
+em2colunas; Google, Discord, X e LinkedIn sempre visíveis, disabled com EM
+CONFIGURAÇÃO quando Auth não anuncia disponibilidade. Mobile390×844:352px, uma
+coluna, scroll acessível e nenhum overflow horizontal. Capturas examinadas em
+private-assets/growth-readiness/ranking-20261012/account-entry-{two-columns,mobile,mobile-choices}-20261013.jpg
+na raiz agregada; é revisão local, não aceite visual do titular nem publicação.
+
+Conta existente usa ação link, não substitui sessão por ação start. Backend
+pareado prende PKCE a conta, sessão e provider; migration051 aplicada somente no
+Docker local. Newsletter opt-in separado, desmarcado, confirmação posterior;
+cookies opcionais separados, default deny. Escolha local guarda só permissão
+daquele navegador; retirada limpa diagnósticos/atribuição e memória, cessa FPS
+pendente e sincroniza entre abas. Identidade/progresso essenciais preservados.
+Runtime no manifesto recursivo de módulos; sem trackers Vercel incondicionais.
+Preferências disponíveis também no perfil/wizard/configurações.
+
+Validação: entrada25PASS/0RED/1UNKNOWN, email real local17/17, ops77/77, privacy
+ops5/5 + escolhaPASS; quatro mutantes de coleta/retirada RED, vínculo backend
+PASS e dois mutantes RED. Build, SEO6/6 e grafo módulos PASS. Revisão independente
+auth-preferences-review-20261013.md fecha doisP2 e adendo comprova cache e storage
+event; nenhum novoP0/P1/P2 confirmado. Não certifica efeito externo GoTrue antes
+do callback, SMTP de produção, apps OAuth reais, migrations remotas ou deploy.
+docs:check e gitleaks staged PASS. Nova régua eval:privacy incluída no check:fast, sem rerodar suite ampla já RED
+por baseline independente preservada neste ledger de lançamento.
+
+Titular autorizou ativação nesta sessão: Allow manual linking salvoON e relido
+no Supabase. Quatro providers aindaDISABLED; EmailENABLED. Discord clientID do
+formulário sofreu preenchimento inválido; nada disso salvo. Titular não possui
+Client Secret: painel OAuth2/Reset Secret e Supabase deixados abertos para
+geração, entrada e salvamento pelo titular, conforme política do navegador.
+Google também sem configuração válida certificada; autofill não é credencial
+OAuth verificada. Não copiar secretos no chat/repos nem habilitar com autofill.
+
+Próximo: titular salva credenciais OAuth; testar login e vínculo com contas
+reais, inclusive identidade já pertencente a outra conta, logout/troca de sessão
+e efeito em Auth.identities. Conferir SMTP, migrations049/050/051 e envs em
+ambiente autorizado antes de publicação. Ranking semanal Brasília, histórico
+preservado e MP2× humano continuam requisitos; campanha/loja/mapas permanecem
+abertos no ledger growth-readiness. Nenhum merge, push, deploy ou envio externo.
