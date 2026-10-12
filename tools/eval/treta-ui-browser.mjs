@@ -12,7 +12,7 @@ const mutant=process.argv.find(a=>a.startsWith('--mutant='))?.split('=')[1];
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',args:['--mute-audio','--use-angle=metal']});
 const report={fixture:true,environment:'Chrome desktop ANGLE Metal; mobile viewport/touch emulation, not physical hardware',base,captures:[],errors:[],performance:[],requests:[]};
 let balance=1600,inventory=[],ledger=[],mode='normal',purchases=0,authenticated=true,manifestOpen=true,modelFailure=false;
-const state=()=>({authenticated,accountId:authenticated?'fixture-account':null,wallet:authenticated?{balance,referral_code:'00000000-0000-4000-8000-000000000001'}:null,inventory,ledger,campaign:TRETA_DEFAULT_REWARDS,catalog:TRETA_SKINS.map(s=>({id:s.id,character_id:s.character,price:800,available:true,model_path:`/models/skins/${s.id}-fixture.glb`}))});
+const state=()=>({authenticated,acquisition:'quests',topUpsEnabled:false,accountId:authenticated?'fixture-account':null,wallet:authenticated?{balance,referral_code:'00000000-0000-4000-8000-000000000001'}:null,inventory,ledger,quests:{email:1,referral:2,singleplayer:3,multiplayer:4,dailyMatchEarned:70},campaign:{...TRETA_DEFAULT_REWARDS,starts_at:new Date(Date.now()-86400000).toISOString(),ends_at:new Date(Date.now()+86400000).toISOString()},catalog:TRETA_SKINS.map(s=>({id:s.id,character_id:s.character,price:800,available:true,model_path:`/models/skins/${s.id}-fixture.glb`}))});
 try {
  for(const [name,viewport] of [['desktop',{width:1536,height:1024}],['mobile',{width:390,height:844}]]) {
   balance=1600;inventory=[];ledger=[];mode='normal';purchases=0;authenticated=true;manifestOpen=true;
@@ -70,7 +70,7 @@ try {
   await shot('store');
   assert.equal(await page.locator('#hub-music-toggle').getAttribute('aria-pressed'),'false');
   if(baseline) {await page.close();continue;}
-  assert.equal(await page.locator('[data-treta-view="packs"]').count(),1,'Packs need a separate view');
+  assert.equal(await page.locator('[data-treta-view="packs"]').count(),0,'No currency packs at launch');
   assert.equal(report.requests.filter(r=>r.name===name && r.model).length,0,'Skin GLBs are lazy until detail opens');
   if(mutant==='manifest'){manifestOpen=false;await page.reload({waitUntil:'commit'});await page.locator('#splash-enter:not(.hidden)').waitFor({timeout:90000});await page.locator('#boot-splash').click();await page.locator('button[data-hub-tab="loja"]').click();await page.locator('.treta-card').first().click();await page.waitForFunction(()=>!document.getElementById('treta-detail-production').textContent.includes('Carregando'));assert.match(await page.locator('#treta-detail-production').textContent(),/Venda em preparação/,'Unapproved manifest must keep the skin in production');assert.equal(await page.locator('#treta-buy').isEnabled(),false,'Unapproved manifest must block purchase');await page.close();continue;}
   modelFailure=true;
@@ -95,10 +95,13 @@ try {
   await page.locator('#treta-buy').filter({hasText:'JÁ EQUIPADA'}).waitFor();
   assert.equal(inventory[0].equipped,true);await shot('equipped');
   await page.locator('#treta-detail [data-treta-close]').click();
-  await page.locator('[data-treta-view="packs"]').click();await shot('packs');
-  assert.equal(await page.locator('.treta-pack').count(),3);
-  assert.equal(await page.locator('.treta-pack button:enabled').count(),0);
-  await page.locator('[data-treta-view="packs"]').press('ArrowRight');
+  await page.locator('[data-treta-view="quests"]').click();await shot('quests');
+  assert.equal(await page.locator('.treta-quest').count(),4);
+  assert.equal(await page.locator('[data-quest="email"] button').isDisabled(),true,'Confirmed email quest is already complete');
+  assert.match(await page.locator('[data-quest="referral"] small').textContent(),/2\/10/,'Quest progress comes from server');
+  assert.match(await page.locator('#treta-quest-limit').textContent(),/70.*100/,'Shared daily match cap visible');
+  assert.equal(await page.locator('#treta-packs').count(),0,'No purchasable currency offer rendered');
+  await page.locator('[data-treta-view="quests"]').press('ArrowRight');
   assert.equal(await page.locator('[data-treta-view="accessories"]').getAttribute('aria-selected'),'true');
   await page.locator('[data-treta-view="accessories"]').press('Home');
   assert.equal(await page.locator('[data-treta-view="skins"]').getAttribute('aria-selected'),'true');

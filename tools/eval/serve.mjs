@@ -59,6 +59,7 @@ async function loadModule(spec, fromDir) {
      `node:fs` como caminho quebra o render e derruba o arnês inteiro. Antes do .json. */
   if (spec.startsWith('node:')) return await import(spec);
   const base = resolve(fromDir, spec);
+  if (base.endsWith('.astro')) return { default: base };
   if (base.endsWith('.json')) return { default: JSON.parse(await readFile(base, 'utf8')) };
   for (const candidate of [`${base}.ts`, `${base}.mjs`, `${base}.js`, join(base, 'index.ts')]) {
     const code = await readFile(candidate, 'utf8').catch(() => null);
@@ -103,9 +104,24 @@ async function evalDeclarations(code, filename, seed = {}) {
 }
 
 async function renderIndex() {
-  const src = await readFile(ASTRO, 'utf8');
+  let src = await readFile(ASTRO, 'utf8');
   const V = JSON.parse(await readFile('package.json', 'utf8')).version;
   const { modules: modulos, revision: JS_REV } = moduleCacheManifest(join(ROOT, 'js'));
+  const components=[...src.matchAll(IMPORT_LINE)].filter(([,clause,spec])=>spec.endsWith('.astro') && /^[A-Za-z_$][\w$]*$/.test(clause.trim()));
+  for(const [,clause,spec] of components) {
+    const filename=resolve(dirname(ASTRO),spec),raw=await readFile(filename,'utf8');
+    const pattern=new RegExp(`<${clause.trim()}\\b([^>]*?)/>`,'g');
+    for(const match of [...src.matchAll(pattern)]) {
+      const props=Object.fromEntries([...match[1].matchAll(/([\w]+)="([^"]*)"/g)].map(([,key,value])=>[key,value]));
+      const front=raw.match(FRONTMATTER);
+      const scope=front?await evalDeclarations(front[1],filename,{Astro:{props},__MANIFESTO_JS__:{revision:JS_REV}}):{};
+      const body=raw.replace(FRONTMATTER,'').replace(/=\{([A-Za-z_$][\w$]*)\}/g,(_,key)=>{
+        if(!(key in scope))throw new Error(`serve.mjs: atributo ${key} não resolvido em ${filename}`);
+        return `=${JSON.stringify(scope[key])}`;
+      }).replace(/\{([A-Za-z_$][\w$]*)\}/g,(_,key)=>String(scope[key] ?? ''));
+      src=src.replace(match[0],body);
+    }
+  }
   const CSS_REV = createHash('sha256')
     .update(await readFile(join(ROOT, 'style.css')))
     .digest('hex').slice(0, 12);

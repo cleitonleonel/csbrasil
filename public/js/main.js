@@ -4042,6 +4042,10 @@ window.__mpConvite = mpEntrarPorConvite;
 // Rewarded solo uses the same authoritative simulation and signed identity as MP.
 // Local practice remains accessible from JOGAR.
 let tretaSoloStarting = false;
+document.addEventListener('cs-treta-multiplayer', () => {
+  document.querySelector('[data-hub-tab="jogar"]')?.click();
+  void abrirMultiplayer();
+});
 document.addEventListener('cs-treta-solo', async () => {
   if (mpConectando || tretaSoloStarting) return;
   tretaSoloStarting = true;
@@ -4053,7 +4057,7 @@ document.addEventListener('cs-treta-solo', async () => {
     if (!no) return mpErro('Nenhum servidor de partidas solo premiadas está disponível agora. Você pode jogar no menu JOGAR.');
     mpSelecionarNo(no);
     const ticket = await obterMpTicket('create');
-    const senha = crypto.randomUUID();
+    const senha = clientUuid();
     const sala = await createRoom(no.http, {
       name: 'SOLO TRETA$', solo: true, private: true, password: senha,
       mapId: currentMap, mapas: [currentMap], ctf: matchMode === 'ctf',
