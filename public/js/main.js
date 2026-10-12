@@ -3119,20 +3119,7 @@ async function renderHubRanking() {
   }
   if (!Array.isArray(data?.players)) { global.textContent = 'Ranking global indisponível no momento.'; return; }
   if (!data.players.length) { global.textContent = 'Ainda não há jogadores no ranking.'; return; }
-  const table = document.createElement('table');
-  const head = document.createElement('tr');
-  for (const label of ['#', 'JOGADOR', 'PONTOS', 'K/D', 'KILLS']) {
-    const cell = document.createElement('th'); cell.textContent = label; head.appendChild(cell);
-  }
-  table.appendChild(head);
-  for (const [index, player] of data.players.slice(0, 10).entries()) {
-    const row = document.createElement('tr');
-    for (const value of [index + 1, player.nick, player.points, player.kd, player.kills]) {
-      const cell = document.createElement('td'); cell.textContent = String(value ?? '—'); row.appendChild(cell);
-    }
-    table.appendChild(row);
-  }
-  global.replaceChildren(table);
+  global.replaceChildren(rankingTable(data.players.slice(0,10)));
 }
 async function renderGlobal(nick) {
   const box = $('rank-global');
@@ -3151,21 +3138,13 @@ async function renderGlobal(nick) {
     box.innerHTML = '<h3>RANKING GLOBAL</h3><div class="rg-off">indisponível no momento</div>';
     return;
   }
-  const rankText = (value) => String(value ?? '—').replace(/[&<>"']/g, (ch) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
-  const rows = data.players.slice(0, 10).map((p, i) =>
-    `<tr class="${p.nick === nick ? 'me' : ''}"><td>${i + 1}</td><td>${rankText(p.nick)}</td><td>${rankText(p.points)}</td><td>${rankText(p.kd)}</td><td>${rankText(p.kills)}</td></tr>`).join('');
-  const meuPerfil = data.players.find((p) => p.nick === nick);
-  const meuPerfilUrl = meuPerfil?.id
-    ? `/u/${encodeURIComponent(meuPerfil.id)}/${encodeURIComponent(meuPerfil.nick)}`
-    : `/u/${encodeURIComponent(nick)}`;
-  box.innerHTML = '<h3>RANKING GLOBAL (top 10)</h3>' +
-    (rows
-      ? `<table><tr><th>#</th><th>JOGADOR</th><th>PONTOS</th><th>K/D</th><th>KILLS</th></tr>${rows}</table>`
-      : '<div class="rg-off">ainda vazio — seja o primeiro!</div>') +
-    `<div class="rg-links"><a href="/ranking" target="_blank" style="color:var(--cs)">RANKING COMPLETO ↗</a>` +
-    (nick ? `<a href="${meuPerfilUrl}" target="_blank" style="color:var(--cs)">MEU PERFIL ↗</a>` : '') +
-    `<a href="/mapa" target="_blank" style="color:var(--cs)">MAPA AO VIVO ↗</a></div>`;
+  box.innerHTML = '<h3>RANKING GLOBAL (top 10)</h3>';
+  if(data.players.length){const wrap=document.createElement('div');wrap.className='social-table-wrap';wrap.appendChild(rankingTable(data.players.slice(0,10),{nick}));box.appendChild(wrap);}
+  else {const empty=document.createElement('p');empty.textContent='Ainda vazio — seja o primeiro!';box.appendChild(empty);}
+  const links=document.createElement('div');links.className='rg-links';
+  const own=data.players.find(p=>p.nick===nick);
+  for(const [label,href] of [['RANKING COMPLETO ↗','/ranking'],...(nick?[['MEU PERFIL ↗',playerProfilePath(own || {}) || `/u/${encodeURIComponent(nick)}`]]:[]),['MAPA AO VIVO ↗','/mapa']]){const a=document.createElement('a');a.textContent=label;a.href=href;a.target='_blank';a.rel='noopener noreferrer';links.appendChild(a);}
+  box.appendChild(links);
 }
 
 // GLB idle thumbnail (no weapon), rendered off the shared preview renderer.
@@ -4402,3 +4381,4 @@ if (inspectionScreen) {
   if (document.getElementById('boot-splash')) document.addEventListener('click', entrarQuandoPuder, { once: true });
   else entrarQuandoPuder();
 }
+import {rankingTable,playerProfilePath} from './ranking-player.js';

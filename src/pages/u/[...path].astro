@@ -15,7 +15,7 @@ const game=valid?`/?secao=comunidade&social=profile&perfil=${encodeURIComponent(
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>{title}</title><meta name="description" content={description}/><link rel="canonical" href={canonical}/>
 <meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:url" content={canonical}/><meta property="og:type" content="profile"/>
-{image && <><meta property="og:image" content={image}/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content={`Estatísticas verificadas de ${p.nick}`}/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:image" content={image}/></>}
+{image && <><meta property="og:image" content={image}/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content={`Placar de ${p.nick}`}/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:image" content={image}/></>}
 {!p && <meta name="robots" content="noindex"/>}
 </head><body><main><p class="brand">CORO SOLTO: TRETA SUPREMA</p><h1>{p?p.nick:'Perfil indisponível'}</h1><p>{description}</p>{p?.handle && <p>@{p.handle}</p>}<a href={game}>{p?'VER PERFIL DENTRO DO JOGO ▸':'VOLTAR AO JOGO ▸'}</a></main>
 {valid && <script is:inline define:vars={{game}}>location.replace(game);</script>}
