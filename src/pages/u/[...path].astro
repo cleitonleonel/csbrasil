@@ -1,8 +1,23 @@
 ---
 export const prerender=false;
+import {publicProfile,PROFILE_SITE} from '../../lib/public-profile';
 Astro.response.headers.set("cache-control","no-store");
-const id=(Astro.params.path || "").split("/")[0];
-if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))return Astro.redirect(`/?secao=comunidade&social=profile&perfil=${encodeURIComponent(id)}`,302);
-Astro.response.status=404;
+const key=(Astro.params.path || '').split('/')[0];
+const {profile:p,status}=await publicProfile(key,Astro.request,Astro.clientAddress);
+Astro.response.status=status;
+const canonical=p?PROFILE_SITE+p.url:PROFILE_SITE+'/';
+const image=p?`${PROFILE_SITE}/api/profile-card/${encodeURIComponent(p.handle || p.id)}.png`:null;
+const title=p?`${p.nick} · CORO SOLTO`:'Perfil indisponível · CORO SOLTO';
+const description=p?`${p.points} pontos · ${p.kills} abates · K/D ${p.kd}. Bora pra treta?`:'Este perfil está privado ou indisponível.';
+const valid=/^(?:[a-z][a-z0-9_]{2,23}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(key);
+const game=valid?`/?secao=comunidade&social=profile&perfil=${encodeURIComponent(p?.id || key)}`:'/?secao=comunidade';
 ---
-<p>Perfil indisponível. <a href="/?secao=comunidade">Voltar ao jogo</a></p>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>{title}</title><meta name="description" content={description}/><link rel="canonical" href={canonical}/>
+<meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:url" content={canonical}/><meta property="og:type" content="profile"/>
+{image && <><meta property="og:image" content={image}/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content={`Estatísticas verificadas de ${p.nick}`}/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:image" content={image}/></>}
+{!p && <meta name="robots" content="noindex"/>}
+</head><body><main><p class="brand">CORO SOLTO: TRETA SUPREMA</p><h1>{p?p.nick:'Perfil indisponível'}</h1><p>{description}</p>{p?.handle && <p>@{p.handle}</p>}<a href={game}>{p?'VER PERFIL DENTRO DO JOGO ▸':'VOLTAR AO JOGO ▸'}</a></main>
+{valid && <script is:inline define:vars={{game}}>location.replace(game);</script>}
+</body></html>
+<style>body{margin:0;background:#0c0e11;color:#d8cfae;font-family:system-ui,sans-serif;min-height:100vh;display:grid;place-items:center}main{max-width:700px;padding:32px;border-left:3px solid #e8b34b}.brand,a{color:#e8b34b}h1{font-size:clamp(32px,8vw,60px)}a{display:inline-block;padding:16px 0;font-weight:700}:focus-visible{outline:3px solid #e8b34b}</style>

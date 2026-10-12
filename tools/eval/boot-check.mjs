@@ -302,6 +302,12 @@ try {
     await jornada.locator('#boot-splash').dispatchEvent('pointerdown');
     await jornada.waitForTimeout(3100);
     const entradaOk = await jornada.locator('#launch-error').evaluate((el) => el.classList.contains('hidden'));
+    if (await jornada.locator('#account-entry-dialog').count()) {
+      await jornada.waitForFunction(() => !!document.getElementById('hub-account-login')?.onclick);
+      await jornada.locator('#hub-account-login').dispatchEvent('click');
+      await jornada.locator('#account-entry-dialog .account-guest').click();
+      await jornada.locator('#account-entry-dialog').waitFor({ state: 'hidden' });
+    }
     // SINGLE PLAYER abre os modos contra bots; Mata-mata inicia a jornada padrão.
     await jornada.locator('.cs-item[data-act="single-player"]').click();
     await jornada.locator('.cs-item[data-act="sp"]:visible').click();
