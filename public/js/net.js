@@ -107,9 +107,10 @@ function observaRede(url) {
     obs.observe({ type: 'resource' });
   } catch { obs = null; }
   return async (t0) => {
-    for (let i = 0; obs && duracao == null && i < 5; i++) await new Promise((r) => setTimeout(r, 20));
+    const fim = performance.now();
+    for (let i = 0; obs && duracao == null && i < 2; i++) await new Promise((r) => setTimeout(r, 20));
     obs?.disconnect();
-    return duracao ?? performance.now() - t0;
+    return duracao ?? fim - t0;
   };
 }
 
