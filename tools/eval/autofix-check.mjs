@@ -33,11 +33,14 @@
          releases em 20 horas e cada um reabre conflito em todo PR aberto; sem o
          gatilho de push o bot só conserta quem empurra commit — ou seja, nunca
          quem está parado esperando revisão, que é justamente quem precisa.
-   AF8 · a base só entra no PR quando há CONFLITO. Medido em 13/10: o bot trazia a
+   AF8 · a base só sobe para o PR quando faz falta. Medido em 13/10: o bot trazia a
          main para todo PR atrasado, mesmo sem conflito (58 merges num dia, 18% dos
          minutos de CI), e cada merge reinicia o CI inteiro do PR. A varredura dispara
-         só para `CONFLICTING`, depois de esperar o GitHub calcular o `mergeable`; e o
-         merge do job é de teste (`--no-commit`): mesclou limpo, aborta sem commitar.
+         só para `CONFLICTING`, depois de esperar o GitHub calcular o `mergeable`. No
+         job, merge limpo fica SÓ LOCAL (não acende `mesclou`): os geradores rodam na
+         árvore mesclada e ele só sobe se a regeneração mudar algo. É o cenário A/B:
+         dois PRs somam 1 à mesma contagem, A entra, o merge de B junta limpo com o
+         número errado, e B fica vermelho MERGEABLE, fora do alcance da varredura.
    AF5 · o resolvedor de conflito passa pela MESMA trava e ABORTA quando sobra
          conflito fora dela. Resolver conflito de arquivo gerado é mecânico (todo
          `chore(release)` reabre um em cada PR aberto); resolver conflito de código
@@ -68,8 +71,9 @@ const MUTANTES = {
   'trava-do-pr': 'AF5',
   'varredura-dispara-atrasado': 'AF8',
   'varredura-sem-espera': 'AF8',
-  'merge-limpo-volta': 'AF8',
   'merge-limpo-commita': 'AF8',
+  'merge-limpo-descartado': 'AF8',
+  'push-sem-trava': 'AF8',
 };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
@@ -214,8 +218,13 @@ else if (!filtraAtrasado) falhas.push('AF6 a varredura não seleciona os PRs em 
 /* ---- AF8: a base só entra quando há conflito ---- */
 if (MUT === 'varredura-dispara-atrasado') wf = wf.replace(`awk '$2 == "CONFLICTING"`, `awk '$2 != "MERGEABLE"`);
 if (MUT === 'varredura-sem-espera') wf = wf.replace(/\n\s*\[ "\$tentativa" = 4 \] \|\| sleep 30/, '');
-if (MUT === 'merge-limpo-volta') wf = wf.replace(/ \\\n\s*--no-commit --no-ff FETCH_HEAD; then/, ' FETCH_HEAD; then');
-if (MUT === 'merge-limpo-commita') wf = wf.replace('git merge --abort 2>/dev/null || true', 'echo "mesclou=1" >> "$GITHUB_OUTPUT"');
+/* merge-limpo-commita: o merge limpo volta a subir sempre (os 58 merges de 13/10).
+   merge-limpo-descartado: o merge limpo é desfeito antes de regenerar (o cenário A/B).
+   push-sem-trava: o push deixa de depender da trava ter achado regeneração. */
+const AVISO_LIMPO = 'echo "Sem conflito com a base: merge só local; sobe apenas se a regeneração mudar algo."';
+if (MUT === 'merge-limpo-commita') wf = wf.replace(AVISO_LIMPO, `${AVISO_LIMPO}\n            echo "mesclou=1" >> "$GITHUB_OUTPUT"`);
+if (MUT === 'merge-limpo-descartado') wf = wf.replace(AVISO_LIMPO, `git reset -q --hard 'HEAD@{1}'\n            ${AVISO_LIMPO}`);
+if (MUT === 'push-sem-trava') wf = wf.replace("(steps.trava.outputs.commitar == '1' || steps.merge.outputs.mesclou == '1') && env.PODE_EDITAR == 'true'", "env.PODE_EDITAR == 'true'");
 {
   const ini = wf.indexOf('\n  varredura:');
   const varredura = ini < 0 ? '' : wf.slice(ini, wf.indexOf('\n  autofix:', ini));
@@ -234,10 +243,19 @@ if (MUT === 'merge-limpo-commita') wf = wf.replace('git merge --abort 2>/dev/nul
   const ini2 = wf.indexOf('id: merge');
   const merge = ini2 < 0 ? '' : wf.slice(ini2, wf.indexOf('diff-filter=U', ini2));
   const tentativa = /if git merge[^\n]*(?:\\\n[^\n]*)*FETCH_HEAD; then\n([\s\S]*?)\n\s*fi\n/.exec(merge);
-  if (!tentativa || !/--no-commit/.test(tentativa[0])) {
-    falhas.push('AF8 o merge da base no autofix commita mesmo sem conflito — tem de ser de teste (`--no-commit`)');
-  } else if (!/git merge --abort/.test(tentativa[1]) || /mesclou=1/.test(tentativa[1])) {
-    falhas.push('AF8 o merge que deu limpo não é abortado — a base entraria no PR sem conflito nenhum');
+  if (!tentativa) {
+    falhas.push('AF8 não achei o caminho do merge limpo no passo `id: merge` — a régua ficou cega');
+  } else {
+    if (/mesclou=1/.test(tentativa[1])) {
+      falhas.push('AF8 merge limpo acende `mesclou` — a base sobe para todo PR atrasado, mesmo sem nada a regenerar');
+    }
+    if (/--abort|reset[^\n]*--hard|--no-commit/.test(tentativa[0])) {
+      falhas.push('AF8 merge limpo é desfeito antes dos geradores — no cenário A/B a árvore mesclada fica com a contagem errada e o PR vermelho');
+    }
+  }
+  const push = /- name: Empurra o conserto\n\s+if: ([^\n]+)/.exec(wf)?.[1] || '';
+  if (!push.includes("steps.trava.outputs.commitar == '1'")) {
+    falhas.push('AF8 o push do autofix não depende da trava ter achado regeneração — merge limpo local subiria sem motivo');
   }
 }
 
