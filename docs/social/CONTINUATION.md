@@ -388,3 +388,35 @@ legal/ranking antes da campanha. Central/DM precisa operador/retenção/flag/052
 Ranking geral+semanal Brasília/segunda00, só fraude comprovada removida, MP2×
 humanos distintos confirmados, cinco logins+newsletter; shop/TRETa$/Pix/Portugal,
 mapas/chat e redes/automação permanecem no objetivo completo.
+
+
+### Marco 13/10 — Hierarquia do perfil e pacote de e-mails
+
+Label A TURMA DA TRETA removida da comunidade e do perfil público. Ranking geral
+agora tem destaque próprio; demais métricas em faixa sem cartões, tanto SSR
+quanto perfil interno. Valores/provenance/privacidade/personagem preservados.
+Baseline privado3RED antes do produto; crítico independente runtime/privacidade
+PASS e mutantesRED. Regressões profile-character9/9, inbox23/23; build e grafo
+com mutantePASS. Inventários regenerados por npm run docs.
+Capturas examinadas: public-profile-hierarchy-20261013.png,
+community-profile-hierarchy-20261013.png e community-profile-metrics-20261013.png.
+SSR computed rank88px/statsflex, interno72px/flex; nenhuma régua de gameplay
+alterada. Astro servido com CSS antigo após HMR foi reiniciado na mesma lane,
+PID75655→38418/8137/.env.local; API8197 mantida. Mobile do perfil segueUNKNOWN.
+Templates e instruções de ativação vivem no backend emails/README.md.
+Checagem HTTP pública atual em social-public-readiness-20261013.json: domínio
+oficial /api/social-auth?action=providers, /privacidade e /termos ainda404.
+Isso não é prontidão de produção. Providers5Enabled são evidência no ledger,
+OAuth externo/vínculo real não comprovados. SMTP real/entrega segue pendente.
+049 continua ausente e ranking8arg503: resolver fonte040/048 autoritativa sem
+fingir legacy037 ou desativar freeze guard; depois rollout coordenado e provas.
+
+Artefatos privados: csbrasil/private-assets/growth-readiness/ranking-20261012.
+Parecer social-launch-current-review-20261013.md e probe independente associado.
+Bases antes deste marco: clientba7aac3ad/backend9943835/progress794db07;
+lane client/backend codex/ranking-launch-20261012, progress growth-readiness.
+Nenhum push/merge/deploy/envio/post/pagamento ou alteração em primary/outras lanes.
+Objetivo integral preservado: ranking geral/semanal Brasília/segunda00, histórico
+mantido e só fraude comprovada removida, MP2× com humanos distintos confirmados;
+Email/Google/Discord/X/LinkedIn, newsletter, social persistente, chat, loja/
+TRETa$/Pix/Portugal→Brasil2027, mapas e campanha/automação de redes.
