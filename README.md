@@ -26,9 +26,9 @@ commit diz qual escreveu (trailer `Agent:`, convenção em `CONTRIBUTING.md`):
 
 ![CORO SOLTO: Treta Suprema — FPS satírico de navegador com facções brasileiras](public/og-image.jpg)
 
-**FPS gratuito de navegador em Three.js**: 5 facções brasileiras caricatas, 44
-personagens originais, 5 mapas satíricos e 26 armas — rounds e Capture the Flag
-contra bots, direto na aba. Sem download, sem instalação, sem cadastro.
+**FPS gratuito de navegador em Three.js**: facções brasileiras caricatas,
+personagens originais, mapas satíricos e armas. Partidas contra bots e
+multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 
 <!-- BEGIN:GERADO:numeros — não edite à mão, rode `npm run docs` -->
 
@@ -53,15 +53,15 @@ contra bots, direto na aba. Sem download, sem instalação, sem cadastro.
 
 <!-- END:GERADO:numeros -->
 
-> **Hoje o jogo é só contra bots.** Não existe multiplayer entre humanos: um
-> `grep RTCPeerConnection` no repositório devolve zero, e não há netcode em
-> `public/js/` nem em `src/`. Multiplayer por WebRTC é a maior frente aberta do
-> projeto — quando existir, esta linha muda junto com o código, não antes.
+> **O multiplayer está em beta.** O cliente de rede vive em
+> [`public/js/net.js`](public/js/net.js), com os transportes em
+> [`public/js/transporte.js`](public/js/transporte.js). Para testar o jogo local
+> sem configurar um servidor multiplayer, comece pelo modo singleplayer.
 
-▶ **Jogue:** <https://www.csbrasil.online>
+▶ **Jogue:** <https://www.corosolto.com.br/>
 
-> **O jogo já se chamou CS BRASIL.** É o mesmo jogo — o domínio continua o
-> mesmo, e o nome antigo segue registrado como nome alternativo pra quem
+> **O jogo já se chamou CS BRASIL.** É o mesmo jogo, e o nome antigo segue
+> registrado como nome alternativo pra quem
 > procura por ele.
 
 > Este jogo nasceu gerado por IA a partir de um único prompt —
@@ -73,10 +73,10 @@ contra bots, direto na aba. Sem download, sem instalação, sem cadastro.
 
 | Você é… | Leia |
 |---|---|
-| curioso | esta página, e depois <https://www.csbrasil.online> |
+| curioso | esta página, e depois <https://www.corosolto.com.br/> |
 | dev novo (ou agente) | [`docs/README.md`](docs/README.md) → [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | quer entender a stack | [`docs/docs/stack.md`](docs/docs/stack.md) — Three.js, Astro, Supabase, geração de asset, skills |
-| quer contribuir hoje | [`docs/issues/`](docs/issues/) — tarefas de entrada com arquivos e critério de aceite |
+| quer contribuir hoje | [issues abertas](https://github.com/corosolto/client/issues) e [`CONTRIBUTING.md`](CONTRIBUTING.md); confira o estado antes de escolher |
 | quer saber o que está quebrado | as [issues abertas](https://github.com/corosolto/client/issues) |
 
 **Site de documentação** (Docusaurus, com instrumentação de IA, quality gates e
@@ -173,12 +173,15 @@ precisa rodar em CI lê o JSON, nunca o PNG.
 
 ```bash
 git clone https://github.com/corosolto/client.git
-cd csbrasil
-npm install
-cp .env.example .env      # opcional: sem envs, o ranking responde 503 e o resto roda
+cd client
+npm ci
 npm run fetch-audio       # opcional: sem o pacote, o jogo usa sons sintetizados
 npm run dev               # http://localhost:4321 — o jogo está em /
 ```
+
+Use Node/npm compatíveis com os `engines` do `package-lock.json`, incluindo Astro e
+suas dependências. A instalação foi conferida em 10/10/2026 com Node `23.6.0` e npm `11.6.0`.
+Confira `node --version` e `npm --version` no mesmo terminal antes de instalar.
 
 Build e preview:
 
