@@ -337,3 +337,54 @@ escolhidos e newsletter pronta antes da campanha. Loja/skins/TRETa$/Pix com
 atividade Portugal, futuro Brasil2027, mapas/chat e divulgação/automação seguem
 no roadmap integral. Selo verifica acesso à conta, não identidade civil, apoio
 oficial nem integridade das partidas.
+
+
+### Marco 13/10 — Perfil público e último personagem (candidato local)
+
+Pedido implementado: /u/<handle> público agora permanece página legível sem
+carregar arena; preserva nick/selo/bio/avatar/redes/estatísticas e CTA ao jogo.
+Último personagem tem retrato vertical/nome no perfil público e na comunidade.
+Botão ABRIR PERFIL PÚBLICO navega realmente para página externa à arena; demais
+links /u internos mantêm a navegação antiga da comunidade.
+
+Nenhuma visibilidade/opt-in de conta existente alterada. Perfil já defaultpublic
+na040; share_character continua opcional/desligado por padrão. Label e política
+agora dizem perfil público + cartão. Fonte048 last_played_at de rodada
+verificada/não espectador permanece soberana; menu/localStorage/replay antigo
+não escolhem personagem. Sem personagem conhecido/autorização, mantém perfil
+sem retrato inventado. Privado/friends: SSR404/noindex e PNG404/no-store, sem
+vazamento de nick/stats/OG/personagem; entrada autenticada no jogo preservada.
+
+Catálogo leve63/63 derivado do roster real por scripts/profile-character-catalog.mjs
+e --check, sem importar Three.js/personagens pesados. CardPNG legado recebeu
+guarda hasOwn para unknown constructor/__proto__ não inventar nome.
+
+Régua prévia: HTTP real2RED; independente baseline2PASS/5RED. Final9/9 incluindo
+SQL localrollback e HTTP/PNG reais, sharingoff/unknown/null/private/friends.
+3 mutantes RED (invent-character/arbitrary-asset/share-omitted); último em
+clonepg_temp e rollback, nenhuma função viva alterada. Regressões inbox23/23,
+selo10/10, entrada25PASS/0RED/1UNKNOWN OAuth local; card63/63 e fonte/PNG PASS.
+Crítico independente fechou P2 link interceptado e P3 propriedade herdada do
+card; probe4PASS e3mutantesRED. Build final/grafo/docscheck/SEO6/6 PASS.
+
+Capturas reais examinadas na raiz private-assets/growth-readiness/ranking-20261012:
+public-profile-character-desktop-20261013.png,
+community-profile-character-desktop-20261013.png e
+public-profile-character-optout-desktop-20261013.png. Retrato inteiro/nome do
+Canarinho legíveis; após opt-out mesmo nick/stats, sem personagem. Browser
+confirmou CTA jogo→/u e página permanece SSR. Fixture PersonagemTest exclusiva
+foi removida após prova com IDs exatos; não é evidência de partida humana.
+Logs profile-character-* e public-profile-character-*; parecer
+public-profile-character-independent-review-20261013.md. Mobile aindaUNKNOWN.
+
+Bases: clientc5cb99089/backend9943835/progress9556cf8; mesmas lanes isoladas
+codex/ranking-launch-20261012 e codex/growth-readiness-20261012. Sem mudança de
+backend/nó/migração neste marco;048/053 local não implicam rollout no alvo.
+Sem push/merge/deploy/posts/email/pagamento; primary/outras lanes preservadas.
+
+Próximo continua resolver cutover049/provenance autoritativa, SMTP/Confirm EmailON
+e OAuth/vínculo reais, mobile/teclado, migrations040–053 no alvo e publicação
+legal/ranking antes da campanha. Central/DM precisa operador/retenção/flag/052.
+Ranking geral+semanal Brasília/segunda00, só fraude comprovada removida, MP2×
+humanos distintos confirmados, cinco logins+newsletter; shop/TRETa$/Pix/Portugal,
+mapas/chat e redes/automação permanecem no objetivo completo.

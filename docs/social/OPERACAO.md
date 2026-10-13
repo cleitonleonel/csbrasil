@@ -148,3 +148,31 @@ antes de liberar o ranking da comunidade (contrato de8 argumentos hoje503).
 Ensaio: `node tools/eval/account-verified-check.mjs` no client e
 `node --env-file=.env.social-local test/social-verified-integration.mjs` no backend
 isolado. 053 aplicada apenas localmente; remoto permanece pendente.
+
+
+## Perfil público com último personagem
+
+`/u/<handle>` (ou ID público anterior) mantém perfil público legível sem carregar
+a arena; o botão VER PERFIL NO JOGO é a entrada manual. Links regulares da
+comunidade continuam abrindo o perfil dentro do jogo; ABRIR PERFIL PÚBLICO é
+navegação real. Perfil friends/private continua genérico404/noindex, sem
+card/personagem/estatísticas anônimas, com entrada no jogo para autenticação.
+
+Perfil já era public por padrão na040; nenhuma conta existente teve visibilidade
+ou consentimento alterados. Em Comunidade → Privacidade, escolher Todo mundo e
+ativar Mostrar meu último personagem no perfil público e no cartão.
+O backend048 projeta só personagem de rodada verificada, não espectador, pela
+data de uso vivo `last_played_at`. Seleção do menu e dados locais não contam.
+Sem registro conhecido/autorização, não se inventa personagem. Retirada do
+opt-in afeta próximas consultas públicas; proprietário/amigos autorizados
+seguem as regras anteriores de atividade dentro do jogo. Cache de terceiros
+de um cartão já compartilhado não é removido por esse controle.
+
+Catálogo leve dos63 personagens e retratos verticais locais deriva do roster
+real: `node scripts/profile-character-catalog.mjs` gera o módulo; `--check`
+rejeita divergência. Não importar personagens/Three.js no perfil público.
+`npm run eval:profile-character` mede catálogo/UI/SQL+HTTP real no ambiente
+isolado8137/8197/Postgres local; recusa prova remota ou fixture humana presumida.
+Regressão de cartão: `npm run eval:social-profile`. Sem nova migração nesta
+etapa;048/nó atualizado ainda precisam rollout no alvo.049/053 e demais gates
+de lançamento continuam no CONTINUATION.md, sem liberação implícita.
