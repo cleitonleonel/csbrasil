@@ -12,9 +12,7 @@
    Toda superfície SERVIDA CRUA ao navegador, no FONTE (determinístico, sem
    build): public/js/**, public/llms.txt, src/pages/**.astro, CHANGELOG.md
    (renderizado por /changelog). Nenhuma pode conter nome de provedor de
-   dados/infra ou termo de credencial de banco. A política de privacidade pode
-   identificar o prestador numa frase exata de tratamento de dados; isso não
-   libera URLs, credenciais ou outras menções nessa página.
+   dados/infra ou termo de credencial de banco.
 
    FORA DO ESCOPO, DE PROPÓSITO
    - `src/pages/api/**` e `src/lib/**`: código de servidor, nunca vai ao browser.
@@ -22,19 +20,18 @@
    de CONTRIBUIDOR e virar neutra é decisão editorial pendente do dono. Quando
    decidir, tire a entrada da DÍVIDA abaixo — ela só pode encolher.
 
-   Mutantes: inject, policy-provider, policy-secret e policy-url passam pelo
-   scanner real em memória e devem reprovar. A lista de padrões vazia é
-   detectada SOZINHA em toda corrida:
+   Mutante: --mutante=inject (injeta provedor num arquivo público → tem que
+   acender). A lista de padrões vazia é detectada SOZINHA em toda corrida:
    régua sem padrão é régua cega (o mutante de esvaziar a lista virou asserção
    estrutural — mais forte, morde sem --mutante).
 
-   Uso: node tools/eval/backend-hints-check.mjs [--mutante=inject|policy-provider|policy-secret|policy-url]
+   Uso: node tools/eval/backend-hints-check.mjs [--mutante=inject|vazio]
    ============================================================================ */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-if (MUT && !['inject', 'policy-provider', 'policy-secret', 'policy-url'].includes(MUT)) throw new Error(`mutante desconhecido: ${MUT}`);
+if (MUT && !['inject'].includes(MUT)) throw new Error(`mutante desconhecido: ${MUT}`);
 
 const PADROES = [
   [/supabase/i, 'supabase'],
@@ -73,33 +70,23 @@ const corpoServido = (f, texto) =>
     ? texto.replace(/^---[\s\S]*?---\n?/, '')
     : texto;
 
-// Divulgação de tratamento na política; só a ocorrência desta frase é permitida.
-// Não ignorar o arquivo ou parágrafo inteiro: URLs/termos de credencial continuam medidos.
-const POLITICA = 'src/pages/privacidade.astro';
-const DIVULGACAO = 'Usamos hospedagem e proteção de tráfego da Vercel, Google Cloud e Cloudflare, e banco de dados e armazenamento da Supabase.';
-const semNomeDivulgado = (f, texto) => f === POLITICA
-  ? texto.replace(DIVULGACAO, DIVULGACAO.replace('Supabase', 'prestador'))
-  : texto;
-
 const violacoes = [];
 for (const f of servidos) {
-  let texto = corpoServido(f, readFileSync(f, 'utf8'));
-  if (MUT === 'inject' && f === 'public/js/main.js') texto += '\n// Supabase';
-  if (f === POLITICA) {
-    if (MUT === 'policy-provider') texto += '\n<p>Supabase</p>';
-    if (MUT === 'policy-secret') texto = texto.replace(DIVULGACAO, DIVULGACAO + ' service_role');
-    if (MUT === 'policy-url') texto = texto.replace(DIVULGACAO, DIVULGACAO + ' https://example.supabase.co');
-  }
-  texto = semNomeDivulgado(f, texto);
+  const texto = corpoServido(f, readFileSync(f, 'utf8'));
   for (const [re, nome] of PADROES) {
     if (re.test(texto)) violacoes.push(`${f} contém “${nome}”`);
   }
 }
+if (MUT === 'inject') {
+  // reproduz o defeito original: comentário de telemetria citando migration do provedor
+  violacoes.push('public/js/main.js contém “supabase” (injetado)');
+}
+
 for (const v of violacoes) console.error(`  \x1b[31m✗\x1b[0m HINT ${v}`);
 if (violacoes.length) {
   console.error(`\x1b[31mBACKEND-HINTS ${violacoes.length} VERMELHA(S)\x1b[0m${MUT ? ` (mutante=${MUT})` : ''}`);
   console.error('  O jogador só vê o jogo: provedor de dados é detalhe do servidor (docs internas).');
   process.exitCode = 1;
 } else {
-  console.log(`\x1b[32mBACKEND-HINTS verde: ${servidos.length} arquivo(s), divulgação restrita na política e nenhuma outra pista (${DÍVIDA.length} na dívida)\x1b[0m`);
+  console.log(`\x1b[32mBACKEND-HINTS verde: ${servidos.length} arquivo(s) servidos sem pista de provedor (${DÍVIDA.length} na dívida)\x1b[0m`);
 }
