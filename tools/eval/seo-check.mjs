@@ -45,6 +45,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SITE } from '../../src/lib/site-origin.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../..');
@@ -52,7 +53,7 @@ const DIST = path.join(ROOT, 'dist', 'client');
 const MUTATE = process.argv.includes('--mutate');
 const JSON_OUT = process.argv.includes('--json');
 
-const SITE = 'https://www.csbrasil.online';
+const APEX = SITE.replace('://www.', '://');
 /** Páginas prerenderizadas que o build produz. `/ranking`, `/mapa` e `/u/*` são
  *  SSR e não existem aqui — o que o crawler vê nelas é medido em runtime. */
 const PAGES = ['/', '/armas', '/mapas', '/personagens', '/como-jogar', '/sobre', '/changelog'];
@@ -137,11 +138,11 @@ const CASOS = [
     },
   },
   {
-    nome: 'LINK3 · links das docs para o jogo usam o domínio com www',
+    nome: 'LINK3 · links das docs para o jogo usam o host canônico com www',
     run: (b) => {
       if (!Object.keys(b.docs).length) return 'o build não contém docs';
       for (const [page, html] of Object.entries(b.docs)) {
-        if (/href="https:\/\/csbrasil\.online(?:[/?#"])/.test(html)) return `${page} aponta para o host sem www`;
+        if (html.includes(`href="${APEX}`)) return `${page} aponta para o host sem www`;
         if (!html.includes(`href="${SITE}/"`)) return `${page} sem link para o jogo`;
       }
       return null;
@@ -247,16 +248,15 @@ const MUTANTES = [
       b.docs['docs/botbrain/index.html'] + '<a href="https://github.com/corosolto/client/blob/main/docs/BOTBRAIN-LOCAL.md">Guia</a>' } }) },
   { alvo: 'LINK3', nome: 'link Jogar volta para o host sem www',
     aplica: (b) => ({ ...b, docs: { ...b.docs, 'docs/botbrain/index.html':
-      b.docs['docs/botbrain/index.html'].replaceAll(`${SITE}/`, 'https://csbrasil.online/') } }) },
+      b.docs['docs/botbrain/index.html'].replaceAll(`${SITE}/`, `${APEX}/`) } }) },
   { alvo: 'SEO1', nome: 'devolve o sitemap.xml estático',
     aplica: (b) => ({ ...b, raiz: [...b.raiz, 'sitemap.xml'] }) },
   { alvo: 'SEO2', nome: 'canonical volta pro host sem www',
     aplica: (b) => ({ ...b, html: Object.fromEntries(Object.entries(b.html).map(([p, h]) =>
-      [p, h.replace(/href="https:\/\/www\.csbrasil\.online/g, 'href="https://csbrasil.online')])) }) },
+      [p, h.replaceAll(`href="${SITE}`, `href="${APEX}`)])) }) },
   { alvo: 'SEO3', nome: 'apaga o @id do nó WebSite',
     aplica: (b) => ({ ...b, html: Object.fromEntries(Object.entries(b.html).map(([p, h]) =>
-      [p, h.replace(/"@id":"https:\/\/www\.csbrasil\.online\/#website",?/g, '')
-            .replace(/"@id": "https:\/\/www\.csbrasil\.online\/#website",?/g, '')])) }) },
+      [p, h.replaceAll(`"@id":"${SITE}/#website",`, '').replaceAll(`"@id": "${SITE}/#website",`, '')])) }) },
   { alvo: 'AEO1', nome: 'volta a frase "os stats sobem pro ranking global"',
     aplica: (b) => ({ ...b, html: { ...b.html,
       '/como-jogar': b.html['/como-jogar'] + '<p>os stats sobem pro ranking global</p>' } }) },
