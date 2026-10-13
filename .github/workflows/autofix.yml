@@ -41,7 +41,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Varredura pós-release: descobre quem ficou para trás e dispara o autofix de cada um
+  # Varredura pós-release: descobre quem entrou em CONFLITO e dispara o autofix de cada um
   # pelo `workflow_dispatch`, que é o caminho que enxerga secret. Barato — quem já está
   # em dia sai no primeiro passo do autofix, sem clonar nada pesado.
   varredura:
@@ -62,16 +62,19 @@ jobs:
           # Logo depois de um push na main o GitHub devolve `UNKNOWN` para quase todo PR:
           # ele ainda está recalculando. Tratar UNKNOWN como conflito disparava o autofix em
           # massa à toa — cada disparo vira merge da base + CI inteiro de novo. Espera o
-          # cálculo (até 3 × 30 s) e só segue para quem está CONFLICTING ou ficou UNKNOWN.
+          # cálculo (até 3 × 30 s) antes de escolher quem dispara.
           for tentativa in 1 2 3 4; do
             gh pr list --repo "$REPO" --state open --base main \
               --json number,mergeable,isDraft \
-              --jq '.[] | select(.isDraft | not) | select(.mergeable != "MERGEABLE") | "\(.number) \(.mergeable)"' > /tmp/estado.txt
+              --jq '.[] | select(.isDraft | not) | "\(.number) \(.mergeable)"' > /tmp/estado.txt
             grep -q ' UNKNOWN$' /tmp/estado.txt || break
             [ "$tentativa" = 4 ] || sleep 30
           done
-          cut -d' ' -f1 /tmp/estado.txt > /tmp/atrasados.txt
-          echo "PRs desatualizados: $(wc -l < /tmp/atrasados.txt)"
+          # Só CONFLICTING. PR só atrasado (MERGEABLE) não precisa de merge da base, e o que
+          # continuou UNKNOWN depois da espera fica para o próximo push na main: disparar no
+          # escuro é o que gerava merge e CI inteiro à toa (13/10: 58 merges, 18% dos minutos).
+          awk '$2 == "CONFLICTING" { print $1 }' /tmp/estado.txt > /tmp/atrasados.txt
+          echo "PRs em conflito: $(wc -l < /tmp/atrasados.txt) · ainda UNKNOWN: $(grep -c ' UNKNOWN$' /tmp/estado.txt || true)"
           while read -r pr; do
             [ -n "$pr" ] || continue
             echo "  → #$pr"
@@ -136,14 +139,22 @@ jobs:
           # allowlist liberaria a si mesmo.
           git show "base/$BASE:scripts/ci/autofix_allowlist.py" > /tmp/allowlist-base.py \
             || git show FETCH_HEAD:scripts/ci/autofix_allowlist.py > /tmp/allowlist-base.py
-          # A mensagem vai EXPLÍCITA mesmo quando o merge não conflita: `--no-edit` usa a
-          # mensagem automática do git, que não leva `Agent:` nem `Signed-off-by` — e aí o
-          # bot conserta o PR e o dco reprova o commit que ele mesmo fez (medido no #406).
+          # A BASE SÓ SOBE PARA O PR QUANDO FAZ FALTA (13/10). O bot trazia a main para todo
+          # PR atrasado, mesmo sem conflito: 58 merges num dia, 18% dos minutos de CI, e cada
+          # merge reinicia o CI inteiro do PR.
+          # Sem conflito, o merge fica SÓ LOCAL e o `mesclou` não acende: os geradores abaixo
+          # rodam na árvore MESCLADA, que é a que o CI testa (refs/pull/N/merge). Se eles
+          # mudarem algo, a trava acende `commitar` e sobem merge + regeneração. É o cenário
+          # A/B: A e B somam 1 à mesma contagem (242 -> 243), A entra, o merge de B junta
+          # limpo com 243 e a árvore tem 244; sem regenerar a árvore mesclada, o docs:check
+          # do B reprova e nenhuma varredura o acha, porque ele está MERGEABLE. Se os
+          # geradores não mudarem nada, o merge morre com o runner e o PR fica como está.
+          # A mensagem vai EXPLÍCITA: `--no-edit` usa a mensagem automática do git, que não
+          # leva `Agent:` nem `Signed-off-by` — e aí o dco reprova o commit do bot (#406).
           if git merge --no-edit -m "Merge da base (autofix)" \
                        -m "Agent: csbrasil-bot (autofix)" \
                        -m "Signed-off-by: csbrasil-bot <csbrasil-bot@users.noreply.github.com>" FETCH_HEAD; then
-            git diff --quiet HEAD@{1} HEAD || echo "mesclou=1" >> "$GITHUB_OUTPUT"
-            echo "PR já está em cima da base (ou mesclou limpo)."
+            echo "Sem conflito com a base: merge só local; sobe apenas se a regeneração mudar algo."
             exit 0
           fi
           git diff --name-only --diff-filter=U > /tmp/conflitos.txt
