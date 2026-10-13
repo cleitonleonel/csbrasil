@@ -196,7 +196,12 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Dispara o classify de cada PR aberto
         run: |
-          for pr in $(gh pr list --repo "$REPO" --state open --limit 50 --json number --jq '.[].number'); do
+          # Só quem mexeu na última hora e meia (o sweep roda a cada 30 min). Reclassificar os
+          # 50 PRs abertos 48×/dia era ~2.400 disparos por dia para quase nenhuma mudança —
+          # o PR parado já foi classificado no último evento dele.
+          DESDE=$(date -u -d '90 minutes ago' +%Y-%m-%dT%H:%M:%SZ)
+          for pr in $(gh pr list --repo "$REPO" --state open --limit 50 --json number,updatedAt \
+                        --jq ".[] | select(.updatedAt >= \"$DESDE\") | .number"); do
             gh workflow run csbrasil-bot-pr-classify.yml --repo "$REPO" -f pr_number="$pr" \
               || echo "::warning::não deu para reclassificar o PR #$pr"
           done

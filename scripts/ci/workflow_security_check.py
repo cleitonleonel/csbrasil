@@ -108,6 +108,9 @@ def separacao_failures(build: str, deploy: str) -> list[str]:
             elif '${{' in linha:
                 errors.append(f'PRV4 `{despido[:60]}` interpola expressão dentro de run: — passe por env:')
 
+    # PRV6: função serverless compilada do fork roda na Vercel com o ambiente de Preview.
+    if 'rm -rf .vercel/output/functions' not in deploy or 'head_repository.full_name' not in deploy:
+        errors.append('PRV6 preview de fork publica funções serverless compiladas do fork — elas rodariam com os segredos de Preview')
     if '--prebuilt' not in deploy:
         errors.append('PRV3 o deploy não é --prebuilt: estaria construindo, e construir é executar código do PR')
     for proibido, motivo in (
@@ -158,6 +161,7 @@ def selftest(source: str) -> list[str]:
         'publica-faz-checkout': (build, deploy + '\n      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683\n'),
         'publica-constroi': (build, deploy.replace('--prebuilt', '')),
         'artefato-sem-oculto': (build.replace('include-hidden-files: true', ''), deploy),
+        'fork-com-funcoes': (build, deploy.replace('rm -rf .vercel/output/functions', 'true')),
         'publica-interpola': (build, deploy.replace('gh pr comment "$PR_NUM"', 'gh pr comment "${{ steps.pr.outputs.numero }}"')),
     }
     missed_sep = [n for n, (b, d) in separacao.items() if not separacao_failures(b, d)]
