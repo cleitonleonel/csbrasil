@@ -338,17 +338,21 @@ function menuProps(id) {
 let _menuLoadSeq = 0;
 function loadMenuBackdrop() {
   const id = currentMap, seq = ++_menuLoadSeq;
-  return Promise.all([
-    preloadMapProps(menuProps(id)),
-    preloadAmbientLife((MAPS[id] && MAPS[id].ambience) || []),
-  ]).then(() => {
-    // O jogador pode trocar de mapa enquanto o GLB baixa. Resultado velho não reconstrói
-    // a cena nova; a próxima chamada tem seu próprio preload e sequência.
+  const propsReady = preloadMapProps(menuProps(id));
+  let propsLoaded = false;
+  const rebuildCurrent = () => {
     if (seq === _menuLoadSeq && id === currentMap) rebuildMenuBackdrop();
+  };
+  // Fauna decorativa pode chegar depois; não segura a entrada com o cenário pronto.
+  const ambienceReady = preloadAmbientLife((MAPS[id] && MAPS[id].ambience) || [])
+    .then(() => { if (propsLoaded) rebuildCurrent(); }).catch(() => {});
+  return propsReady.then(() => {
+    propsLoaded = true;
+    rebuildCurrent();
   });
 }
 // The first backdrop is built before props load; rebuild once they're ready so the
-// menu shows the real Brasília landmarks too. Só então a splash libera a entrada.
+// menu shows the real Brasília landmarks too. A fauna continua carregando em paralelo.
 loadMenuBackdrop().then(_splashSetReady).catch(_splashSetReady);
 
 /* ---------------- screens ---------------- */

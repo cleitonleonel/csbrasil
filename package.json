@@ -1,6 +1,6 @@
 {
   "name": "coro-solto",
-  "version": "2.1.0-alpha.69",
+  "version": "2.1.0-alpha.70",
   "license": "AGPL-3.0-only",
   "description": "CORO SOLTO: Treta Suprema (ex-CS BRASIL) — FPS satírico de navegador com facções brasileiras fictícias (site Astro + jogo vanilla em Three.js), gerado em par com agentes de IA (AI generated & AI friendly)",
   "scripts": {
@@ -203,7 +203,7 @@
     "eval:pool-lado": "node tools/eval/pool-lado-check.mjs",
     "eval:troca-personagem": "node tools/eval/troca-personagem-check.mjs",
     "eval:launchwatchdog": "node tools/eval/launch-watchdog-check.mjs",
-    "eval:launchrace": "node tools/eval/launch-race-check.mjs",
+    "eval:launchrace": "node tools/eval/launch-race-check.mjs && node --test tests/menu-backdrop.test.mjs",
     "eval:spawn": "node tools/eval/spawn-settle-check.mjs",
     "check:deploy": "node tools/eval/runner.mjs syntax eval:ranking-home-status eval:modgraph eval:error-console eval:edgecache eval:webgl eval:webglguard eval:shaderlog eval:shaderbudget eval:prune eval:vmlabhud eval:vminspect eval:redesign eval:charvoice eval:audiofurollback eval:screenquery arch:check docs:check media:check eval:assetfetch eval:vercelbuild menuwalls:check anims:check anims:merge:check travessao:check eval:medianet eval:posters eval:mutcega eval:autofix eval:deploygate eval:portaointeiro eval:wfsecret eval:wflocal eval:wftimeout eval:comentario eval:fixture eval:preload eval:apis eval:social-boot-guest eval:geoproxy eval:nosgemeos eval:sonda eval:docsautoria eval:replaycam eval:miticos-lobisomem eval:chao eval:killstreak eval:vm-serving-config eval:mapasparados eval:piscina-trim",
     "check:vercel": "node tools/eval/runner.mjs syntax eval:assetfetch eval:apis eval:geoproxy eval:nosgemeos",
