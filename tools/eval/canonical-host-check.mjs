@@ -9,8 +9,9 @@
      CH0 · src/lib/site-origin.mjs exporta SITE === host decidido
      CH1 · toda página estática com canonical (site e /docs) declara canonical e og:url
            no host decidido, e hreflang quando há; nas páginas-chave os três são obrigatórios
-     CH2 · toda rota prerender=false e o sitemap, pedidos no handler SSR pelo host novo e
-           pelo antigo, idem (hreflang só onde a página é indexável)
+     CH2 · toda rota prerender=false, o sitemap e um perfil público de fixture (fetch do
+           backend interceptado), pedidos no handler SSR pelo host novo e pelo antigo, idem
+           (hreflang só onde a página é indexável; o perfil exige 200, canonical e og:image)
      CH3 · robots.txt e llms.txt anunciam o host decidido
      CH4 · nenhum arquivo de texto publicado cita o host antigo
      CH5 · a comunidade do jogo recebe o host decidido (`#community[data-site]`)
@@ -29,6 +30,10 @@ const noHost = (u) => u === CANONICO || u?.startsWith(CANONICO + '/');
 const CHAVE = ['index.html', 'armas/index.html', 'mapas/index.html', 'personagens/index.html', 'como-jogar/index.html', 'sobre/index.html', 'changelog/index.html', 'docs/index.html', 'docs/en/index.html'];
 const TEXTO = /\.(html|txt|xml|json|md|webmanifest|js|mjs|css|svg)$/;
 const MUTATE = process.argv.includes('--mutate');
+const PERFIL_ID = '00000000-0000-4000-8000-00000000c0de';
+const PERFIL = { id: PERFIL_ID, handle: null, nick: 'fixture', url: `/u/${PERFIL_ID}/fixture`, visibility: 'public', source: 'server_verified',
+  points: 1, kills: 1, deaths: 1, kd: 1, round_wins: 1, level: 1, next_level_points: 1, position: 1, bio: '', socials: [], avatar_url: null, last_character: null };
+const ROTA_PERFIL = PERFIL.url;
 const ROOT = process.cwd();
 const DIST = path.join(ROOT, 'dist/client');
 const FUNC = path.join(ROOT, '.vercel/output/functions/_render.func');
@@ -89,11 +94,16 @@ async function coletar() {
   const cwd = process.cwd();
   process.chdir(FUNC);
   const { default: handler } = await import(pathToFileURL(entry).href);
+  const fetchReal = globalThis.fetch;
+  globalThis.fetch = async (alvo, init) => String(alvo?.url ?? alvo).includes(`action=profile&id=${PERFIL_ID}`)
+    ? new Response(JSON.stringify({ profile: PERFIL }), { headers: { 'content-type': 'application/json' } })
+    : fetchReal(alvo, init);
   const ssr = {};
-  for (const origem of [CANONICO, ANTIGO]) for (const rota of [...ROTAS_SSR, '/sitemap.xml']) {
+  for (const origem of [CANONICO, ANTIGO]) for (const rota of [...ROTAS_SSR, ROTA_PERFIL, '/sitemap.xml']) {
     const r = await handler.fetch(new Request(`${origem}${rota}`, { headers: { 'x-forwarded-for': '127.0.0.1' } }));
     ssr[`${origem}${rota}`] = { rota, status: r.status, corpo: await r.text(), location: r.headers.get('location') };
   }
+  globalThis.fetch = fetchReal;
   process.chdir(cwd);
   let site = null;
   try { ({ SITE: site } = await import(pathToFileURL(path.join(ROOT, 'src/lib/site-origin.mjs')).href)); } catch {}
@@ -124,6 +134,12 @@ const CASOS = [
       }
       const e = paginaErrada(`SSR ${url} (${status})`, corpo, true);
       if (e) return e;
+      if (rota === ROTA_PERFIL) {
+        const m = metadados(corpo), img = corpo.match(/<meta property="og:image" content="([^"]+)"/)?.[1];
+        if (status !== 200) return `SSR ${url}: perfil público de fixture respondeu ${status}`;
+        if (m.canonical[0] !== CANONICO + ROTA_PERFIL) return `SSR ${url}: canonical do perfil ${m.canonical[0]}`;
+        if (!img || !noHost(img)) return `SSR ${url}: og:image do perfil ${img ?? 'ausente'}`;
+      }
     }
     return null;
   }],
@@ -163,6 +179,8 @@ if (MUTATE) {
     ['CH1', 'home perde o hreflang', (b) => ({ ...b, arquivos: { ...b.arquivos, 'index.html': b.arquivos['index.html'].replace(/<link rel="alternate" hreflang="[^"]+" href="[^"]+">/g, '') } })],
     ['CH1', 'JSON-LD de /docs aponta csbrasil.vercel.app', (b) => ({ ...b, arquivos: { ...b.arquivos, 'docs/index.html': b.arquivos['docs/index.html'].replace(/(type="application\/ld\+json">[^<]*?)https:\/\/www\.corosolto\.com\.br/, '$1https://csbrasil.vercel.app') } })],
     ['CH2', 'redirect SSR sai para o host antigo', (b) => { const [k, v] = Object.entries(b.ssr).find(([, x]) => x.status >= 300 && x.status < 400); return { ...b, ssr: { ...b.ssr, [k]: { ...v, location: `${ANTIGO}/` } } }; }],
+    ['CH2', 'perfil usa Astro.url.origin (host do pedido)', (b) => { const k = `${ANTIGO}${ROTA_PERFIL}`; return { ...b, ssr: { ...b.ssr, [k]: { ...b.ssr[k], corpo: b.ssr[k].corpo.replaceAll(`${CANONICO}/`, `${ANTIGO}/`) } } }; }],
+    ['CH2', 'perfil existente vira indisponível', (b) => ({ ...b, ssr: Object.fromEntries(Object.entries(b.ssr).map(([k, v]) => [k, v.rota === ROTA_PERFIL ? { ...v, status: 404 } : v])) })],
     ['CH2', 'rota SSR volta ao host antigo', (b) => ({ ...b, ssr: Object.fromEntries(Object.entries(b.ssr).map(([r, v]) => [r, { ...v, corpo: troca(v.corpo) }])) })],
     ['CH3', 'robots.txt volta ao host antigo', (b) => ({ ...b, arquivos: { ...b.arquivos, 'robots.txt': troca(b.arquivos['robots.txt']) } })],
     ['CH4', 'llms-full.txt cita o host antigo', (b) => ({ ...b, arquivos: { ...b.arquivos, 'llms-full.txt': (b.arquivos['llms-full.txt'] || '') + `\n${ANTIGO}/\n` } })],
