@@ -251,7 +251,7 @@ O registro, gerado do `MAPS` de `public/js/maps.js`:
 |---|---|---|---|---:|
 | `campomorro` | Campinho do Morro | **captura** | `map_campomorro.js` | 816 |
 | `mansao` | Mansão do Joá | **captura** | `map_mansao.js` | 1.398 |
-| `amazonia` | Treta na Amazônia | **captura** | `map_amazonia.js` | 1.265 |
+| `amazonia` | Treta na Amazônia | **captura** | `map_amazonia.js` | 1.271 |
 | `escadao` | Escadão (Morro) | **captura** | `map_escadao.js` | 1.411 |
 | `praca_poderes` | Praça dos Três Poderes | rodadas | `map_brasilia.js` | 1.989 |
 | `piscina_treta` | Piscina da Treta | rodadas | `map_piscina.js` | 1.201 |
