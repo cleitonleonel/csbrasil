@@ -83,7 +83,6 @@ function sinaisDeBuild() {
   try {
     if (navigator.webdriver) cohort = 'automacao';
     else if (new URLSearchParams(location.search).has('qa') || localStorage.getItem('cs_qa') === '1') cohort = 'qa';
-    else if (window.__csWebgl?.softwareEstado === 'sim') cohort = 'software';
   } catch { /* storage bloqueado: fica orgânico */ }
   return { buildSha: String(window.__CS_BUILD?.sha || '') || null, cohort };
 }
