@@ -19,17 +19,35 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      # Só compara tela quando o PR mexe no que vira tela. PR de docs, CI, régua ou backend
+      # passava 35 min subindo dois `astro dev` para descobrir que nada mudou. O job continua
+      # existindo e sai VERDE no pulo — não vira check pendente caso seja obrigatório.
+      - name: O PR mexe em algo que vira tela?
+        id: muda
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git diff --name-only "$BASE...$HEAD" | grep -qE '^(public/|src/|astro\.config\.mjs$|package(-lock)?\.json$|tools/ui-regression/)'; then
+            echo "ui=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::nenhum arquivo de tela no diff — ui-regression pulado"
+            echo "ui=0" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.muda.outputs.ui == '1'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 22
           cache: npm
       - name: Dependências e navegador
+        if: steps.muda.outputs.ui == '1'
         run: |
           npm ci --ignore-scripts
           npx playwright install --with-deps chromium
           git worktree add --detach "$RUNNER_TEMP/ui-base" "${{ github.event.pull_request.base.sha }}"
           npm ci --ignore-scripts --prefix "$RUNNER_TEMP/ui-base"
       - name: Subir base e proposta
+        if: steps.muda.outputs.ui == '1'
         run: |
           mkdir -p artifacts/ui-regression
           (cd "$RUNNER_TEMP/ui-base" && npm run dev -- --host 127.0.0.1 --port 4321 > "$GITHUB_WORKSPACE/artifacts/ui-regression/base-server.log" 2>&1) &
@@ -47,15 +65,18 @@ jobs:
             fi
           done
       - name: Validar mutações do classificador
+        if: steps.muda.outputs.ui == '1'
         run: node tools/ui-regression/selftest.mjs
       - name: Capturar as duas revisões
+        if: steps.muda.outputs.ui == '1'
         run: |
           node tools/ui-regression/capture.mjs --url http://127.0.0.1:4321 --out artifacts/ui-regression/base
           node tools/ui-regression/capture.mjs --url http://127.0.0.1:4322 --out artifacts/ui-regression/head
       - name: Classificar regressões
+        if: steps.muda.outputs.ui == '1'
         run: node tools/ui-regression/classify.mjs --base artifacts/ui-regression/base --head artifacts/ui-regression/head --out artifacts/ui-regression/classification
       - name: Guardar capturas e diagnóstico
-        if: always()
+        if: always() && steps.muda.outputs.ui == '1'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ui-regression-${{ github.event.pull_request.number }}
