@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.81`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.82`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -26,6 +26,7 @@
 ## Não lançado — 2026-10-06
 
 ### Corrigido
+- Acabamento dos mapas: materiais minerais menos brilhantes, paletas mais coerentes e terreno das Obras com escala de textura uniforme. As texturas compartilhadas recebem manchas amplas sem alterar a resolução ou o sorteio dos mapas. Três pixações pretas descartam o quadriculado claro no shader, preservando os arquivos originais. Comparação visual local e regressões ainda em validação.
 - A documentação deixou de apontar para o guia interno BotBrain removido e usa o domínio com `www` para abrir o jogo. A imagem de fallback do personagem recebe `src` somente quando há uma URL válida; o CI verifica links e URLs vazias no HTML publicado.
 - **Multiplayer:** removida a caixa fixa de diagnóstico com FPS, snapshots, jitter, banda e ping. A coleta continua alimentando a telemetria de qualidade por sessão.
 - **#696 — `assert:assets` reprovava com o pacote público mesmo depois do fetch.** O `audio-pack-v8` (445 entradas, medido em 04/10/2026 no diretório central do zip) não tem pasta `ambiente/` nem a chave `mapSoundscapes`, e o conserto — `prepare-public-preview.mjs` — era chamado SÓ pelo workflow de preview. `scripts/fetch-audio.sh` agora termina a preparação em todo caminho público (`ensure-map-soundscapes.mjs`, que instala `mapSoundscapes` nos 18 mapas com o hum que o jogo sintetiza; o pack privado não passa por ele, porque ambiência real que falta tem de reprovar o build). `eval:audioruntimeassets` passa a provar os TRÊS estados do contrato — cru = vermelho, preparado = verde, parcial = vermelho — chamando o `assert:assets` real.
@@ -70,6 +71,87 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.82] — 2026-10-13
+
+### Mudado
+- Restaura UPA com assets Mint e corrige tiros e grafites (#816)
+- Libera o pós-processamento da cena descartada (#833)
+- Atualiza o SIM_HASH depois do merge da main
+- Supre a anisotropia na régua do fundo de menu
+- Remede as linhas de base de superfície após o reasse
+- Remede a paridade de RNG do cache das Lajes após o reasse
+- Tira a ficha da UPA da árvore pública
+- Lê o inventário da UPA do registro de procedência
+- Regera a documentação com as contagens novas
+- Grava o SIM_HASH da simulação deste candidato
+- Grava a saída do censo de grafite do reasse
+- Remede os pisos do censo de grafite com suporte estrito
+- Reassa os grafites com o deslize e as fachadas novas
+- Não conta duas vezes peça única no censo de grafite
+- Testa o suporte estrito em cada deslize do grafite
+- Inclui casas e fachadas faltantes no apoio de grafite
+- Deixa a categoria decidir o apoio do Ministério
+- Regenera as contagens da documentação
+- Libera o pós da cena descartada no estilizado
+- Cobre a liberação do pós no fundo de menu
+- Libera o pós-processamento da cena descartada
+- test(lajes): remedir paridade RNG do cache pós-merge da base
+- fix: preservar identidade do construtor sob oclusão
+- fix: aguardar a ponte three no contrato dos mapas
+- docs: preparar evidência visual para o PR da UPA
+- fix(maps): restore ground detail and contain surface highlights
+- chore(maps): bake graffiti against R2 surface sources
+- feat(maps): refine local floor and surface materials
+- fix(maps): keep external albedo and detail maps paired
+- fix(mapas): renovar layout de grafites após upgrade visual
+- fix: aplica samplers ao LOW automático e mudanças de qualidade
+- fix: limpa tinta filtrada e aplica samplers nos perfis reais
+- feat: refina materiais e texturas dos mapas para revisão visual
+- docs: registrar validação integrada dos assets Mint da UPA
+- docs: atualizar continuidade do lote clínico Mint integrado
+- fix: reassar grafites dos catorze mapas com suporte integral
+- test: vincular auditoria aos bytes dos modelos públicos
+- test: registrar fontes de materiais e props na auditoria de grafites
+- test: verificar carregamento obrigatório dos nove props UPA
+- refactor: condensar comentários das invariantes de grafites
+- test: integrar portões Mint e grafites no check fast
+- feat(upa): integrar equipamentos clínicos Mint com geometria real
+- feat: adicionar nove props clínicos gerados no Mint
+- docs: registrar origem e tratamento dos props clínicos Mint
+- docs(maps): record Lajes alpha pilot and pending rebake
+- test(maps): bind graffiti receipts to artwork detector
+- fix(maps): preserve alpha in Lajes graffiti mural
+- test(upa): preparar contrato para mobiliário clínico Mint
+- fix(mapas): montar pixo do Córrego no muro e excluir estátua como apoio
+- test(maps): audit painted textures and Córrego wall mounting
+- fix: limita suporte de grafite a fachadas nos props GLB
+- docs: prepare os props Mint da UPA
+- Registre validação dos mapas e gate completo Ferro
+- Verifique cada grafite assado do Ferro em low
+- Fixe os mourões low no subconjunto do Ferro med
+- fix(ferro): manter capim low como subconjunto sem deslocar a pintura
+- Teste suporte de grafites no Ferro em med e low
+- fix(grafite): reassar 14 mapas após normalização dos recortes
+- fix(mapas): preservar paredes pintadas na qualidade baixa e aguardar texturas no auditor
+- fix(grafite): normalize clipped polygon edges
+- fix(mapas): reassar grafites com suporte no desenho final dos 14 mapas
+- docs: tornar legível o relatório de suporte dos grafites
+- docs: registrar causas e validação dos grafites sobre superfícies reais
+- test(mapas): reprovar arte declarada que não é desenhada no navegador
+- docs: registrar réguas finais da piscina e manter comentários em português
+- fix(mapas): validar grafites sobre os vértices finais da parede e da arte
+- Registra validação pareada dos tiros nos mapas
+- Protege geração e auditoria contra grafites ausentes
+- Corrige tiros nos vãos e mantém a massa visível dos mapas
+- Exercite o auditor independente de área dos grafites
+- Mantenha comentários da validação de grafite em português
+- Preserve obstáculos de Brasília em toda qualidade gráfica
+- Valide a área inteira mesmo em superfícies subdivididas
+- Audite suporte e visibilidade da arte nos mapas
+- Exija parede visível sob toda a área dos grafites
+- Faça os tiros seguirem a geometria visível dos mapas
+- Restaure UPA e feche a fresta junto às macas
 
 ## [2.1.0-alpha.81] — 2026-10-13
 
