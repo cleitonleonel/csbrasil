@@ -3,7 +3,6 @@ id: instrumentacao-ai
 title: 'AI instrumentation: how the work gets done'
 sidebar_label: AI instrumentation
 sidebar_position: 3
-slug: /ai-instrumentation
 description: How the work gets done here — ruler, builders in disjoint ranges, adversarial critic with clean context, regression hunter. And the rule "whoever builds never grades".
 ---
 

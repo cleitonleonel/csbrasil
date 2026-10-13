@@ -12,12 +12,13 @@
 // "CS BRASIL" vira `alternateName` - some da UI, sobrevive só onde ajuda a
 // busca (JSON-LD alternateName, keywords, e a frase "ex-CS BRASIL" no title da
 // home). Quem já busca "cs brasil" continua achando; quem chega novo aprende o
-// nome certo. O domínio segue csbrasil.online: trocar domínio no dia do
-// release custa todo o histórico de indexação por zero ganho.
+// nome certo. O host canônico mora em site-origin.mjs (decisão de 13/10/2026).
 
 import { MAPAS } from '../data/jogo';
+import { SITE } from './site-origin.mjs';
 
-export const SITE = 'https://www.csbrasil.online';
+export { SITE };
+export const HOST = new URL(SITE).host;
 
 export const BRAND = 'CORO SOLTO';
 export const BRAND_FULL = 'CORO SOLTO: Treta Suprema';
