@@ -19,6 +19,8 @@
 // imprimia uma vez, com a env undefined). Exportando uma função (config creator), o
 // Docusaurus CHAMA a função a cada locale (core/lib/server/config.js), e a env é lida
 // no momento certo. Sem a env (dev, ou a leitura inicial de i18n) vale o caminho PT.
+const { SITE } = require('../src/lib/site-origin.mjs');
+
 function createConfig() {
 const EN = process.env.DOCUSAURUS_CURRENT_LOCALE === 'en';
 const L = {
@@ -41,7 +43,7 @@ const config = {
   // o mesmo produto é o tipo de detalhe que faz a doc parecer de outro projeto.
   favicon: 'img/favicon.ico',
 
-  url: 'https://www.csbrasil.online',   // www: o astro.config canonicaliza com www — divergir aqui quebrava canonicals do /docs
+  url: SITE,
   baseUrl: '/docs/',
 
   organizationName: 'rubenmarcus',
@@ -87,7 +89,7 @@ const config = {
       // Social card (og:image / twitter:image): o MESMO arquivo do site
       // (`public/og-image.jpg`, 1200×630, gerado por tools/gen-og-image.mjs),
       // copiado para `static/img/`. O Docusaurus resolve para URL absoluta com
-      // url+baseUrl: https://www.csbrasil.online/docs/img/og-image.jpg.
+      // url+baseUrl: <SITE>/docs/img/og-image.jpg.
       // Se o do site mudar, rode `cp ../public/og-image.jpg static/img/og-image.jpg`.
       image: 'img/og-image.jpg',
       colorMode: {
@@ -107,7 +109,7 @@ const config = {
         items: [
           { type: 'docSidebar', sidebarId: 'dev', position: 'left', label: 'Documentação' },
           { type: 'localeDropdown', position: 'right' },
-          { href: 'https://www.csbrasil.online/', label: 'Jogar', position: 'right' },
+          { href: `${SITE}/`, label: 'Jogar', position: 'right' },
           { href: 'https://github.com/corosolto/client', label: 'GitHub', position: 'right' },
         ],
       },
@@ -120,7 +122,7 @@ const config = {
         logo: {
           alt: 'CORO SOLTO: Treta Suprema',
           src: 'img/logo-coro-solto.png',
-          href: 'https://www.csbrasil.online/',
+          href: `${SITE}/`,
           width: 200,
           height: 162,
         },
