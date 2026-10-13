@@ -42,7 +42,7 @@ function drawQuests() {
   const c=state?.campaign || TRETA_DEFAULT_REWARDS,q=state?.quests || {},active=campaignActive();
   const specs=[
     {id:'email',name:'Confirme seu email',copy:'Entre com uma conta de email confirmado. Recompensa única.',reward:c.email_reward,done:q.email>0,progress:q.email>0?'CONCLUÍDA':'UMA VEZ POR CONTA',action:login,label:'ENTRAR E CONFIRMAR'},
-    {id:'referral',name:'Chame sua turma',copy:'Seu amigo confirma o email e conclui a primeira partida válida. O convite precisa entrar antes de jogar, em conta criada há até 7 dias.',reward:c.referral_reward,done:q.referral>=c.referral_cap,progress:`${q.referral || 0}/${c.referral_cap} AMIGOS`,action:()=>$('treta-invite').click(),label:'COPIAR CONVITE'},
+    {id:'referral',name:'Chame sua turma',copy:'Seu amigo confirma o email e conclui a primeira partida válida. Aceite o convite antes de entrar na primeira partida, em conta criada há até 7 dias.',reward:c.referral_reward,done:q.referral>=c.referral_cap,progress:`${q.referral || 0}/${c.referral_cap} AMIGOS`,action:()=>$('treta-invite').click(),label:'COPIAR CONVITE'},
     {id:'singleplayer',name:'Conclua uma partida solo',copy:'Jogue a partida solo premiada até o fim, com ao menos 60 segundos de atividade.',reward:c.sp_reward,done:false,progress:`${q.singleplayer || 0} PARTIDAS · REPETÍVEL`,action:()=>$('treta-solo').click(),label:'JOGAR SOLO'},
     {id:'multiplayer',name:'Conclua uma partida multiplayer',copy:'Termine a partida com outro jogador autenticado e ao menos 60 segundos de atividade.',reward:c.mp_reward,done:false,progress:`${q.multiplayer || 0} PARTIDAS · REPETÍVEL`,action:()=>document.dispatchEvent(new CustomEvent('cs-treta-multiplayer')),label:'JOGAR MULTIPLAYER'},
   ];

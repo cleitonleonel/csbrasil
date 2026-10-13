@@ -3,6 +3,7 @@ import pkg from '../../package.json';
 import Community from '../components/Community.astro';
 import AccountEntry from '../components/AccountEntry.astro';
 import TretaStore from '../components/TretaStore.astro';
+import TretaDialogs from '../components/TretaDialogs.astro';
 import { DISCORD_URL, TELEGRAM_URL, GITHUB_URL, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON } from '../lib/site';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -1019,6 +1020,8 @@ window.__GEO_LANG__ = (function () {
     <p id="pwa-install-help" role="status" aria-live="polite" hidden></p>
   </aside>
 </div>
+
+<TretaDialogs />
 
 <!-- Map screen (escolha de mapa em tela cheia) - abre pelo cartaz do mapa no setup.
      Lê o MESMO estado do carrossel do menu (currentMap/mapIdx): trocar aqui troca lá. -->
