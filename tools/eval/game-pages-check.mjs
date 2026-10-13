@@ -2,6 +2,7 @@
 // Baseline: AEO ignora EN/facções, idioma troca só o chrome e fundo exige Three.js.
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
+import { SITE } from '../../src/lib/site-origin.mjs';
 const root = new URL('../../', import.meta.url);
 const dist = new URL('dist/client/', root);
 const read = (file) => readFileSync(new URL(file, dist), 'utf8');
@@ -10,7 +11,6 @@ const routes = [...pairs.flat(), 'apoie', ...readdirSync(new URL('faccoes/', dis
 const pages = Object.fromEntries(routes.map(route => [route, read(`${route}/index.html`)]));
 const index = JSON.parse(read('ai-index.json'));
 const urls = new Set(index.entries.map(e => new URL(e.url).href));
-const SITE = 'https://www.csbrasil.online';
 const checks = {
   shell(html) { assert.match(html, /data-game-shell/); assert.doesNotMatch(html, /site-bg\.js|id="bg-canvas"/); },
   metadata(html, route) {
