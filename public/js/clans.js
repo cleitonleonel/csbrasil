@@ -1,11 +1,12 @@
 const $ = id => document.getElementById(id);
 const app = $('clans-app');
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
-let identity = null, mine = null, pendingInvite = '';
+// guest = uid+token do jogo; conta Auth vai pelo cookie cs_social e dispensa os dois.
+let guest = null, mine = null, pendingInvite = '';
 const inviteKey = `cs_clan_invite:${app.dataset.clanId || ''}`;
 try {
   const uid = localStorage.getItem('cs_anon'), token = localStorage.getItem('awpbr_token');
-  if (uuid(uid) && uuid(token)) identity = { uid, token };
+  if (uuid(uid) && uuid(token)) guest = { uid, token };
   pendingInvite = new URLSearchParams(location.hash.slice(1)).get('invite') || sessionStorage.getItem(inviteKey) || '';
   if (/^[A-Za-z0-9_-]{43}$/.test(pendingInvite)) sessionStorage.setItem(inviteKey, pendingInvite);
   else pendingInvite = '';
@@ -51,8 +52,8 @@ function button(parent, id, text, action) {
   const el = element('button', text, parent); el.id = id; el.type = 'button'; el.onclick = action;
 }
 function renderMine() {
-  $('clan-controls').hidden = !identity || !mine;
-  $('clan-guest').hidden = !!identity;
+  $('clan-controls').hidden = !mine;
+  $('clan-guest').hidden = !!mine;
   const clan = mine?.clan;
   $('clan-create-panel').hidden = !mine || !!clan;
   $('clan-join-panel').hidden = !mine || !!clan || !pendingInvite;
@@ -85,10 +86,8 @@ function showInvite(invite, id) {
 }
 async function refreshMine() {
   mine = null;
-  if (identity) {
-    try { mine = await api({ ...identity, action: 'me' }); }
-    catch (error) { if (error.code === 'invalid_identity') identity = null; else throw error; }
-  }
+  try { mine = await api({ ...(guest || {}), action: 'me' }); }
+  catch (error) { if (error.code !== 'invalid_identity') throw error; }
   renderMine();
 }
 async function load() {
@@ -107,7 +106,7 @@ async function load() {
     for (const clan of directory.clans) {
       const entry = element('article', '', $('clan-list')); entry.className = 'clan-card'; card(entry, clan);
     }
-    status(identity ? 'Seu perfil está pronto para participar.' : 'Salve seu perfil para criar um clã ou aceitar um convite.');
+    status(mine ? 'Seu perfil está pronto para participar.' : 'Entre na sua conta ou salve seu perfil para criar um clã ou aceitar um convite.');
     return true;
   } catch (error) { renderMine(); status(error.message, true); return false; }
   finally {
@@ -120,7 +119,7 @@ async function mutate(action, values = {}) {
   status('Salvando…');
   let saved = false;
   try {
-    const result = await api({ ...identity, action, ...values }); saved = true;
+    const result = await api({ ...(guest || {}), action, ...values }); saved = true;
     if (action === 'join') { pendingInvite = ''; sessionStorage.removeItem(inviteKey); }
     if (action === 'leave' || action === 'transfer') $('clan-invite-panel').hidden = true;
     if (result.invite) showInvite(result.invite, result.clanId);
@@ -154,7 +153,7 @@ $('clan-register').onsubmit = async event => {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.message || 'Não foi possível salvar o perfil.');
     localStorage.setItem('cs_anon', credentials.uid); localStorage.setItem('awpbr_token', credentials.token);
-    localStorage.setItem('awpbr_nick', data.nick); identity = credentials;
+    localStorage.setItem('awpbr_nick', data.nick); guest = credentials;
     await load();
   } catch (error) { status(error.message, true); }
   finally { submit.disabled = false; }
