@@ -627,7 +627,7 @@ async function cc8(cobra, { painel, fontes = {} }) {
   const ids = ['chat-sala', 'chat-log', 'chat-form', 'chat-entrada', 'chat-contador', 'chat-canal', 'chat-ocultar', 'chat-nao-lidas',
     'chat-bloqueados', 'chat-acoes', 'chat-acoes-quem', 'chat-bloquear', 'chat-denunciar', 'chat-acoes-cancelar', 'chat-motivos',
     'chat-motivos-lista', 'chat-motivos-cancelar', 'chat-lista-bloqueados', 'chat-lista-bloqueados-ul', 'chat-lista-fechar',
-    'chat-aviso', 'chat-bloquear-tambem', 'chat-toque', 'hud-atalho-chat', 'hud-chat-sala', 'hud-chat-time', 'chat-fechar'];
+    'chat-aviso', 'chat-bloquear-tambem', 'chat-toque', 'hud-atalho-chat', 'hud-chat-sala', 'hud-chat-time', 'chat-fechar', 'chat-regras-aceite'];
   const els = Object.fromEntries(ids.map((id) => [id, elDoPainel('div')]));
   for (const id of ['chat-acoes', 'chat-motivos', 'chat-lista-bloqueados', 'chat-nao-lidas', 'chat-bloquear-tambem']) els[id].hidden = true;
   const porId0 = globalThis.document.getElementById;
@@ -635,7 +635,8 @@ async function cc8(cobra, { painel, fontes = {} }) {
   try {
     let travado = null;
     const jogo = { travarEntrada: (v) => { travado = v; } };
-    const netComMeta = { meta: { chat: META_CHAT }, espectador: false, yourEnt: 7, enviarChat: () => true, denunciarChat: () => true, drenarChat: () => [], onChat: null };
+    let envios = 0;
+    const netComMeta = { meta: { chat: META_CHAT }, espectador: false, yourEnt: 7, enviarChat: () => { envios++; return true; }, denunciarChat: () => true, drenarChat: () => [], onChat: null };
     const ctr = montarChatSala({ net: netComMeta, obterJogo: () => jogo, convite: 'ABCD' });
     cobra(els['hud-atalho-chat'].hidden === false && els['chat-sala'].hidden === false,
       `CC8 com meta.chat o atalho da HUD aparece (hidden=${els['hud-atalho-chat'].hidden})`);
@@ -646,6 +647,18 @@ async function cc8(cobra, { painel, fontes = {} }) {
     cobra(ctr.aberto() === true && ctr.canal() === 'time', `CC8 clicar em #hud-chat-time com o painel aberto troca para o canal time (canal=${ctr.canal()})`);
     els['chat-sala'].teclar('Escape');
     cobra(ctr.aberto() === false && travado === false, `CC8 Esc fecha o que o botão abriu e destrava o jogo (aberto=${ctr.aberto()}, travado=${travado})`);
+    const submeter = () => { for (const f of els['chat-form'].ouvintes.submit || []) f({ preventDefault() {} }); };
+    els['chat-entrada'].value = 'Olá';
+    els['chat-regras-aceite'].checked = false;
+    submeter();
+    cobra(envios === 0, 'CC8 chat não publica sem aceite explícito das regras');
+    els['chat-regras-aceite'].checked = true;
+    submeter();
+    cobra(envios === 1, 'CC8 chat publica depois do aceite explícito');
+    els['chat-regras-aceite'].checked = false;
+    els['chat-entrada'].value = 'Outra mensagem';
+    submeter();
+    cobra(envios === 1, 'CC8 retirar aceite impede nova publicação');
     ctr.destruir();
     els['hud-atalho-chat'].hidden = true;
     els['chat-entrada'].focado = false;
@@ -707,6 +720,7 @@ const MUTANTES = [
   ['zwj-so-picto', 'CC1', cc1, async () => ({ ...ctx, chat: { mod: await importarMutado('public/js/chat.js', (s) => s.replace('seguraZwj(anterior)', 'PICTO.test(cps[i - 1])'), 'zwj-so-picto'), motivo: '' } })],
   ['cf-por-replace', 'CC1', cc1, async () => ({ ...ctx, chat: { mod: await importarMutado('public/js/chat.js', (s) => s.replace("Array.from(txt.normalize('NFKC').replace(BRANCOS_RE, ' '))", "Array.from(txt.normalize('NFKC').replace(BRANCOS_RE, ' ').replace(/[\\p{Cc}\\p{Cf}]/gu, (ch) => (ch === ZWJ ? ch : '')))"), 'cf-por-replace'), motivo: '' } })],
   ['sem-handler', 'CC8', cc8, async () => ({ ...ctx, painel: { mod: await importarMutado('public/js/chat-painel.js', (s) => s.replace("el.botaoSala.addEventListener('click', onBotaoSala)", '0'), 'sem-handler'), motivo: '' } })],
+  ['sem-aceite', 'CC8', cc8, async () => ({ ...ctx, painel: { mod: await importarMutado('public/js/chat-painel.js', (s) => s.replace('if (!el.aceite?.checked)', 'if (false)'), 'sem-aceite'), motivo: '' } })],
   ['vaza-clique', 'CC8', cc8, async () => {
     const rel = 'src/pages/index.astro', s = ler(rel) || '';
     const m = s.replace('<button type="button" id="hud-chat-sala" data-entrada-propria>', '<button type="button" id="hud-chat-sala">');
