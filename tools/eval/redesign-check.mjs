@@ -97,6 +97,7 @@ const alvoPorMutante = {
   'sem-autoria': 'UIR43',
   'filtro-autor-morto': 'UIR4',   // mistura comunidade nos OFICIAIS de novo (reverte o #368)
   'sem-badge-oficial': 'UIR43',
+  'card-escalacao-encolhe': 'UIR44',
 };
 if (MUTANTE && !alvoPorMutante[MUTANTE]) {
   console.error(`mutante desconhecido: ${MUTANTE}`);
@@ -276,6 +277,9 @@ main = muta('sem-autoria', main,
 main = muta('filtro-autor-morto', main,
   "mapCategory === 'TODOS' ? !catsDe(id).includes('COMUNIDADE') : catsDe(id).includes(mapCategory)",
   "mapCategory === 'TODOS' ? true : catsDe(id).includes(mapCategory)");
+css = muta('card-escalacao-encolhe', css,
+  '.hub-roster-cell>button:not(.hub-roster-pin){width:100%;height:100%}',
+  '.hub-roster-cell>button{width:100%;height:100%}');
 main = muta('sem-badge-oficial', main,
   'class="ms-badge-oficial"',
   'class="ms-badge-x"');   // remove o crachá de verdade: trocar a CONDIÇÃO não mordia (a string ficava)
@@ -946,6 +950,15 @@ const trocaMConsistente = /game\.onRequestSwitch = \(\) => \{[\s\S]{0,180}game\.
   && /const oldFaction = this\.playerFaction;[\s\S]{0,160}this\.playerFaction = this\.enemyFaction;[\s\S]{0,80}this\.enemyFaction = oldFaction;/.test(game);
 const resultadoFundoContinuo = !/\.me-(?:wrap|hero)::after\{/.test(css)
   && !/--me-accent-rgb/.test(`${css}\n${main}\n${game}`);
+/* UIR44 — a escalação embrulha cada card numa célula (card + chip ＋). Sem o card ocupar a
+   célula inteira, o botão encolhe ao conteúdo: cards de larguras diferentes, nome longo
+   vazando por cima do vizinho (visto no aceite do #809). O chip ＋ é irmão do card dentro da
+   célula: a regra tem que excluí-lo, senão ele cresce e cobre o retrato. Mutante: regra
+   sem o :not (o chip vira um bloco do tamanho do card). */
+const cardEscalacaoInteiro = /\.hub-roster-cell\{position:relative[^}]*\}/.test(css)
+  && /\.hub-roster-cell>button:not\(\.hub-roster-pin\)\{width:100%;height:100%\}/.test(css)
+  && !/\.hub-roster-cell>button\{[^}]*width:100%/.test(css)   // sem o :not o chip ＋ vira um bloco do tamanho do card
+  && /cell\.className = 'hub-roster-cell'/.test(main);
 const versaoMenuNoCanto = /<\/div>\s*<span class="menu-version" id="mf-ver"><\/span>\s*<\/div>\s*<!-- PAINEL DE SETUP/.test(astro)
   && /\.menu-version\{[^}]*position:fixed[^}]*right:min\(4vw,42px\)[^}]*bottom:14px/.test(css)
   && /\.menu-footer\{[^}]*bottom:48px/.test(css);
@@ -1060,6 +1073,8 @@ const resultados = [
     'nenhum halo ou degradê limitado à metade direita pode criar emenda no palco do personagem'],
   ['UIR42', 'menu preenche o viewport e fixa a versão no canto inferior direito', versaoMenuNoCanto,
     'a versão fica em camada própria abaixo do rodapé, sem participar da fileira de links'],
+  ['UIR44', 'card da escalação ocupa a célula inteira (larguras iguais, nome não vaza)', cardEscalacaoInteiro,
+    'o botão do personagem preenche .hub-roster-cell; o chip ＋ fica por cima, no canto'],
   ['UIR43', 'ficha do mapa traz autor, data e crachá OFICIAL/COMUNIDADE (sub-filtro de autor removido, #368)', autoriaNaFicha,
     'MAP_AUTOR/MAP_DATA por mapa; byline renderiza; badge OFICIAL pra casa e COMUNIDADE pra fora; sem marcação morta de chips de autor'],
 ];
