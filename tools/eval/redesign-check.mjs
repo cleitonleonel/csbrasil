@@ -97,6 +97,7 @@ const alvoPorMutante = {
   'sem-autoria': 'UIR43',
   'filtro-autor-morto': 'UIR4',   // mistura comunidade nos OFICIAIS de novo (reverte o #368)
   'sem-badge-oficial': 'UIR43',
+  'card-escalacao-encolhe': 'UIR44',
 };
 if (MUTANTE && !alvoPorMutante[MUTANTE]) {
   console.error(`mutante desconhecido: ${MUTANTE}`);
@@ -193,7 +194,7 @@ css = muta('menu-wall-contain-volta', css,
   '.cs-wallpaper::after{inset:0;z-index:1;background-size:cover}',
   '.cs-wallpaper::after{inset:0;z-index:1;background-size:contain}');
 main = muta('opcoes-mapa-decorativas', main,
-  'roundsMax: matchRounds(),',
+  'roundsMax: sessao ? undefined : matchRounds(),',
   'roundsMax: 5,');
 css = muta('borda-tracejada-volta', css,
   'background:transparent;border:1px solid var(--line);color:var(--ink3);padding:10px}',
@@ -276,6 +277,9 @@ main = muta('sem-autoria', main,
 main = muta('filtro-autor-morto', main,
   "mapCategory === 'TODOS' ? !catsDe(id).includes('COMUNIDADE') : catsDe(id).includes(mapCategory)",
   "mapCategory === 'TODOS' ? true : catsDe(id).includes(mapCategory)");
+css = muta('card-escalacao-encolhe', css,
+  '.hub-roster-cell>button:not(.hub-roster-pin){width:100%;height:100%}',
+  '.hub-roster-cell>button{width:100%;height:100%}');
 main = muta('sem-badge-oficial', main,
   'class="ms-badge-oficial"',
   'class="ms-badge-x"');   // remove o crachá de verdade: trocar a CONDIÇÃO não mordia (a string ficava)
@@ -897,16 +901,21 @@ const wallpaperLoadingResponsivo = /setProperty\('--loading-wall', loadingWallUr
   && /#boot-splash::before,#load-overlay::before\{[^}]*background-image:var\(--loading-wall\);background-size:cover;[^}]*filter:blur\(18px\)/.test(css)
   && /#boot-splash::after\{[^}]*background-image:[^}]*var\(--loading-wall\);[^}]*background-size:cover,contain;/.test(css)
   && /#load-overlay::after\{[^}]*background-image:[^}]*var\(--loading-wall\);[^}]*background-size:cover,contain;/.test(css);
+/* Opções da partida na tela de mapa: formato LIVRE (ally/enemy bots separados — 1v4,
+   solo vs 8) e rounds CUSTOMIZADOS (1–15, sanitizeRounds do game.js como régua única). */
 const opcoesPartidaNoMapa = /id="ms-wpn-mode"/.test(astro)
-  && /id="ms-players"/.test(astro)
+  && /id="ms-ally-bots"/.test(astro)
+  && /id="ms-enemy-bots"/.test(astro)
   && /id="ms-rounds"/.test(astro)
   && /settings\.wpnMode = msWpnMode\.value/.test(main)
-  && /settings\.bots = \+msPlayers\.value/.test(main)
-  && /settings\[matchMode === 'ctf' \? 'ctfRounds' : 'rounds'\] = \+msRounds\.value/.test(main)
-  && /function matchRounds\(\)[\s\S]{0,260}settings\.ctfRounds[\s\S]{0,260}settings\.rounds/.test(main)
-  && /roundsMax: matchRounds\(\),/.test(main)
+  && /settings\.allyBots = Math\.max\(0, Math\.min\(7, msAlly\.value \| 0\)\)/.test(main)
+  && /settings\.enemyBots = Math\.max\(1, Math\.min\(8, msEnemy\.value \| 0\)\)/.test(main)
+  && /settings\[matchMode === 'ctf' \? 'ctfRounds' : 'rounds'\] = sanitizeRounds\(msRounds\.value\)/.test(main)
+  && /function matchRounds\(\)[\s\S]{0,400}settings\.ctfRounds[\s\S]{0,400}settings\.rounds/.test(main)
+  && /roundsMax: sessao \? undefined : matchRounds\(\),/.test(main)
   && /constructor\(\{[^}]*roundsMax/.test(game)
-  && /this\._roundsMax = \[1, 3, 5, 7\]\.includes\(requestedRounds\)/.test(game)
+  && /export const sanitizeRounds[\s\S]{0,200}ROUNDS_CUSTOM_MAX \? n : 0;/.test(game)
+  && /const requestedRounds = sanitizeRounds\(roundsMax\);/.test(game)
   && /if \(this\.ctf\) return this\.roundNum >= this\.roundsMax \|\| this\.ctfMatchLeft <= 0;[\s\S]{0,80}return this\.roundNum >= this\.roundsMax;/.test(game)
   && /get roundsMax\(\) \{ return this\._roundsMax; \}/.test(game);
 const semBordaTracejada = !/(?:--hazard|var\(--hazard\)|border(?:-(?:bottom|top|left|right|style))?[^;}{]*(?:dashed|dotted))/i.test(css)
@@ -941,6 +950,15 @@ const trocaMConsistente = /game\.onRequestSwitch = \(\) => \{[\s\S]{0,180}game\.
   && /const oldFaction = this\.playerFaction;[\s\S]{0,160}this\.playerFaction = this\.enemyFaction;[\s\S]{0,80}this\.enemyFaction = oldFaction;/.test(game);
 const resultadoFundoContinuo = !/\.me-(?:wrap|hero)::after\{/.test(css)
   && !/--me-accent-rgb/.test(`${css}\n${main}\n${game}`);
+/* UIR44 — a escalação embrulha cada card numa célula (card + chip ＋). Sem o card ocupar a
+   célula inteira, o botão encolhe ao conteúdo: cards de larguras diferentes, nome longo
+   vazando por cima do vizinho (visto no aceite do #809). O chip ＋ é irmão do card dentro da
+   célula: a regra tem que excluí-lo, senão ele cresce e cobre o retrato. Mutante: regra
+   sem o :not (o chip vira um bloco do tamanho do card). */
+const cardEscalacaoInteiro = /\.hub-roster-cell\{position:relative[^}]*\}/.test(css)
+  && /\.hub-roster-cell>button:not\(\.hub-roster-pin\)\{width:100%;height:100%\}/.test(css)
+  && !/\.hub-roster-cell>button\{[^}]*width:100%/.test(css)   // sem o :not o chip ＋ vira um bloco do tamanho do card
+  && /cell\.className = 'hub-roster-cell'/.test(main);
 const versaoMenuNoCanto = /<\/div>\s*<span class="menu-version" id="mf-ver"><\/span>\s*<\/div>\s*<!-- PAINEL DE SETUP/.test(astro)
   && /\.menu-version\{[^}]*position:fixed[^}]*right:min\(4vw,42px\)[^}]*bottom:14px/.test(css)
   && /\.menu-footer\{[^}]*bottom:48px/.test(css);
@@ -1055,6 +1073,8 @@ const resultados = [
     'nenhum halo ou degradê limitado à metade direita pode criar emenda no palco do personagem'],
   ['UIR42', 'menu preenche o viewport e fixa a versão no canto inferior direito', versaoMenuNoCanto,
     'a versão fica em camada própria abaixo do rodapé, sem participar da fileira de links'],
+  ['UIR44', 'card da escalação ocupa a célula inteira (larguras iguais, nome não vaza)', cardEscalacaoInteiro,
+    'o botão do personagem preenche .hub-roster-cell; o chip ＋ fica por cima, no canto'],
   ['UIR43', 'ficha do mapa traz autor, data e crachá OFICIAL/COMUNIDADE (sub-filtro de autor removido, #368)', autoriaNaFicha,
     'MAP_AUTOR/MAP_DATA por mapa; byline renderiza; badge OFICIAL pra casa e COMUNIDADE pra fora; sem marcação morta de chips de autor'],
 ];

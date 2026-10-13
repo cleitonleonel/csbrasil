@@ -1,6 +1,7 @@
 // ESCADÃO (escadao) — spec plans/12-ESCADAO.md. Invariante CTF2: os dois becos laterais
 // têm escada própria rua → patamar 1, separados ≥ 6 m do eixo central (2+ rotas spawn→bandeira).
 import * as THREE from 'three';
+import { paintedPanel } from './map_surface_finish.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp, InstBatch } from './mapprops.js';
 import { decalIds } from './map_decals.js';
@@ -74,7 +75,7 @@ export function buildEscadao(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -180,7 +181,7 @@ export function buildEscadao(scene, T) {
   const MAT_GUARDA = lam({ color: 0xc2baa7, map: T.concrete });
   const MAT_PORTA = lam({ color: 0x49372a, roughness: 0.88 });
   const MAT_VIDRO = lam({ color: 0x273b42, roughness: 0.22, metalness: 0.18 });
-  const MAT_ZINCO = lam({ color: 0x777a76, roughness: 0.72, metalness: 0.35 });
+  const MAT_ZINCO = lam({ color: 0x777a76, roughness: 0.78, metalness: 0.35 });
 
   // Referências do dono: concreto gasto e alvenaria aparente. UV em metros impede
   // que cada degrau repita a mesma rachadura inteira. Nenhuma foto foi usada como textura.
@@ -276,8 +277,9 @@ export function buildEscadao(scene, T) {
       const tex = loader.load(url, () => {
         mat.map = tex;
         const det = detailFor(tex);
-        if (det && det.normalMap) { mat.normalMap = det.normalMap; mat.normalScale.set(0.65, 0.65); }
-        if (det && det.roughnessMap) mat.roughnessMap = det.roughnessMap;
+        mat.normalMap = det?.normalMap || null;
+        mat.roughnessMap = det?.roughnessMap || null;
+        if (mat.normalMap) { const scale = mat.roughness >= .8 && mat.metalness < .2 ? .4 : .65; mat.normalScale.set(scale, scale); }
         mat.needsUpdate = true;
       });
       tex.colorSpace = THREE.SRGBColorSpace;
@@ -344,7 +346,7 @@ export function buildEscadao(scene, T) {
 
   /* ===================== HELPERS DE GEOMETRIA ===================== */
   /* ===== CASARIO DE MOLDE (kit Mint favela_r3) =====
-     O molde é pele sobre o prisma: o colisor invisível segue em `occluders` (BUG-54) e
+     O molde substitui a pele e a bala testa suas malhas; o prisma conserva a colisão de movimento e
      sem GLB a fachada procedural volta. Régua: `eval:escala-casario`, via `casario`. */
   const casario = [];
   function instanciaCasa(spec, x, z, y, w, h, d, col) {
@@ -367,6 +369,7 @@ export function buildEscadao(scene, T) {
       obj.position.z += z - (b.min.z + b.max.z) / 2;
       obj.userData.casario = spec.molde;
       root.add(obj);
+      obj.traverse(mesh => { if (mesh.isMesh) occluders.push(mesh); });
     }
     const reg = { molde: spec.molde, pav: spec.pav, x, z, y, ry, larg: w, prof: d, alt: h, sx: e.sx, sz: e.sz, col, obj };
     casario.push(reg);
@@ -649,7 +652,7 @@ export function buildEscadao(scene, T) {
   const MAT_PNEU = lam({ color: 0x1a1a1a, roughness: 0.95 });
   propAt('pilha_pneus', -1.3, P1.z1-.75, 0.9, 1.6, 1.2, MAT_PNEU, 0, RISE);
   // base: portão arrancado
-  addBox(2.5, 1.2, 0.8, lam({ color: 0x4a4a3a, roughness: 0.8 }), 1.5, 0, 14.5);
+  addBox(2.5, 1.2, 0.8, lam({ map: paintedPanel('#ffffff'), color: 0x4a4a3a, roughness: 0.8 }), 1.5, 0, 14.5);
 
   /* ===================== BASE (rua) ====================== */
   /* Bar e mercadinho viram DUAS geminadas cada um: 6 m de frente com um molde só
