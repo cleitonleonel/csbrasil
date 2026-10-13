@@ -80,6 +80,8 @@ jobs:
         run: npm run eval:escala
       - name: Orçamento de shader WebGL1
         run: npm run eval:shaderbudget
+      - name: Sitemap só com URL final e sem lastmod inventado
+        run: npm run eval:sitemap-higiene
 
       # O ARCH.md (índice por linha + tabela de conflito) é GERADO. Escrito à
       # mão ele desatualiza no primeiro commit, e uma tabela de conflito com
