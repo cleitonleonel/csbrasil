@@ -65,6 +65,7 @@
    sólido que não tenha malha própria.
    ============================================================================ */
 import * as THREE from 'three';
+import { superficieGrafitavel } from './graffiti_surface.js';
 
 /* Índices de `T.decals` a partir dos nomes de arquivo. Nome que não existe no
    pacote é AVISO ALTO e não entra no pool: pool vazio desenha nada (visível),
@@ -172,7 +173,7 @@ const _centro = new THREE.Vector3();
    bala (`material.visible = false`) e vidro/água (`transparent`) não são parede pra
    tinta — o cartaz em vidro era a reclamação nº 1 do dono e era limite declarado. */
 function _pintavel(o) {
-  if (!o.isMesh || !o.visible || !o.material) return false;
+  if (!superficieGrafitavel(o)) return false;
   if (String(o.name).startsWith('decal:')) return false;
   const teste = (m) => m && m.visible !== false && !(m.transparent && (m.opacity === undefined || m.opacity < 0.9));
   return Array.isArray(o.material) ? o.material.some(teste) : teste(o.material);
