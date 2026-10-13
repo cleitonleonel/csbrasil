@@ -9,8 +9,8 @@
 
 | Arquivo | Linhas | Símbolos |
 |---|---:|---:|
-| `public/js/game.js` | 8387 | 329 |
-| `public/js/main.js` | 4403 | 332 |
+| `public/js/game.js` | 8388 | 329 |
+| `public/js/main.js` | 4404 | 332 |
 | `public/js/glbchars.js` | 855 | 60 |
 | `public/js/characters.js` | 1142 | 42 |
 | `public/js/vmattach.js` | 633 | 4 |
@@ -60,7 +60,7 @@ faixas disjuntas simultaneamente com zero conflito de conteúdo.
 
 Nenhuma sobreposição entre frentes — todas as faixas são disjuntas. ✓
 
-Cobertura: **3891 de 8387 linhas (46%)** do `game.js` têm dono declarado. O resto é território neutro — declare a frente mesmo assim.
+Cobertura: **3891 de 8388 linhas (46%)** do `game.js` têm dono declarado. O resto é território neutro — declare a frente mesmo assim.
 
 <details><summary><strong>Índice completo de <code>game.js</code> (todos os símbolos)</strong></summary>
 
@@ -346,7 +346,7 @@ Cobertura: **3891 de 8387 linhas (46%)** do `game.js` têm dono declarado. O res
 | 8123 | `_updateWeaponHud()` | 35 |
 | 8158 | `_updateHud()` | 88 |
 | 8246 | `update()` | 90 |
-| 8336 | `dispose()` | 51 |
+| 8336 | `dispose()` | 52 |
 
 </details>
 

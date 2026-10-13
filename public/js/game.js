@@ -8380,6 +8380,7 @@ export class Game {
     this.vm?.authored?.dispose();
     this.vm?.melee?.dispose();
     this._pickupFallbackTpl?.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+    this.renderer.liberaPosDaCena?.(this.scene);
     this.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     this.scene.clear();
   }
