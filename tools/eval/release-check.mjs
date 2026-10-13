@@ -13,10 +13,15 @@
  *
  * RLS6: release não dispara um segundo deploy; o fallback fica manual.
  * RLS8: o push do bot não cancela o run que ainda publica o Release e avisa o backend.
+ * RLS9: TREM DE RELEASE (13/10/2026). Produção só builda em commit `chore(release):`
+ *       (vercel.json → ignoreCommand → scripts/ci/vercel-ignore.sh, executado aqui de
+ *       verdade com as três mensagens que importam) e o release.yml não volta a disparar
+ *       por push na main — 126 releases em 130 merges era o motor do churn de bot.
  *
- * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot.
+ * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | trem-por-push | ignora-sem-filtro.
  */
 import { readFileSync, readdirSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 
 const mutante = process.argv.find((arg) => arg.startsWith('--mutante='))?.split('=')[1];
 const arquivos = ['.github/workflows/release.yml', '.github/workflows/ci.yml'];
@@ -81,8 +86,26 @@ let animacoesNoDeploy = /(?:^|\s)anims:check(?:\s|$)/.test(packageJson.scripts['
 const validaConcorrenciaRelease = () => /^concurrency:\n  group: release-main\n  cancel-in-progress: \$\{\{ !startsWith\(github\.event\.head_commit\.message, 'chore\(release\):'\) \}\}$/m.test(workflowRelease);
 let concorrenciaRelease = validaConcorrenciaRelease();
 
+/* RLS9 — o filtro roda de verdade: o que importa é o código de saída que a Vercel vê. */
+let scriptIgnora = (() => { try { return readFileSync('scripts/ci/vercel-ignore.sh', 'utf8'); } catch { return ''; } })();
+const saidaIgnora = (env, msg) => spawnSync('bash', ['-c', scriptIgnora], {
+  env: { PATH: process.env.PATH, VERCEL_ENV: env, VERCEL_GIT_COMMIT_MESSAGE: msg }, encoding: 'utf8',
+}).status;
+const validaTrem = () => {
+  const comandoOk = vercel.ignoreCommand === 'bash scripts/ci/vercel-ignore.sh';
+  const filtroOk = scriptIgnora !== ''
+    && saidaIgnora('production', 'chore(release): v9.9.9-alpha.1') === 1   // release builda
+    && saidaIgnora('production', 'feat: qualquer merge') === 0             // merge espera o trem
+    && saidaIgnora('preview', 'feat: qualquer PR') === 1;                  // preview não muda
+  const eventos = gatilhos(workflowRelease);
+  const semPush = !eventos.includes('push') && eventos.includes('schedule') && eventos.includes('workflow_dispatch');
+  const esperaVerde = /gh run list[^\n]*--workflow ci\.yml/.test(workflowRelease) && /needs: embarque/.test(workflowRelease);
+  return comandoOk && filtroOk && semPush && esperaVerde;
+};
+let tremRelease = validaTrem();
+
 if (mutante) {
-  const antes = JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease]);
+  const antes = JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease]);
   if (mutante === 'nome-antigo') comandos[0].linha = comandos[0].linha.replace('"CSBR ', '"CORO SOLTO ');
   else if (mutante === 'semcreditos') comandos[0].linha = comandos[0].linha.replace(' --generate-notes', '');
   else if (mutante === 'semdco') {
@@ -106,8 +129,16 @@ if (mutante) {
     workflowRelease = workflowRelease.replace(/^  cancel-in-progress: .*$/m, '  cancel-in-progress: true');
     concorrenciaRelease = validaConcorrenciaRelease();
   }
+  else if (mutante === 'trem-por-push') {
+    workflowRelease = workflowRelease.replace('on:\n', 'on:\n  push:\n    branches: [main]\n');
+    tremRelease = validaTrem();
+  }
+  else if (mutante === 'ignora-sem-filtro') {
+    scriptIgnora = scriptIgnora.replace(/^exit 0$/m, 'exit 1');
+    tremRelease = validaTrem();
+  }
   else throw new Error(`mutante desconhecido: ${mutante}`);
-  if (JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease]) === antes) throw new Error(`MUTANTE NAO APLICOU: ${mutante}`);
+  if (JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease]) === antes) throw new Error(`MUTANTE NAO APLICOU: ${mutante}`);
 }
 
 const nomes = comandos.filter(({ linha }) => /--title "CSBR \$/.test(linha)).length;
@@ -116,7 +147,7 @@ const total = comandos.length;
 const dco = commitsRelease.filter(temDco).length;
 const totalCommits = commitsRelease.length;
 const docsOk = docsRelease.filter(Boolean).length;
-const ok = total > 0 && nomes === total && creditos === total && totalCommits > 0 && dco === totalCommits && docsOk === docsRelease.length && rollbackRelease && caminhoProdUnico && animacoesNoDeploy && concorrenciaRelease;
+const ok = total > 0 && nomes === total && creditos === total && totalCommits > 0 && dco === totalCommits && docsOk === docsRelease.length && rollbackRelease && caminhoProdUnico && animacoesNoDeploy && concorrenciaRelease && tremRelease;
 
 console.log(`${nomes === total && total ? '✓' : '✗'} RLS1 título CSBR: ${nomes}/${total} caminhos`);
 console.log(`${creditos === total && total ? '✓' : '✗'} RLS2 notas com contribuidores: ${creditos}/${total} caminhos`);
@@ -126,6 +157,7 @@ console.log(`${rollbackRelease ? '✓' : '✗'} RLS5 falha local restaura a árv
 console.log(`${caminhoProdUnico ? '✓' : '✗'} RLS6 produção tem um caminho automático e fallback manual`);
 console.log(`${animacoesNoDeploy ? '✓' : '✗'} RLS7 deploy valida manifesto e GLBs mesclados de animação`);
 console.log(`${concorrenciaRelease ? '✓' : '✗'} RLS8 push do bot não cancela publicação e dispatch`);
+console.log(`${tremRelease ? '✓' : '✗'} RLS9 produção só sai no trem de release, e o trem só sai com a main verde`);
 if (!ok) {
   console.error('Release inválido: preserve créditos, DCO, docs, concorrência segura e um único caminho automático de produção.');
   process.exit(1);
