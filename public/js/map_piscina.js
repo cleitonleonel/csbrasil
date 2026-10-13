@@ -27,6 +27,7 @@
 // Same buildWorld contract as map.js.
 import * as THREE from 'three';
 import { decalIds, paredeAtras } from './map_decals.js';
+import { superficieGrafitavel } from './graffiti_surface.js';
 import { grafitar, esconderSeFaltar } from './graffiti_pass.js';   // cobertura medida, não coordenada à mão
 import { setMapSky } from './map_sky.js';
 import { createWater } from './water.js';
@@ -223,8 +224,8 @@ export function buildPoolDay(scene, T) {
       const ex = (opts.ry || opts.rz) ? Math.max(w, d) / 2 : w / 2;
       const ez = (opts.ry || opts.rz) ? Math.max(w, d) / 2 : d / 2;
       colliders.push({ minX: x - ex - pad, maxX: x + ex + pad, minY: y, maxY: y + h, minZ: z - ez - pad, maxZ: z + ez + pad });
-      occluders.push(m);
-    } else if (opts.bala || opts.occlude === true) occluders.push(m);   // visível dentro de colisor alheio: a bala para nele (BUG-54)
+      if (mat.colorWrite !== false) occluders.push(m);
+    } else if ((opts.bala || opts.occlude === true) && mat.colorWrite !== false) occluders.push(m);   // visível dentro de colisor alheio: a bala para nele (BUG-54)
     return m;
   }
 
@@ -267,7 +268,8 @@ export function buildPoolDay(scene, T) {
     for (const mesh of [...root.children]) {
       if (!mesh.isMesh || !mesh.userData?.piscinaStaticBox || Array.isArray(mesh.material)) continue;
       const key = [mesh.geometry.uuid, mesh.material.uuid, mesh.castShadow ? 1 : 0,
-        mesh.receiveShadow ? 1 : 0, mesh.renderOrder || 0].join(':');
+        mesh.receiveShadow ? 1 : 0, mesh.renderOrder || 0, mesh.visible ? 1 : 0,
+        superficieGrafitavel(mesh) ? 1 : 0].join(':');
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(mesh);
     }
@@ -281,6 +283,10 @@ export function buildPoolDay(scene, T) {
       batch.receiveShadow = first.receiveShadow;
       batch.renderOrder = first.renderOrder;
       batch.name = 'piscina:static-batch';
+      batch.visible = first.visible;
+      // O lote perde nomes e ancestrais dos membros; preserva a permissão de
+      // pintura separadamente, sem alterar a colisão física.
+      batch.userData.graffitiSupportExcluded = !superficieGrafitavel(first);
       list.forEach((mesh, i) => {
         mesh.updateMatrix();
         batch.setMatrixAt(i, mesh.matrix);
@@ -320,11 +326,11 @@ export function buildPoolDay(scene, T) {
   const TEX = {
     wall: tileTex('#eef3f6', '#c2d0d8', 4, 8, 3),
     floor: tileTex('#e7ecef', '#ccd6dd', 4, 12, 16),
-    pool: tileTex('#33c6e0', '#7fe4f2', 4, 4, 5),
+    pool: tileTex('#60b8c7', '#a0d8df', 4, 4, 5),
   };
   const MAT = {
     wall: lam({ map: TEX.wall }), floor: lam({ map: TEX.floor }), pool: lam({ map: TEX.pool }),
-    navy: lam({ map: tileTex('#193a70', '#10264c', 2, 2, 2) }),
+    navy: lam({ map: tileTex('#294862', '#1c354d', 2, 2, 2) }),
     white: lam({ map: tileTex('#f2f5f7', '#d1d9de', 4, 2, 2) }),
     locker: lam({ map: lockerTex() }), lockerDark: lam({ map: lockerTex('#778894', '#34434e') }),
     chair: lam({ map: utilityTex('#294984', '#1b315c', '#203764') }),
@@ -344,7 +350,7 @@ export function buildPoolDay(scene, T) {
   let propsOn = true;
   try { propsOn = new URLSearchParams(location.search).get('piscinaProps') !== '0'; } catch { /* node */ }
   const temProp = (id) => propsOn && hasProp(id);
-  // Caixa que só colide e para bala: o GLB por cima é a imagem, ela é o contrato físico.
+  // Caixa que só colide: o GLB por cima é a imagem, ela é o contrato físico.
   const OCULTO = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
   // GLB esticado na caixa w×h×d (largura X, frente +Z). Sombra só na escada: em tudo
   // custava +150 mil tris e estourava PIS5 (números no commit).
@@ -572,7 +578,7 @@ export function buildPoolDay(scene, T) {
   {
     const imgs = T.posterImgs || [], asp = T.posterAspects || [];
     if (imgs.length) {
-      const HBASE = 2.2, Y = 2.6, OFF = 0.06;
+      const HBASE = 2.2, Y = 2.6, OFF = 0.03;
       // [x, z, ry] de cada cartaz, já virado pra dentro do salão
       const vagas = [
         [-13, HALF_Z - OFF, Math.PI], [-3, HALF_Z - OFF, Math.PI], [11, HALF_Z - OFF, Math.PI],
@@ -596,7 +602,7 @@ export function buildPoolDay(scene, T) {
      São as únicas peças COLORIDAS grandes do salão — exceção deliberada do dono à regra
      "só pixação" deste mapa; ficam na lateral, fora do plano de fundo do duelo axial. */
   {
-    const MH = 2.3, MW = MH * 1.8333, MY = 2.2 + MH / 2, MOFF = 0.06;   // 1408×768 medido
+    const MH = 2.3, MW = MH * 1.8333, MY = 2.2 + MH / 2, MOFF = 0.03;   // 1408×768 medido
     // nome = quem é o arquivo: em node a textura nunca carrega e o nome é a única régua
     if (T.muralEternamente) { const a = addPlane(MW, MH, lam({ map: T.muralEternamente, side: THREE.DoubleSide }), -HALF_X + MOFF, MY, 6, Math.PI / 2); a.name = 'mural:eternamente'; }
     if (T.muralLesteVive) { const b = addPlane(MW, MH, lam({ map: T.muralLesteVive, side: THREE.DoubleSide }), HALF_X - MOFF, MY, 6, -Math.PI / 2); b.name = 'mural:leste-vive'; }
@@ -1112,6 +1118,9 @@ export function buildPoolDay(scene, T) {
      A passada acha parede por raio a partir dos waypoints e pinta o que achar, então
      armário, pilastra, bloco de partida e mureta entram sem ninguém escrever
      coordenada. Ver `public/js/graffiti_pass.js` pro porquê de ser assado. */
+  // Matrizes Float32 podem abrir microfrestas; pintura mede os triângulos
+  // que permanecem na cena após o agrupamento.
+  batchStaticBoxes();
   grafitar({
     id: 'piscina_treta',
     root, T, waypoints: nodes, seed: 7717, passo: 0.9, alcance: 9, cobre: 0.06, minLarg: 0.3,
@@ -1151,15 +1160,14 @@ export function buildPoolDay(scene, T) {
     ],
   });
 
-  /* A passada viva precisa enxergar cada parede/armário como malha separada. O lote entra
-     somente depois dela: preserva o bake e troca N caixas repetidas por uma chamada. */
+  /* Referências guardam as dimensões autorais; grafite já mediu a geometria
+     final dos lotes usada pelo renderizador e pelos tiros. */
   root.userData.piscinaTrimContract = {
     layout: trimLayout,
     constructionMutant: trimConstructionMutant,
     evidence: trimEvidence,
     references: trimReferenceEvidence,
   };
-  batchStaticBoxes();
 
   return {
     ambience,

@@ -62,7 +62,7 @@ export function buildQuebrada(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -1146,7 +1146,7 @@ export function buildQuebrada(scene, T) {
      ou seja ≥ 0,6 m de folga além da inflação, e deixa ≥ 1,9 m de passagem livre para um
      corpo de 0,38 m de raio. Foi exatamente isso que a 1ª versão do mapa errou ao pôr caçamba
      de 1,9 m no CENTRO da viela: 8 componentes conexas e a CTF2 caiu para 1 rota. */
-  const MAT_LONA = new THREE.MeshStandardMaterial({ color: 0x3f6f8f, roughness: 0.9, side: THREE.DoubleSide });
+  const MAT_LONA = new THREE.MeshStandardMaterial({ color: 0x607986, roughness: 0.9, side: THREE.DoubleSide });
   function beco(x0, x1, bz, k) {
     const xm = (x0 + x1) / 2, L = x1 - x0;
     if (k === 0) {

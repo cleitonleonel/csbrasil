@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.76`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.81`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -26,6 +26,7 @@
 ## Não lançado — 2026-10-06
 
 ### Corrigido
+- Acabamento dos mapas: materiais minerais menos brilhantes, paletas mais coerentes e terreno das Obras com escala de textura uniforme. As texturas compartilhadas recebem manchas amplas sem alterar a resolução ou o sorteio dos mapas. Três pixações pretas descartam o quadriculado claro no shader, preservando os arquivos originais. Comparação visual local e regressões ainda em validação.
 - A documentação deixou de apontar para o guia interno BotBrain removido e usa o domínio com `www` para abrir o jogo. A imagem de fallback do personagem recebe `src` somente quando há uma URL válida; o CI verifica links e URLs vazias no HTML publicado.
 - **Multiplayer:** removida a caixa fixa de diagnóstico com FPS, snapshots, jitter, banda e ping. A coleta continua alimentando a telemetria de qualidade por sessão.
 - **#696 — `assert:assets` reprovava com o pacote público mesmo depois do fetch.** O `audio-pack-v8` (445 entradas, medido em 04/10/2026 no diretório central do zip) não tem pasta `ambiente/` nem a chave `mapSoundscapes`, e o conserto — `prepare-public-preview.mjs` — era chamado SÓ pelo workflow de preview. `scripts/fetch-audio.sh` agora termina a preparação em todo caminho público (`ensure-map-soundscapes.mjs`, que instala `mapSoundscapes` nos 18 mapas com o hum que o jogo sintetiza; o pack privado não passa por ele, porque ambiência real que falta tem de reprovar o build). `eval:audioruntimeassets` passa a provar os TRÊS estados do contrato — cru = vermelho, preparado = verde, parcial = vermelho — chamando o `assert:assets` real.
@@ -70,6 +71,47 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.81] — 2026-10-13
+
+### Mudado
+- Para de abrir partículas a cada dano no online (#836)
+- Dar orçamento próprio a cada passo do smoke do chat (#846)
+- Conta corosolto.com.br como host próprio na versão da telemetria (#860)
+- Tira do sitemap o /ranking em 302 e o lastmod do dia (#841)
+- Treat corosolto.com.br as an own host
+- Require corosolto.com.br as an own host in VO1
+- Medir o teto do job de smoke em 40 min
+- Dar orçamento próprio a cada passo do smoke do chat
+- Omite o lastmod que era só a data do pedido
+- Tira do sitemap o /ranking que responde 302
+- Mede se o sitemap lista só URL final e data real
+- Para de abrir partículas a cada dano no online
+
+## [2.1.0-alpha.80] — 2026-10-13
+
+### Mudado
+- Pagina os perfis do sitemap além de 1.000 linhas (#842)
+- Pagina os perfis do sitemap além de 1.000 linhas
+- Mede o sitemap contra o max-rows do PostgREST
+
+## [2.1.0-alpha.79] — 2026-10-13
+
+### Mudado
+- Corrige a view que o sitemap diz filtrar perfis (#840)
+- Corrige a view que o sitemap diz filtrar perfis
+
+## [2.1.0-alpha.78] — 2026-10-13
+
+### Mudado
+- Remover plans/ do repo público (#835)
+- Remove plans/ from public tree
+
+## [2.1.0-alpha.77] — 2026-10-13
+
+### Mudado
+- Remover marketing/october-2026 do repo público (#834)
+- Remove marketing/october-2026 from public tree
 
 ## [2.1.0-alpha.76] — 2026-10-13
 

@@ -1,5 +1,6 @@
 // Core game: FPS controller, weapons, bots, rounds, HUD.
 import * as THREE from 'three';
+import { ajustarAnisotropia } from './textures.js';
 import { MAPS, resolveMapId } from './maps.js';
 import { atualizaCortes } from './mapprops.js';
 import { buildCharacter, poseCharacter, byId, CHARACTERS, buildRifle, charWeapon, podeNoLado } from './characters.js';
@@ -3120,6 +3121,7 @@ export class Game {
   }
   _applyQuality() {
     const q = this.settings.quality;
+    ajustarAnisotropia(this.scene, q);
     this.renderer.setPixelRatio(q === 'high' ? Math.min(devicePixelRatio, 2) : q === 'med' ? 1 : 0.75);
     const shadows = q !== 'low';
     this.renderer.shadowMap.enabled = shadows;
@@ -4010,7 +4012,6 @@ export class Game {
      netcode ao ver a queda de hp no snapshot. */
   _playerHurtFx() {
     try { this.sfx.hurt?.(this.player.def?.id); } catch { /* ctx mudo */ }
-    this._tintFx(0xff2222, false, 96);
     this.player.recoilP = (this.player.recoilP || 0) + 0.02;
   }
 
