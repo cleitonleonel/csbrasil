@@ -96,6 +96,7 @@ async function scenario(surface,flag,kind,period='all') {
  const context={...helpers,document,URL,Date,AbortSignal,auth:null,state:null,profileId:'',tab:'ranking',loadVersion:0,rankingPeriod:period,rankingScope:'global',rankingOffset:0,rankingQuery:'',rankingMode:'all',rankingGameType:'all',registeredNick:'Renderer Fixture',loadStats:()=>({kills:4,deaths:2,wins:1,matches:2}),$:id=>document.getElementById(id),apiUrl:x=>x,fetch:async(url)=>{requests.push(url);return fetchResult(kind);},content:document.getElementById('social-content'),status:document.getElementById('social-status')};
  let body;
  if(surface==='community'){
+  context.root=pane; // community.js lê root no escopo do módulo (render marca data-view)
   const start=community.indexOf('  const errors=');const stop=community.indexOf('  function presenceText',start);
   assert(start>=0 && stop>start,'community real DOM helpers unavailable');
   body=community.slice(start,stop)+'\n'+extract(community,'  function searchForm(', '  function friendCard(')+'\n'+extract(community,'  async function showRanking(version)','  function showQuests(')+'\n'+extract(community,'  async function render(){','  async function boot(')+'\nrender()';
