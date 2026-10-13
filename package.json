@@ -109,6 +109,7 @@
     "eval:shaderbudget": "node tools/eval/shader-budget-check.mjs",
     "eval:og": "node --experimental-strip-types --import ./tools/eval/ts-resolve.mjs tools/eval/og-check.mjs",
     "eval:sitemap": "node --experimental-strip-types tools/eval/sitemap-check.mjs",
+    "eval:docs-hreflang": "node tools/eval/docs-hreflang-check.mjs && node tools/eval/docs-hreflang-check.mjs --build=public/docs",
     "eval:sitemap-higiene": "node --experimental-strip-types tools/eval/sitemap-higiene-check.mjs",
     "eval:sitemap-paginacao": "node --experimental-strip-types tools/eval/sitemap-paginacao-check.mjs",
     "eval:ctfhud": "node tools/eval/ctfhud-check.mjs",
@@ -143,7 +144,7 @@
     "eval:seo": "node tools/eval/seo-check.mjs",
     "eval:pwa-install": "node tools/eval/pwa-install-contract.mjs",
     "eval:seo:mutate": "node tools/eval/seo-check.mjs --mutate",
-    "check:seo": "npm run build && node tools/eval/seo-check.mjs",
+    "check:seo": "npm run build && node tools/eval/seo-check.mjs && node tools/eval/canonical-host-check.mjs",
     "eval:jsonld": "node tools/eval/jsonld-validate.mjs",
     "eval:pause": "node tools/eval/pause-check.mjs",
     "eval:select": "node tools/eval/select-inflate.mjs",
@@ -544,7 +545,7 @@
   "bugs": {
     "url": "https://github.com/corosolto/client/issues"
   },
-  "homepage": "https://www.csbrasil.online",
+  "homepage": "https://www.corosolto.com.br",
   "dependencies": {
     "@astrojs/vercel": "^11.0.6",
     "@resvg/resvg-js": "^2.6.2",
