@@ -22,7 +22,7 @@ const socials=p && Array.isArray(p.socials)?p.socials.map((s:any)=>({name:String
 const avatar=p?.avatar_url===`/api/social-avatar?id=${p?.id}`?p.avatar_url:https(p?.avatar_url);
 ---
 <!doctype html><html lang="pt-BR" data-home-ui="hub" class="public-profile"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>{title}</title><meta name="description" content={description}/><link rel="canonical" href={canonical}/><link rel="icon" href="/favicon.ico"/><link rel="stylesheet" href="/style.css"/>
+<title>{title}</title><meta name="description" content={description}/><link rel="canonical" href={canonical}/>{p && <><link rel="alternate" hreflang="pt-BR" href={canonical}/><link rel="alternate" hreflang="x-default" href={canonical}/></>}<link rel="icon" href="/favicon.ico"/><link rel="stylesheet" href="/style.css"/>
 <meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:url" content={canonical}/><meta property="og:type" content="profile"/>
 {image && <><meta property="og:image" content={image}/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content={`Perfil e placar de ${p.nick}`}/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:image" content={image}/></>}
 {!p && <meta name="robots" content="noindex"/>}
