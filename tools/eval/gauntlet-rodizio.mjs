@@ -4,9 +4,8 @@
    A captura com SwiftShader (único renderer de um runner sem GPU) roda a ~0,3 FPS: um
    mapa nos dois aspectos (16:9 e 3:2 — o dono joga em 3:2) leva ~10–15 min. Todos os
    mapas de uma vez não cabem no teto de 30 min por job (WT2). Então o gauntlet-captura
-   fotografa UM mapa por hora, em rodízio: o mapa da hora H é jogaveis[H % N]. Com 11
-   jogáveis, cada mapa é refotografado a cada 11 h — 2×/dia — e o crítico sempre tem um
-   frame de no máximo meio dia para comparar.
+   fotografa UM mapa por hora, em rodízio: o mapa da hora H é jogaveis[H % N]. Com N
+   jogáveis, cada mapa é refotografado a cada N horas (`--lista` mostra quais são).
 
    A lista sai do registro (`public/js/maps.js`), pelo mesmo parse do gl-shots.mjs, menos
    MAPAS_PARADOS: mapa novo entra no rodízio sozinho, mapa parado sai sozinho.
@@ -27,5 +26,10 @@ if (JOGAVEIS.length < 2) {
 }
 if (process.argv.includes('--lista')) { console.log(JOGAVEIS.join('\n')); process.exit(0); }
 const arg = process.argv.find((a) => a.startsWith('--hora='));
-const hora = arg ? parseInt(arg.split('=')[1], 10) : Math.floor(Date.now() / 3600000);
+const bruto = arg ? arg.slice('--hora='.length) : null;
+if (bruto !== null && !/^-?\d+$/.test(bruto)) {
+  console.error(`gauntlet-rodizio: --hora precisa ser inteiro, veio "${bruto}"`);
+  process.exit(2);
+}
+const hora = bruto !== null ? Number(bruto) : Math.floor(Date.now() / 3600000);
 console.log(JOGAVEIS[((hora % JOGAVEIS.length) + JOGAVEIS.length) % JOGAVEIS.length]);
