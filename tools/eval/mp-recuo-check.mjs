@@ -13,6 +13,8 @@
      MPR5 · bot remoto correndo 4,7 m/s para frente    run (inalterado)
      MPR6 · humano remoto andando 1,1 m/s para frente  walk para frente (inalterado)
      MPR7 · bot remoto de lado 4,7 m/s                 run, sem reverso (inalterado)
+     MPR8-9 · de lado girando 4-6 rad/s                run em todo quadro: a velocidade do segmento
+              projetada no yaw do instante (±giro·25 ms) piscava walk reverso 1 quadro em 3
    Mutante: `--mutante=semrecuo` força back=false na chamada e tem que reprovar MPR1-3.
    Uso: node tools/eval/mp-recuo-check.mjs [--mutante=semrecuo] */
 import fs from 'node:fs';
@@ -52,7 +54,7 @@ const def = CHARACTERS.find((c) => c.id === CHAR);
 
 /* vf/vl no referencial do CORPO (frente/direita); o snapshot leva o yaw de rede, que no
    humano é o da câmera (o corpo gira yaw+π). */
-function roda({ yaw = 0, humano = false, vf = 0, vl = 0 }) {
+function roda({ yaw = 0, humano = false, vf = 0, vl = 0, giro = 0 }) {
   const m = G.buildCharacterModel(def, { weaponId: ARMA });
   if (!m?.ctrl?.actions?.walk || !m.ctrl.actions.run) throw new Error('mst sem walk/run — a régua não sabe medir');
   if (MUT === 'semrecuo') { const up = m.ctrl.update.bind(m.ctrl); m.ctrl.update = (dt, mv, alvo, spd) => up(dt, mv, alvo, spd, false); }
@@ -62,12 +64,12 @@ function roda({ yaw = 0, humano = false, vf = 0, vl = 0 }) {
   nc._now = () => clock;
   const ent = { def, team: 'E', mesh: m, weapon: ARMA, pos: new THREE.Vector3(), yaw, alive: true, _remote: 7, _netBot: !humano,
     _bufAt: [], _bufX: [], _bufY: [], _bufZ: [], _bufYaw: [], _bufPitch: [], _netSpd: 0 };
-  const corpo = humano ? yaw + Math.PI : yaw;
-  const vx = Math.sin(corpo) * vf + Math.cos(corpo) * vl, vz = Math.cos(corpo) * vf - Math.sin(corpo) * vl;
   let x = 0, z = 0, ultimo = -Infinity, px = null, pz = null;
   const out = [];
   for (let f = 0; f < QUADROS; f++) {
-    clock += DT * 1000; x += vx * DT; z += vz * DT;
+    clock += DT * 1000; yaw += giro * DT;
+    const corpo = humano ? yaw + Math.PI : yaw;
+    x += (Math.sin(corpo) * vf + Math.cos(corpo) * vl) * DT; z += (Math.cos(corpo) * vf - Math.sin(corpo) * vl) * DT;
     if (clock - ultimo >= SNAP_MS) {
       ultimo = clock;
       ent._netSpd = px == null ? 0 : Math.hypot(x - px, z - pz) / (SNAP_MS / 1000);
@@ -89,10 +91,11 @@ const falhas = [];
 function cobra(cod, txt, cenario, esperado) {
   const serie = roda(cenario);
   const ruins = serie.filter((s) => s.clip !== esperado.clip || Math.sign(s.ts) !== esperado.sinal);
+  const trocas = serie.filter((s, i) => i && (s.clip !== serie[i - 1].clip || Math.sign(s.ts) !== Math.sign(serie[i - 1].ts))).length;
   const conta = {};
   for (const s of serie) { const k = `${s.clip}${s.ts < 0 ? '↺' : ''}`; conta[k] = (conta[k] || 0) + 1; }
   const ok = ruins.length === 0;
-  console.log(`${cod} · ${txt}\n   esperado ${esperado.clip}${esperado.sinal < 0 ? ' reverso' : ''} · ${serie.length} quadros: ${Object.entries(conta).map(([k, v]) => `${k}×${v}`).join(' ')} (↺ = timeScale < 0)\n   ${ok ? 'PASSA' : 'FALHA'}`);
+  console.log(`${cod} · ${txt}\n   esperado ${esperado.clip}${esperado.sinal < 0 ? ' reverso' : ''} · ${serie.length} quadros: ${Object.entries(conta).map(([k, v]) => `${k}×${v}`).join(' ')} (↺ = timeScale < 0) · ${trocas} troca(s) de clipe\n   ${ok ? 'PASSA' : 'FALHA'}`);
   if (!ok) falhas.push(cod);
 }
 
@@ -103,6 +106,8 @@ cobra('MPR4', 'bot remoto andando 1,1 m/s para frente', { yaw: 2.1, vf: 1.1 }, {
 cobra('MPR5', 'bot remoto correndo 4,7 m/s para frente', { yaw: 2.1, vf: 4.7 }, { clip: 'run', sinal: 1 });
 cobra('MPR6', 'humano remoto andando 1,1 m/s para frente', { yaw: 0.7, humano: true, vf: 1.1 }, { clip: 'walk', sinal: 1 });
 cobra('MPR7', 'bot remoto de lado 4,7 m/s', { yaw: 2.1, vl: 4.7 }, { clip: 'run', sinal: 1 });
+cobra('MPR8', 'bot remoto de lado 4,7 m/s girando 4 rad/s', { yaw: 0.3, vl: 4.7, giro: 4 }, { clip: 'run', sinal: 1 });
+cobra('MPR9', 'humano remoto de lado 2,5 m/s girando 6 rad/s', { yaw: 0.3, humano: true, vl: 2.5, giro: 6 }, { clip: 'run', sinal: 1 });
 
 const esperadas = ['MPR1', 'MPR2', 'MPR3'];
 if (MUT) {
@@ -112,7 +117,7 @@ if (MUT) {
   process.exit(0);
 }
 if (falhas.length) {
-  console.error(`\n✗ MPR reprovado: ${falhas.join(', ')} — remoto recuando faz moonwalk. Conserto: em Netcode.updateRemoteBot (netgame.js), derive back do componente frontal da velocidade do buffer de interpolação, como o _updateBot faz no SP (fwd < -0,25).`);
+  console.error(`\n✗ MPR reprovado: ${falhas.join(', ')} — remoto com clipe errado (MPR1-3: moonwalk recuando; MPR8-9: walk reverso piscando no giro). Conserto: em Netcode.updateRemoteBot (netgame.js), back = componente frontal da velocidade do segmento do buffer, projetada no yaw do MESMO segmento, como o _updateBot faz no SP (fwd < -0,25).`);
   process.exit(1);
 }
 console.log('\n✓ MPR: remoto recuando anda de costas; frente e lado inalterados.');
