@@ -90,8 +90,8 @@ const cobra = (nome, cond, detalhe) => (cond ? ok : falhas).push(`${nome} ${deta
 }
 
 /* SP4 — o ping é tempo de REDE: a thread ocupada depois que a resposta chegou não entra.
-   O fetch falso trava 300 ms após a resposta e publica a duração de rede na Resource Timing,
-   como o navegador faz. */
+   O fetch falso trava 300 ms após a resposta e entrega a duração de rede ao PerformanceObserver,
+   como o navegador faz mesmo com o buffer da Resource Timing cheio. */
 {
   const srv = createServer((req, res) => {
     res.setHeader('content-type', 'application/json');
@@ -99,18 +99,23 @@ const cobra = (nome, cond, detalhe) => (cond ? ok : falhas).push(`${nome} ${deta
   });
   await new Promise((r) => srv.listen(0, '127.0.0.1', r));
   const porta = srv.address().port;
-  const fetchReal = globalThis.fetch, entradasReal = performance.getEntriesByName;
-  const entradas = new Map();
+  const fetchReal = globalThis.fetch, ObsReal = globalThis.PerformanceObserver;
+  const ouvintes = new Set();
+  globalThis.PerformanceObserver = class {
+    constructor(cb) { this.cb = cb; }
+    observe() { ouvintes.add(this); }
+    disconnect() { ouvintes.delete(this); }
+  };
   globalThis.fetch = async (url, opt) => {
     const t0 = performance.now();
     const r = await fetchReal(url, opt);
-    entradas.set(String(url), [{ startTime: t0, duration: performance.now() - t0 }]);
+    const entrada = { name: String(url), duration: performance.now() - t0 };
+    for (const o of ouvintes) setTimeout(() => o.cb({ getEntries: () => [entrada] }), 0);
     trava(300);
     return r;
   };
-  performance.getEntriesByName = (nome) => entradas.get(nome) || [];
   const [r] = await sondarNos([{ id: 'eu', nome: 'teste', url: `ws://127.0.0.1:${porta}/ws` }], 2500, 2);
-  globalThis.fetch = fetchReal; performance.getEntriesByName = entradasReal;
+  globalThis.fetch = fetchReal; globalThis.PerformanceObserver = ObsReal;
   srv.close();
   cobra('SP4', r.online === true && r.ping < 150, `resposta local com 300ms de thread ocupada depois → ping=${r.ping}ms (rede, não relógio do JS)`);
 }
