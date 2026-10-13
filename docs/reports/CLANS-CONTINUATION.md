@@ -13,7 +13,7 @@
   convidaram, aceitaram, viram `[TAG]` no perfil e no placar de uma partida MP real
   num nó `game/index.js` local. Capturas em
   `private-assets/pr-cleanup-20261013/817/`. Não substitui partida humana em produção.
-- Backend pareado: backend#72 precisa de migration 057 e deploy antes deste PR.
+- Backend pareado: backend#72 precisa da migration 060 e deploy antes deste PR.
 
 ## Objetivo e definição de pronto
 
