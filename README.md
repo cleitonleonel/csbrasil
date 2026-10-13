@@ -26,17 +26,17 @@ commit diz qual escreveu (trailer `Agent:`, convenção em `CONTRIBUTING.md`):
 
 ![CORO SOLTO: Treta Suprema — FPS satírico de navegador com facções brasileiras](public/og-image.jpg)
 
-**FPS gratuito de navegador em Three.js**: 5 facções brasileiras caricatas, 44
-personagens originais, 5 mapas satíricos e 26 armas — rounds e Capture the Flag
-contra bots, direto na aba. Sem download, sem instalação, sem cadastro.
+**FPS gratuito de navegador em Three.js**: facções brasileiras caricatas,
+personagens originais, mapas satíricos e armas. Partidas contra bots e
+multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 
 <!-- BEGIN:GERADO:numeros — não edite à mão, rode `npm run docs` -->
 
 | O que | Quanto | Onde confere |
 |---|---:|---|
-| Código do jogo | 58.555 linhas em 114 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| Código do jogo | 58.559 linhas em 114 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
 | `game.js` | **8.386** linhas | `wc -l public/js/game.js` |
-| `main.js` | 4.380 linhas | `wc -l public/js/main.js` |
+| `main.js` | 4.384 linhas | `wc -l public/js/main.js` |
 | Armas com GLB | 27 | `git ls-files 'public/models/weapons/*.glb' \| wc -l` |
 | GLBs de personagem | 74 | `git ls-files 'public/models/characters/*.glb' \| wc -l` |
 | Props em GLB | 208 | `git ls-files 'public/models/props/*.glb' \| wc -l` |
@@ -47,21 +47,21 @@ contra bots, direto na aba. Sem download, sem instalação, sem cadastro.
 | Scripts do arnês | 645 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
 | Scripts de pipeline | 102 | `git ls-files 'tools/*.mjs' \| wc -l` |
 | Tarefas de entrada escritas | 26 | `git ls-files 'docs/issues/[0-9]*.md' \| wc -l` |
-| Versão | `2.1.0-alpha.67` | `public/js/version.js` e `package.json` (batem) |
+| Versão | `2.1.0-alpha.70` | `public/js/version.js` e `package.json` (batem) |
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `o comando da coluna direita de cada linha`
 
 <!-- END:GERADO:numeros -->
 
-> **Hoje o jogo é só contra bots.** Não existe multiplayer entre humanos: um
-> `grep RTCPeerConnection` no repositório devolve zero, e não há netcode em
-> `public/js/` nem em `src/`. Multiplayer por WebRTC é a maior frente aberta do
-> projeto — quando existir, esta linha muda junto com o código, não antes.
+> **O multiplayer está em beta.** O cliente de rede vive em
+> [`public/js/net.js`](public/js/net.js), com os transportes em
+> [`public/js/transporte.js`](public/js/transporte.js). Para testar o jogo local
+> sem configurar um servidor multiplayer, comece pelo modo singleplayer.
 
-▶ **Jogue:** <https://www.csbrasil.online>
+▶ **Jogue:** <https://www.corosolto.com.br/>
 
-> **O jogo já se chamou CS BRASIL.** É o mesmo jogo — o domínio continua o
-> mesmo, e o nome antigo segue registrado como nome alternativo pra quem
+> **O jogo já se chamou CS BRASIL.** É o mesmo jogo, e o nome antigo segue
+> registrado como nome alternativo pra quem
 > procura por ele.
 
 > Este jogo nasceu gerado por IA a partir de um único prompt —
@@ -73,10 +73,10 @@ contra bots, direto na aba. Sem download, sem instalação, sem cadastro.
 
 | Você é… | Leia |
 |---|---|
-| curioso | esta página, e depois <https://www.csbrasil.online> |
+| curioso | esta página, e depois <https://www.corosolto.com.br/> |
 | dev novo (ou agente) | [`docs/README.md`](docs/README.md) → [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | quer entender a stack | [`docs/docs/stack.md`](docs/docs/stack.md) — Three.js, Astro, Supabase, geração de asset, skills |
-| quer contribuir hoje | [`docs/issues/`](docs/issues/) — tarefas de entrada com arquivos e critério de aceite |
+| quer contribuir hoje | [issues abertas](https://github.com/corosolto/client/issues) e [`CONTRIBUTING.md`](CONTRIBUTING.md); confira o estado antes de escolher |
 | quer saber o que está quebrado | as [issues abertas](https://github.com/corosolto/client/issues) |
 
 **Site de documentação** (Docusaurus, com instrumentação de IA, quality gates e
@@ -173,12 +173,15 @@ precisa rodar em CI lê o JSON, nunca o PNG.
 
 ```bash
 git clone https://github.com/corosolto/client.git
-cd csbrasil
-npm install
-cp .env.example .env      # opcional: sem envs, o ranking responde 503 e o resto roda
+cd client
+npm ci
 npm run fetch-audio       # opcional: sem o pacote, o jogo usa sons sintetizados
 npm run dev               # http://localhost:4321 — o jogo está em /
 ```
+
+Use Node/npm compatíveis com os `engines` do `package-lock.json`, incluindo Astro e
+suas dependências. A instalação foi conferida em 10/10/2026 com Node `23.6.0` e npm `11.6.0`.
+Confira `node --version` e `npm --version` no mesmo terminal antes de instalar.
 
 Build e preview:
 
