@@ -78,9 +78,8 @@ ontem e **inventa vermelha**: em 04/08/2026 o JSON estava em `V0=80°` contra o 
 em `V0=42°`, e a VM5 acusava **26/26 armas fora**; depois de `npm run eval:vm`, **3/26**.
 A VM1 caiu de 26/26 para 2/26 e a VM9 ficou verde.
 
-A ordem do `npm run check` já foi corrigida (`package.json`) — o cuidado é para quando
-você chamar `node tools/eval/invariants.mjs` na mão. Detalhe: BUG-02 do
-as issues do repositório.
+A ordem dos passos acima já está correta — o cuidado é para quando
+você chamar `node tools/eval/invariants.mjs` na mão: rode `npm run eval:vm` antes.
 :::
 
 Custo real: numa máquina de 2 CPUs, **cerca de 10 minutos**. Ele sobe o jogo real cinco
@@ -169,8 +168,9 @@ PR que toca armas + UI + mapa é três PRs escondidos, e vai colidir com três f
 - **Nunca delete comentário de procedência** num PR de limpeza. Aquele parágrafo longo
   explicando de onde veio o número 0,513 é o que impede a próxima rodada de repetir três
   dias perdidos.
-- Mexeu em `public/js/*.js`? **Bump o `?v=` nos dois lados** — `public/js/version.js` e o
-  import map de `src/pages/index.astro`. Já custou dias de "correção que não chegava".
+- Mexeu em `public/js/*.js`? **Não bumpa o `?v=` à mão**: desde 08/08 o `release.yml`
+  bumpa, taga e publica sozinho. O `pr-gates.yml` reprova se `public/js/version.js`
+  e o import map de `src/pages/index.astro` divergirem entre si.
 - Mexeu em `public/js/*.js`, no `maps.js`, no `characters.js` ou numa dependência?
   **Rode `npm run docs`** e commite junto. O `docs:check` está no `check:fast` e vai
   reprovar — leva menos de um segundo e é o que impede a doc de voltar a mentir.
@@ -215,7 +215,8 @@ O pipeline é data-driven a partir do GLB. Os GLBs de arma vivem em `public/mode
 
 ## Como adicionar um personagem
 
-45 GLBs em `public/models/characters/`, 44 medidos pelo `char-probe.mjs`.
+Os GLBs vivem em `public/models/characters/` e o `char-probe.mjs` mede cada um (a
+contagem atual está no bloco gerado do README).
 
 1. **GLB com rig**, na bind pose, pés no chão. `CHR3` exige `|base da bbox| ≤ 0,01 m` na
    bind pose **e em cada clipe** — o sinal separa dois defeitos: `y < 0` é pé dentro do
@@ -332,7 +333,7 @@ Elas existem como arquivo, não como issue. Existe um script pronto —
 ```bash
 bash docs/issues/abrir-issues.sh --dry-run   # imprime título + labels, não abre nada
 bash docs/issues/abrir-issues.sh --labels    # cria as 8 labels usadas
-bash docs/issues/abrir-issues.sh             # abre as 15
+bash docs/issues/abrir-issues.sh             # abre as tarefas de entrada
 ```
 
 Ele é idempotente (procura issue com o mesmo título antes de criar) e **nunca foi
@@ -343,8 +344,8 @@ Ou seja, se você procurar as tarefas na aba Issues, não vai achar — leia os 
 :::note Esta lista já teve cinco itens, e quatro foram feitos
 Ela mandava corrigir o `README.md` (feito), adicionar `arch`/`arch:check` ao
 `package.json` (existem hoje), regenerar o `ARCH.md` e fazer o `tp-mount-probe` pular
-quando faltasse `public/models/anims/` — pasta que **hoje está versionada** (438 arquivos
-em `git ls-files public/models/anims`). Doc que manda fazer o que já foi feito queima a
+quando faltasse `public/models/anims/` — pasta que **hoje está versionada** (a contagem
+está no bloco gerado do README). Doc que manda fazer o que já foi feito queima a
 primeira contribuição de alguém; por isso a lista virou ponteiro para `docs/issues/`,
 que é mantida.
 
@@ -363,39 +364,35 @@ arnês de viewmodel dedicado continua sendo trabalho aberto.
    com faixa medida e `vm-solve.mjs` disponível para provar viabilidade. *Frente:
    ARMAS/VIEWMODEL.*
 
-2. **BOT8 — bot com linha de visão e sem atirar.** É a dívida mais barata da lista, e a
-   causa raiz já está achada: `game.js:5361` avalia `const hasTurn = … this._duelToken(b)`
-   **todo frame**, antes de qualquer gate de "pode atirar" — e `_duelToken` não consulta,
-   ele **reserva** o token. Bot recarregando ou sem linha de tiro rouba um dos 2 tokens e
-   segura; os outros atravessam o campo de visão sem disparar. A correção é mover a chamada
-   para dentro do `if`. Medido na última execução registrada: **4 episódios, silêncio
-   máximo 4,23 s** — e note que **piorou** desde os 2,7 / 3,03 s do baseline, o que faz
-   dela também um bom A/B. *Frente: BOTS/JOGABILIDADE. Detalhe: BUG-03.*
 
-3. **Personagens: proporção (CHR1) e mapas de superfície.** Cuidado com doc velha aqui: a
+2. **Personagens: proporção (CHR1) e mapas de superfície.** Cuidado com doc velha aqui: a
    **CHR5B ficou VERDE** em 04/08 (os 27 de 44 personagens sem mapa de superfície foram a
    **0 de 44**), então esse item específico **já foi feito** — não o refaça. O que segue
    vermelho é CHR1/CHR3/CHR4, e a causa de fundo é rig, não runtime (BUG-10). Leia o
    KNOWN-BUGS antes de pegar. *Frente: PERSONAGENS.*
 
-4. **`setTimeout` não limpos no `dispose()`** — vazamento entre partidas, apontado em
+3. **`setTimeout` não limpos no `dispose()`** — vazamento entre partidas, apontado em
    `RELATORIO-ANALISE.md:134`. **Os números de linha daquele relatório estão velhos** (o
    `game.js` andou ~1.000 linhas desde então); ache os atuais com
    `grep -n setTimeout public/js/game.js` e confira quais sobrevivem ao `dispose()`. Bom
    PR de higiene com efeito medível no heap. *Frente: zona vermelha `constructor`/`update`
    — coordene antes.*
 
+*(O antigo item 2, "BOT8 — bot com linha de visão e sem atirar", saiu em 13/10: a
+correção do turno de duelo está no código com medição A/B; busque `BUG-03` em
+`public/js/game.js`.)*
+
 ### Alto valor, precisa de conversa antes
 
-5. **Extrair `_updateBot()` (772 linhas).** Marcado como candidato a extração pelo
+4. **Extrair `_updateBot()` (772 linhas).** Marcado como candidato a extração pelo
     próprio índice gerado. Precisa de acordo prévio sobre a partição, porque a região é
     disputada.
 
-6. **Mapas como JSON (Fase 2).** Geometria, colliders, occluders, spawns, pickups e
+5. **Mapas como JSON (Fase 2).** Geometria, colliders, occluders, spawns, pickups e
     waypoints em dado, com loader único e **waypoints validados por teste**. É o que
     transforma "PR de código arriscado" em "abre um JSON". Abra uma issue primeiro.
 
-7. **Job de CI noturno com browser** para destravar PX1–PX4. Quatro invariantes de pixel
+6. **Job de CI noturno com browser** para destravar PX1–PX4. Quatro invariantes de pixel
     estão puladas desde sempre.
 
 ## Processo
@@ -406,7 +403,7 @@ arnês de viewmodel dedicado continua sendo trabalho aberto.
    concreto: em 04/08 a branch de trabalho ainda se chamava `feat/evio-feel` — nome de uma
    feature de julho — com **143 commits** de assuntos diferentes empilhados. Nome que não
    diz o que a branch é vira depósito. (Fonte: `CONTRIBUTING.md`.)
-3. Rode `npm run check`. Cole a saída no PR.
+3. Rode `npm run check:deploy`. Cole a saída no PR.
 4. PR pequeno, uma frente, descrição com números e `arquivo:linha`.
 5. **Ao contribuir você licencia sob a licença que o `LICENSE` disser no momento do seu
    PR.** Qual é ela hoje e quais arquivos mudam junto numa troca: a seção de licença do
