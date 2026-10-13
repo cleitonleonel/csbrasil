@@ -23,9 +23,8 @@
 // jogador, criada em runtime. Um sitemap que lista 8 páginas fixas e ignora os
 // perfis deixa de fora exatamente o que faz o site crescer.
 //
-// Este endpoint lista as páginas fixas + todos os jogadores do ranking (a view
-// `leaderboard` já filtra `hidden`, então quem foi escondido pela moderação não
-// entra). Sem envs do Supabase, degrada pras páginas fixas e não quebra.
+// Fixas + perfis de `player_points`, que só tem público e não hidden: o conjunto que /u
+// serve a anônimo (backend migrations 048/049, test/ranking-cutover.mjs). Sem Supabase, só as fixas.
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../lib/supabase';
 import { SITE, RANKING_ON } from '../lib/site';
@@ -41,16 +40,10 @@ export const prerender = false;
 // prioridade/frequência: sinal fraco pro Google, mas o Bing e os crawlers de
 // IA ainda leem. Custa nada e ajuda a ordenar o rastreio.
 //
-// `/ranking` e os perfis `/u/*` SÓ ENTRAM COM `RANKING_ON`. Com a flag em
-// false essas páginas respondem `<meta name="robots" content="noindex">`
-// (ranking.astro, u/[...path].astro), e listar em sitemap uma URL que a própria
-// página manda não indexar é mandar dois sinais opostos pro mesmo crawler. A
-// documentação do Google é explícita: "don't include noindex URLs in your
-// sitemap" - https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
-// Quando `RANKING_ON` voltar a true, as duas voltam sozinhas.
+// Só URL final e indexável: `/ranking` responde 302 para o hub e fica fora; os
+// perfis `/u/*` só entram com `RANKING_ON`. Sem data real de modificação, sem <lastmod>.
 export const STATIC: [string, string, string][] = [
   ['/',            '1.0', 'daily'],
-  ...(RANKING_ON ? [['/ranking', '0.9', 'hourly'] as [string, string, string]] : []),
   ['/como-jogar',  '0.8', 'weekly'],
   ['/personagens', '0.8', 'weekly'],
   /* As 5 facções saem de FACCOES, não de uma lista digitada aqui: facção nova
@@ -60,15 +53,16 @@ export const STATIC: [string, string, string][] = [
   ['/mapas',       '0.8', 'weekly'],
   ['/armas',       '0.8', 'weekly'],
   ['/sobre',       '0.7', 'monthly'],
+  ['/privacidade', '0.3', 'monthly'],
+  ['/excluir-dados', '0.3', 'monthly'],
   ['/mapa',        '0.6', 'daily'],
   ['/changelog',   '0.5', 'weekly'],
   ...PT_EN_PAIRS.map(([, en]) => [en, '0.5', 'weekly'] as [string, string, string]),
 ];
 
 export const GET: APIRoute = async () => {
-  const today = new Date().toISOString().slice(0, 10);
   const fixas: Entrada[] = STATIC.map(([path, prio, freq]) => ({
-    loc: `${SITE}${path}`, lastmod: today, changefreq: freq, priority: prio,
+    loc: `${SITE}${path}`, changefreq: freq, priority: prio,
   }));
 
   /* QUANTOS PERFIS EXISTEM. Precisa saber ANTES de decidir entre urlset e
@@ -90,32 +84,36 @@ export const GET: APIRoute = async () => {
   if (total > POR_PAGINA) {
     const n = numeroDePaginas(total);
     return xmlResposta(xmlIndex(
-      Array.from({ length: n }, (_, i) => ({ loc: `${SITE}/sitemap-${i + 1}.xml`, lastmod: today })),
+      Array.from({ length: n }, (_, i) => ({ loc: `${SITE}/sitemap-${i + 1}.xml` })),
     ));
   }
 
-  const entradas = fixas.concat(await perfis(0, POR_PAGINA - fixas.length, today));
+  const entradas = fixas.concat(await perfis(0, POR_PAGINA - fixas.length));
   return xmlResposta(xmlUrlset(entradas));
 };
 
 /** Uma fatia dos perfis, já como entradas de sitemap. Usada pelas duas rotas. */
-export async function perfis(offset: number, limite: number, today: string): Promise<Entrada[]> {
+export async function perfis(offset: number, limite: number): Promise<Entrada[]> {
   if (!RANKING_ON || !supabaseAdmin || limite <= 0) return [];
-  const { data } = await supabaseAdmin
-    .from('player_points')
-    .select('id,nick')
-    .order('id', { ascending: true })
-    .range(offset, offset + limite - 1);
   const out: Entrada[] = [];
-  for (const row of (data ?? []) as any[]) {
-    const p = row;
-    if (!p?.id || !p?.nick) continue;
-    out.push({
-      loc: `${SITE}/u/${p.id}/${encodeURIComponent(p.nick)}`,
-      lastmod: today,
-      changefreq: 'weekly',
-      priority: '0.6',
-    });
+  // O PostgREST do Supabase corta cada resposta em max-rows (1.000) sem erro.
+  for (let de = offset, fim = offset + limite; de < fim;) {
+    const { data } = await supabaseAdmin
+      .from('player_points')
+      .select('id,nick')
+      .order('id', { ascending: true })
+      .range(de, fim - 1);
+    const linhas = (data ?? []) as any[];
+    if (!linhas.length) break;
+    de += linhas.length;
+    for (const p of linhas) {
+      if (!p?.id || !p?.nick) continue;
+      out.push({
+        loc: `${SITE}/u/${p.id}/${encodeURIComponent(p.nick)}`,
+        changefreq: 'weekly',
+        priority: '0.6',
+      });
+    }
   }
   return out;
 }

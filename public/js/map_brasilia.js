@@ -4,6 +4,7 @@
 // cover, colliders) is procedural; the landmarks are real GLB models placed and
 // collidered from their actual bounds. Same contract as buildWorld().
 import * as THREE from 'three';
+import { planterLeaves } from './map_surface_finish.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp } from './mapprops.js';
 import { VAO_BANDS, aoBoxGeo, aoMatFactory, ContactSkirt, BASE_FLOATING, onGround } from './vao.js';
@@ -42,6 +43,8 @@ export const PEGADA_CORPO = {
    centro ≈ origem do arquivo. ryCorr é o delta SOBRE o ry de placement (0,55). */
 export const PEGADA_BUS = { hx: 4.6, hz: 1.0, ryCorr: 0.3263 };
 
+export const BRASILIA_PROPS = ['congresso', 'catedral', 'ministerio', 'palacio', 'justica', 'tires', 'stall', 'tent', 'bus', 'drinkstand', 'urna', 'towner'];
+
 export function buildBrasilia(scene, T) {
   const colliders = [];   // {minX,minY,minZ,maxX,maxY,maxZ}
   const occluders = [];   // meshes for LOS / bullet raycasts
@@ -67,7 +70,7 @@ export function buildBrasilia(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.92, metalness: 0.0, ...opts });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -517,7 +520,7 @@ export function buildBrasilia(scene, T) {
     // fachada de vidro vem do Fresnel (F->1 na rasante), não de tratar vidro como metal.
     vidroFume: lam({ color: 0x56636b, roughness: 0.26, metalness: 0.08, envMapIntensity: 2.0 }),
     aco: lam({ color: 0x9aa0a6, roughness: 0.32, metalness: 0.85, envMapIntensity: 1.8 }),
-    pintBranca: lam({ color: 0xdedbd2, roughness: 0.7 }),
+    pintBranca: lam({ color: 0xdedbd2, roughness: 0.82 }),
     asfalto: lam({ map: ctex(asfaltoTex(), 8, 40), roughness: 0.95, emissive: 0x282521, emissiveIntensity: 0.48 }),
     bronze: lam({ color: 0x5d6b4e, roughness: 0.40, metalness: 0.78, envMapIntensity: 1.7 }),   // pátina verde-escura
   };
@@ -949,7 +952,7 @@ export function buildBrasilia(scene, T) {
       // small "PERDEU MANÉ" graffiti decal on the chest (statue front faces +X, chest
       // surface measured by raycast at x≈-11.1), clear of the sash
       addPlane(0.6, 0.4, lam({ map: T.perdeuMane, transparent: true, side: THREE.DoubleSide }),
-        sx - 0.04, 2.35, sz + 0.05, Math.PI / 2);
+        sx - 0.04, 2.35, sz + 0.05, Math.PI / 2).name = 'decal:perdeu-mane';
     }
   }
   { // Os Guerreiros — procedural bronze monument (Mint mesher failed on it twice)
@@ -1419,7 +1422,8 @@ export function buildBrasilia(scene, T) {
   // parecia ~1.4m de cobertura mas só bloqueava 0.9m (a base), então agachado (olho ~1m) a
   // cabeça ficava exposta e tomava tiro "atrás do muro". Agora o topo também bloqueia
   // bala/visão → a cobertura visível = a cobertura real (agachado protege).
-  const jardTex = lam({ map: ctex(cerradoTex(), 2, 1) });
+  cerradoTex(); // Preserve a sequência RNG usada pelos props e pelo terreno.
+  const jardTex = lam({ map: planterLeaves(2, 1) });
   for (const [px, pz] of [[-9, 8], [9, -8], [0, -20], [0, 16], [-16, 30], [16, 26], [-14, -46], [14, -50]]) {
     if (!freeSpot(px, pz, 2.2)) continue;
     addBox(3.4, 0.9, 1.3, MAT.concBranco, px, 0, pz);
@@ -1471,9 +1475,9 @@ export function buildBrasilia(scene, T) {
 
   /* ---------------- DENSIDADE: mobiliário urbano + vegetação (task 3) ---------------- */
   // Tudo aqui é InstancedMesh: o frame ganha detalhe secundário sem estourar draw call
-  // (≈14 draw calls no total pra ~500 objetos). ?props=0 desliga; quality low corta pela metade.
+  // (≈14 draw calls no total pra ~500 objetos). ?props=0 desliga; qualidade só reduz detalhes sem colisão.
   if (DETAIL > 0) {
-    const every = DETAIL === 1 ? 2 : 1;   // low: metade dos props
+    const every = 1;   // Postes colidentes conservam as mesmas posições em low.
     const Zs = [];
     for (let z = -64; z <= 64; z += 8 * every) Zs.push(z);
 
@@ -1535,17 +1539,17 @@ export function buildBrasilia(scene, T) {
     };
     for (const [gx, gz, gr] of [[-13, 34, 0], [-10.6, 34, 0], [13, 34, 0], [10.6, 34, 0],
       [-13, -30, 0], [13, -30, 0], [4, 20, 0], [-4, 20, 0], [8, -44, 0], [-8, -44, 0]])
-      if (DETAIL === 2 || gx > 0) gradeAt(gx, gz, gr);
+      gradeAt(gx, gz, gr);
     addInst(new THREE.BoxGeometry(0.08, 1.1, 0.08), MAT.aco, gPost, { occlude: true });
     addInst(new THREE.CylinderGeometry(0.045, 0.045, 2.2, 5), MAT.aco, gRail, { occlude: true, shadow: false });
 
     // Lixeiras + cones + jardineiras cilíndricas (props de escala humana perto do chão).
     const bins = [], cones = [], vasos = [];
     for (const [bx2, bz2] of [[7.2, 22], [-7.2, 6], [7.2, -18], [-7.2, -38], [7.2, 46], [-7.2, -56]])
-      if ((DETAIL === 2 || bz2 > 0) && freeSpot(bx2, bz2, 0.8)) { bins.push({ x: bx2, y: 0.5, z: bz2 }); col(bx2 - 0.4, bx2 + 0.4, 0, 1, bz2 - 0.4, bz2 + 0.4); }
+      if (freeSpot(bx2, bz2, 0.8)) { bins.push({ x: bx2, y: 0.5, z: bz2 }); col(bx2 - 0.4, bx2 + 0.4, 0, 1, bz2 - 0.4, bz2 + 0.4); }
     addInst(new THREE.CylinderGeometry(0.38, 0.30, 1.0, 8), lam({ color: 0x3f4a3f, roughness: 0.7 }), bins, { occlude: true });
     for (const [cx2, cz2] of [[3, -8], [4.2, -9], [-3, 12], [-4.2, 13], [1, 30], [10, -34], [-10, 42], [2.4, -52]])
-      if ((DETAIL === 2 || cx2 > 0) && freeSpot(cx2, cz2, 0.6)) {
+      if (freeSpot(cx2, cz2, 0.6)) {
         cones.push({ x: cx2, y: 0.35, z: cz2 });
         col(cx2 - 0.28, cx2 + 0.28, 0, 0.7, cz2 - 0.28, cz2 + 0.28);
       }
@@ -1565,8 +1569,8 @@ export function buildBrasilia(scene, T) {
     // tronco de 14 m com cor chapada também entrava no B6; triplanar em escala fina resolve
     const palmMat = triplanar(lam({ color: 0xa39d91, roughness: 0.88 }), TX_FORMA, 1.6);
     const leafMat = lam({ color: 0x3f5a2c, roughness: 0.9, side: THREE.DoubleSide });
-    for (const sx of [-1, 1]) for (let i = 0; i < (DETAIL === 2 ? 7 : 4); i++) {
-      const x = sx * 18, z = -52 + i * (DETAIL === 2 ? 18 : 32);
+    for (const sx of [-1, 1]) for (let i = 0; i < 7; i++) {
+      const x = sx * 18, z = -52 + i * 18;
       if (!freeSpot(x, z, 1.2)) continue;
       troncos.push({ x, y: 7, z }); col(x - 0.4, x + 0.4, 0, 14, z - 0.4, z + 0.4);
       for (let f = 0; f < 6; f++) {
@@ -1574,8 +1578,10 @@ export function buildBrasilia(scene, T) {
         frondes.push({ x: x + Math.cos(a) * 1.5, y: 14.1, z: z + Math.sin(a) * 1.5, ry: -a, rz: 0.55 });
       }
     }
-    addInst(new THREE.CylinderGeometry(0.34, 0.5, 14, 7), palmMat, troncos, { occlude: true });
-    addInst(new THREE.PlaneGeometry(3.4, 0.9), leafMat, frondes, { shadow: false });
+    const palmTrunks = addInst(new THREE.CylinderGeometry(0.34, 0.5, 14, 7), palmMat, troncos, { occlude: true });
+    const palmLeaves = addInst(new THREE.PlaneGeometry(3.4, 0.9), leafMat, frondes, { shadow: false });
+    if (palmTrunks) palmTrunks.name = 'arvore:palmeira-troncos';
+    if (palmLeaves) palmLeaves.name = 'folhagem:palmeira-frondes';
 
     // IPÊ-AMARELO florido (ago–set): galhos NUS cobertos de flor amarela intensa. O BAR diz
     // que é "o único ponto de cor saturada legítimo da cena" — logo, o melhor marcador de
@@ -1614,9 +1620,14 @@ export function buildBrasilia(scene, T) {
             sy: ts * 0.62 * (0.82 + hash(S0 + t + b + 41) * 0.42) });
       }
     }
-    addInst(new THREE.CylinderGeometry(0.2, 0.42, 4.7, 8), ipeMat, ipeTr, { occlude: true });
-    addInst(new THREE.CylinderGeometry(0.05, 0.14, 2.4, 5), ipeMat, ipeGalho, { shadow: false });
-    ipeFolha.forEach((list, i) => addInst(new THREE.PlaneGeometry(1, 1), MAT.folhaIpe[i], list, { shadow: false }));
+    const ipeTrunks = addInst(new THREE.CylinderGeometry(0.2, 0.42, 4.7, 8), ipeMat, ipeTr, { occlude: true });
+    const ipeBranches = addInst(new THREE.CylinderGeometry(0.05, 0.14, 2.4, 5), ipeMat, ipeGalho, { shadow: false });
+    if (ipeTrunks) ipeTrunks.name = 'arvore:ipe-troncos';
+    if (ipeBranches) ipeBranches.name = 'arvore:ipe-galhos';
+    ipeFolha.forEach((list, i) => {
+      const leaves = addInst(new THREE.PlaneGeometry(1, 1), MAT.folhaIpe[i], list, { shadow: false });
+      if (leaves) leaves.name = 'folhagem:ipe';
+    });
 
     /* ------- SINAIS DE IDADE + densidade secundária (critério D2, que estava em FAIL) ------- */
     // Brasília tem 65 anos e o mapa parecia entregue ontem. Tudo aqui é decal ou InstancedMesh:
