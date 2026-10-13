@@ -12,11 +12,15 @@
  *        ela, então o loop continua desenhando a cena morta: o pós não pode adotá-la de novo.
  *   PC4  `rebuildMenuBackdrop` de main.js (extraída do texto, como em tests/menu-backdrop)
  *        libera o pós do fundo de menu que ela troca.
+ *   PC5  o pipeline estilizado (`?style=1`, stylize.js) guarda composers do mesmo jeito: o
+ *        dispose da partida libera os render targets dele também;
+ *   PC6  e desenhar a cena descartada não recria o composer estilizado.
  *
  * Mutações (sai 1 se a mutação PASSAR):
  *   --mutante=sem-chamada   remonta `Game.prototype.dispose` sem a linha que libera o pós
  *   --mutante=libera-vazio  troca a liberação instalada pelo bloom por uma função vazia
  *   --mutante=menu-sem-chamada  apaga de rebuildMenuBackdrop a linha que libera o pós
+ *   --mutante=estilo-vazio  troca a liberação instalada pelo stylize por uma função vazia
  *
  *   node tools/eval/pos-cena-check.mjs
  */
@@ -24,14 +28,15 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { renderer, bootGame, initTextures, Game, THREE } from './harness.mjs';
 import { enableLightBloom, alvoDoPos } from '../../public/js/bloom.js';
+import { enableStylize } from '../../public/js/stylize.js';
 
 const MUTANTE = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-if (!['', 'sem-chamada', 'libera-vazio', 'menu-sem-chamada'].includes(MUTANTE)) {
+if (!['', 'sem-chamada', 'libera-vazio', 'menu-sem-chamada', 'estilo-vazio'].includes(MUTANTE)) {
   console.error(`mutante desconhecido: ${MUTANTE}`);
   process.exit(1);
 }
 
-enableLightBloom(renderer, { quality: 'med' });
+const desligaBloom = enableLightBloom(renderer, { quality: 'med' });
 if (MUTANTE === 'libera-vazio') renderer.liberaPosDaCena = () => {};
 if (MUTANTE === 'sem-chamada') {
   const fonte = Game.prototype.dispose.toString();
@@ -73,6 +78,23 @@ const ctx = vm.createContext({ renderer, THREE, menuScene: fundoVelho, currentMa
 vm.runInContext(`${rebuild}\nrebuildMenuBackdrop();`, ctx);
 const menuDepois = alvoDoPos(fundoVelho);
 
+// Estilizado: no jogo ele entra no lugar do bloom, nunca junto. Desliga o bloom e tira a
+// liberação dele do renderer, senão a do bloom responderia pelo stylize.
+desligaBloom();
+delete renderer.liberaPosDaCena;
+enableStylize(renderer, { bloom: true });
+if (MUTANTE === 'estilo-vazio') renderer.liberaPosDaCena = () => {};
+const gs = bootGame('praca_poderes', { textures: initTextures() });
+usados.clear();
+renderer.render(gs.scene, gs.camera);
+const vivosEst = new Set(usados);
+for (const rt of usados) rt.addEventListener('dispose', () => vivosEst.delete(rt));
+const nEst = usados.size;
+gs.dispose();
+usados.clear();
+renderer.render(gs.scene, gs.camera);
+const readotadosEst = usados.size;
+
 const res = [
   ['PC1', 'render targets do pós liberados no dispose da partida',
     nUsados > 0 && vivos.size === 0, `${nUsados - vivos.size}/${nUsados} liberados`],
@@ -83,6 +105,10 @@ const res = [
   ['PC4', 'trocar o fundo de menu libera o pós do fundo antigo',
     !!menuAntes && menuDepois === null && ctx.menuScene !== fundoVelho,
     `antes=${JSON.stringify(menuAntes)} depois=${JSON.stringify(menuDepois)} — public/js/main.js rebuildMenuBackdrop`],
+  ['PC5', 'render targets do estilizado liberados no dispose da partida',
+    nEst > 0 && vivosEst.size === 0, `${nEst - vivosEst.size}/${nEst} liberados — public/js/stylize.js`],
+  ['PC6', 'desenhar a cena descartada não recria o composer estilizado',
+    readotadosEst === 0, `${readotadosEst} render targets usados depois do dispose`],
 ];
 for (const [id, desc, ok, evid] of res) console.log(`${ok ? '✓' : '✗'} ${id}  ${desc} — ${evid}`);
 const falhou = res.some(([, , ok]) => !ok);
