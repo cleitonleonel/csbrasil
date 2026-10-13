@@ -76,13 +76,8 @@ let telemetryGameContext = {
   gameType: null, node: null, roomId: null, roomOfficial: null, createdRoom: null,
 };
 let _matchEventId = null;
-/* BUILD + COORTE em toda linha de telemetria (13/10/2026). Antes só mp_session/mp_round
-   tinham SHA: crash e queda de FPS chegavam com o semver, que não diz qual commit entrou
-   no ar (o trem de release junta vários merges numa versão). E não existia como separar
-   QA/automação de jogador: 66 de 183 amostras de perf do MP eram SwiftShader — os
-   headless do CI e do ops-diag misturados com gente. `cohort` é o rótulo; quem decide o
-   que filtrar é a consulta. O backend descarta campo que ainda não conhece (perf.ts), então
-   o client pode mandar antes da coluna existir. */
+// Commit e coorte em toda telemetria; cohort só rotula, quem filtra é a consulta.
+// O backend ignora campo desconhecido (perf.ts): mandar antes da coluna existir é seguro.
 function sinaisDeBuild() {
   let cohort = 'organico';
   try {
