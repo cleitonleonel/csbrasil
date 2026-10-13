@@ -239,3 +239,8 @@ artifacts/ops/
 artifacts/lajes-visual/
 
 # Local diagnostic captures and isolated preview snapshots.
+
+# ── Material de marketing ───────────────────────────────────────────────────
+# Fica só local, como histórico; a cópia guardada vive no repo privado progress
+# (archive/marketing/).
+/marketing/
