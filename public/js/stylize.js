@@ -52,7 +52,9 @@ export function enableStylize(renderer, opts = {}) {
   const composers = new Map();
   const rawRender = renderer.render.bind(renderer);
   renderer.__postPatched = true;   // idem bloom.js: evita o overlay manual do game.js
+  const liberadas = new WeakSet();
   const patched = (scene, camera) => {
+    if (liberadas.has(scene)) return rawRender(scene, camera);
     const cp = forScene(scene, camera);
     renderer.render = rawRender;   // evita recursão (composer chama renderer.render nos quads)
     // mesma melhora de cm/texel do pipeline padrão (ver bloom.js): a ortho do sol segue o
@@ -87,6 +89,15 @@ export function enableStylize(renderer, opts = {}) {
       cp._w = innerWidth; cp._h = innerHeight;
     }
     return cp;
+  };
+  // mesmo contrato do bloom.js: quem descarta a cena chama isto e o composer some com ela.
+  renderer.liberaPosDaCena = (scene) => {
+    liberadas.add(scene);
+    const cp = composers.get(scene);
+    if (!cp) return;
+    composers.delete(scene);
+    for (const pass of cp.passes) pass.dispose();
+    cp.dispose();
   };
   renderer.render = patched;
   return () => { renderer.render = rawRender; renderer.__postPatched = false; composers.clear(); };

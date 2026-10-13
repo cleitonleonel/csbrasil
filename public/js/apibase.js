@@ -36,7 +36,7 @@ export function apiUrl(caminho) {
 
 /* Build servida fora dos nossos domínios (espelho de terceiro) marca a versão com o host,
    para a telemetria separar o canal sem campo novo no backend (p_version corta em 40). */
-const HOST_PROPRIO = /(^|\.)csbrasil\.online$|^csbrasil\.vercel\.app$|-rubenmarcus-projects\.vercel\.app$|^(localhost|127\.0\.0\.1|\[::1\])$/;
+const HOST_PROPRIO = /(^|\.)csbrasil\.online$|(^|\.)corosolto\.com\.br$|^csbrasil\.vercel\.app$|-rubenmarcus-projects\.vercel\.app$|^(localhost|127\.0\.0\.1|\[::1\])$/;
 
 export function versaoComOrigem(versao, host = globalThis.location?.hostname) {
   const h = String(host || '').toLowerCase();

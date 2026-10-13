@@ -5,7 +5,7 @@ import AccountEntry from '../components/AccountEntry.astro';
 import TretaStore from '../components/TretaStore.astro';
 import TretaDialogs from '../components/TretaDialogs.astro';
 import '../styles/career-rank.css';
-import { DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON } from '../lib/site';
+import { SITE, abs, DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON } from '../lib/site';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
@@ -506,25 +506,25 @@ window.__GEO_LANG__ = (function () {
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CORO SOLTO">
 <link rel="manifest" href="/site.webmanifest">
-<!-- CANONICAL COM www: a produção responde em www.csbrasil.online. Este link
+<!-- CANONICAL: host de src/lib/site-origin.mjs. Este link
      estava no host sem www e brigava com o canonical das outras páginas
      (que sai de astro.config.mjs) - dois hosts, sinal diluído. -->
-<link rel="canonical" href="https://www.csbrasil.online/">
+<link rel="canonical" href={abs('/')}>
 <!-- HREFLANG. Repetido aqui porque esta página tem <head> PRÓPRIO e não passa
      pelo Layout.astro - a home é o jogo, não uma página de conteúdo. Deixar de
      fora justamente a URL mais importante do site é o tipo de buraco que só
      aparece quando alguém compara página por página.
      Mesmo host e mesma forma do canonical acima. Ver Layout.astro pro porquê
      de `x-default` e da auto-referência. -->
-<link rel="alternate" hreflang="pt-BR" href="https://www.csbrasil.online/">
-<link rel="alternate" hreflang="x-default" href="https://www.csbrasil.online/">
+<link rel="alternate" hreflang="pt-BR" href={abs('/')}>
+<link rel="alternate" hreflang="x-default" href={abs('/')}>
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CORO SOLTO: Treta Suprema">
 <meta property="og:title" content="CORO SOLTO: Treta Suprema - FPS grátis de navegador">
 <meta property="og:description" content="FPS satírico de navegador com Esquerda, Direita e outras facções fictícias, 26 armas, bots, rounds e muita treta. Jogue grátis no navegador.">
-<meta property="og:url" content="https://www.csbrasil.online/">
-<meta property="og:image" content="https://www.csbrasil.online/og-image.jpg">
+<meta property="og:url" content={abs('/')}>
+<meta property="og:image" content={abs('/og-image.jpg')}>
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="CORO SOLTO: Treta Suprema - FPS satírico de navegador com facções brasileiras">
@@ -533,7 +533,7 @@ window.__GEO_LANG__ = (function () {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="CORO SOLTO: Treta Suprema - FPS grátis de navegador">
 <meta name="twitter:description" content="FPS satírico de navegador com Esquerda, Direita e outras facções fictícias, 26 armas e muitos mapas. Jogue grátis no navegador.">
-<meta name="twitter:image" content="https://www.csbrasil.online/og-image.jpg">
+<meta name="twitter:image" content={abs('/og-image.jpg')}>
 <meta name="twitter:image:alt" content="CORO SOLTO: Treta Suprema - FPS satírico de navegador com facções brasileiras">
 <!-- JSON-LD: UM nó VideoGame no site inteiro, e ele mora AQUI.
      Antes, index.astro e sobre.astro emitiam cada um um VideoGame com a MESMA
@@ -542,31 +542,31 @@ window.__GEO_LANG__ = (function () {
      Agora o nó canônico tem @id estável (…/#game) e vive na home, que é a url
      do próprio jogo; /sobre e as outras páginas só REFERENCIAM esse @id.
      Uma entidade, um dono. (a fonte dos textos é src/lib/site.ts) -->
-<script type="application/ld+json" is:inline>
+<script type="application/ld+json" is:inline set:html={`
 {
   "@context": "https://schema.org",
   "@graph": [
-    { "@type": "WebSite", "@id": "https://www.csbrasil.online/#website",
-      "url": "https://www.csbrasil.online/",
+    { "@type": "WebSite", "@id": "${SITE}/#website",
+      "url": "${SITE}/",
       "name": "CORO SOLTO: Treta Suprema",
       "alternateName": ["CORO SOLTO", "CS BRASIL", "CS BRASIL: Treta Suprema"],
       "inLanguage": "pt-BR",
-      "publisher": { "@id": "https://www.csbrasil.online/#org" } },
-    { "@type": "Organization", "@id": "https://www.csbrasil.online/#org",
+      "publisher": { "@id": "${SITE}/#org" } },
+    { "@type": "Organization", "@id": "${SITE}/#org",
       "name": "CORO SOLTO contributors",
-      "url": "https://www.csbrasil.online/",
-      "logo": "https://www.csbrasil.online/og-image.jpg" },
-    { "@type": "WebPage", "@id": "https://www.csbrasil.online/#webpage",
-      "url": "https://www.csbrasil.online/",
+      "url": "${SITE}/",
+      "logo": "${SITE}/og-image.jpg" },
+    { "@type": "WebPage", "@id": "${SITE}/#webpage",
+      "url": "${SITE}/",
       "name": "CORO SOLTO: Treta Suprema - FPS grátis de navegador (ex-CS BRASIL)",
-      "isPartOf": { "@id": "https://www.csbrasil.online/#website" },
-      "primaryImageOfPage": { "@type": "ImageObject", "url": "https://www.csbrasil.online/og-image.jpg", "width": 1200, "height": 630 },
-      "mainEntity": { "@id": "https://www.csbrasil.online/#game" } },
-    { "@type": "VideoGame", "@id": "https://www.csbrasil.online/#game",
+      "isPartOf": { "@id": "${SITE}/#website" },
+      "primaryImageOfPage": { "@type": "ImageObject", "url": "${SITE}/og-image.jpg", "width": 1200, "height": 630 },
+      "mainEntity": { "@id": "${SITE}/#game" } },
+    { "@type": "VideoGame", "@id": "${SITE}/#game",
       "name": "CORO SOLTO: Treta Suprema",
       "alternateName": ["CORO SOLTO", "CS BRASIL", "CS BRASIL: Treta Suprema"],
-      "url": "https://www.csbrasil.online/",
-      "image": "https://www.csbrasil.online/og-image.jpg",
+      "url": "${SITE}/",
+      "image": "${SITE}/og-image.jpg",
       "description": "FPS de navegador gratuito e satírico com Esquerda, Direita e outras facções fictícias, 26 armas, bots, rounds e Capture the Flag - de uma Brasília fictícia ao ferro velho.",
       "genre": ["Shooter", "FPS", "Comédia", "Sátira"],
       "gamePlatform": ["Web Browser", "Desktop", "Mobile"],
@@ -579,9 +579,9 @@ window.__GEO_LANG__ = (function () {
       "license": "https://www.gnu.org/licenses/agpl-3.0.html",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL",
                   "availability": "https://schema.org/InStock",
-                  "url": "https://www.csbrasil.online/" },
-      "author": { "@id": "https://www.csbrasil.online/#org" },
-      "publisher": { "@id": "https://www.csbrasil.online/#org" },
+                  "url": "${SITE}/" },
+      "author": { "@id": "${SITE}/#org" },
+      "publisher": { "@id": "${SITE}/#org" },
       "gameLocation": [
         { "@type": "Place", "name": "Praça dos Três Poderes" },
         { "@type": "Place", "name": "Piscina da Treta" },
@@ -590,12 +590,12 @@ window.__GEO_LANG__ = (function () {
       ] }
   ]
 }
-</script>
-<script type="application/ld+json" is:inline>
+`}></script>
+<script type="application/ld+json" is:inline set:html={`
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  "@id": "https://www.csbrasil.online/#faq",
+  "@id": "${SITE}/#faq",
   "mainEntity": [
     { "@type": "Question", "name": "O que é CORO SOLTO: Treta Suprema?",
       "acceptedAnswer": { "@type": "Answer", "text": "Um jogo FPS gratuito que roda no navegador: seis facções jogáveis (Esquerda, Direita, Tribos Urbanas, Palhaços, Funkeiros e Mítico), 53 personagens, mapas satíricos, 26 armas, bots, rounds e Capture the Flag. O jogo já se chamou CS BRASIL." } },
@@ -615,7 +615,7 @@ window.__GEO_LANG__ = (function () {
       "acceptedAnswer": { "@type": "Answer", "text": "Sim. O beta web tem controles de toque; use o celular na horizontal para jogar. O desempenho varia conforme o aparelho e o navegador." } }
   ]
 }
-</script>
+`}></script>
 <!-- O ICO tem recortes próprios por tamanho; regenere com tools/eval/canarinho-icon.mjs. -->
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -790,7 +790,7 @@ window.__GEO_LANG__ = (function () {
       <a class="hub-support-source" href={GITHUB_URL} target="_blank" rel="noopener">VER O CÓDIGO DO JOGO NO GITHUB ↗</a>
     </section>
 
-    <footer class="hub-footer"><span class="hub-tip"><b>DICA</b><span id="hub-tip-text">Clique nas opções da partida para ajustá-las antes de jogar.</span></span><div id="hub-footer-social" class="hub-footer-social" aria-label="Redes do jogo"></div><a href="/privacidade">PRIVACIDADE ↗</a><a href="/termos">TERMOS ↗</a><a href="/docs/">DOCS ↗</a><a href="/mapa">MAPA AO VIVO ↗</a></footer>
+    <footer class="hub-footer"><span class="hub-tip"><b>DICA</b><span id="hub-tip-text">Clique nas opções da partida para ajustá-las antes de jogar.</span></span><div id="hub-footer-social" class="hub-footer-social" aria-label="Redes do jogo"></div><a href="/privacidade">PRIVACIDADE ↗</a><a href="/termos">TERMOS ↗</a><a href="/excluir-dados">EXCLUIR DADOS ↗</a><a href="/docs/">DOCS ↗</a><a href="/mapa">MAPA AO VIVO ↗</a></footer>
   </div>
 
   <AccountEntry />
@@ -819,6 +819,12 @@ window.__GEO_LANG__ = (function () {
       <div id="hub-roster-factions" class="hub-modal-filters" role="group" aria-label="Categorias"></div>
       <div id="hub-roster-grid" class="hub-roster-grid"></div>
       <p id="hub-roster-selected" class="hub-roster-selected" aria-live="polite"></p>
+      <!-- ESCALAÇÃO DA PARTIDA: o ＋ de cada card trava quem entra; esta linha conta as
+           vagas já tomadas contra o formato escolhido (SEU TIME / INIMIGOS). -->
+      <div class="hub-roster-escalacao-row">
+        <p id="hub-roster-escalacao" aria-live="polite"></p>
+        <button id="hub-roster-clear" type="button" hidden>LIMPAR ESCALAÇÃO</button>
+      </div>
     </div>
   </div>
 
@@ -904,6 +910,8 @@ window.__GEO_LANG__ = (function () {
         <a href="/como-jogar" target="_blank">Como jogar</a>
         <a href="/changelog" target="_blank">Changelog</a>
         <a href="/sobre" target="_blank">Sobre</a>
+        <a href="/privacidade" target="_blank">Privacidade</a>
+        <a href="/excluir-dados" target="_blank">Excluir dados</a>
         <!-- FEEDBACK saiu da lista principal (o redesign fecha o menu em 4 itens) e
              desceu pra cá. É <button> e não <a> porque abre painel interno, não rota. -->
         <button type="button" id="mf-feedback" class="mf-link">Feedback</button>
@@ -969,10 +977,16 @@ window.__GEO_LANG__ = (function () {
             <div class="dd-list hidden" id="wpn-dd-list"></div>
           </div>
         </label>
-        <label class="map-label">BOTS / LADO
-          <div class="dd" id="bots-dd">
-            <button class="dd-btn" id="bots-dd-btn" type="button"><span id="bots-dd-label"></span><span class="dd-arrow">▾</span></button>
-            <div class="dd-list hidden" id="bots-dd-list"></div>
+        <label class="map-label">SEU TIME
+          <div class="dd" id="ally-dd">
+            <button class="dd-btn" id="ally-dd-btn" type="button"><span id="ally-dd-label"></span><span class="dd-arrow">▾</span></button>
+            <div class="dd-list hidden" id="ally-dd-list"></div>
+          </div>
+        </label>
+        <label class="map-label">INIMIGOS
+          <div class="dd" id="enemy-dd">
+            <button class="dd-btn" id="enemy-dd-btn" type="button"><span id="enemy-dd-label"></span><span class="dd-arrow">▾</span></button>
+            <div class="dd-list hidden" id="enemy-dd-list"></div>
           </div>
         </label>
         <!-- Dificuldade agora é RANDÔMICA por bot (50% ruins / 20% médios / 20% bons /
@@ -1067,19 +1081,17 @@ window.__GEO_LANG__ = (function () {
             <option value="knife">SÓ FACA</option><option value="awp">SÓ AWP</option>
           </select>
         </label>
-        <label><span>JOGADORES</span>
-          <select id="ms-players">
-            <option value="2">2 × 2</option><option value="3">3 × 3</option>
-            <option value="4">4 × 4</option><option value="5">5 × 5</option>
-            <option value="6">6 × 6</option><option value="7">7 × 7</option>
-            <option value="8">8 × 8</option>
-          </select>
+        <label><span>SEU TIME</span>
+          <!-- vazio de propósito: quem preenche é o main.js (0-7 bots; 0 = SOLO) -->
+          <select id="ms-ally-bots"></select>
+        </label>
+        <label><span>INIMIGOS</span>
+          <!-- vazio de propósito: quem preenche é o main.js (1-8 bots) -->
+          <select id="ms-enemy-bots"></select>
         </label>
         <label><span>Nº DE ROUNDS</span>
-          <select id="ms-rounds">
-            <option value="1">1</option><option value="3">3</option>
-            <option value="5">5</option><option value="7">7</option>
-          </select>
+          <!-- vazio de propósito: quem preenche é o main.js (1-15, número custom do jogador) -->
+          <select id="ms-rounds"></select>
         </label>
         <!-- vazio de propósito: quem preenche e ordena é o main.js, dono da lista e do salvo -->
         <label><span>DIFICULDADE</span><select id="diff-select"></select></label>
@@ -1646,6 +1658,10 @@ window.__GEO_LANG__ = (function () {
     <ul id="chat-lista-bloqueados-ul"></ul>
     <button type="button" id="chat-lista-fechar">FECHAR</button>
   </div>
+  <label id="chat-regras">
+    <input id="chat-regras-aceite" type="checkbox" form="chat-form" required>
+    <span class="chat-regras-copy">Li e aceito as <a class="chat-regras-link" href="/regras-de-uso" target="_blank" rel="noopener">regras de uso</a>: sem assédio, ódio, ameaças, spam ou dados pessoais.</span>
+  </label>
   <form id="chat-form" autocomplete="off">
     <button type="button" id="chat-canal" aria-label="Canal">SALA</button>
     <label class="so-leitor" for="chat-entrada">Mensagem</label>
