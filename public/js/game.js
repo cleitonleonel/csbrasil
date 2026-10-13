@@ -245,10 +245,10 @@ const BOT_FOCUS_MIN = 0.16;
 // Sentidos do bot contra o jogador: cone de 120°, periferia, audição de tiro/passo (PR #856).
 // ?botsentidos=0 volta ao comportamento antigo; bot×bot não muda (botsim-golden).
 const BOT_SENTIDOS = QS.get('botsentidos') !== '0';
-const BOT_FOV_HALF = 60 * Math.PI / 180;   // meio-cone: 120° no total
-const BOT_PERIF = 4;                       // m — encostado o bot percebe mesmo de costas
-const BOT_OUVE_TIRO = 40;                  // m — tiro do jogador
-const BOT_OUVE_PASSO = 14;                 // m — passo correndo (Shift = silêncio)
+const BOT_FOV_HALF = 60 * Math.PI / 180;
+const BOT_PERIF = 4;
+const BOT_OUVE_TIRO = 40;
+const BOT_OUVE_PASSO = 14;
 /* ===================== 5. RAJADA E TURNO (causa-raiz medida do BOT4) =====================
    O harness (tools/eval/botdiag.mjs) imprimiu a rajada que MATA, tiro a tiro. O padrão era
    sempre o mesmo, nos 4 mapas: 4 acertos de 22-33 de dano, dos quais 3 dentro de 0,25 s —
