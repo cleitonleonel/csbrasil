@@ -38,13 +38,15 @@ export const MAP_SOURCES = {
   loja_h: 'public/js/map_havan.js',
   ferro_velho: 'public/js/map_ferrovelho.js',
   quebrada: 'public/js/map_quebrada.js',
-  fy_escadao: 'public/js/map_escadao.js',
-  fy_campomorro: 'public/js/map_campomorro.js',
   // #722: o `grafitar` de Lajes foi recuperado no `map_lajes_authored.js` (o #701 removeu o
   // `map_lajes.js` que o carregava). A fonte é o arquivo VIVO, senão a régua mede um morto.
-  fy_lajes: 'public/js/map_lajes_authored.js',
+  lajes: 'public/js/map_lajes_authored.js',
   corrego: 'public/js/map_corrego.js',
-  fy_mansao: 'public/js/map_mansao.js',
+  mansao: 'public/js/map_mansao.js',
+  upa_24h: 'public/js/map_upa.js',
+  obras_prefeitura: 'public/js/map_obras.js',
+  posto_treta: 'public/js/map_posto.js',
+  atacadao_treta: 'public/js/map_atacadao.js',
 };
 const MAP_DEPENDENCIES = { escadao: ['public/js/map_escadao_home.js', 'public/js/map_escadao_details.js'] };
 export const PASS_FILE = 'public/js/graffiti_pass.js';
@@ -140,6 +142,7 @@ export function impressao() {
   for (const [id, arq] of Object.entries(MAP_SOURCES)) {
     maps[id] = sha([arq, ...(MAP_DEPENDENCIES[id] || [])].map(file => normalizar(readFileSync(file, 'utf8'))).join('\n'));
   }
-  const pass = sha(normalizar(readFileSync(PASS_FILE, 'utf8')));
+  const pass = sha([PASS_FILE, 'public/js/graffiti_surface.js', 'public/js/graffiti_coverage.js', 'public/js/map_decals.js']
+    .map(file => normalizar(readFileSync(file, 'utf8'))).join('\n'));
   return { pass, maps };
 }

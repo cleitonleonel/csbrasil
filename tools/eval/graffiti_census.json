@@ -1,25 +1,25 @@
 {
  "praca_poderes": {
-  "pecas": 370,
-  "arquivos": 54,
+  "pecas": 4,
+  "arquivos": 1,
   "murais": 0,
-  "hMin": 0.425,
-  "hMax": 2.1,
-  "hMed": 0.95,
+  "hMin": 0.45,
+  "hMax": 0.45,
+  "hMed": 0.45,
   "placas": 1065,
-  "pintadas": 392,
+  "pintadas": 6,
   "bandas": [
    {
     "alt": 1.6,
     "t": 463,
-    "p": 347,
-    "pct": 74.9
+    "p": 6,
+    "pct": 1.3
    },
    {
     "alt": 3.2,
     "t": 325,
-    "p": 45,
-    "pct": 13.8
+    "p": 0,
+    "pct": 0
    },
    {
     "alt": 5,
@@ -31,43 +31,85 @@
   "pelados": [
    [
     "Mesh[inst]",
-    397
+    551
+   ],
+   [
+    "Mesh",
+    178
    ],
    [
     "Pilotis_Glass_Ministry_1",
     147
    ],
    [
-    "Mesh",
-    95
+    "arvore:palmeira-troncos[inst]",
+    79
+   ],
+   [
+    "folhagem:ipe[inst]",
+    41
+   ],
+   [
+    "Yellow_White_Citybus_1",
+    21
    ],
    [
     "Granite_Flag_Justice_1",
     10
    ],
    [
-    "Weathered_Green_Dome_Tent_1",
-    7
-   ],
-   [
-    "Beach_Umbrella_Boteco_1",
-    5
-   ],
-   [
-    "Striped_Market_Stall_1",
-    4
-   ],
-   [
-    "Windows_Windows_0",
-    4
+    "arvore:ipe-troncos[inst]",
+    9
    ]
   ],
   "amostraPelada": [
    {
     "x": -33.5,
+    "y": 1.6,
+    "z": -57.7,
+    "ry": 2.75,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -33.5,
+    "y": 1.6,
+    "z": -64.3,
+    "ry": 0.39,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -33.5,
     "y": 3.2,
     "z": -57.7,
     "ry": 2.75,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -33.5,
+    "y": 3.2,
+    "z": -64.3,
+    "ry": 0.39,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -33.5,
+    "y": 1.6,
+    "z": -50.1,
+    "ry": 2.75,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -30,
+    "y": 1.6,
+    "z": -57,
+    "ry": -1.18,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -33.5,
+    "y": 1.6,
+    "z": -56.7,
+    "ry": 0.39,
     "quem": "Mesh[inst]"
    },
    {
@@ -85,232 +127,137 @@
     "quem": "Mesh[inst]"
    },
    {
-    "x": -29.9,
-    "y": 3.2,
-    "z": -49.7,
-    "ry": -1.96,
-    "quem": "Mesh[inst]"
-   },
-   {
     "x": -33.5,
     "y": 3.2,
-    "z": -42.5,
-    "ry": 2.75,
-    "quem": "Mesh[inst]"
-   },
-   {
-    "x": -33.5,
-    "y": 3.2,
-    "z": -49.1,
+    "z": -56.7,
     "ry": 0.39,
     "quem": "Mesh[inst]"
    },
    {
     "x": -30,
-    "y": 3.2,
-    "z": -34.5,
+    "y": 1.6,
+    "z": -49.8,
     "ry": -1.96,
-    "quem": "Mesh[inst]"
-   },
-   {
-    "x": -29.8,
-    "y": 3.2,
-    "z": -41.7,
-    "ry": -0.39,
-    "quem": "Mesh[inst]"
-   },
-   {
-    "x": -33.5,
-    "y": 3.2,
-    "z": -41.6,
-    "ry": 0.39,
     "quem": "Mesh[inst]"
    },
    {
     "x": -29.9,
     "y": 3.2,
-    "z": -25.7,
+    "z": -49.7,
     "ry": -1.96,
     "quem": "Mesh[inst]"
-   },
-   {
-    "x": -33.5,
-    "y": 3.2,
-    "z": -34,
-    "ry": 0.39,
-    "quem": "Mesh[inst]"
-   },
-   {
-    "x": -33.5,
-    "y": 5,
-    "z": -27,
-    "ry": 3.14,
-    "quem": "Pilotis_Glass_Ministry_1"
    }
   ],
-  "cobertura": 36.8,
+  "cobertura": 0.6,
   "peladas": [
    {
-    "xz": "-8,-56",
-    "t": 5,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "-8,-24",
-    "t": 4,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "0,-56",
-    "t": 10,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "0,56",
-    "t": 5,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "8,-56",
-    "t": 10,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "8,24",
-    "t": 9,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "16,16",
-    "t": 5,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "-24,-24",
-    "t": 13,
-    "p": 1,
-    "pct": 8
-   },
-   {
-    "xz": "8,-40",
-    "t": 30,
-    "p": 3,
-    "pct": 10
-   },
-   {
-    "xz": "-24,-8",
-    "t": 8,
-    "p": 1,
-    "pct": 13
-   },
-   {
-    "xz": "-24,-64",
-    "t": 8,
-    "p": 1,
-    "pct": 13
-   },
-   {
-    "xz": "-24,0",
+    "xz": "-32,-56",
     "t": 15,
-    "p": 2,
-    "pct": 13
+    "p": 0,
+    "pct": 0
    },
    {
-    "xz": "24,-64",
-    "t": 7,
-    "p": 1,
-    "pct": 14
+    "xz": "-32,-64",
+    "t": 5,
+    "p": 0,
+    "pct": 0
    },
    {
-    "xz": "-24,-16",
-    "t": 25,
-    "p": 4,
-    "pct": 16
+    "xz": "-32,-48",
+    "t": 14,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-32,-32",
+    "t": 16,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-32,-24",
+    "t": 19,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-32,-16",
+    "t": 14,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-32,-8",
+    "t": 8,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-32,0",
+    "t": 16,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-32,8",
+    "t": 19,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-32,16",
+    "t": 19,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-32,24",
+    "t": 14,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-24,-48",
+    "t": 14,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-24,-32",
+    "t": 18,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-24,-40",
+    "t": 12,
+    "p": 0,
+    "pct": 0
    }
   ],
   "usados": [
-   "decal:cartaz-america-latina.png",
-   "decal:cartaz-medo.png",
-   "decal:cartaz-neutro.png",
-   "decal:dont-overthink.png",
-   "decal:folha-lambes.png",
-   "decal:folha-pixaca-01.png",
-   "decal:folha-pixaca-03.png",
-   "decal:folha-pixaca-05.png",
-   "decal:folha-pixaca-07.png",
-   "decal:folha-stenci.png",
-   "decal:gratidao-sol.png",
-   "decal:meio-ano.png",
-   "decal:or-graf-coro.png",
-   "decal:or-graf-treta.png",
-   "decal:or-stencil-capivara.png",
-   "decal:or-stencil-pomba.png",
-   "decal:peca-bolha.png",
-   "decal:personagem-muro.png",
-   "decal:personagens-graffiti-01.png",
-   "decal:personagens-graffiti-02.png",
-   "decal:personagens-graffiti-03.png",
-   "decal:personagens-graffiti-04.png",
-   "decal:personagens-graffiti-05.png",
-   "decal:personagens-graffiti-06.png",
-   "decal:personagens-graffiti-07.png",
-   "decal:poster:25c9112229edfcfbb1eae4137ecc151a.jpg",
-   "decal:poster:26268061ca13b4dc4a871c1163cbeb6d.jpg",
-   "decal:poster:3300c39038dd97ad6a20342038c008b0.jpg",
-   "decal:poster:574381edb80801aaff5e9a1cdd88bc4b.jpg",
-   "decal:poster:78c38b895431ac393f96036507060be1.jpg",
-   "decal:poster:82f8dcbb0547719bfc4dbb27aed9f583.jpg",
-   "decal:poster:8445c0ca193d22b4d6a9af66409b0dda.jpg",
-   "decal:poster:New Project (1).png",
-   "decal:poster:New Project (2).png",
-   "decal:poster:New Project (3).png",
-   "decal:poster:dafac3c979a935aea80adb8b90f6ef1b.jpg",
-   "decal:poster:dc58fe69ac56037026f1bf6181b7f71c.jpg",
-   "decal:poster:despisque-leao.jpg",
-   "decal:poster:eabfe479653f0e9c94a618858e8667bc.jpg",
-   "decal:poster:f0deec032dd1777bc681179fb74a29b0.jpg",
-   "decal:poster:images.png",
-   "decal:poster:or-baile.jpg",
-   "decal:poster:or-compro-ouro.jpg",
-   "decal:poster:or-quebrada-vive.jpg",
-   "decal:poster:or-show-funk.jpg",
-   "decal:pra-gringo.png",
-   "decal:tag-fina.png",
-   "decal:tag-flop.png",
-   "decal:tag-larga.png",
-   "decal:tag-money.png",
-   "decal:tag-pingo.png",
-   "decal:tag-selvagem.png",
-   "decal:tags-treino-02.png",
-   "decal:tags-treino-05.png"
+   "decal:tags-treino-02.png"
   ],
   "orfas": {
    "ar": 0,
    "chao": 0,
-   "beirando": 4,
+   "beirando": 0,
    "amostra": []
   },
   "densidade": {
-   "total": 0.35,
+   "total": 0,
    "porBanda": [
     {
      "alt": 1.6,
-     "pecas": 338,
+     "pecas": 4,
      "placas": 463,
-     "dens": 0.73
+     "dens": 0.01
     },
     {
      "alt": 3.2,
-     "pecas": 32,
+     "pecas": 0,
      "placas": 325,
-     "dens": 0.1
+     "dens": 0
     },
     {
      "alt": 5,
@@ -323,77 +270,95 @@
   "waypoints": 309
  },
  "piscina_treta": {
-  "pecas": 569,
-  "arquivos": 54,
+  "pecas": 479,
+  "arquivos": 50,
   "murais": 2,
-  "hMin": 0.38,
-  "hMax": 3,
+  "hMin": 0.37,
+  "hMax": 2.3,
   "hMed": 1.5,
   "placas": 910,
-  "pintadas": 699,
+  "pintadas": 631,
   "bandas": [
    {
     "alt": 1.6,
     "t": 318,
-    "p": 271,
-    "pct": 85.2
+    "p": 249,
+    "pct": 78.3
    },
    {
     "alt": 3.2,
     "t": 296,
-    "p": 213,
-    "pct": 72
+    "p": 196,
+    "pct": 66.2
    },
    {
     "alt": 5,
     "t": 296,
-    "p": 215,
-    "pct": 72.6
+    "p": 186,
+    "pct": 62.8
    }
   ],
   "pelados": [
    [
     "piscina:static-batch[inst]",
-    202
+    229
    ],
    [
     "Mesh",
-    9
+    46
+   ],
+   [
+    "Six_Door_Steel_Locker_1",
+    4
    ]
   ],
   "amostraPelada": [
    {
-    "x": -10.5,
+    "x": -10.4,
     "y": 1.6,
-    "z": -15.1,
-    "ry": -1.57,
+    "z": -24.2,
+    "ry": 0,
     "quem": "piscina:static-batch[inst]"
    },
    {
-    "x": -12.8,
+    "x": -13.2,
     "y": 3.2,
-    "z": -25,
-    "ry": 0,
+    "z": -15.3,
+    "ry": 3.14,
     "quem": "piscina:static-batch[inst]"
    },
    {
-    "x": -15,
+    "x": -17,
+    "y": 5,
+    "z": -24.4,
+    "ry": 1.57,
+    "quem": "piscina:static-batch[inst]"
+   },
+   {
+    "x": -17,
+    "y": 5,
+    "z": -21.6,
+    "ry": 1.57,
+    "quem": "piscina:static-batch[inst]"
+   },
+   {
+    "x": -16.5,
     "y": 3.2,
-    "z": -25,
-    "ry": 0,
+    "z": -15.6,
+    "ry": 1.57,
     "quem": "piscina:static-batch[inst]"
    },
    {
-    "x": -12.8,
+    "x": -16.5,
     "y": 5,
-    "z": -25,
-    "ry": 0,
+    "z": -15.6,
+    "ry": 1.57,
     "quem": "piscina:static-batch[inst]"
    },
    {
-    "x": -15,
-    "y": 5,
-    "z": -25,
+    "x": -13.1,
+    "y": 3.2,
+    "z": -14.7,
     "ry": 0,
     "quem": "piscina:static-batch[inst]"
    },
@@ -420,67 +385,83 @@
    },
    {
     "x": -17,
-    "y": 3.2,
-    "z": -9.4,
+    "y": 5,
+    "z": -12,
     "ry": 1.57,
     "quem": "piscina:static-batch[inst]"
    },
    {
     "x": -17,
-    "y": 3.2,
-    "z": -4.6,
+    "y": 5,
+    "z": -10.8,
     "ry": 1.57,
-    "quem": "piscina:static-batch[inst]"
-   },
-   {
-    "x": -20.3,
-    "y": 1.6,
-    "z": -1.4,
-    "ry": 0,
-    "quem": "piscina:static-batch[inst]"
-   },
-   {
-    "x": -17,
-    "y": 3.2,
-    "z": 9.6,
-    "ry": 3.14,
     "quem": "piscina:static-batch[inst]"
    }
   ],
-  "cobertura": 76.8,
+  "cobertura": 69.3,
   "peladas": [
-   {
-    "xz": "24,0",
-    "t": 18,
-    "p": 4,
-    "pct": 22
-   },
    {
     "xz": "8,24",
     "t": 15,
-    "p": 7,
-    "pct": 47
+    "p": 2,
+    "pct": 13
    },
    {
-    "xz": "24,-8",
+    "xz": "0,24",
     "t": 17,
-    "p": 8,
-    "pct": 47
+    "p": 5,
+    "pct": 29
    },
    {
-    "xz": "24,8",
-    "t": 17,
-    "p": 9,
-    "pct": 53
+    "xz": "0,-24",
+    "t": 18,
+    "p": 6,
+    "pct": 33
    },
    {
     "xz": "-8,24",
+    "t": 18,
+    "p": 8,
+    "pct": 44
+   },
+   {
+    "xz": "-24,8",
+    "t": 16,
+    "p": 8,
+    "pct": 50
+   },
+   {
+    "xz": "8,-24",
+    "t": 14,
+    "p": 7,
+    "pct": 50
+   },
+   {
+    "xz": "16,0",
+    "t": 32,
+    "p": 17,
+    "pct": 53
+   },
+   {
+    "xz": "0,16",
+    "t": 33,
+    "p": 18,
+    "pct": 55
+   },
+   {
+    "xz": "-24,-8",
     "t": 18,
     "p": 10,
     "pct": 56
    },
    {
-    "xz": "16,-24",
+    "xz": "-16,0",
+    "t": 30,
+    "p": 17,
+    "pct": 57
+   },
+   {
+    "xz": "-24,0",
     "t": 17,
     "p": 10,
     "pct": 59
@@ -503,9 +484,9 @@
    "decal:or-stencil-capivara.png",
    "decal:or-stencil-pomba.png",
    "decal:peca-bolha.png",
-   "decal:poster:25c9112229edfcfbb1eae4137ecc151a.jpg",
    "decal:poster:26268061ca13b4dc4a871c1163cbeb6d.jpg",
    "decal:poster:3300c39038dd97ad6a20342038c008b0.jpg",
+   "decal:poster:51edbafcf2eebbb2dc157f66bb1a2d66.jpg",
    "decal:poster:574381edb80801aaff5e9a1cdd88bc4b.jpg",
    "decal:poster:6f2bbbe03a6c5a16af15fe12ebea0d6c.jpg",
    "decal:poster:78c38b895431ac393f96036507060be1.jpg",
@@ -515,9 +496,6 @@
    "decal:poster:New Project (1).png",
    "decal:poster:New Project (2).png",
    "decal:poster:New Project (3).png",
-   "decal:poster:ashtar-meme.jpg",
-   "decal:poster:ashtar.png",
-   "decal:poster:dafac3c979a935aea80adb8b90f6ef1b.jpg",
    "decal:poster:dc58fe69ac56037026f1bf6181b7f71c.jpg",
    "decal:poster:despisque-leao.jpg",
    "decal:poster:eabfe479653f0e9c94a618858e8667bc.jpg",
@@ -526,7 +504,6 @@
    "decal:poster:or-baile.jpg",
    "decal:poster:or-compro-ouro.jpg",
    "decal:poster:or-quebrada-vive.jpg",
-   "decal:poster:or-show-funk.jpg",
    "decal:pra-gringo.png",
    "decal:tag-fina.png",
    "decal:tag-flop.png",
@@ -543,171 +520,107 @@
    "mural:leste-vive"
   ],
   "orfas": {
-   "ar": 13,
+   "ar": 0,
    "chao": 0,
    "beirando": 0,
-   "amostra": [
-    {
-     "tipo": "ar",
-     "file": "decal:poster:or-show-funk.jpg",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:8445c0ca193d22b4d6a9af66409",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:f0deec032dd1777bc681179fb74",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:26268061ca13b4dc4a871c1163c",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:dafac3c979a935aea80adb8b90f",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:574381edb80801aaff5e9a1cdd8",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:ashtar-meme.jpg",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:ashtar.png",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:or-compro-ouro.jpg",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:alfabeto-reto-05.png",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:or-quebrada-vive.jpg",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:New Project (2).png",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    }
-   ]
+   "amostra": []
   },
   "densidade": {
-   "total": 0.63,
+   "total": 0.53,
    "porBanda": [
     {
      "alt": 1.6,
-     "pecas": 291,
+     "pecas": 252,
      "placas": 318,
-     "dens": 0.92
+     "dens": 0.79
     },
     {
      "alt": 3.2,
-     "pecas": 124,
+     "pecas": 117,
      "placas": 296,
-     "dens": 0.42
+     "dens": 0.4
     },
     {
      "alt": 5,
-     "pecas": 154,
+     "pecas": 110,
      "placas": 296,
-     "dens": 0.52
+     "dens": 0.37
     }
    ]
   },
   "waypoints": 122
  },
  "loja_h": {
-  "pecas": 296,
-  "arquivos": 33,
+  "pecas": 187,
+  "arquivos": 36,
   "murais": 0,
   "hMin": 0.3,
-  "hMax": 2.3,
-  "hMed": 1.1,
-  "placas": 578,
-  "pintadas": 286,
+  "hMax": 2.146,
+  "hMed": 0.8,
+  "placas": 582,
+  "pintadas": 176,
   "bandas": [
    {
     "alt": 1.6,
-    "t": 291,
-    "p": 177,
-    "pct": 60.8
+    "t": 295,
+    "p": 118,
+    "pct": 40
    },
    {
     "alt": 3.2,
     "t": 198,
-    "p": 60,
-    "pct": 30.3
+    "p": 17,
+    "pct": 8.6
    },
    {
     "alt": 5,
     "t": 89,
-    "p": 49,
-    "pct": 55.1
+    "p": 41,
+    "pct": 46.1
    }
   ],
   "pelados": [
    [
     "havan-deco",
-    126
+    200
    ],
    [
     "Mesh[inst]",
-    96
+    132
    ],
    [
     "Mesh",
-    70
+    74
    ]
   ],
   "amostraPelada": [
    {
-    "x": -37.6,
-    "y": 1.6,
-    "z": -1.6,
-    "ry": 1.57,
-    "quem": "Mesh"
+    "x": -32.1,
+    "y": 3.2,
+    "z": -5.5,
+    "ry": 0,
+    "quem": "havan-deco"
+   },
+   {
+    "x": -34.4,
+    "y": 3.2,
+    "z": -5.5,
+    "ry": 0,
+    "quem": "havan-deco"
+   },
+   {
+    "x": -36,
+    "y": 3.2,
+    "z": -5.5,
+    "ry": 0,
+    "quem": "havan-deco"
+   },
+   {
+    "x": -37.5,
+    "y": 3.2,
+    "z": -5.3,
+    "ry": 0,
+    "quem": "havan-deco"
    },
    {
     "x": -37.8,
@@ -745,6 +658,13 @@
     "quem": "Mesh"
    },
    {
+    "x": -37.6,
+    "y": 1.6,
+    "z": 5.8,
+    "ry": 1.57,
+    "quem": "Mesh"
+   },
+   {
     "x": -37.8,
     "y": 3.2,
     "z": 1.1,
@@ -757,41 +677,13 @@
     "z": 5.5,
     "ry": 1.57,
     "quem": "havan-deco"
-   },
-   {
-    "x": -32.7,
-    "y": 1.6,
-    "z": 8.5,
-    "ry": -1.88,
-    "quem": "Mesh[inst]"
-   },
-   {
-    "x": -37.8,
-    "y": 3.2,
-    "z": 4.5,
-    "ry": 1.57,
-    "quem": "havan-deco"
-   },
-   {
-    "x": -37.8,
-    "y": 3.2,
-    "z": 7,
-    "ry": 1.57,
-    "quem": "havan-deco"
-   },
-   {
-    "x": -37.8,
-    "y": 3.2,
-    "z": 9.5,
-    "ry": 1.57,
-    "quem": "havan-deco"
    }
   ],
-  "cobertura": 49.5,
+  "cobertura": 30.2,
   "peladas": [
    {
     "xz": "-32,8",
-    "t": 6,
+    "t": 9,
     "p": 0,
     "pct": 0
    },
@@ -803,12 +695,18 @@
    },
    {
     "xz": "-32,32",
-    "t": 9,
+    "t": 11,
     "p": 0,
     "pct": 0
    },
    {
     "xz": "-32,40",
+    "t": 4,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-24,48",
     "t": 5,
     "p": 0,
     "pct": 0
@@ -820,8 +718,26 @@
     "pct": 0
    },
    {
+    "xz": "-16,32",
+    "t": 9,
+    "p": 0,
+    "pct": 0
+   },
+   {
     "xz": "-8,8",
-    "t": 12,
+    "t": 11,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "0,16",
+    "t": 13,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "0,24",
+    "t": 15,
     "p": 0,
     "pct": 0
    },
@@ -848,30 +764,6 @@
     "t": 4,
     "p": 0,
     "pct": 0
-   },
-   {
-    "xz": "16,48",
-    "t": 5,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "32,32",
-    "t": 5,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "32,8",
-    "t": 6,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "32,24",
-    "t": 10,
-    "p": 0,
-    "pct": 0
    }
   ],
   "usados": [
@@ -889,17 +781,20 @@
    "decal:personagens-graffiti-06.png",
    "decal:personagens-graffiti-07.png",
    "decal:poster:25c9112229edfcfbb1eae4137ecc151a.jpg",
+   "decal:poster:3300c39038dd97ad6a20342038c008b0.jpg",
+   "decal:poster:51edbafcf2eebbb2dc157f66bb1a2d66.jpg",
    "decal:poster:574381edb80801aaff5e9a1cdd88bc4b.jpg",
-   "decal:poster:New Project (3).png",
+   "decal:poster:82f8dcbb0547719bfc4dbb27aed9f583.jpg",
+   "decal:poster:DOLLYNHO.png",
+   "decal:poster:New Project (2).png",
+   "decal:poster:ashtar-meme.jpg",
+   "decal:poster:ashtar.png",
    "decal:poster:dafac3c979a935aea80adb8b90f6ef1b.jpg",
    "decal:poster:dc58fe69ac56037026f1bf6181b7f71c.jpg",
-   "decal:poster:despisque-leao.jpg",
    "decal:poster:eabfe479653f0e9c94a618858e8667bc.jpg",
    "decal:poster:f0deec032dd1777bc681179fb74a29b0.jpg",
    "decal:poster:images.png",
-   "decal:poster:or-compro-ouro.jpg",
-   "decal:poster:or-quebrada-vive.jpg",
-   "decal:poster:or-show-funk.jpg",
+   "decal:poster:or-baile.jpg",
    "decal:tag-fina.png",
    "decal:tag-flop.png",
    "decal:tag-larga.png",
@@ -910,86 +805,57 @@
    "decal:tags-treino-05.png"
   ],
   "orfas": {
-   "ar": 4,
+   "ar": 0,
    "chao": 0,
    "beirando": 0,
-   "amostra": [
-    {
-     "tipo": "ar",
-     "file": "decal:poster:f0deec032dd1777bc681179fb74",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:dafac3c979a935aea80adb8b90f",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:despisque-leao.jpg",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:or-show-funk.jpg",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    }
-   ]
+   "amostra": []
   },
   "densidade": {
-   "total": 0.51,
+   "total": 0.32,
    "porBanda": [
     {
      "alt": 1.6,
-     "pecas": 185,
-     "placas": 291,
-     "dens": 0.64
+     "pecas": 115,
+     "placas": 295,
+     "dens": 0.39
     },
     {
      "alt": 3.2,
-     "pecas": 45,
+     "pecas": 16,
      "placas": 198,
-     "dens": 0.23
+     "dens": 0.08
     },
     {
      "alt": 5,
-     "pecas": 66,
+     "pecas": 56,
      "placas": 89,
-     "dens": 0.74
+     "dens": 0.63
     }
    ]
   },
   "waypoints": 510
  },
  "ferro_velho": {
-  "pecas": 541,
-  "arquivos": 45,
+  "pecas": 208,
+  "arquivos": 40,
   "murais": 0,
   "hMin": 0.45,
-  "hMax": 2.7,
-  "hMed": 1.15,
-  "placas": 1497,
-  "pintadas": 703,
+  "hMax": 2.1,
+  "hMed": 0.8,
+  "placas": 1501,
+  "pintadas": 217,
   "bandas": [
    {
     "alt": 1.6,
     "t": 825,
-    "p": 543,
-    "pct": 65.8
+    "p": 202,
+    "pct": 24.5
    },
    {
     "alt": 3.2,
-    "t": 481,
-    "p": 160,
-    "pct": 33.3
+    "t": 485,
+    "p": 15,
+    "pct": 3.1
    },
    {
     "alt": 5,
@@ -1001,19 +867,19 @@
   "pelados": [
    [
     "Muro_de_carros_esmagados_1",
-    541
-   ],
-   [
-    "Mesh",
-    168
+    548
    ],
    [
     "Mesh[inst]",
-    41
+    441
+   ],
+   [
+    "Mesh",
+    249
    ],
    [
     "Guindaste_com_eletroímã_1",
-    20
+    21
    ],
    [
     "ferro-route-sign-4",
@@ -1024,21 +890,63 @@
     6
    ],
    [
-    "Monte_de_carros_1",
+    "Prensa_de_carros_1",
     2
    ],
    [
-    "ferro-elevated-ramp-portao",
+    "Monte_de_carros_1",
     2
    ]
   ],
   "amostraPelada": [
    {
+    "x": -30,
+    "y": 1.6,
+    "z": -30.7,
+    "ry": 2.94,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -28.6,
+    "y": 1.6,
+    "z": -30.7,
+    "ry": -2.24,
+    "quem": "Mesh"
+   },
+   {
     "x": -29.1,
     "y": 1.6,
     "z": -33.1,
     "ry": -1.96,
     "quem": "Mesh"
+   },
+   {
+    "x": -27.1,
+    "y": 1.6,
+    "z": -32.8,
+    "ry": -2.52,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -27.2,
+    "y": 1.6,
+    "z": -34,
+    "ry": -2.95,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -29.4,
+    "y": 1.6,
+    "z": -35.4,
+    "ry": 0.02,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -31.3,
+    "y": 1.6,
+    "z": -30.9,
+    "ry": 2.94,
+    "quem": "Mesh[inst]"
    },
    {
     "x": -30,
@@ -1069,57 +977,21 @@
     "quem": "Mesh"
    },
    {
-    "x": -30,
-    "y": 5,
-    "z": -30.5,
-    "ry": -3.14,
-    "quem": "Mesh"
-   },
-   {
-    "x": -28.7,
-    "y": 5,
-    "z": -30.8,
-    "ry": 2.1,
-    "quem": "Mesh"
-   },
-   {
-    "x": -29.1,
-    "y": 5,
-    "z": -33.1,
-    "ry": -2.75,
-    "quem": "Mesh"
-   },
-   {
-    "x": -27.2,
-    "y": 5,
-    "z": -32.8,
-    "ry": -2.09,
-    "quem": "Mesh"
-   },
-   {
-    "x": -29,
-    "y": 1.6,
-    "z": -32.9,
-    "ry": -0.39,
-    "quem": "Mesh"
-   },
-   {
-    "x": -29.3,
+    "x": -26.5,
     "y": 3.2,
-    "z": -29,
-    "ry": -2.09,
-    "quem": "Mesh"
-   },
-   {
-    "x": -29,
-    "y": 3.2,
-    "z": -29.6,
-    "ry": -2.09,
-    "quem": "Mesh"
+    "z": -35.4,
+    "ry": 0.04,
+    "quem": "Mesh[inst]"
    }
   ],
-  "cobertura": 47,
+  "cobertura": 14.5,
   "peladas": [
+   {
+    "xz": "-24,-24",
+    "t": 12,
+    "p": 0,
+    "pct": 0
+   },
    {
     "xz": "-24,-8",
     "t": 34,
@@ -1169,6 +1041,18 @@
     "pct": 0
    },
    {
+    "xz": "-16,0",
+    "t": 39,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-16,8",
+    "t": 25,
+    "p": 0,
+    "pct": 0
+   },
+   {
     "xz": "-16,16",
     "t": 40,
     "p": 0,
@@ -1181,35 +1065,14 @@
     "pct": 0
    },
    {
-    "xz": "0,-8",
-    "t": 15,
+    "xz": "-8,-16",
+    "t": 21,
     "p": 0,
     "pct": 0
-   },
-   {
-    "xz": "0,8",
-    "t": 3,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "24,-8",
-    "t": 18,
-    "p": 1,
-    "pct": 6
-   },
-   {
-    "xz": "-24,-24",
-    "t": 12,
-    "p": 1,
-    "pct": 8
    }
   ],
   "usados": [
    "decal:cartaz-medo.png",
-   "decal:dont-overthink.png",
-   "decal:gratidao-sol.png",
-   "decal:meio-ano.png",
    "decal:or-graf-coro.png",
    "decal:or-graf-treta.png",
    "decal:or-stencil-capivara.png",
@@ -1224,25 +1087,23 @@
    "decal:personagens-graffiti-06.png",
    "decal:personagens-graffiti-07.png",
    "decal:poster:25c9112229edfcfbb1eae4137ecc151a.jpg",
-   "decal:poster:26268061ca13b4dc4a871c1163cbeb6d.jpg",
    "decal:poster:3300c39038dd97ad6a20342038c008b0.jpg",
-   "decal:poster:51edbafcf2eebbb2dc157f66bb1a2d66.jpg",
    "decal:poster:574381edb80801aaff5e9a1cdd88bc4b.jpg",
    "decal:poster:6f2bbbe03a6c5a16af15fe12ebea0d6c.jpg",
    "decal:poster:78c38b895431ac393f96036507060be1.jpg",
    "decal:poster:82f8dcbb0547719bfc4dbb27aed9f583.jpg",
    "decal:poster:8445c0ca193d22b4d6a9af66409b0dda.jpg",
+   "decal:poster:DOLLYNHO.png",
    "decal:poster:New Project (2).png",
    "decal:poster:New Project (3).png",
-   "decal:poster:dafac3c979a935aea80adb8b90f6ef1b.jpg",
+   "decal:poster:ashtar.png",
    "decal:poster:dc58fe69ac56037026f1bf6181b7f71c.jpg",
    "decal:poster:despisque-leao.jpg",
    "decal:poster:eabfe479653f0e9c94a618858e8667bc.jpg",
    "decal:poster:f0deec032dd1777bc681179fb74a29b0.jpg",
    "decal:poster:images.png",
-   "decal:poster:or-compro-ouro.jpg",
+   "decal:poster:or-baile.jpg",
    "decal:poster:or-quebrada-vive.jpg",
-   "decal:poster:or-show-funk.jpg",
    "decal:tag-fina.png",
    "decal:tag-flop.png",
    "decal:tag-larga.png",
@@ -1254,46 +1115,24 @@
   ],
   "orfas": {
    "ar": 0,
-   "chao": 3,
-   "beirando": 2,
-   "amostra": [
-    {
-     "tipo": "chao",
-     "file": "decal:tags-treino-05.png",
-     "x": 11.2,
-     "y": 1.6,
-     "z": 4.7
-    },
-    {
-     "tipo": "chao",
-     "file": "decal:tag-money.png",
-     "x": -29.6,
-     "y": 1.2,
-     "z": -22.4
-    },
-    {
-     "tipo": "chao",
-     "file": "decal:personagens-graffiti-05.png",
-     "x": -18.4,
-     "y": 1.4,
-     "z": 28.5
-    }
-   ]
+   "chao": 0,
+   "beirando": 0,
+   "amostra": []
   },
   "densidade": {
-   "total": 0.36,
+   "total": 0.14,
    "porBanda": [
     {
      "alt": 1.6,
-     "pecas": 469,
+     "pecas": 195,
      "placas": 825,
-     "dens": 0.57
+     "dens": 0.24
     },
     {
      "alt": 3.2,
-     "pecas": 72,
-     "placas": 481,
-     "dens": 0.15
+     "pecas": 13,
+     "placas": 485,
+     "dens": 0.03
     },
     {
      "alt": 5,
@@ -1306,74 +1145,109 @@
   "waypoints": 294
  },
  "quebrada": {
-  "pecas": 921,
-  "arquivos": 94,
+  "pecas": 596,
+  "arquivos": 91,
   "murais": 0,
-  "hMin": 0.38,
+  "hMin": 0.37,
   "hMax": 2.2,
-  "hMed": 1.4,
+  "hMed": 1,
   "placas": 1554,
-  "pintadas": 1060,
+  "pintadas": 686,
   "bandas": [
    {
     "alt": 1.6,
     "t": 762,
-    "p": 600,
-    "pct": 78.7
+    "p": 419,
+    "pct": 55
    },
    {
     "alt": 3.2,
     "t": 538,
-    "p": 356,
-    "pct": 66.2
+    "p": 195,
+    "pct": 36.2
    },
    {
     "alt": 5,
     "t": 254,
-    "p": 104,
-    "pct": 40.9
+    "p": 72,
+    "pct": 28.3
    }
   ],
   "pelados": [
    [
     "Mesh[inst]",
-    354
+    675
    ],
    [
     "Mesh",
-    89
+    101
+   ],
+   [
+    "tripo_node_b802e5a9-b4f0-4363-a1ab-2f6ce333f5af",
+    20
    ],
    [
     "Weathered_Green_Dome_Tent_1",
     17
    ],
    [
-    "tripo_node_b802e5a9-b4f0-4363-a1ab-2f6ce333f5af",
-    7
+    "tripo_node_18c93d92-396b-40de-aaae-57afb545874d",
+    12
    ],
    [
-    "faixa:leste-vive",
-    6
+    "Kombi_1",
+    11
+   ],
+   [
+    "Object_2",
+    11
    ],
    [
     "faixa:eternamente",
-    5
-   ],
-   [
-    "arquibancada_1",
-    5
-   ],
-   [
-    "Arara_de_roupas_1",
-    4
+    6
    ]
   ],
   "amostraPelada": [
+   {
+    "x": -19.3,
+    "y": 1.6,
+    "z": -38.3,
+    "ry": 3.14,
+    "quem": "Mesh[inst]"
+   },
    {
     "x": -26,
     "y": 1.6,
     "z": -40.2,
     "ry": 1.57,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -25,
+    "y": 1.6,
+    "z": -39.2,
+    "ry": 1.57,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -25.2,
+    "y": 1.6,
+    "z": -35.4,
+    "ry": 3.14,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -25.2,
+    "y": 3.2,
+    "z": -35.4,
+    "ry": 3.14,
+    "quem": "Mesh[inst]"
+   },
+   {
+    "x": -25.4,
+    "y": 1.6,
+    "z": -41,
+    "ry": 0,
     "quem": "Mesh[inst]"
    },
    {
@@ -1391,6 +1265,13 @@
     "quem": "Mesh[inst]"
    },
    {
+    "x": -20.9,
+    "y": 3.2,
+    "z": -34,
+    "ry": -1.57,
+    "quem": "Mesh[inst]"
+   },
+   {
     "x": -20.5,
     "y": 1.6,
     "z": -39.9,
@@ -1405,66 +1286,42 @@
     "quem": "Mesh[inst]"
    },
    {
-    "x": -19.6,
-    "y": 3.2,
-    "z": -28.4,
-    "ry": -1.57,
-    "quem": "Mesh[inst]"
-   },
-   {
     "x": -21,
     "y": 3.2,
-    "z": -30.7,
+    "z": -33.2,
     "ry": -1.57,
-    "quem": "Mesh[inst]"
-   },
-   {
-    "x": -26,
-    "y": 1.6,
-    "z": -26.6,
-    "ry": 1.57,
-    "quem": "Mesh[inst]"
-   },
-   {
-    "x": -19.5,
-    "y": 3.2,
-    "z": -24.9,
-    "ry": -1.57,
-    "quem": "Mesh[inst]"
-   },
-   {
-    "x": -19.5,
-    "y": 3.2,
-    "z": -26.7,
-    "ry": -1.57,
-    "quem": "Mesh[inst]"
-   },
-   {
-    "x": -19.5,
-    "y": 3.2,
-    "z": -29.3,
-    "ry": -1.57,
-    "quem": "Mesh[inst]"
-   },
-   {
-    "x": -26,
-    "y": 1.6,
-    "z": -24.6,
-    "ry": 1.57,
     "quem": "Mesh[inst]"
    }
   ],
-  "cobertura": 68.2,
+  "cobertura": 44.1,
   "peladas": [
    {
-    "xz": "-8,16",
+    "xz": "-8,-32",
     "t": 4,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-8,-24",
+    "t": 21,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-8,8",
+    "t": 7,
     "p": 0,
     "pct": 0
    },
    {
     "xz": "0,48",
     "t": 5,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "0,-32",
+    "t": 4,
     "p": 0,
     "pct": 0
    },
@@ -1481,64 +1338,46 @@
     "pct": 0
    },
    {
+    "xz": "-8,0",
+    "t": 20,
+    "p": 3,
+    "pct": 15
+   },
+   {
+    "xz": "24,-24",
+    "t": 23,
+    "p": 4,
+    "pct": 17
+   },
+   {
     "xz": "-16,32",
     "t": 18,
     "p": 4,
     "pct": 22
    },
    {
-    "xz": "-8,-24",
-    "t": 21,
-    "p": 8,
-    "pct": 38
-   },
-   {
-    "xz": "-16,-16",
-    "t": 22,
-    "p": 11,
-    "pct": 50
-   },
-   {
-    "xz": "24,32",
-    "t": 33,
-    "p": 17,
-    "pct": 52
-   },
-   {
-    "xz": "16,8",
-    "t": 55,
-    "p": 29,
-    "pct": 53
-   },
-   {
-    "xz": "16,-32",
-    "t": 37,
-    "p": 20,
-    "pct": 54
-   },
-   {
     "xz": "-16,-24",
     "t": 22,
-    "p": 12,
-    "pct": 55
+    "p": 5,
+    "pct": 23
    },
    {
-    "xz": "-16,8",
-    "t": 32,
-    "p": 18,
-    "pct": 56
+    "xz": "-8,16",
+    "t": 4,
+    "p": 1,
+    "pct": 25
    },
    {
-    "xz": "16,-8",
-    "t": 48,
-    "p": 27,
-    "pct": 56
+    "xz": "24,24",
+    "t": 30,
+    "p": 8,
+    "pct": 27
    },
    {
     "xz": "-16,0",
     "t": 44,
-    "p": 25,
-    "pct": 57
+    "p": 13,
+    "pct": 30
    }
   ],
   "usados": [
@@ -1574,7 +1413,6 @@
    "decal:folha-pixaca-04.png",
    "decal:folha-pixaca-05.png",
    "decal:folha-pixaca-06.png",
-   "decal:folha-pixaca-07.png",
    "decal:folha-pixaca-08.png",
    "decal:folha-stenci.png",
    "decal:folha-throwu-01.png",
@@ -1611,10 +1449,8 @@
    "decal:poster:New Project (1).png",
    "decal:poster:New Project (2).png",
    "decal:poster:New Project (3).png",
-   "decal:poster:ashtar-meme.jpg",
    "decal:poster:ashtar.png",
    "decal:poster:dafac3c979a935aea80adb8b90f6ef1b.jpg",
-   "decal:poster:dc58fe69ac56037026f1bf6181b7f71c.jpg",
    "decal:poster:despisque-leao.jpg",
    "decal:poster:eabfe479653f0e9c94a618858e8667bc.jpg",
    "decal:poster:f0deec032dd1777bc681179fb74a29b0.jpg",
@@ -1639,52 +1475,30 @@
   ],
   "orfas": {
    "ar": 0,
-   "chao": 3,
-   "beirando": 2,
-   "amostra": [
-    {
-     "tipo": "chao",
-     "file": "decal:dont-overthink.png",
-     "x": -8.3,
-     "y": 1.2,
-     "z": -20.8
-    },
-    {
-     "tipo": "chao",
-     "file": "decal:poster:or-baile.jpg",
-     "x": -6.3,
-     "y": 1.2,
-     "z": -28.5
-    },
-    {
-     "tipo": "chao",
-     "file": "decal:poster:ashtar-meme.jpg",
-     "x": -6.7,
-     "y": 1.5,
-     "z": -22.7
-    }
-   ]
+   "chao": 0,
+   "beirando": 0,
+   "amostra": []
   },
   "densidade": {
-   "total": 0.59,
+   "total": 0.38,
    "porBanda": [
     {
      "alt": 1.6,
-     "pecas": 592,
+     "pecas": 417,
      "placas": 762,
-     "dens": 0.78
+     "dens": 0.55
     },
     {
      "alt": 3.2,
-     "pecas": 260,
+     "pecas": 132,
      "placas": 538,
-     "dens": 0.48
+     "dens": 0.25
     },
     {
      "alt": 5,
-     "pecas": 69,
+     "pecas": 47,
      "placas": 254,
-     "dens": 0.27
+     "dens": 0.19
     }
    ]
   },
@@ -1697,24 +1511,24 @@
   "hMin": 0,
   "hMax": 0,
   "hMed": 0,
-  "placas": 3395,
+  "placas": 3393,
   "pintadas": 0,
   "bandas": [
    {
     "alt": 1.6,
-    "t": 1172,
+    "t": 1173,
     "p": 0,
     "pct": 0
    },
    {
     "alt": 3.2,
-    "t": 1002,
+    "t": 995,
     "p": 0,
     "pct": 0
    },
    {
     "alt": 5,
-    "t": 1221,
+    "t": 1225,
     "p": 0,
     "pct": 0
    }
@@ -1722,7 +1536,7 @@
   "pelados": [
    [
     "Mesh[inst]",
-    1719
+    1721
    ],
    [
     "Mesh",
@@ -1730,15 +1544,15 @@
    ],
    [
     "paredes-cabanas-abertas[inst]",
-    437
+    434
    ],
    [
     "amazonia-estatica",
-    369
+    368
    ],
    [
     "madeira-amazonia",
-    255
+    256
    ],
    [
     "Brown_Spike_Cattail_1",
@@ -1747,10 +1561,6 @@
    [
     "Golden_Rosetta_Jaguar_1",
     2
-   ],
-   [
-    "Scarlet_Wing_Macaw_1",
-    1
    ]
   ],
   "amostraPelada": [
@@ -1939,19 +1749,19 @@
     {
      "alt": 1.6,
      "pecas": 0,
-     "placas": 1172,
+     "placas": 1173,
      "dens": 0
     },
     {
      "alt": 3.2,
      "pecas": 0,
-     "placas": 1002,
+     "placas": 995,
      "dens": 0
     },
     {
      "alt": 5,
      "pecas": 0,
-     "placas": 1221,
+     "placas": 1225,
      "dens": 0
     }
    ]
@@ -1959,26 +1769,26 @@
   "waypoints": 635
  },
  "escadao": {
-  "pecas": 329,
-  "arquivos": 58,
+  "pecas": 238,
+  "arquivos": 57,
   "murais": 0,
   "hMin": 0.38,
   "hMax": 2,
-  "hMed": 1.5,
+  "hMed": 1.4,
   "placas": 1522,
-  "pintadas": 281,
+  "pintadas": 167,
   "bandas": [
    {
     "alt": 1.6,
     "t": 665,
-    "p": 197,
-    "pct": 29.6
+    "p": 122,
+    "pct": 18.3
    },
    {
     "alt": 3.2,
     "t": 514,
-    "p": 84,
-    "pct": 16.3
+    "p": 45,
+    "pct": 8.8
    },
    {
     "alt": 5,
@@ -1990,19 +1800,19 @@
   "pelados": [
    [
     "Mesh",
-    712
+    759
    ],
    [
     "Mesh[inst]",
-    398
+    435
    ],
    [
     "Casa_de_favela_azul_1",
-    62
+    78
    ],
    [
     "Casa_de_favela_tijolo_1",
-    42
+    55
    ],
    [
     "Colorful_Laundry_Varal_1",
@@ -2107,7 +1917,7 @@
     "quem": "Mesh[inst]"
    }
   ],
-  "cobertura": 18.5,
+  "cobertura": 11,
   "peladas": [
    {
     "xz": "-16,-40",
@@ -2164,6 +1974,12 @@
     "pct": 0
    },
    {
+    "xz": "-24,0",
+    "t": 33,
+    "p": 0,
+    "pct": 0
+   },
+   {
     "xz": "-16,-8",
     "t": 26,
     "p": 0,
@@ -2176,20 +1992,14 @@
     "pct": 0
    },
    {
-    "xz": "0,-24",
-    "t": 30,
+    "xz": "-24,8",
+    "t": 8,
     "p": 0,
     "pct": 0
    },
    {
-    "xz": "0,-16",
-    "t": 15,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "0,-40",
-    "t": 4,
+    "xz": "-24,16",
+    "t": 8,
     "p": 0,
     "pct": 0
    }
@@ -2210,7 +2020,6 @@
    "decal:folha-pixaca-03.png",
    "decal:folha-pixaca-04.png",
    "decal:folha-pixaca-05.png",
-   "decal:folha-stenci.png",
    "decal:folha-throwu-01.png",
    "decal:folha-throwu-02.png",
    "decal:folha-throwu-03.png",
@@ -2255,103 +2064,25 @@
    "decal:tags-treino-03.png"
   ],
   "orfas": {
-   "ar": 11,
+   "ar": 0,
    "chao": 0,
    "beirando": 0,
-   "amostra": [
-    {
-     "tipo": "ar",
-     "file": "decal:poster:New Project (2).png",
-     "x": 13.7,
-     "y": 1.5,
-     "z": -29.1
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:cartaz-america-latina.png",
-     "x": 11.3,
-     "y": 1.3,
-     "z": -29.2
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:tags-treino-02.png",
-     "x": -9.9,
-     "y": 1.6,
-     "z": -27.5
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:ashtar-meme.jpg",
-     "x": 12.7,
-     "y": 1.5,
-     "z": -24.8
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:personagens-graffiti-03.png",
-     "x": 12.7,
-     "y": 3.3,
-     "z": -24.8
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:New Project (2).png",
-     "x": -13.1,
-     "y": 1.5,
-     "z": -28.1
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:folha-throwu-04.png",
-     "x": -12.1,
-     "y": 3.3,
-     "z": -28.2
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:574381edb80801aaff5e9a1cdd8",
-     "x": -11.6,
-     "y": 1.5,
-     "z": -28.1
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:folha-throwu-03.png",
-     "x": -14.2,
-     "y": 1.3,
-     "z": -26.2
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:or-quebrada-vive.jpg",
-     "x": -9.9,
-     "y": 1.5,
-     "z": -25.7
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:folha-stenci.png",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    }
-   ]
+   "amostra": []
   },
   "densidade": {
-   "total": 0.22,
+   "total": 0.16,
    "porBanda": [
     {
      "alt": 1.6,
-     "pecas": 229,
+     "pecas": 177,
      "placas": 665,
-     "dens": 0.34
+     "dens": 0.27
     },
     {
      "alt": 3.2,
-     "pecas": 100,
+     "pecas": 61,
      "placas": 514,
-     "dens": 0.19
+     "dens": 0.12
     },
     {
      "alt": 5,
@@ -2364,46 +2095,46 @@
   "waypoints": 669
  },
  "corrego": {
-  "pecas": 334,
-  "arquivos": 47,
+  "pecas": 360,
+  "arquivos": 52,
   "murais": 0,
   "hMin": 0.38,
-  "hMax": 2,
-  "hMed": 1.5,
-  "placas": 2054,
-  "pintadas": 523,
+  "hMax": 3.6,
+  "hMed": 1,
+  "placas": 2030,
+  "pintadas": 593,
   "bandas": [
    {
     "alt": 1.6,
-    "t": 757,
-    "p": 313,
-    "pct": 41.3
+    "t": 761,
+    "p": 350,
+    "pct": 46
    },
    {
     "alt": 3.2,
-    "t": 750,
-    "p": 210,
-    "pct": 28
+    "t": 735,
+    "p": 229,
+    "pct": 31.2
    },
    {
     "alt": 5,
-    "t": 547,
-    "p": 0,
-    "pct": 0
+    "t": 534,
+    "p": 14,
+    "pct": 2.6
    }
   ],
   "pelados": [
    [
     "favela",
-    1033
+    970
    ],
    [
     "Mesh[inst]",
-    406
+    430
    ],
    [
     "Mesh",
-    92
+    37
    ]
   ],
   "amostraPelada": [
@@ -2492,26 +2223,8 @@
     "quem": "favela"
    }
   ],
-  "cobertura": 25.5,
+  "cobertura": 29.2,
   "peladas": [
-   {
-    "xz": "-16,-16",
-    "t": 57,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "-16,-8",
-    "t": 27,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "-8,-16",
-    "t": 99,
-    "p": 0,
-    "pct": 0
-   },
    {
     "xz": "-16,16",
     "t": 28,
@@ -2526,7 +2239,7 @@
    },
    {
     "xz": "-8,16",
-    "t": 17,
+    "t": 18,
     "p": 0,
     "pct": 0
    },
@@ -2562,19 +2275,37 @@
    },
    {
     "xz": "0,0",
-    "t": 11,
+    "t": 13,
     "p": 0,
     "pct": 0
    },
    {
     "xz": "0,8",
-    "t": 14,
+    "t": 15,
     "p": 0,
     "pct": 0
    },
    {
     "xz": "0,16",
-    "t": 22,
+    "t": 24,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "0,24",
+    "t": 44,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "0,-16",
+    "t": 28,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "8,24",
+    "t": 41,
     "p": 0,
     "pct": 0
    }
@@ -2586,6 +2317,7 @@
    "decal:cartaz-america-latina.png",
    "decal:cartaz-medo.png",
    "decal:cartaz-neutro.png",
+   "decal:corrego_streetart_pixo.webp",
    "decal:folha-lambes.png",
    "decal:folha-person-01.png",
    "decal:folha-person-03.png",
@@ -2603,13 +2335,17 @@
    "decal:or-graf-treta.png",
    "decal:or-mitico-mural.png",
    "decal:personagem-muro.png",
+   "decal:poster:25c9112229edfcfbb1eae4137ecc151a.jpg",
    "decal:poster:26268061ca13b4dc4a871c1163cbeb6d.jpg",
    "decal:poster:3300c39038dd97ad6a20342038c008b0.jpg",
    "decal:poster:51edbafcf2eebbb2dc157f66bb1a2d66.jpg",
+   "decal:poster:574381edb80801aaff5e9a1cdd88bc4b.jpg",
+   "decal:poster:6f2bbbe03a6c5a16af15fe12ebea0d6c.jpg",
    "decal:poster:78c38b895431ac393f96036507060be1.jpg",
    "decal:poster:82f8dcbb0547719bfc4dbb27aed9f583.jpg",
    "decal:poster:8445c0ca193d22b4d6a9af66409b0dda.jpg",
    "decal:poster:New Project (1).png",
+   "decal:poster:New Project (2).png",
    "decal:poster:New Project (3).png",
    "decal:poster:dafac3c979a935aea80adb8b90f6ef1b.jpg",
    "decal:poster:dc58fe69ac56037026f1bf6181b7f71c.jpg",
@@ -2629,100 +2365,57 @@
    "decal:tags-treino-03.png"
   ],
   "orfas": {
-   "ar": 6,
+   "ar": 0,
    "chao": 0,
-   "beirando": 3,
-   "amostra": [
-    {
-     "tipo": "ar",
-     "file": "decal:tags-treino-03.png",
-     "x": -16.5,
-     "y": 1.5,
-     "z": -20.8
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:tags-treino-01.png",
-     "x": -18.7,
-     "y": 1.5,
-     "z": -17.7
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:cartaz-medo.png",
-     "x": -18.7,
-     "y": 1.2,
-     "z": -19.7
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:eabfe479653f0e9c94a618858e8",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:26268061ca13b4dc4a871c1163c",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:New Project (1).png",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    }
-   ]
+   "beirando": 0,
+   "amostra": []
   },
   "densidade": {
-   "total": 0.16,
+   "total": 0.18,
    "porBanda": [
     {
      "alt": 1.6,
-     "pecas": 229,
-     "placas": 757,
-     "dens": 0.3
+     "pecas": 243,
+     "placas": 761,
+     "dens": 0.32
     },
     {
      "alt": 3.2,
-     "pecas": 105,
-     "placas": 750,
-     "dens": 0.14
+     "pecas": 113,
+     "placas": 735,
+     "dens": 0.15
     },
     {
      "alt": 5,
-     "pecas": 0,
-     "placas": 547,
-     "dens": 0
+     "pecas": 4,
+     "placas": 534,
+     "dens": 0.01
     }
    ]
   },
-  "waypoints": 622
+  "waypoints": 652
  },
  "lajes": {
-  "pecas": 0,
-  "arquivos": 0,
-  "murais": 0,
-  "hMin": 0,
-  "hMax": 0,
-  "hMed": 0,
-  "placas": 1821,
-  "pintadas": 0,
+  "pecas": 56,
+  "arquivos": 5,
+  "murais": 1,
+  "hMin": 0.446,
+  "hMax": 2.2,
+  "hMed": 0.9,
+  "placas": 1801,
+  "pintadas": 59,
   "bandas": [
    {
     "alt": 1.6,
-    "t": 735,
-    "p": 0,
-    "pct": 0
+    "t": 715,
+    "p": 56,
+    "pct": 7.8
    },
    {
     "alt": 3.2,
     "t": 584,
-    "p": 0,
-    "pct": 0
+    "p": 3,
+    "pct": 0.5
    },
    {
     "alt": 5,
@@ -2734,11 +2427,11 @@
   "pelados": [
    [
     "lajes-alvenaria",
-    1689
+    1612
    ],
    [
     "Mesh",
-    59
+    57
    ],
    [
     "B��zierCurve_rack003_0",
@@ -2772,13 +2465,6 @@
     "z": -26.1,
     "ry": 3.14,
     "quem": "Mesh"
-   },
-   {
-    "x": -17,
-    "y": 1.6,
-    "z": -26,
-    "ry": 3.14,
-    "quem": "lajes-alvenaria"
    },
    {
     "x": -15.6,
@@ -2849,16 +2535,17 @@
     "z": -28,
     "ry": 0,
     "quem": "lajes-alvenaria"
+   },
+   {
+    "x": -17,
+    "y": 3.2,
+    "z": -28,
+    "ry": 0,
+    "quem": "lajes-alvenaria"
    }
   ],
-  "cobertura": 0,
+  "cobertura": 3.3,
   "peladas": [
-   {
-    "xz": "-16,-24",
-    "t": 68,
-    "p": 0,
-    "pct": 0
-   },
    {
     "xz": "-24,-24",
     "t": 4,
@@ -2884,26 +2571,8 @@
     "pct": 0
    },
    {
-    "xz": "-8,-24",
-    "t": 96,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "-16,-16",
-    "t": 49,
-    "p": 0,
-    "pct": 0
-   },
-   {
     "xz": "-8,-16",
     "t": 33,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "-16,-8",
-    "t": 50,
     "p": 0,
     "pct": 0
    },
@@ -2914,31 +2583,61 @@
     "pct": 0
    },
    {
-    "xz": "-8,0",
-    "t": 38,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "-16,8",
-    "t": 53,
-    "p": 0,
-    "pct": 0
-   },
-   {
-    "xz": "-8,8",
-    "t": 20,
-    "p": 0,
-    "pct": 0
-   },
-   {
     "xz": "-16,16",
+    "t": 49,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-8,24",
+    "t": 88,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "-8,16",
+    "t": 35,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "0,32",
+    "t": 15,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "0,-8",
+    "t": 40,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "0,8",
+    "t": 43,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "8,8",
+    "t": 21,
+    "p": 0,
+    "pct": 0
+   },
+   {
+    "xz": "0,16",
     "t": 49,
     "p": 0,
     "pct": 0
    }
   ],
-  "usados": [],
+  "usados": [
+   "decal:tag-fina.png",
+   "decal:tag-flop.png",
+   "decal:tag-larga.png",
+   "decal:tag-money.png",
+   "mural:pixo-lajes-01.png"
+  ],
   "orfas": {
    "ar": 0,
    "chao": 0,
@@ -2946,13 +2645,13 @@
    "amostra": []
   },
   "densidade": {
-   "total": 0,
+   "total": 0.03,
    "porBanda": [
     {
      "alt": 1.6,
-     "pecas": 0,
-     "placas": 735,
-     "dens": 0
+     "pecas": 56,
+     "placas": 715,
+     "dens": 0.08
     },
     {
      "alt": 3.2,
@@ -2971,26 +2670,26 @@
   "waypoints": 611
  },
  "posto_treta": {
-  "pecas": 172,
-  "arquivos": 41,
+  "pecas": 81,
+  "arquivos": 34,
   "murais": 0,
   "hMin": 0.8,
   "hMax": 1.5,
   "hMed": 1.4,
   "placas": 942,
-  "pintadas": 248,
+  "pintadas": 136,
   "bandas": [
    {
     "alt": 1.6,
     "t": 374,
-    "p": 178,
-    "pct": 47.6
+    "p": 114,
+    "pct": 30.5
    },
    {
     "alt": 3.2,
     "t": 261,
-    "p": 70,
-    "pct": 26.8
+    "p": 22,
+    "pct": 8.4
    },
    {
     "alt": 5,
@@ -3002,15 +2701,23 @@
   "pelados": [
    [
     "Mesh",
-    315
+    347
    ],
    [
     "posto-decor-batch[inst]",
-    148
+    149
+   ],
+   [
+    "Object_2",
+    68
    ],
    [
     "posto-cobertura-pilar",
     43
+   ],
+   [
+    "Loja_de_conveniência_1",
+    42
    ],
    [
     "Cube_Materiais_0",
@@ -3021,16 +2728,8 @@
     31
    ],
    [
-    "Object_2",
-    28
-   ],
-   [
     "Fileira_de_carros_prensados_1",
-    15
-   ],
-   [
-    "Loja_de_conveniência_1",
-    14
+    18
    ]
   ],
   "amostraPelada": [
@@ -3053,6 +2752,13 @@
     "y": 1.6,
     "z": -33.5,
     "ry": 1.57,
+    "quem": "Mesh"
+   },
+   {
+    "x": -23.1,
+    "y": 3.2,
+    "z": -35.2,
+    "ry": 0,
     "quem": "Mesh"
    },
    {
@@ -3110,16 +2816,9 @@
     "z": -35.3,
     "ry": 0,
     "quem": "Cube_Materiais_0"
-   },
-   {
-    "x": -26.5,
-    "y": 5,
-    "z": -35.3,
-    "ry": 0,
-    "quem": "Cube_Materiais_0"
    }
   ],
-  "cobertura": 26.3,
+  "cobertura": 14.4,
   "peladas": [
    {
     "xz": "-32,-32",
@@ -3164,6 +2863,12 @@
     "pct": 0
    },
    {
+    "xz": "-16,-16",
+    "t": 9,
+    "p": 0,
+    "pct": 0
+   },
+   {
     "xz": "-16,16",
     "t": 7,
     "p": 0,
@@ -3198,34 +2903,11 @@
     "t": 19,
     "p": 0,
     "pct": 0
-   },
-   {
-    "xz": "-8,0",
-    "t": 16,
-    "p": 0,
-    "pct": 0
    }
   ],
   "usados": [
    "decal:alfabeto-bolha.png",
    "decal:alfabeto-bolha2.png",
-   "decal:alfabeto-escuro-01.png",
-   "decal:alfabeto-escuro-02.png",
-   "decal:alfabeto-escuro-03.png",
-   "decal:alfabeto-escuro-04.png",
-   "decal:alfabeto-escuro-05.png",
-   "decal:alfabeto-escuro-06.png",
-   "decal:alfabeto-escuro-07.png",
-   "decal:alfabeto-escuro-08.png",
-   "decal:alfabeto-escuro-09.png",
-   "decal:alfabeto-escuro-10.png",
-   "decal:alfabeto-fino-01.png",
-   "decal:alfabeto-fino-02.png",
-   "decal:alfabeto-fino-03.png",
-   "decal:alfabeto-fino-06.png",
-   "decal:alfabeto-gotico-01.png",
-   "decal:alfabeto-gotico-02.png",
-   "decal:alfabeto-grosso-01.png",
    "decal:cartaz-america-latina.png",
    "decal:cartaz-medo.png",
    "decal:cartaz-neutro.png",
@@ -3234,12 +2916,22 @@
    "decal:meio-ano.png",
    "decal:or-graf-coro.png",
    "decal:or-graf-treta.png",
-   "decal:peca-bolha.png",
-   "decal:poster:3300c39038dd97ad6a20342038c008b0.jpg",
+   "decal:poster:25c9112229edfcfbb1eae4137ecc151a.jpg",
+   "decal:poster:26268061ca13b4dc4a871c1163cbeb6d.jpg",
+   "decal:poster:51edbafcf2eebbb2dc157f66bb1a2d66.jpg",
+   "decal:poster:574381edb80801aaff5e9a1cdd88bc4b.jpg",
    "decal:poster:6f2bbbe03a6c5a16af15fe12ebea0d6c.jpg",
    "decal:poster:78c38b895431ac393f96036507060be1.jpg",
+   "decal:poster:82f8dcbb0547719bfc4dbb27aed9f583.jpg",
+   "decal:poster:DOLLYNHO.png",
    "decal:poster:New Project (1).png",
-   "decal:poster:New Project (3).png",
+   "decal:poster:New Project (2).png",
+   "decal:poster:ashtar-meme.jpg",
+   "decal:poster:ashtar.png",
+   "decal:poster:dc58fe69ac56037026f1bf6181b7f71c.jpg",
+   "decal:poster:despisque-leao.jpg",
+   "decal:poster:eabfe479653f0e9c94a618858e8667bc.jpg",
+   "decal:poster:f0deec032dd1777bc681179fb74a29b0.jpg",
    "decal:pra-gringo.png",
    "decal:tag-fina.png",
    "decal:tag-flop.png",
@@ -3250,61 +2942,25 @@
    "decal:tags-treino-04.png"
   ],
   "orfas": {
-   "ar": 5,
+   "ar": 0,
    "chao": 0,
    "beirando": 0,
-   "amostra": [
-    {
-     "tipo": "ar",
-     "file": "decal:poster:New Project (3).png",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:New Project (1).png",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:78c38b895431ac393f960365070",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:6f2bbbe03a6c5a16af15fe12ebe",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    },
-    {
-     "tipo": "ar",
-     "file": "decal:poster:3300c39038dd97ad6a20342038c",
-     "x": 0,
-     "y": 0,
-     "z": 0
-    }
-   ]
+   "amostra": []
   },
   "densidade": {
-   "total": 0.18,
+   "total": 0.09,
    "porBanda": [
     {
      "alt": 1.6,
-     "pecas": 135,
+     "pecas": 74,
      "placas": 374,
-     "dens": 0.36
+     "dens": 0.2
     },
     {
      "alt": 3.2,
-     "pecas": 37,
+     "pecas": 7,
      "placas": 261,
-     "dens": 0.14
+     "dens": 0.03
     },
     {
      "alt": 5,

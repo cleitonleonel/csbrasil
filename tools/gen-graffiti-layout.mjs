@@ -1,5 +1,5 @@
 /* ============================================================================
-   gen-graffiti-layout.mjs — ASSA A COLOCAÇÃO DO GRAFITE DOS 5 MAPAS.
+   gen-graffiti-layout.mjs — ASSA O GRAFITE DE TODOS OS MAPAS DECLARADOS.
    ----------------------------------------------------------------------------
    POR QUE ASSAR (a conta que decidiu)
 
@@ -26,12 +26,15 @@
 
    Uso:
      node tools/eval/serve.mjs 4510 &    # e BASE=http://127.0.0.1:4510 em cada comando
-     node tools/gen-graffiti-layout.mjs            # os 5
+     node tools/gen-graffiti-layout.mjs            # todos os MAP_SOURCES
      node tools/gen-graffiti-layout.mjs quebrada
+     node tools/gen-graffiti-layout.mjs --checkpoint=/tmp/graffiti-bake-state.json
    ============================================================================ */
 import { execSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { impressao, MAP_SOURCES } from './eval/graffiti-fingerprint.mjs';
 
 const BASE = process.env.BASE;
@@ -39,6 +42,31 @@ const SAIDA = 'public/js/graffiti_layout.js';
 const MAPAS = Object.keys(MAP_SOURCES);
 const ARGS = process.argv.slice(2);
 const ONLY = ARGS.find((a) => !a.startsWith('--'));
+const CHECKPOINT = ARGS.find(a => a.startsWith('--checkpoint='))?.slice(13);
+const CHECKPOINT_ONLY = ARGS.includes('--checkpoint-only');
+const checkpoint = CHECKPOINT && existsSync(CHECKPOINT) ? JSON.parse(readFileSync(CHECKPOINT, 'utf8')) : { maps: {} };
+const inputSources = ['public/js/textures.js', 'public/js/mapprops.js'];
+const inputDigest = () => createHash('sha256').update(inputSources.map(file => file + '\0' + readFileSync(file, 'utf8')).join('\0')).digest('hex');
+const producerInputs = inputDigest();
+const hashAssets = (directory, assetHash) => {
+  if (!existsSync(directory)) return;
+  for (const entry of readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    const file = join(directory, entry.name);
+    if (entry.isDirectory()) hashAssets(file, assetHash);
+    else if (/\.(glb|png|jpe?g|webp)$/i.test(entry.name)) assetHash.update(file).update(readFileSync(file));
+  }
+};
+const assetsDigest = () => {
+  const assetHash = createHash('sha256');
+  for (const directory of ['public/models/props', 'public/img/decals', 'public/posters']) hashAssets(directory, assetHash);
+  return assetHash.digest('hex');
+};
+const assets = assetsDigest();
+if (checkpoint.assets !== assets || checkpoint.inputs !== producerInputs) checkpoint.maps = {};
+checkpoint.assets = assets;
+checkpoint.inputs = producerInputs;
+
+if (ONLY && !MAP_SOURCES[ONLY]) throw Error(`Mapa de grafite desconhecido: ${ONLY}`);
 /* SÓ A IMPRESSÃO: reassina as entradas SEM reassar a colocação. Existe porque assar não é
    operação fiel — duas rodadas idênticas na mesma árvore deram 2769 e 2767 peças (loja_h 300 e
    298), e uma árvore sem o acervo completo de decalques apaga ~180 peças em silêncio. Para
@@ -57,14 +85,17 @@ const gRoot = execSync('npm root -g').toString().trim();
 const _pw = await import(pathToFileURL(`${gRoot}/playwright/index.js`).href);
 const chromium = _pw.chromium || _pw.default?.chromium;
 
-/* Layout anterior preservado por mapa: rodar só um mapa não pode apagar os outros
-   quatro (regra da casa: nada destrutivo por efeito colateral). */
+/* Rodar um mapa preserva os demais layouts declarados. */
 const anterior = {};
+let previousFingerprint = null;
 if (existsSync(SAIDA)) {
   const txt = readFileSync(SAIDA, 'utf8');
   const json = txt.match(/^export const GRAFITE = (.+);$/m)?.[1];
   if (!json) throw Error('Layout anterior não reconhecido; regeneração cancelada');
   Object.assign(anterior, JSON.parse(json));
+  const previous = txt.match(/^export const GRAFITE_FP = (.+);$/m)?.[1];
+  if (previous) previousFingerprint = JSON.parse(previous);
+  for (const id of Object.keys(anterior)) if (!MAP_SOURCES[id]) delete anterior[id];
 }
 
 /* Reassinar sem reassar: nenhuma peça muda, só a impressão das entradas. Sai antes do
@@ -83,21 +114,35 @@ if (SO_IMPRESSAO) {
   process.exit(0);
 }
 
+const inputFingerprint = impressao();
+if (ONLY && !CHECKPOINT_ONLY && previousFingerprint?.pass !== inputFingerprint.pass)
+  throw Error('A passada mudou: regerar um mapa não pode reassinar os demais. Regere todos ou use --checkpoint-only para diagnosticar.');
 const browser = await chromium.launch({
-  channel: 'chrome', headless: true,
-  args: ['--use-gl=angle', '--use-angle=swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'],
+  ...(process.env.CHROME_BIN ? { executablePath: process.env.CHROME_BIN } : { channel: 'chrome' }), headless: true,
+  args: ['--mute-audio'],
 });
 
+try {
 for (const id of MAPAS) {
   if (ONLY && id !== ONLY) continue;
+  const mapFp = impressao();
+  const saved = checkpoint.maps[id];
+  if (saved?.pass === mapFp.pass && saved?.map === mapFp.maps[id]) {
+    anterior[id] = saved.layout; console.log(`  ${id}: checkpoint validado (${saved.layout.pecas.length} peças)`); continue;
+  }
+  console.log(`  ${id}: iniciando passada viva`);
   const page = await browser.newPage({ viewport: { width: 900, height: 600 } });
   page.on('pageerror', (e) => console.log('  [pageerror]', e.message));
   // `grafite=vivo`: manda o mapa RODAR a passada em vez de aplicar o layout assado
-  await page.goto(`${BASE}/mapview.html?map=${id}&grafite=vivo`, { waitUntil: 'domcontentloaded', timeout: 120000 });
-  await page.waitForFunction('window.MAPEVAL && window.MAPEVAL.ready===true', null, { timeout: 300000 });
+  const viewId = id;
+  await page.goto(`${BASE}/mapview.html?map=${viewId}&grafite=vivo`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+  await page.waitForFunction('window.MAPEVAL && window.MAPEVAL.ready===true', null, { timeout: 1200000 });
   const g = await page.evaluate(() => window.__grafite || null);
+  const actualMap = await page.evaluate(() => window.__mapId);
   await page.close();
-  if (!g || !g.pass || !g.pass.layout) { console.log(`  ${id}: sem passada (mapa ainda não ligado)`); continue; }
+  if (actualMap !== viewId || g?.mapa !== id || !g?.pass?.layout?.pecas?.length) {
+    throw Error(`${id}: mapa/passada inválidos (${actualMap}/${g?.mapa}); bake cancelado`);
+  }
   anterior[id] = {
     arquivos: g.pass.layout.arquivos, pecas: g.pass.layout.pecas,
     murais: (g.hom && g.hom.layout) || [],
@@ -107,10 +152,19 @@ for (const id of MAPAS) {
        reprova pra sempre uma coisa que está certa de propósito. */
     ...(g.pass.layout.limpo ? { limpo: g.pass.layout.limpo } : {}),
   };
+  const afterFp = impressao();
+  if (afterFp.pass !== mapFp.pass || afterFp.maps[id] !== mapFp.maps[id] || inputDigest() !== producerInputs || assetsDigest() !== assets) throw Error(`${id}: entrada alterada durante a passada; checkpoint anterior preservado`);
+  checkpoint.maps[id] = { pass: mapFp.pass, map: mapFp.maps[id], layout: anterior[id] };
+  if (CHECKPOINT) { mkdirSync(dirname(CHECKPOINT), { recursive: true }); writeFileSync(CHECKPOINT, JSON.stringify(checkpoint)); }
   console.log(`  ${id}: ${anterior[id].pecas.length} peças · ${anterior[id].arquivos.length} arquivos · `
     + `${anterior[id].murais.length} murais · ${g.ms} ms de passada`);
 }
-await browser.close();
+} finally { await browser.close(); }
+
+if (CHECKPOINT_ONLY) {
+  console.log('Checkpoint de diagnóstico concluído; layout público não foi escrito.');
+  process.exit(0);
+}
 
 const total = Object.values(anterior).reduce((a, m) => a + m.pecas.length, 0);
 const cabecalho = `/* ============================================================================
@@ -137,7 +191,9 @@ export const GRAFITE = `;
    `tools/eval/graffiti-layout-check.mjs` cobra FRESCOR — se a geometria/banda de um
    mapa ou o algoritmo da passada mudar e ninguém regerar, o hash não bate e o portão
    fecha. Mesma origem (`graffiti-fingerprint.mjs`) para não discordar de si mesma. */
-const fp = impressao();
+const currentFingerprint = impressao();
+if (JSON.stringify(currentFingerprint) !== JSON.stringify(inputFingerprint) || inputDigest() !== producerInputs || assetsDigest() !== assets) throw Error('Entradas alteradas durante o bake; layout anterior preservado. Reinicie com as entradas congeladas.');
+const fp = ONLY ? { pass: currentFingerprint.pass, maps: { ...previousFingerprint.maps, [ONLY]: currentFingerprint.maps[ONLY] } } : currentFingerprint;
 const rodape = `\n/* IMPRESSÃO DIGITAL DAS ENTRADAS (issue #82) — GERADA junto com o layout, ver\n`
   + `   tools/eval/graffiti-fingerprint.mjs. Cobrada por tools/eval/graffiti-layout-check.mjs. */\n`
   + `export const GRAFITE_FP = ${JSON.stringify(fp)};\n`;
