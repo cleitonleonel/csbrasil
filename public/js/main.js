@@ -3762,6 +3762,19 @@ function rosterDoServidor(lado, charId) {
 /* Sessão de rede em curso. `null` = single-player, e é o estado normal: nada de rede roda
    até alguém entrar numa sala. */
 let mpSessao = null;
+/* A sala MP escreve mapa e modo; o SP é do jogador: guarda na entrada, devolve em toda saída.
+   Causa e régua: tools/eval/mapa-sp-pos-mp-check.mjs. */
+let escolhaSpAntesDoMp = null;
+function mpGuardarEscolhaSp() {
+  if (!escolhaSpAntesDoMp) escolhaSpAntesDoMp = { map: currentMap, mode: matchMode, escolhido: modoEscolhido };
+}
+function mpDevolverEscolhaSp() {
+  const e = escolhaSpAntesDoMp; escolhaSpAntesDoMp = null;
+  if (!e) return;
+  currentMap = e.map; matchMode = e.mode; modoEscolhido = e.escolhido;
+  mapIdx = Math.max(0, MAPAS_MENU.indexOf(currentMap));
+  setMapMode();
+}
 let mpNoAtual = null;
 let mpConectando = false;   // trava de reentrada do mpEntrar (BUG-88)
 let mpNos = [];
@@ -3857,6 +3870,7 @@ function noServeMapaParado(id, net) {
   try { net?.close?.(); } catch { /* fechar é cortesia; a recusa vale de qualquer jeito */ }
   mpSessao?.chat?.destruir();
   mpSessao = null;
+  mpDevolverEscolhaSp();
   mpErro(`Este servidor sorteou "${MAPS[resolveMapId(id)]?.name || id}", que saiu do jogo para retrabalho. `
     + 'O nó ainda não foi atualizado — escolha outra sala ou outra região.', true);
   return true;
@@ -4337,6 +4351,7 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
      Nó desatualizado ainda sorteia mapa PARADO: recusar é a única saída honesta — trocar o
      mapa por conta própria dessincroniza do servidor. Contrato: docs/maps/MAPAS-PARADOS.md. */
   if (noServeMapaParado(welcome.map, net)) return;
+  mpGuardarEscolhaSp();
   if (MAPS[welcome.map]) currentMap = welcome.map;
   matchMode = welcome.ctf ? 'ctf' : 'rounds';
   modoEscolhido = true;
@@ -4369,6 +4384,7 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
     if (mpSessao?.net !== net) return;
     mpSessao.chat?.aoMudarMeta(net.meta);
     if (noServeMapaParado(m.map, net)) return;
+    mpGuardarEscolhaSp();
     if (MAPS[m.map]) currentMap = m.map;
     matchMode = m.ctf ? 'ctf' : 'rounds';
     await mpMontarPartida(net, m);
@@ -4411,6 +4427,7 @@ function mpDesconectou() {
   try { if (game) { sendTelemetry(); sendMatchEvent('quit'); } } catch { /* diagnóstico não bloqueia a saída */ }
   mpSessao.chat?.destruir();
   mpSessao = null;
+  mpDevolverEscolhaSp();
   clearTelemetryGameContext();
   mpFecharBarraSpec();
   try { if (game) game.dispose(); } catch { /* já foi */ }
@@ -4467,6 +4484,7 @@ function mpFecharBarraSpec() {
 }
 function mpEncerrarSessao() {
   const s = mpSessao; mpSessao = null;
+  mpDevolverEscolhaSp();
   mpLimparIdentidade();
   s?.chat?.destruir();
   mpFecharBarraSpec();
