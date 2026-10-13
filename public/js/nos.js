@@ -29,8 +29,9 @@ export function parseConvite(txt) {
 
 /* A URL que se compartilha. Fica no SITE, e não no servidor de jogo: o link tem de abrir o
    jogo, e o servidor fala JSON e WebSocket, não HTML. */
+const ORIGEM_CONVITE = 'utm_source=convite&utm_medium=sala';
 export const linkDeConvite = (convite, origem) =>
-  `${origem || (typeof location !== 'undefined' ? location.origin : '')}/sala/${convite}`;
+  `${origem || (typeof location !== 'undefined' ? location.origin : '')}/sala/${convite}?${ORIGEM_CONVITE}`;
 
 /* http do lobby a partir da url ws do nó — o mesmo host, outro esquema. */
 export const httpDoNo = (no) => String(no.url).replace(/^ws/, 'http').replace(/\/ws.*$/, '');
