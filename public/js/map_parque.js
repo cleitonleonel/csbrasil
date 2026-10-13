@@ -135,9 +135,9 @@ export function buildParque(scene, T) {
   const material = (color, surface = SURFACE.paint, roughness = 0.62, metalness = 0) => new THREE.MeshStandardMaterial({ color, map: surface, roughness, metalness });
   const MAT = {
     grass: material(0xffffff, SURFACE.grass, 1), path: material(0xffffff, SURFACE.concrete, 0.92), plaza: material(0xffffff, SURFACE.tiles, 0.78),
-    pink: material(0xff4f9a, SURFACE.paint, 0.46), blue: material(0x22a7e8, SURFACE.paint, 0.42), cyan: material(0x56e0e0, SURFACE.paint, 0.4),
-    yellow: material(0xffd84d, SURFACE.paint, 0.48), red: material(0xf04b4b, SURFACE.paint, 0.44), purple: material(0x7b55d9, SURFACE.paint, 0.5),
-    green: material(0x3ec67d, SURFACE.paint, 0.55), white: material(0xfff7e8, SURFACE.paint, 0.58), dark: material(0x39445a, SURFACE.metal, 0.34, 0.62),
+    pink: material(0xc58191, SURFACE.paint, 0.74), blue: material(0x6188a6, SURFACE.paint, 0.7), cyan: material(0x8fa7a2, SURFACE.paint, 0.68),
+    yellow: material(0xd5bb78, SURFACE.paint, 0.72), red: material(0xbf8068, SURFACE.paint, 0.74), purple: material(0x8d799b, SURFACE.paint, 0.72),
+    green: material(0x7eaa8b, SURFACE.paint, 0.76), white: material(0xfff7e8, SURFACE.paint, 0.72), dark: material(0x39445a, SURFACE.metal, 0.34, 0.62),
     wood: material(0xffffff, SURFACE.wood, 0.88), hedge: material(0xffffff, SURFACE.hedge, 1),
     trunk: material(0xffffff, SURFACE.casca, 0.95), leaf: material(0xffffff, SURFACE.folha, 1),
     dirt: material(0xffffff, SURFACE.terra, 1),
@@ -193,6 +193,14 @@ export function buildParque(scene, T) {
     if (!geometryCache.has(key)) geometryCache.set(key, cilindroUV(new THREE.CylinderGeometry(r, r, h, segments), r, h, segments, mpu));
     return geometryCache.get(key);
   };
+
+  function shotModel(model) {
+    model.traverse(mesh => {
+      if (!mesh.isMesh) return;
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      if (materials.some(material => material && !(material.transparent && (material.opacity ?? 1) < .9))) occluders.push(mesh);
+    });
+  }
 
   function addBox(w, h, d, mat, x, y, z, opts = {}) {
     const mesh = new THREE.Mesh(boxGeometry(w, h, d, mat), mat);
@@ -344,7 +352,7 @@ export function buildParque(scene, T) {
     const batched = propBatch.add('predio_artdeco', { x: px, y: 0, z: pz, targetH: h, ry });
     if (!batched) {
       const glb = placeProp('predio_artdeco', { x: px, y: 0, z: pz, targetH: h, ry });
-      if (glb) wrap.add(glb);
+      if (glb) { wrap.add(glb); shotModel(glb); }
     }
   });
 
@@ -362,7 +370,7 @@ export function buildParque(scene, T) {
   const carousel = new THREE.Group(); carousel.name = 'carrossel-giratorio'; root.add(carousel); animated.carousel = carousel;
   const moldeCarrossel = new THREE.Group(); moldeCarrossel.name = 'parque-molde-carrossel'; carousel.add(moldeCarrossel);
   const glbCarrossel = placeProp('carrossel', { targetH: 8.5 });
-  if (glbCarrossel) moldeCarrossel.add(glbCarrossel);
+  if (glbCarrossel) { moldeCarrossel.add(glbCarrossel); shotModel(glbCarrossel); }
   carrosselBase.visible = carrosselMastro.visible = !glbCarrossel;
   const canopy = new THREE.Mesh(coneGeometry(7, 3.2, 16, MAT.pink), MAT.pink);
   canopy.position.set(0, 7.2, 0); canopy.castShadow = true; canopy.visible = !glbCarrossel; carousel.add(canopy);
@@ -416,11 +424,11 @@ export function buildParque(scene, T) {
       glbRoda.position.y -= b.min.y + (b.max.y - b.min.y) * RODA_HUB_FRAC_Y;
       glbRoda.position.z += WHEEL_FRAME_Z - (b.min.z + b.max.z) / 2;
       glbRoda.scale.z *= RODA_Z;
-      moldeRoda.add(glbRoda);
+      moldeRoda.add(glbRoda); shotModel(glbRoda);
     }
     const moldeBase = new THREE.Group(); moldeBase.name = 'parque-molde-roda-base'; root.add(moldeBase);
     const glbBase = placeProp('roda_gigante_base', { x: WHEEL_X, y: 0, z: 0, targetH: RODA_BASE_H });
-    if (glbBase) { glbBase.scale.z *= RODA_Z; moldeBase.add(glbBase); }
+    if (glbBase) { glbBase.scale.z *= RODA_Z; moldeBase.add(glbBase); shotModel(glbBase); }
     const rimMat = MAT.white, hubMat = MAT.yellow;
     const rim = new THREE.Mesh(new THREE.TorusGeometry(10, 0.32, 8, 48), rimMat); rim.name = 'roda-aro'; rim.position.z = WHEEL_FRAME_Z; rim.visible = !glbRoda; wheel.add(rim);
     const hub = new THREE.Mesh(cylGeoT(0.8, 0.8, 1.4, 12, hubMat), hubMat); hub.name = 'roda-cubo'; hub.rotation.x = Math.PI / 2; hub.visible = !glbRoda; wheel.add(hub);
@@ -467,7 +475,7 @@ export function buildParque(scene, T) {
     const wrap = new THREE.Group(); wrap.name = `parque-molde-barraca-${idx}`; root.add(wrap);
     const batched = propBatch.add('barraca_quermesse', { x, y: 0, z, targetH: 3.2, ry: z < 0 ? 0 : Math.PI });
     let glb = null;
-    if (!batched) { glb = placeProp('barraca_quermesse', { x, y: 0, z, targetH: 3.2, ry: z < 0 ? 0 : Math.PI }); if (glb) wrap.add(glb); }
+    if (!batched) { glb = placeProp('barraca_quermesse', { x, y: 0, z, targetH: 3.2, ry: z < 0 ? 0 : Math.PI }); if (glb) { wrap.add(glb); shotModel(glb); } }
     const molde = batched || glb;
     const caixa = addBox(5.2, 2.6, 3.8, mat, x, 0, z); caixa.visible = !molde;
     const toldo = addBox(6.0, 0.4, 4.6, MAT.white, x, 2.6, z, { collide: false }); toldo.visible = !molde;
@@ -526,7 +534,7 @@ export function buildParque(scene, T) {
     const g = new THREE.Group(); g.name = 'parque-coreto'; g.position.set(CORETO.x, 0, CORETO.z); root.add(g);
     colliders.push({ minX: CORETO.x - 3.65, maxX: CORETO.x + 3.65, minY: 0, maxY: 0.45, minZ: CORETO.z - 3.65, maxZ: CORETO.z + 3.65 });
     const glb = placeProp('parque_coreto', { x: 0, y: 0, z: 0, targetH: 4.4, targetLen: 7.2 });
-    if (glb) g.add(glb);
+    if (glb) { g.add(glb); shotModel(glb); }
     const stage = new THREE.Mesh(cylGeoT(3.4, 3.65, 0.45, 8, MAT.stone), MAT.stone);
     stage.position.y = 0.225; stage.castShadow = stage.receiveShadow = true; stage.visible = !glb; g.add(stage);
     if (!glb) occluders.push(stage);
@@ -889,7 +897,9 @@ export function buildParque(scene, T) {
   place('ak', -9, -7, 0); place('m4', 9, 7, Math.PI); place('shotgun', 9, -7, 0); place('mp5', -9, 7, Math.PI);
 
   // Fecha os lotes GLB estáticos depois que todas as instâncias foram declaradas.
+  const beforeProps = new Set(root.children);
   propBatch.build(root);
+  for (const child of root.children) if (!beforeProps.has(child)) shotModel(child);
 
   const blocked = (x, z, inflate = 0.45) => colliders.some(c => c.minY < 1.6 && c.maxY > 0.15 && x > c.minX - inflate && x < c.maxX + inflate && z > c.minZ - inflate && z < c.maxZ + inflate);
   const nodes = [], adj = [], STEP = 3.2;

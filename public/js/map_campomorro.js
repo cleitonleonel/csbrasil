@@ -69,7 +69,7 @@ export function buildCampoMorro(scene, T = {}) {
   const lam = (opts) => {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.94, metalness: 0, ...opts });
     const d = m.map && detailFor(m.map);
-    if (d && d.normalMap) { m.normalMap = d.normalMap; m.normalScale.set(0.55, 0.55); }
+    if (d && d.normalMap) { m.normalMap = d.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .55, m.roughness >= .8 && m.metalness < .2 ? .4 : .55); }
     if (d && d.roughnessMap) m.roughnessMap = d.roughnessMap;
     return m;
   };
@@ -100,7 +100,7 @@ export function buildCampoMorro(scene, T = {}) {
     glass: lam({ color: 0x24383f, metalness: 0.18, roughness: 0.24 }),
     door: lam({ color: 0x4a3325, roughness: 0.9 }),
     roof: lam({ color: 0x777a76, metalness: 0.32, roughness: 0.75 }),
-    galpaoRoof: lam({ color: 0x426f78, emissive: 0x0b1b20, emissiveIntensity: .12, metalness: 0.42, roughness: 0.58 }),
+    galpaoRoof: lam({ color: 0x526f73, emissive: 0x0b1b20, emissiveIntensity: .12, metalness: 0.42, roughness: 0.58 }),
     galpaoFloor: lam({ map: texturaPisoGalpao, color: 0xa6a298, roughness: 0.92 }),
     galpaoCeiling: lam({ map: texturaForroGalpao, color: 0x9aa8a9, emissive: 0x17282a, emissiveIntensity: .18, roughness: .8 }),
     sound: lam({ color: 0x252b2f, metalness: 0.14, roughness: 0.76 }),
@@ -115,8 +115,9 @@ export function buildCampoMorro(scene, T = {}) {
       const tex = loader.load(url, () => {
         mat.map = tex;
         const det = detailFor(tex);
-        if (det && det.normalMap) { mat.normalMap = det.normalMap; mat.normalScale.set(0.55, 0.55); }
-        if (det && det.roughnessMap) mat.roughnessMap = det.roughnessMap;
+        mat.normalMap = det?.normalMap || null;
+        mat.roughnessMap = det?.roughnessMap || null;
+        if (mat.normalMap) { const scale = mat.roughness >= .8 && mat.metalness < .2 ? .4 : .55; mat.normalScale.set(scale, scale); }
         mat.needsUpdate = true;
       });
       tex.colorSpace = THREE.SRGBColorSpace;

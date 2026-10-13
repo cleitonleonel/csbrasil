@@ -214,14 +214,18 @@ export class NetClient {
         try { m = binary ? decodeSnapshot(dados) : JSON.parse(dados); }
         catch { if (binary) this.tp.fechar(1002, 'snapshot_invalid'); return; }
         if (m.type === 'welcome') {
-          if (!versaoCompativel(m.clientVersion, VERSION, m.simHash)
-            && new URLSearchParams(location.search).get('mpversao') !== '0') {
+          // Versão diferente do nó não tira ninguém da partida (decisão do dono, 13/10);
+          // ?mpversao=1 volta a recusar, para diagnóstico.
+          this.versaoDiferente = versaoCompativel(m.clientVersion, VERSION, m.simHash)
+            ? null : { no: m.clientVersion, jogo: VERSION };
+          if (this.versaoDiferente && new URLSearchParams(globalThis.location?.search || '').get('mpversao') === '1') {
             const e = new Error('versao_incompativel');
-            e.detalhe = { no: m.clientVersion, jogo: VERSION };
+            e.detalhe = this.versaoDiferente;
             this.tp?.fechar(1002, 'versao_incompativel');
             assenta(reject, e);
             return;
           }
+          if (this.versaoDiferente) console.warn('[mp] nó em outra versão, entrando mesmo assim', this.versaoDiferente);
           this.meta = m; this.yourEnt = m.yourEnt; this.yourTeam = m.yourTeam; this.espectador = !!m.espectador;
           this.onWelcome?.(m);
           assenta(resolve, m);
