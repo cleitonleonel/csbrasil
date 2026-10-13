@@ -20,11 +20,17 @@ const LOWQ = (() => { try { return JSON.parse(localStorage.getItem('awpbr_settin
 // `?amzfoliageshadow=1` restaura o controle completo no avaliador por processo.
 export function resolveAmazoniaRenderProfile(settings = {}, query = QP) {
   const quality = settings.quality || 'med';
-  const crowdedMedium = quality === 'med' && Number(settings.bots || 4) >= 8;
+  /* Formato da partida pode ser assimétrico (allyBots/enemyBots): o que dimensiona a
+     mata é o MAIOR time em campo. `bots` continua como fallback do arnês/testes. */
+  const teamSize = Math.max(1, Math.min(8, Math.max(
+    1 + (settings.allyBots ?? (settings.bots || 4) - 1),
+    settings.enemyBots ?? (settings.bots || 4),
+  )));
+  const crowdedMedium = quality === 'med' && teamSize >= 8;
   const forceFoliageShadows = query?.get?.('amzfoliageshadow') === '1';
   return Object.freeze({
     quality,
-    teamSize: Number(settings.bots || 4),
+    teamSize,
     crowdedMedium,
     foliageShadows: quality !== 'low' && (!crowdedMedium || forceFoliageShadows),
     foliageCutMeters: crowdedMedium && !forceFoliageShadows ? { trees:16, palms:12, grass:8 } : null,
@@ -226,7 +232,7 @@ export function buildAmazonia(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -265,7 +271,7 @@ export function buildAmazonia(scene, T) {
   const matPalha = lam({ map: TEX.palha.map || T.dirt, roughness: 0.98 });
   const matSerragem = lam({ map: TEX.serragem.map || T.dirt, roughness: 1 });
   const matZinco = lam({ map: T.metal, color: 0x7d7a72, metalness: 0.4, roughness: 0.6 });
-  const matLona = [0xc23b4e, 0x2f7fbf, 0xd9a521, 0x3f9455].map((c) => lam({ map: texDe(TEX.palha, 2, 2) || T.dirt, color: c, roughness: 0.85 }));
+  const matLona = [0xa26758, 0x587889, 0xb39a68, 0x708565].map((c) => lam({ map: texDe(TEX.palha, 2, 2) || T.dirt, color: c, roughness: 0.85 }));
   const matCasca = lam({ map: texDe(TEX.madeira, 1, 2) || T.dirt, color: 0x8a7258, roughness: 1 });
   const matTroncoBoiando = lam({ map: texDe(TEX.madeira, 2, 1) || T.dirt, color: 0x7c6a50, roughness: 1 });
 

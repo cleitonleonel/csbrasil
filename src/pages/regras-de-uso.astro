@@ -1,0 +1,20 @@
+---
+import LegalPage from '../layouts/LegalPage.astro';
+import { BRAND } from '../lib/site';
+import { LEGAL_CONTACT } from '../lib/legal';
+---
+<LegalPage title="Regras de uso" description={`Regras para publicar mensagens no chat do ${BRAND} e como bloquear ou denunciar abuso.`} noindex>
+  <p>Política de uso e da comunidade do {BRAND}. Estas regras valem para mensagens, apelidos, avatares e links de perfil. Antes de jogar pelo app, leia e marque o aceite na tela inicial. No chat do site, marque também o aceite antes de enviar. Você é responsável pelo conteúdo que publica. A equipe pode remover conteúdo e restringir o acesso para proteger a comunidade.</p>
+
+  <h2>O que não pode</h2>
+  <ul>
+    <li>Assédio, perseguição, ameaças, incentivo à violência ou ataques de ódio contra pessoas ou grupos.</li>
+    <li>Conteúdo sexual explícito, exploração de menores, instruções para atividades ilegais ou incentivo a se machucar.</li>
+    <li>Spam, golpes, propaganda repetitiva, links maliciosos ou tentativa de se passar por outra pessoa.</li>
+    <li>Divulgar dados pessoais, documentos, senhas, tokens ou informações privadas de outras pessoas.</li>
+  </ul>
+
+  <h2>Bloquear e denunciar</h2>
+  <p>Abra as ações de uma mensagem para bloquear o autor ou denunciar. Bloquear oculta as mensagens daquela pessoa para você. A denúncia envia a mensagem e seu contexto para investigação pela equipe; ela não garante uma punição automática.</p>
+  <p>Se precisar de ajuda, escreva para <a href={`mailto:${LEGAL_CONTACT}`}>{LEGAL_CONTACT}</a>. Veja como tratamos denúncias e outros dados na <a href="/privacidade">Política de Privacidade</a> e as demais regras nos <a href="/termos">Termos de Uso</a>.</p>
+</LegalPage>
