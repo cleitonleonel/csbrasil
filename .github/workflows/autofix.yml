@@ -139,14 +139,21 @@ jobs:
           # allowlist liberaria a si mesmo.
           git show "base/$BASE:scripts/ci/autofix_allowlist.py" > /tmp/allowlist-base.py \
             || git show FETCH_HEAD:scripts/ci/autofix_allowlist.py > /tmp/allowlist-base.py
-          # A mensagem vai EXPLÍCITA mesmo quando o merge não conflita: `--no-edit` usa a
-          # mensagem automática do git, que não leva `Agent:` nem `Signed-off-by` — e aí o
-          # bot conserta o PR e o dco reprova o commit que ele mesmo fez (medido no #406).
+          # A BASE SÓ ENTRA QUANDO HÁ CONFLITO (13/10). O bot trazia a main para todo PR
+          # atrasado, mesmo sem conflito: 58 merges num dia, 18% dos minutos de CI, e cada
+          # merge reinicia o CI inteiro do PR. Atraso sem conflito não precisa de merge: o
+          # GitHub testa e mescla o PR contra a base sozinho. Por isso o merge é de TESTE
+          # (`--no-commit`): mesclou limpo, aborta e o PR fica como está. Só segue quem
+          # conflita, e mesmo assim só se o conflito for todo em arquivo gerado (abaixo).
+          # A chamada continua com mensagem e trailers explícitos, como toda chamada de
+          # `git merge` dos workflows (AF7): se um dia ela voltar a commitar, o commit não
+          # sai sem `Agent:` e `Signed-off-by` e o dco não reprova o próprio bot (#406).
           if git merge --no-edit -m "Merge da base (autofix)" \
                        -m "Agent: csbrasil-bot (autofix)" \
-                       -m "Signed-off-by: csbrasil-bot <csbrasil-bot@users.noreply.github.com>" FETCH_HEAD; then
-            git diff --quiet HEAD@{1} HEAD || echo "mesclou=1" >> "$GITHUB_OUTPUT"
-            echo "PR já está em cima da base (ou mesclou limpo)."
+                       -m "Signed-off-by: csbrasil-bot <csbrasil-bot@users.noreply.github.com>" \
+                       --no-commit --no-ff FETCH_HEAD; then
+            git merge --abort 2>/dev/null || true
+            echo "Sem conflito com a base: nada a trazer, o PR fica como está."
             exit 0
           fi
           git diff --name-only --diff-filter=U > /tmp/conflitos.txt
