@@ -40,16 +40,10 @@ export const prerender = false;
 // prioridade/frequência: sinal fraco pro Google, mas o Bing e os crawlers de
 // IA ainda leem. Custa nada e ajuda a ordenar o rastreio.
 //
-// `/ranking` e os perfis `/u/*` SÓ ENTRAM COM `RANKING_ON`. Com a flag em
-// false essas páginas respondem `<meta name="robots" content="noindex">`
-// (ranking.astro, u/[...path].astro), e listar em sitemap uma URL que a própria
-// página manda não indexar é mandar dois sinais opostos pro mesmo crawler. A
-// documentação do Google é explícita: "don't include noindex URLs in your
-// sitemap" - https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
-// Quando `RANKING_ON` voltar a true, as duas voltam sozinhas.
+// Só URL final e indexável: `/ranking` responde 302 para o hub e fica fora; os
+// perfis `/u/*` só entram com `RANKING_ON`. Sem data real de modificação, sem <lastmod>.
 export const STATIC: [string, string, string][] = [
   ['/',            '1.0', 'daily'],
-  ...(RANKING_ON ? [['/ranking', '0.9', 'hourly'] as [string, string, string]] : []),
   ['/como-jogar',  '0.8', 'weekly'],
   ['/personagens', '0.8', 'weekly'],
   /* As 5 facções saem de FACCOES, não de uma lista digitada aqui: facção nova
@@ -65,9 +59,8 @@ export const STATIC: [string, string, string][] = [
 ];
 
 export const GET: APIRoute = async () => {
-  const today = new Date().toISOString().slice(0, 10);
   const fixas: Entrada[] = STATIC.map(([path, prio, freq]) => ({
-    loc: `${SITE}${path}`, lastmod: today, changefreq: freq, priority: prio,
+    loc: `${SITE}${path}`, changefreq: freq, priority: prio,
   }));
 
   /* QUANTOS PERFIS EXISTEM. Precisa saber ANTES de decidir entre urlset e
@@ -89,16 +82,16 @@ export const GET: APIRoute = async () => {
   if (total > POR_PAGINA) {
     const n = numeroDePaginas(total);
     return xmlResposta(xmlIndex(
-      Array.from({ length: n }, (_, i) => ({ loc: `${SITE}/sitemap-${i + 1}.xml`, lastmod: today })),
+      Array.from({ length: n }, (_, i) => ({ loc: `${SITE}/sitemap-${i + 1}.xml` })),
     ));
   }
 
-  const entradas = fixas.concat(await perfis(0, POR_PAGINA - fixas.length, today));
+  const entradas = fixas.concat(await perfis(0, POR_PAGINA - fixas.length));
   return xmlResposta(xmlUrlset(entradas));
 };
 
 /** Uma fatia dos perfis, já como entradas de sitemap. Usada pelas duas rotas. */
-export async function perfis(offset: number, limite: number, today: string): Promise<Entrada[]> {
+export async function perfis(offset: number, limite: number): Promise<Entrada[]> {
   if (!RANKING_ON || !supabaseAdmin || limite <= 0) return [];
   const out: Entrada[] = [];
   // O PostgREST do Supabase corta cada resposta em max-rows (1.000) sem erro.
@@ -115,7 +108,6 @@ export async function perfis(offset: number, limite: number, today: string): Pro
       if (!p?.id || !p?.nick) continue;
       out.push({
         loc: `${SITE}/u/${p.id}/${encodeURIComponent(p.nick)}`,
-        lastmod: today,
         changefreq: 'weekly',
         priority: '0.6',
       });
