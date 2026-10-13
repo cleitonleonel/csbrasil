@@ -212,7 +212,7 @@ export interface Personagem { faccao: string; nome: string; blurb: string; }
 export const FACCOES: { id: string; nome: string; lema: string; cor: string; nota: string }[] = [
   { id: 'E', nome: 'Esquerda', lema: 'A treta se faz na praça!', cor: '#ff5555', nota: 'O lado vermelho da arena. Oito arquétipos de esquerda caricata - nenhum deles é uma pessoa real.' },
   { id: 'B', nome: 'Direita', lema: 'A treta se faz na rodovia!', cor: '#3355ff', nota: 'O lado azul. Nove arquétipos de direita caricata, com a mesma dose de zoeira dos adversários.' },
-  { id: 'P', nome: 'Políticos', lema: 'A treta atravessa os dois lados!', cor: '#d6b55a', nota: 'Arquivo de caricaturas satíricas de figuras públicas. Este grupo não está disponível no menu atual.' },
+  { id: 'P', nome: 'Políticos', lema: 'A treta atravessa os dois lados!', cor: '#d6b55a', nota: 'Caricaturas satíricas de figuras públicas. Na escalação do menu, é o primeiro grupo.' },
   { id: 'urbanas', nome: 'Tribos Urbanas', lema: 'A treta se faz na quebrada!', cor: '#c79bff', nota: 'Facção sem lado político: emo, punk, metaleiro, skatista, rapper e companhia. Entra na treta pelo estilo.' },
   { id: 'palhacos', nome: 'Palhaços', lema: 'A treta se faz no picadeiro!', cor: '#ff8ad1', nota: 'O picadeiro invadiu a arena. Nove palhaços, do clássico de cartola ao que dá medo de verdade.' },
   { id: 'mitico', nome: 'Mítico', lema: 'A treta atravessa os séculos!', cor: '#9d4edd', nota: 'Personagens inspirados no folclore e na história brasileira.' },
