@@ -43,7 +43,7 @@ export function montarChatSala({ net, obterJogo = () => null, tr = (s) => s, fra
   const sec = $('chat-sala');
   if (!sec || !net) return controladorInerte();
   const el = {
-    log: $('chat-log'), form: $('chat-form'), entrada: $('chat-entrada'), contador: $('chat-contador'),
+    log: $('chat-log'), form: $('chat-form'), entrada: $('chat-entrada'), contador: $('chat-contador'), aceite: $('chat-regras-aceite'),
     canal: $('chat-canal'), ocultar: $('chat-ocultar'), naoLidas: $('chat-nao-lidas'), bloqueados: $('chat-bloqueados'),
     acoes: $('chat-acoes'), acoesQuem: $('chat-acoes-quem'), bloquear: $('chat-bloquear'), denunciar: $('chat-denunciar'),
     acoesCancelar: $('chat-acoes-cancelar'), motivos: $('chat-motivos'), motivosLista: $('chat-motivos-lista'),
@@ -350,6 +350,7 @@ export function montarChatSala({ net, obterJogo = () => null, tr = (s) => s, fra
 
   /* ---------- envio ---------- */
   function enviar() {
+    if (!el.aceite?.checked) { aviso(tr('Leia e aceite as regras do chat antes de enviar.')); el.aceite?.focus(); return; }
     const v = validarEnvio(canal, el.entrada.value, estado.canaisPara(espectador()));
     if (!v.ok) { aviso(frase('chatNack', v.motivo)); return; }
     const cid = estado.proximoCid();

@@ -3,7 +3,8 @@
 import fs from 'node:fs';
 import { THREE, MAPS, bootGame, initTextures } from './harness.mjs';
 import { buildLajes } from '../../public/js/map_lajes_authored.js';
-if (MAPS.lajes.build !== buildLajes) throw Error('Builder ativo divergente: não sei medir V4');
+import { withVisibleShotOccluders } from '../../public/js/shot_surfaces.js';
+if (MAPS.lajes.build !== withVisibleShotOccluders(buildLajes)) throw Error('Builder ativo divergente: não sei medir V4');
 const mutant = process.argv.find(a => a.startsWith('--mutante='))?.slice(10) || '';
 if (!['', 'spawn-alto', 'casa-estreita', 'terreo-bloqueado'].includes(mutant)) throw Error(`Mutante desconhecido: ${mutant}`);
 const g = bootGame('lajes', { textures: initTextures(), bots: 0, seed: 12345 });
