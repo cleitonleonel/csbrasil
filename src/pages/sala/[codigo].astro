@@ -3,6 +3,7 @@
 // mandar entrar. Por que mora no site e nao no servidor: docs/MULTIPLAYER.md.
 import Layout from '../../layouts/Layout.astro';
 import { BRAND_FULL, abs } from '../../lib/site';
+import { hrefEntrarNaSala } from '../../lib/convite-origem.mjs';
 
 export const prerender = false;
 
@@ -81,7 +82,7 @@ const desc = sala
 
         {sala.senha && <p class="cv-aviso">Sala trancada - vao te pedir a senha ao entrar.</p>}
 
-        <a class="btn cv-cta" href={`/?sala=${encodeURIComponent(convite)}`}>ENTRAR NA SALA</a>
+        <a class="btn cv-cta" href={hrefEntrarNaSala(convite, Astro.url.searchParams)}>ENTRAR NA SALA</a>
         <p class="cv-nota">Sem download, sem cadastro. Abre direto no navegador.</p>
       </>
     ) : (
