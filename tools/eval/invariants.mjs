@@ -68,7 +68,7 @@
 // ============================================================================
 
 import { execFile, execFileSync } from 'node:child_process';
-import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, writeFileSync, lstatSync, rmSync, symlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { freshReport } from './fresh-report.mjs';
@@ -129,10 +129,42 @@ function simular(script, env = {}, args = [], { timeout = 600000, cwd = ROOT, ca
   return reg.promessa;
 }
 
+/* PONTES DO `three` ANTES DO PARALELO. Várias sub-simulações plantam, na primeira
+   execução de um checkout limpo, o pacote-ponte que resolve `import 'three'` em node:
+   harness.mjs dentro do projeto, e botsim/botdiag/char-probe/harness-stub um nível
+   acima. Plantar é escrever package.json e criar symlink, e duas plantando ao mesmo
+   tempo podem ler package.json pela metade ou estourar EEXIST no symlink. Aqui as duas
+   pontes nascem UMA vez, antes de qualquer sub-simulação, com o MESMO conteúdo e a
+   mesma guarda (`index.js` existe = não mexe) dos scripts; eles então só encontram. */
+function plantarPontesThree() {
+  const pacote = JSON.stringify({
+    name: 'three', version: '0.160.0', type: 'module', main: 'index.js',
+    exports: { '.': './index.js', './addons/*': './addons/*' },
+  });
+  const plantar = (raiz, consertaPendurado) => {
+    const shim = join(raiz, 'node_modules', 'three');
+    if (existsSync(join(shim, 'index.js'))) return;
+    mkdirSync(shim, { recursive: true });
+    writeFileSync(join(shim, 'package.json'), pacote);
+    for (const [de, para, tipo] of [
+      [join(shim, 'index.js'), join(ROOT, 'public/vendor/three.module.js')],
+      [join(shim, 'addons'), join(ROOT, 'public/vendor/addons'), 'dir'],
+    ]) {
+      // harness.mjs conserta link pendurado; os outros engolem o EEXIST. Mesma coisa aqui.
+      if (consertaPendurado) { try { lstatSync(de); rmSync(de, { recursive: true, force: true }); } catch { /* não existe */ } }
+      try { symlinkSync(para, de, tipo); } catch (e) { if (consertaPendurado) throw e; }
+    }
+  };
+  plantar(ROOT, true);                 // harness.mjs
+  plantar(join(ROOT, '..'), false);    // botsim, botdiag, char-probe, harness-stub
+}
+
 async function runNode(script, env = {}, args = [], timeout = 600000) {
   const { stdout, erro } = await simular(script, env, args, { timeout });
   return erro ? stdout + '\n__ERRO__ ' + (erro.message || '') : stdout;
 }
+
+plantarPontesThree();
 
 // ── 1. SINTAXE ──────────────────────────────────────────────────────────────
 // Barato e pega o erro mais caro: um arquivo que não parseia derruba o jogo
