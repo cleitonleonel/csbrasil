@@ -12,6 +12,26 @@
       "source": "/telegram",
       "destination": "https://t.me/corosolto",
       "permanent": false
+    },
+    {
+      "source": "/docs/en/status{/}?",
+      "destination": "/docs/en/estado",
+      "permanent": true
+    },
+    {
+      "source": "/docs/en/architecture{/}?",
+      "destination": "/docs/en/arquitetura",
+      "permanent": true
+    },
+    {
+      "source": "/docs/en/contributing{/}?",
+      "destination": "/docs/en/colaborar",
+      "permanent": true
+    },
+    {
+      "source": "/docs/en/ai-instrumentation{/}?",
+      "destination": "/docs/en/instrumentacao-ai",
+      "permanent": true
     }
   ],
   "headers": [

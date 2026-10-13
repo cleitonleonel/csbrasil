@@ -16,11 +16,11 @@ quitadas como se ainda fossem o estado atual.
 
 | Pergunta | Fonte atual | Regra |
 |---|---|---|
-| Qual versão está publicada? | [`/changelog`](https://www.csbrasil.online/changelog) e `package.json` | o release abre uma seção e `docs:check` exige a mesma versão |
+| Qual versão está publicada? | [`/changelog`](https://www.corosolto.com.br/changelog) e `package.json` | o release abre uma seção e `docs:check` exige a mesma versão |
 | Produção está respondendo? | `/api/health` e workflow `prod-watch.yml` | o monitor roda a cada 15 minutos e abre issue quando a falha persiste |
 | O que está quebrado ou incompleto? | `KNOWN-BUGS.md` e `tools/eval/KNOWN-RED.json` | dívida nova reprova sem justificativa explícita no ratchet |
 | Quais checks um PR precisa passar? | `npm run check:fast` e os jobs de `.github/workflows/` | cada régua importante tem mutante ou caso de falha conhecido |
-| Onde as partidas acontecem? | [`/mapa`](https://www.csbrasil.online/mapa) | presença é aproximada por cidade; partidas são separadas nas cinco facções |
+| Onde as partidas acontecem? | [`/mapa`](https://www.corosolto.com.br/mapa) | presença é aproximada por cidade; partidas são separadas nas cinco facções |
 
 ## Cobertura dos dados públicos
 

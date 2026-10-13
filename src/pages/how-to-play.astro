@@ -6,7 +6,7 @@
 // cada página manda pro par quando o idioma resolvido não bate (regras do i18n.js).
 import Layout from '../layouts/Layout.astro';
 import { CONTROLES, MAPAS } from '../data/jogo';
-import { BRAND_FULL, GAME_ID, abs } from '../lib/site';
+import { BRAND_FULL, GAME_ID, HOST, abs } from '../lib/site';
 import { FACTIONS } from '../../public/js/factions.js';
 
 const nCtf = MAPAS.filter(m => m.ctf).length;
@@ -19,7 +19,7 @@ const faccoesProntas = FACTIONS.filter((f) => f.ready);
 // Nomes de mapa são marca própria (aparecem assim no menu do jogo): ficam em PT.
 const PASSOS = [
   { nome: 'Open the game in a browser',
-    texto: 'Go to www.csbrasil.online in Chrome, Edge, Firefox or Safari. On a phone, play in landscape with the on-screen touch controls. Performance depends on your device and browser.' },
+    texto: `Go to ${HOST} in Chrome, Edge, Firefox or Safari. On a phone, play in landscape with the on-screen touch controls. Performance depends on your device and browser.` },
   { nome: 'Pick a nick',
     texto: 'The nick is 2 to 14 characters and stays saved in your browser: it’s the name shown on the match scoreboard and in kill announcements. Not required to play.' },
   { nome: 'Pick a faction and a character',
@@ -117,7 +117,7 @@ const jsonld = [
       parágrafo que um assistente de IA cita inteiro, então ele responde a
       pergunta sozinho e usa os mesmos números do JSON-LD. */}
   <Fragment slot="sub">
-    <strong>Short answer:</strong> open <strong>www.csbrasil.online</strong> in a browser; on
+    <strong>Short answer:</strong> open <strong>{HOST}</strong> in a browser; on
     mobile, turn your phone sideways and use the touch controls. The game is free, with no download
     or signup.{' '}
     <strong>WASD</strong> moves, the <strong>mouse</strong> aims, <strong>left click</strong>{' '}

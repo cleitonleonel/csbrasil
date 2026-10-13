@@ -104,7 +104,7 @@ the session; the nickname is display data. Old clients and a database pending th
 private migration retain a temporary `nickname + token` fallback.
 
 **The ranking is off today** (`RANKING_ON` in `src/lib/site.ts`) and was replaced by
-anonymous telemetry. It is a flag, not a removal — details in [Current state](./status).
+anonymous telemetry. It is a flag, not a removal — details in [Current state](./estado).
 
 :::note None of this is required to run the game
 Without the Supabase variables the site boots the same: the ranking routes respond
