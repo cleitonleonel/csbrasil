@@ -25,7 +25,7 @@
    real, e é por isso que ela mede o jogo e não este arquivo).
 
    Uso:
-     npm run eval:serve &
+     node tools/eval/serve.mjs 4510 &    # e BASE=http://127.0.0.1:4510 em cada comando
      node tools/gen-graffiti-layout.mjs            # os 5
      node tools/gen-graffiti-layout.mjs quebrada
    ============================================================================ */
@@ -34,7 +34,7 @@ import { pathToFileURL } from 'node:url';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { impressao, MAP_SOURCES } from './eval/graffiti-fingerprint.mjs';
 
-const BASE = process.env.BASE || 'http://localhost:8123';
+const BASE = process.env.BASE;
 const SAIDA = 'public/js/graffiti_layout.js';
 const MAPAS = Object.keys(MAP_SOURCES);
 const ARGS = process.argv.slice(2);
@@ -50,6 +50,8 @@ if (SO_IMPRESSAO && !MOTIVO) {
   console.error('--so-impressao exige --motivo="por que a colocação não muda"');
   process.exit(1);
 }
+
+if (!BASE && !SO_IMPRESSAO) { console.error('BASE ausente: aponte para o SEU servidor (ex.: node tools/eval/serve.mjs 4510 & BASE=http://127.0.0.1:4510 npm run grafite). Sem padrão de propósito: localhost:8123 costuma ser o servidor de outra sessão, com outra árvore.'); process.exit(2); }
 
 const gRoot = execSync('npm root -g').toString().trim();
 const _pw = await import(pathToFileURL(`${gRoot}/playwright/index.js`).href);
