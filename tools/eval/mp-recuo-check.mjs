@@ -15,8 +15,9 @@
      MPR7 · bot remoto de lado 4,7 m/s                 run, sem reverso (inalterado)
      MPR8-9 · de lado girando 4-6 rad/s                run em todo quadro: a velocidade do segmento
               projetada no yaw do instante (±giro·25 ms) piscava walk reverso 1 quadro em 3
-   Mutante: `--mutante=semrecuo` força back=false na chamada e tem que reprovar MPR1-3.
-   Uso: node tools/eval/mp-recuo-check.mjs [--mutante=semrecuo] */
+   Mutantes: `--mutante=semrecuo` força back=false na chamada e tem que reprovar MPR1-3;
+   `--mutante=yawinstante` projeta no yaw do instante e tem que reprovar MPR8-9.
+   Uso: node tools/eval/mp-recuo-check.mjs [--mutante=semrecuo|yawinstante] */
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -45,7 +46,7 @@ const G = await import('../../public/js/glbchars.js');
 const { makeNetcode } = await import('../../public/js/netgame.js');
 
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-if (MUT && MUT !== 'semrecuo') throw new Error(`mutante desconhecido: ${MUT}`);
+if (MUT && MUT !== 'semrecuo' && MUT !== 'yawinstante') throw new Error(`mutante desconhecido: ${MUT}`);
 const CHAR = 'mst', ARMA = 'ak', DT = 1 / 60, SNAP_MS = 50, ASSENTA = 30, QUADROS = 90;
 
 await G.preloadCharacterAssets([CHAR], { weapons: [ARMA] });
@@ -61,6 +62,7 @@ function roda({ yaw = 0, humano = false, vf = 0, vl = 0, giro = 0 }) {
   let clock = 100000;
   const nc = makeNetcode({}, { meta: { snapshotHz: 20 }, startPing() {}, stopPing() {}, onSlot: null, onPersonagem: null });
   clearInterval(nc._nsTimer);
+  if (MUT === 'yawinstante') nc.__mutYawInstante = true;
   nc._now = () => clock;
   const ent = { def, team: 'E', mesh: m, weapon: ARMA, pos: new THREE.Vector3(), yaw, alive: true, _remote: 7, _netBot: !humano,
     _bufAt: [], _bufX: [], _bufY: [], _bufZ: [], _bufYaw: [], _bufPitch: [], _netSpd: 0 };
@@ -109,7 +111,7 @@ cobra('MPR7', 'bot remoto de lado 4,7 m/s', { yaw: 2.1, vl: 4.7 }, { clip: 'run'
 cobra('MPR8', 'bot remoto de lado 4,7 m/s girando 4 rad/s', { yaw: 0.3, vl: 4.7, giro: 4 }, { clip: 'run', sinal: 1 });
 cobra('MPR9', 'humano remoto de lado 2,5 m/s girando 6 rad/s', { yaw: 0.3, humano: true, vl: 2.5, giro: 6 }, { clip: 'run', sinal: 1 });
 
-const esperadas = ['MPR1', 'MPR2', 'MPR3'];
+const esperadas = MUT === 'yawinstante' ? ['MPR8', 'MPR9'] : ['MPR1', 'MPR2', 'MPR3'];
 if (MUT) {
   const faltou = esperadas.filter((c) => !falhas.includes(c));
   if (faltou.length) { console.error(`✗ mutante ${MUT} NÃO foi pego em ${faltou.join(', ')} — a régua está cega`); process.exit(1); }

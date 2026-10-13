@@ -767,7 +767,7 @@ class Netcode {
     const g = b.mesh && b.mesh.group;
     if (!g) return;
     if (b._remote === 'ghost') { g.visible = false; return; }
-    let vx = 0, vz = 0;
+    let vx = 0, vz = 0, segYaw = null;
     if (b._bufAt && b._bufAt.length) {
       /* Renderiza o remoto `interpAtrasoMs` no PASSADO, interpolando no buffer: absorve o
          jitter que congelava o boneco a cada pacote atrasado (BUG-87). NUNCA extrapola. */
@@ -792,6 +792,9 @@ class Netcode {
       if (s >= 0) {
         const segS = Math.max(1, at[s + 1] - at[s]) / 1000;
         vx = (b._bufX[s + 1] - b._bufX[s]) / segS; vz = (b._bufZ[s + 1] - b._bufZ[s]) / segS;
+        let ds = b._bufYaw[s + 1] - b._bufYaw[s]; while (ds > Math.PI) ds -= Math.PI * 2; while (ds < -Math.PI) ds += Math.PI * 2;
+        // yaw do meio do segmento, não o do instante: girando, o erro inverte o sinal do strafe. `__mutYawInstante` é gancho de mp-recuo-check.mjs
+        segYaw = this.__mutYawInstante ? null : b._bufYaw[s] + ds / 2;
       }
     }
     if (b.alive) {
@@ -799,7 +802,8 @@ class Netcode {
       const corpoYaw = b._netBot === false ? b.yaw + Math.PI : b.yaw;   // humano remoto olhava pra trás
       g.position.copy(b.pos); g.rotation.set(0, corpoYaw, 0); g.visible = true;
       const spd = Math.min(6, b._netSpd || 0);
-      const fwd = vx * Math.sin(corpoYaw) + vz * Math.cos(corpoYaw);
+      const fwdYaw = segYaw == null ? corpoYaw : (b._netBot === false ? segYaw + Math.PI : segYaw);
+      const fwd = vx * Math.sin(fwdYaw) + vz * Math.cos(fwdYaw);
       if (b.mesh.isGLB) {
         // update(dt, moving, hasTarget, speed, back): a velocidade REAL vai no 4º argumento —
         // com speed=0 o clipe rodava a 0,45× e o boneco deslizava (BUG-113).
