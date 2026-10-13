@@ -1,10 +1,11 @@
 ---
 import pkg from '../../package.json';
+import {SITE} from '../lib/site';
 declare const __MANIFESTO_JS__: {revision:string};
 const socialSrc=`/js/community.js?v=${pkg.version}-${__MANIFESTO_JS__.revision}`;
 const {profileId='',tab='profile'}=Astro.props;
 ---
-<section id="community" class="community" data-profile={profileId} data-tab={tab}>
+<section id="community" class="community" data-profile={profileId} data-tab={tab} data-site={SITE}>
   <header class="social-heading"><div><h2>SEU CORO, SUA TURMA.</h2></div></header>
   <p id="social-status" class="social-status" role="status" aria-live="polite">Carregando a comunidade…</p>
   <nav class="social-tabs" aria-label="Comunidade">
