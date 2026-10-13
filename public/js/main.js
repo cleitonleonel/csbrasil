@@ -3755,7 +3755,10 @@ let mpSessao = null;
    Causa e régua: tools/eval/mapa-sp-pos-mp-check.mjs. */
 let escolhaSpAntesDoMp = null;
 function mpGuardarEscolhaSp() {
-  if (!escolhaSpAntesDoMp) escolhaSpAntesDoMp = { map: currentMap, mode: matchMode, escolhido: modoEscolhido };
+  if (!escolhaSpAntesDoMp) escolhaSpAntesDoMp = {
+    map: currentMap, mode: matchMode, escolhido: modoEscolhido,
+    char: currentChar, team: currentTeam, faction: currentFaction, enemyFaction: currentEnemyFaction,
+  };
 }
 function mpDevolverEscolhaSp() {
   const e = escolhaSpAntesDoMp; escolhaSpAntesDoMp = null;
@@ -3763,6 +3766,8 @@ function mpDevolverEscolhaSp() {
   currentMap = e.map; matchMode = e.mode; modoEscolhido = e.escolhido;
   mapIdx = Math.max(0, MAPAS_MENU.indexOf(currentMap));
   setMapMode();
+  currentChar = e.char; currentTeam = e.team; currentFaction = e.faction; currentEnemyFaction = e.enemyFaction;
+  syncHomeCharacter();
 }
 let mpNoAtual = null;
 let mpConectando = false;   // trava de reentrada do mpEntrar (BUG-88)
