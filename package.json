@@ -289,7 +289,7 @@
     "eval:dificuldade": "node tools/eval/dificuldade-check.mjs",
     "eval:tiro-mp": "node tools/eval/tiro-mp-browser.mjs",
     "eval:chat-mp": "node tools/eval/chat-mp-browser.mjs",
-    "eval:noescolha": "node tools/eval/no-escolha-check.mjs",
+    "eval:noescolha": "node tools/eval/no-escolha-check.mjs && node tools/eval/convite-origem-check.mjs",
     "eval:maqfraca": "node tools/eval/maquina-fraca-check.mjs",
     "eval:qualadapt": "node tools/eval/qualidade-adaptativa-check.mjs",
     "eval:sonda": "node tools/eval/sonda-prazo-check.mjs",
