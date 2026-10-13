@@ -2395,10 +2395,13 @@ function matchRounds() {
 // Ficha da partida IMPRESSA NO CARTAZ (modo · formato · armas). O dono pediu "maior dimensão
 // pro mapa" com "nome, modo, bots" — então o resumo mora sobre a arte, e não numa coluna
 // de formulário ao lado dela.
+const hubSels = [];
+function syncHubSels() { for (const s of hubSels) s.sync(); }
 function setMapMeta() {
   const el = $('map-meta'); if (!el) return;
   const modo = frase(matchMode === 'ctf' ? 'ctfMelhorDeN' : 'melhorDeN', matchRounds());
   el.textContent = frase('resumoPartida', modo, 1 + settings.allyBots, settings.enemyBots, tr(WPN_MODE_LABEL[settings.wpnMode || 'all'] || 'TODAS'));
+  syncHubSels();
 }
 function setMapMode() {
   const m = $('map-mode');
@@ -2717,6 +2720,74 @@ if (msRounds) msRounds.onchange = () => {
 };
 const diffSel = $('diff-select');
 syncMapOptions();
+/* Home: cada opção da partida é um select que abre, na cara do card de ROUNDS (dono, 13/10).
+   Delegam aos controles de sempre; régua: tools/eval/home-selects-browser.mjs. */
+function montarHubSels() {
+  const host = $('hub-sels');
+  if (!host) return;
+  const fechar = (menos) => { for (const s of hubSels) if (s !== menos) s.abrir(false); };
+  const montar = (id, rotulo, opcoes, atual, escolher) => {
+    const box = document.createElement('div'); box.className = 'hub-sel'; box.id = `hub-sel-${id}`;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'hub-sel-btn';
+    btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = `<small>${rotulo}</small><strong></strong>`;
+    const lista = document.createElement('div'); lista.className = 'hub-sel-list'; lista.hidden = true; lista.id = `hub-sel-${id}-lista`; btn.setAttribute('aria-controls', lista.id);
+    lista.setAttribute('role', 'listbox'); lista.setAttribute('aria-label', rotulo);
+    box.append(btn, lista); host.appendChild(box);
+    const sel = {
+      sync() {
+        const v = atual(), op = opcoes().find((o) => o.v === v);
+        btn.querySelector('strong').textContent = op ? op.t : v;
+      },
+      abrir(on) {
+        lista.hidden = !on; btn.setAttribute('aria-expanded', String(on));
+        if (!on) return;
+        const v = atual();
+        lista.replaceChildren(...opcoes().map((o) => {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'hub-sel-opt';
+          b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(o.v === v)); b.dataset.v = o.v;
+          if (o.img) { const im = document.createElement('img'); im.src = o.img; im.alt = ''; im.loading = 'lazy'; b.appendChild(im); }
+          b.append(o.t);
+          b.onclick = (e) => { e.stopPropagation(); sel.abrir(false); if (o.v !== atual()) escolher(o.v); else ui.click(); btn.focus(); };
+          return b;
+        }));
+        /* A lista sai do #menu-setup (que rola e cortava) e mora no body, presa ao botão;
+           no celular vira folha na base da tela. */
+        if (lista.parentElement !== document.body) document.body.appendChild(lista);
+        const r = btn.getBoundingClientRect(), folha = matchMedia('(max-width: 760px)').matches;
+        lista.classList.toggle('folha', folha);
+        lista.style.minWidth = `${r.width}px`;
+        lista.style.bottom = `${Math.round(innerHeight - r.top + 4)}px`;
+        lista.style.left = `${Math.round(Math.max(14, Math.min(r.left, innerWidth - 14 - Math.max(r.width, lista.offsetWidth))))}px`;
+        (lista.querySelector('[aria-selected="true"]') || lista.firstChild)?.focus();
+      },
+    };
+    btn.onclick = (e) => { e.stopPropagation(); fechar(sel); ui.click(); sel.abrir(lista.hidden); };
+    lista.onkeydown = box.onkeydown = (e) => {
+      if (e.key === 'Escape' && !lista.hidden) { e.preventDefault(); e.stopPropagation(); sel.abrir(false); btn.focus(); return; }
+      if (lista.hidden || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+      e.preventDefault();
+      const ops = [...lista.children], i = ops.indexOf(document.activeElement);
+      ops[(i + (e.key === 'ArrowDown' ? 1 : -1) + ops.length) % ops.length]?.focus();
+    };
+    hubSels.push(sel);
+  };
+  const faixa = (de, ate, rot) => Array.from({ length: ate - de + 1 }, (_, k) => ({ v: String(de + k), t: rot(de + k) }));
+  montar('mapa', 'MAPA', () => MAPAS_MENU.map((id) => ({ v: id, t: MAPS[id].name, img: mapPreviewPoster(id, VERSION) })),
+    () => currentMap, (v) => { ui.click(); gotoMap(MAPAS_MENU.indexOf(v)); });
+  montar('modo', 'MODO', () => [{ v: 'rounds', t: 'MATA-MATA' }, { v: 'ctf', t: 'CAPTURA' }],
+    () => matchMode, (v) => $(v === 'ctf' ? 'hub-mode-ctf' : 'hub-mode-rounds').click());
+  montar('armas', 'ARMAS', () => WPN_MODES.map((m) => ({ v: m.id, t: tr(m.label) })),
+    () => settings.wpnMode || 'all', (v) => { msWpnMode.value = v; msWpnMode.onchange(); });
+  montar('time', 'SEU TIME', () => faixa(0, 7, botsLabel), () => String(settings.allyBots), (v) => { msAlly.value = v; msAlly.onchange(); });
+  montar('inimigos', 'INIMIGOS', () => faixa(1, 8, botsLabel), () => String(settings.enemyBots), (v) => { msEnemy.value = v; msEnemy.onchange(); });
+  montar('rounds', 'ROUNDS', () => faixa(1, ROUNDS_CUSTOM_MAX, String), () => String(matchRounds()), (v) => { msRounds.value = v; msRounds.onchange(); });
+  document.addEventListener('click', () => fechar(null));
+  addEventListener('resize', () => fechar(null));
+  menuSetup.addEventListener('scroll', () => fechar(null), { passive: true });
+  syncHubSels();
+}
+if (HUB_ENABLED) montarHubSels();
 if (diffSel) {
   [['easy', 'FÁCIL'], ['normal', 'NORMAL'], ['hard', 'DIFÍCIL'], ['insane', 'INSANO']].forEach(([v, l]) => { const o = document.createElement('option'); o.value = v; o.textContent = l; diffSel.appendChild(o); });
   diffSel.value = settings.difficulty || 'normal';
