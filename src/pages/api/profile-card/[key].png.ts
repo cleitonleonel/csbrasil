@@ -3,6 +3,7 @@ import {Resvg} from '@resvg/resvg-js';
 import fontSource from '../../../lib/font-data.ts?raw';
 import {publicProfile} from '../../../lib/public-profile';
 import {profileCardSvg} from '../../../lib/profile-card.mjs';
+import {SITE} from '../../../lib/site';
 import {mkdtemp,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -19,7 +20,7 @@ export const GET:APIRoute=async({params,request,clientAddress})=>{
   if(!profile)return new Response('Perfil indisponível',{status,headers});
   const character=typeof profile.last_character==='string' && Object.hasOwn(__SOCIAL_CHARACTERS__,profile.last_character)?__SOCIAL_CHARACTERS__[profile.last_character]:null;
   const portrait=character?__SOCIAL_PORTRAITS__[character.id]:null;
-  const svg=profileCardSvg(profile,character,portrait);
+  const svg=profileCardSvg(profile,character,portrait,SITE);
   const render=new Resvg(svg,{font:{fontFiles:[await embeddedFont()],loadSystemFonts:false,defaultFontFamily:'DejaVu Sans'},background:'#0c0e11'});
   return new Response(new Uint8Array(render.render().asPng()),{headers:{...headers,'content-type':'image/png'}});
  }catch{return new Response('Cartão indisponível',{status:503,headers});}
