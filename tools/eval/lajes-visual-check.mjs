@@ -2,11 +2,16 @@ import fs from 'node:fs';
 import { THREE, MAPS, bootGame, initTextures } from './harness.mjs';
 import { measureLajesVisual } from './lajes-visual-measure.mjs';
 import { buildLajes } from '../../public/js/map_lajes_authored.js';
+import { withVisibleShotOccluders } from '../../public/js/shot_surfaces.js';
 const mutante = process.argv.find(a => a.startsWith('--mutante='))?.split('=')[1] || '';
 const known = ['', 'seta-eixo-errado', 'porta-escala', 'sem-oclusao', 'builder-antigo'];
 if (!known.includes(mutante)) throw Error(`Mutante desconhecido: ${mutante}`);
-if (mutante === 'builder-antigo') MAPS.lajes.build = (...args) => buildLajes(...args);
-const registered = MAPS.lajes.build === buildLajes;
+if (mutante === 'builder-antigo') {
+  const outro = (...args) => buildLajes(...args);
+  Object.defineProperty(outro, 'name', { value: buildLajes.name });
+  MAPS.lajes.build = withVisibleShotOccluders(outro);
+}
+const registered = MAPS.lajes.build === withVisibleShotOccluders(buildLajes);
 console.log(`${registered ? '✓' : '✗'} LVA1 builder ativo`);
 if (!registered) process.exit(1);
 const game = bootGame('lajes', { textures: initTextures(), bots: 0, seed: 12345 }), w = game.world;
