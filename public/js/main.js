@@ -33,7 +33,7 @@ import { MENU_MUSIC_ACTIVE_IDS } from './menu-music-selection.js';
 import { createMapPreview, VIDEO_MAPS } from './map_preview.js';
 /* Multiplayer. O game.js NÃO importa nada disto: o netcode é injetado por aqui
    (`new Game({ mpFactory, net })`), e sem sessão de rede nenhuma linha dele executa. */
-import { NOS, NO_RE, ordenarNos, melhorNoParaJogar, mpUrls, sondarNos, listRooms, listMaps, createRoom, NetClient, parseConvite, linkDeConvite, salaPorConvite, httpDoNo, resolvePlayerSide, ladoOnline, transitionSlot } from './net.js';
+import { NOS, NO_RE, ordenarNos, melhorNoParaJogar, mpUrls, sondarNos, listRooms, listMaps, createRoom, NetClient, parseConvite, linkDeConvite, salaPorConvite, httpDoNo, resolvePlayerSide, ladoOnline, transitionSlot, decidirPersonagemMp } from './net.js';
 import { montarChatSala } from './chat-painel.js';
 import { makeNetcode } from './netgame.js';
 
@@ -2894,6 +2894,7 @@ $('char-confirm').onclick = () => {
   if (switchMode === 'mp' && game && mpSessao) {
     switchMode = false;
     localStorage.setItem('csbr-home-character', selChar.id);
+    if (escolhaSpAntesDoMp) escolhaSpAntesDoMp.char = selChar.id;
     mpSessao.net.pedirPersonagem(selChar.id);
     show(null); game.resume();
     return;
@@ -3769,6 +3770,11 @@ function mpDevolverEscolhaSp() {
   currentChar = e.char; currentTeam = e.team; currentFaction = e.faction; currentEnemyFaction = e.enemyFaction;
   syncHomeCharacter();
 }
+// O personagem do jogador: dentro do MP é o guardado na entrada (a sala só empresta o corpo).
+function personagemEscolhido() {
+  const id = escolhaSpAntesDoMp ? escolhaSpAntesDoMp.char : currentChar;
+  return CHARACTERS.find((c) => c.id === id) || null;
+}
 let mpNoAtual = null;
 let mpConectando = false;   // trava de reentrada do mpEntrar (BUG-88)
 let mpNos = [];
@@ -3779,6 +3785,7 @@ let mpIdentityTimer = null;
 function mpLimparIdentidade() {
   clearTimeout(mpIdentityTimer);
   mpIdentityTimer = null;
+  mpAvisoPersonagem(null);
   for (const id of ['mp-identity-toast', 'mp-identity-pause']) {
     const card = document.getElementById(id);
     if (card) card.hidden = true;
@@ -4361,7 +4368,7 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
       if (mpSessao?.net === net) await startGame(currentTeam, currentChar, currentEnemyFaction, true);
       if (mpSessao?.net === net && net.yourEnt === m.yourEnt && game?.online) {
         mpMostrarIdentidade({ ...net.meta, ...m });
-        mpPedirPersonagemPreferido(net);
+        mpPedirPersonagemPreferido(net, m.motivo);
       }
     });
   };
@@ -4404,13 +4411,42 @@ async function mpMontarPartida(net, m) {
   }
 }
 
-/* O personagem escolhido no hub vale no multiplayer: o servidor troca o corpo herdado do bot. */
-function mpPedirPersonagemPreferido(net) {
-  const lado = net.yourTeam;
-  if (!net.aceitaPersonagem() || net.espectador || (lado !== 'E' && lado !== 'B')) return;
-  const pref = CHARACTERS.find((c) => c.id === localStorage.getItem('csbr-home-character'));
-  if (!pref || pref.id === currentChar || !podeNoLado(pref, lado)) return;
-  net.pedirPersonagem(pref.id);
+/* O personagem escolhido vale no multiplayer: o servidor troca o corpo herdado do bot.
+   Fora do lado, avisa e oferece a troca (docs/adr/0007-personagem-escolhido.md). */
+function mpPedirPersonagemPreferido(net, motivo = null) {
+  const escolhido = personagemEscolhido();
+  const d = decidirPersonagemMp({
+    escolhido, atual: currentChar, lado: net.yourTeam, espectador: net.espectador,
+    aceita: net.aceitaPersonagem(), podeNoLado,
+  });
+  mpAvisoPersonagem(null);
+  if (d.acao === 'pedir') net.pedirPersonagem(d.id);
+  else if (d.acao === 'avisar-servidor') mpAvisoPersonagem(`${escolhido.name}: este servidor ainda não troca o personagem.`);
+  else if (d.acao === 'avisar-lado') {
+    const nomeLado = (l) => (l === 'E' ? 'ESQUERDA' : 'DIREITA');
+    const cheio = motivo === 'lado_cheio' ? ` A ${nomeLado(d.outroLado)} está cheia agora.` : '';
+    mpAvisoPersonagem(`${escolhido.name} não joga na ${nomeLado(net.yourTeam)}.${cheio}`, {
+      ir: `IR PARA A ${nomeLado(d.outroLado)}`,
+      onIr: () => { ui.click(); net.pedirTime(d.outroLado); game?.resume(); },
+    });
+  }
+}
+function mpAvisoPersonagem(texto, oferta = null) {
+  for (const id of ['mp-identity-toast', 'mp-identity-pause']) {
+    const el = document.querySelector(`#${id} .mp-identity-aviso`);
+    if (el) { el.textContent = (texto || '') + (oferta && id === 'mp-identity-toast' ? ' ESC para trocar.' : ''); el.hidden = !texto; }
+  }
+  const acoes = $('mp-personagem-acoes');
+  if (!acoes) return;
+  acoes.hidden = !oferta;
+  if (!oferta) return;
+  $('mp-personagem-ir').textContent = oferta.ir;
+  $('mp-personagem-ir').onclick = oferta.onIr;
+  $('mp-personagem-outro').onclick = () => { ui.click(); if (mpSessao) abrirTrocaOnline(); };
+  if (texto) {
+    const toast = $('mp-identity-toast');
+    if (toast) { toast.hidden = false; clearTimeout(mpIdentityTimer); mpIdentityTimer = setTimeout(() => { toast.hidden = true; }, 9000); }
+  }
 }
 
 /* Conexão caiu no meio da partida. Nada de "reconectar sozinho e fingir que não houve nada":

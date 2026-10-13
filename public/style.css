@@ -1098,6 +1098,10 @@ body:has(#pause-menu:not(.hidden)) #hud{opacity:.12;transition:opacity var(--t) 
 .mp-identity-copy small{color:#b4d92e;font:700 10px/1.2 var(--aaa-font-body);letter-spacing:1.5px}
 .mp-identity-copy strong{font-size:18px;line-height:1.15;overflow-wrap:anywhere}
 .mp-identity-copy span{font-size:12px;color:#bcbeb9;line-height:1.2}
+.mp-identity-aviso{font:700 12px/1.25 var(--aaa-font-body);color:#ffc93f;font-style:normal}
+.mp-identity-aviso[hidden],.mp-personagem-acoes[hidden]{display:none}
+.mp-personagem-acoes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.mp-personagem-acoes .btn{flex:1 1 160px;border-color:#ffc93f;color:#ffc93f}
 #mp-identity-toast{position:fixed;z-index:29;left:50%;top:max(76px,calc(env(safe-area-inset-top) + 68px));
   transform:translateX(-50%);pointer-events:none}
 body:has(#pause-menu:not(.hidden)) #mp-identity-toast{display:none}
