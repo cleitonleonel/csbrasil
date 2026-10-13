@@ -473,3 +473,36 @@ Email/Google/Discord/X/LinkedIn, newsletter, social/chat, loja TRETa$/Pix e
 Portugal→Brasil2027, mapas e campanha de redes. Bases deste marco clientf52de72a3,
 backendf90da0e/progressf819696; branches codex/ranking-launch-20261012 e growth-
 readiness. Artefatos: csbrasil/private-assets/growth-readiness/ranking-20261012.
+
+
+## Arte de email armada e testes preparados — 13/10/2026
+
+Direção do dono substitui o banner sem armas: Canarinho Pistola + Zé da
+Gotinha (lado Esquerda), ambos segurando armas. Asset ativo v2 1200×400,
+84.054 bytes, SHA256 0fb827f2611d8ed520b35209d75dd4cb63b6eb87e52ac7bbe2679e86fdcbb881.
+Original GPT e capturas ficam em private-assets/growth-readiness/ranking-20261012;
+proveniência/prompt completos em public/img/email/FONTE.md. V1 preservado e
+rejeitado como banner ativo. Logo oficial e textos/CTA continuam separados.
+
+Template generator --check PASS e probe independente 4/4 PASS. Crítica visual
+independente aprovou desktop/mobile; dono aprovou a arte. Captura mobile tem
+375×1003 pixels; viewport declarado390, DOM sem overflow observado pelo autor.
+Parecer privado email-armed-v2-review-20261013.md; screenshots
+email-armed-v2-desktop-20261013.png e email-armed-v2-mobile-20261013.png.
+
+Pedido explícito autoriza quatro testes na caixa indicada pelo dono. Payloads
+privados em email-tests-20261013 (magic-link/signup/newsletter-confirmation/weekly),
+com imagens CID, texto alternativo, plaintext, aviso TESTE VISUAL, links
+demonstrativos e chaves idempotentes; não autenticam nem inscrevem destinatário.
+Status: PREPARADOS, NÃO ENVIADOS. Remetente escolhido fale@corosolto.com.br:
+Resend recusou novo domínio com403, limite do plano. Subdomínio
+auth.corosolto.com.br verificado, envio ativo eu-west-1; escolha de
+fale@auth.corosolto.com.br para os testes aguarda resposta no formulário.
+Alias de recebimento não autentica SMTP. Não remover domínio alheio nem
+contratar upgrade automaticamente. Sem alteração DNS, SMTP, SQL ou produção.
+
+Bases deste marco: cliente e7ef54793/backend02148c8/progress93fe9cb; mesmas
+branches e lanes. Próximo: concluir escolha do remetente, enviar quatro testes
+com idempotência e conferir status real; depois instalar transporte/templates
+no rollout autorizado. Revisão de PRs continua no ledger privado de progress.
+Objetivo integral e gates049/semanal/OAuth/news/chat/loja/campanha preservados.
