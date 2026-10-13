@@ -61,6 +61,8 @@ export const STATIC: [string, string, string][] = [
   ['/armas',       '0.8', 'weekly'],
   ['/sobre',       '0.7', 'monthly'],
   ['/apoie',       '0.5', 'monthly'],
+  ['/privacidade', '0.3', 'monthly'],
+  ['/excluir-dados', '0.3', 'monthly'],
   ['/mapa',        '0.6', 'daily'],
   ['/changelog',   '0.5', 'weekly'],
   ...PT_EN_PAIRS.map(([, en]) => [en, '0.5', 'weekly'] as [string, string, string]),
