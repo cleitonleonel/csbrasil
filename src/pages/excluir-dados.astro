@@ -1,16 +1,13 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { BRAND, BRAND_FULL, abs } from '../lib/site';
+import LegalPage from '../layouts/LegalPage.astro';
+import { BRAND } from '../lib/site';
 import { LEGAL_CONTACT } from '../lib/legal';
 
 const requestUrl = `mailto:${LEGAL_CONTACT}?subject=${encodeURIComponent(`Excluir dados do ${BRAND}`)}`;
-const jsonld = [{ '@type': 'BreadcrumbList', itemListElement: [
-  { '@type': 'ListItem', position: 1, name: 'Início', item: abs('/') },
-  { '@type': 'ListItem', position: 2, name: 'Excluir dados', item: abs('/excluir-dados') },
-] }];
 ---
-<Layout title={`Excluir perfil e dados | ${BRAND_FULL}`} description={`Peça a exclusão do seu perfil e dos dados associados no ${BRAND}, sem precisar reinstalar o app.`} h1="Excluir perfil e dados" kicker="Seus dados" jsonld={jsonld}>
-  <Fragment slot="sub">Você pode fazer o pedido por email, mesmo sem o app instalado.</Fragment>
+<LegalPage title="Excluir perfil e dados" description={`Peça a exclusão do seu perfil e dos dados associados no ${BRAND}, sem precisar reinstalar o app.`}>
+  <p>Você pode pedir a exclusão por email, mesmo sem o app instalado.</p>
+
   <h2>Como pedir</h2>
   <ol>
     <li>Envie um email para <a href={requestUrl}>{LEGAL_CONTACT}</a> com o assunto “Excluir dados do {BRAND}”.</li>
@@ -18,12 +15,14 @@ const jsonld = [{ '@type': 'BreadcrumbList', itemListElement: [
     <li>A equipe confirma o recebimento e verifica a relação com o perfil antes de excluir. Um apelido público sozinho não prova que o perfil é seu. Informaremos o prazo e qualquer informação adicional necessária.</li>
   </ol>
   <p>Não envie senha, token de jogador, código de acesso ou documento na primeira mensagem. A confirmação de identidade deve usar apenas as informações necessárias para proteger seu perfil.</p>
-  <div class="cta-row"><a class="btn-cta" href={requestUrl}>Pedir exclusão por email</a></div>
+  <a class="legal-request hub-cta" href={requestUrl}>PEDIR EXCLUSÃO POR EMAIL ↗</a>
   <p>Se o botão não abrir um aplicativo de email, copie o endereço acima e envie a mensagem pelo serviço que você usa.</p>
+
   <h2>O que o pedido abrange</h2>
   <p>A exclusão completa abrange o perfil, avatar, links sociais, resultados e dados de atividade ou treinamento associados ao jogador que pudermos identificar, além dos dados de contato e feedback indicados no pedido. Informe também se quer interromper o recebimento de novidades. A exclusão do perfil impede recuperar seus resultados por ele.</p>
   <p>Registros necessários para investigar fraude ou abuso podem ser preservados durante a investigação. Informaremos quais exceções se aplicam ao seu pedido. Estatísticas sem vínculo com uma pessoa podem permanecer.</p>
+
   <h2>Dados no aparelho</h2>
   <p>Para remover preferências e credenciais locais, limpe os dados do app nas configurações do Android ou os dados do site no navegador. Essa limpeza não exclui o perfil dos serviços online. Use o pedido por email para isso.</p>
-  <p>Leia também a <a href="/privacidade">política de privacidade</a>.</p>
-</Layout>
+  <p>Leia também a <a href="/privacidade">Política de Privacidade</a>.</p>
+</LegalPage>

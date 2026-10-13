@@ -38,6 +38,7 @@ const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).
       <nav aria-label="Documentos do jogo">
         <a href="/privacidade" aria-current={path === '/privacidade' ? 'page' : undefined}>Privacidade</a>
         <a href="/termos" aria-current={path === '/termos' ? 'page' : undefined}>Termos de uso</a>
+        <a href="/excluir-dados" aria-current={path === '/excluir-dados' ? 'page' : undefined}>Excluir dados</a>
       </nav>
       <a class="legal-play hub-cta" href="/">VOLTAR AO JOGO ↗</a>
     </header>
@@ -85,9 +86,11 @@ const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).
   .legal-text { border-top: 1px solid var(--line-2); padding-top: 20px; font-size: 20px; line-height: 1.65; overflow-wrap: anywhere; }
   .legal-text :global(h2) { margin: 36px 0 12px; color: var(--ink-100); font-weight: 700; font-size: 28px; line-height: 1.2; }
   .legal-text :global(p) { margin-bottom: 16px; }
-  .legal-text :global(ul) { padding-left: 24px; margin-bottom: 20px; }
+  .legal-text :global(ul), .legal-text :global(ol) { padding-left: 24px; margin-bottom: 20px; }
   .legal-text :global(li) { margin-bottom: 10px; }
   .legal-text :global(a) { color: var(--sys); text-decoration: underline; text-underline-offset: 4px; }
+  .legal-text :global(a.legal-request) { display: inline-grid; place-items: center; width: auto; padding: 12px 20px; margin: 4px 0 20px; color: #131313; text-decoration: none; font-size: 24px; }
+  .legal-text :global(a.legal-request:focus-visible) { outline: 0; box-shadow: inset 0 0 0 3px #131313; }
   .legal-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; border-top: 1px solid var(--line); padding: 24px max(24px, calc((100vw - 1152px) / 2)); color: var(--ink-300); font: 12px/1.5 var(--mono); }
   @media (max-width: 760px) {
     .legal-header { flex-wrap: wrap; gap: 16px; padding: 12px 20px; }
