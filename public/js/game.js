@@ -962,7 +962,7 @@ export class Game {
        e a arma encolhia. Aqui o aspecto não mudou, então força. */
     if (this._vmFrame) this._vmFrame(true);
     this.vmScene = new THREE.Scene();
-    this.vmScene.environment = this.scene.environment;   // mesmo IBL do mapa (metais leem)
+    this.vmScene.environment = this._vmEnv || null;   // IBL só aqui: a cena do mapa fica sem (ver _buildEnv)
     this.vmScene.add(this.vm.root);
     // BUG-75: arma visível é o GLB do Coro Solto; mãos com pele/roupa do personagem.
     // Tudo-ou-nada (vmlaunch.js): sem a chave nenhum controlador nasce e tudo fica no fparms.
@@ -1023,7 +1023,7 @@ export class Game {
              ferro_velho  AKM na mão C* 8,62          |  no chão C*13,15          (0,66×)
          Ou seja: no praca_poderes a arma na mão fica DUAS VEZES mais saturada (e no matiz do
          ouro, 30-55°); no ferro velho ela fica DESSATURADA. É o MESMO defeito nos dois
-         sinais, e a causa não é o env map (o MAT2 já confere que a vmScene usa o MESMO
+         sinais, e a causa não é o env map (na época a vmScene usava o MESMO
          `scene.environment` do mapa) — é ESTE rig: as 6 cores abaixo são CONSTANTES
          enquanto o sol de cada mapa vai de #fff4e2 (praca_poderes, quase branco) a #ffc07a
          (ferro_velho, laranja de fim de tarde). O nível seguia o mapa; a COR não seguia.
@@ -1402,7 +1402,7 @@ export class Game {
   _buildEnv() {
     try {
       const mult = (() => { const v = parseFloat(new URLSearchParams(location.search).get('env')); return isFinite(v) ? v : 1.0; })();
-      if (mult <= 0) { this.scene.environment = null; return; }
+      if (mult <= 0) { this.scene.environment = null; this._vmEnv = null; return; }
       const W = 512, H = 256;
       const sun = this.world && this.world.sun;
       const sd = new THREE.Vector3(0.35, 0.75, -0.25);
@@ -1448,7 +1448,12 @@ export class Game {
       const pmrem = new THREE.PMREMGenerator(this.renderer); pmrem.compileEquirectangularShader();
       if (this._envRT) this._envRT.dispose();
       this._envRT = pmrem.fromEquirectangular(tex);
-      this.scene.environment = this._envRT.texture;
+      /* IBL SÓ NO VIEWMODEL (decisão do dono, 13/10/2026). Até o #832 o PMREM saía preto na
+         GPU, e a arte de todos os mapas foi aprovada assim. Com o ambiente certo na cena
+         inteira os pretos subiam e a cor lavava (A/B no #832); na arma ele dá o volume que
+         faltava. O mapa segue sem `environment`; a vmScene recebe a textura no construtor. */
+      this.scene.environment = null;
+      this._vmEnv = this._envRT.texture;
       tex.dispose(); pmrem.dispose();
     } catch (e) { console.warn('env map', e); }
   }
@@ -1630,7 +1635,7 @@ export class Game {
        que é a tradução literal da invariante MAT1.
        KILL-SWITCH: ?vmmat=legacy volta ao clamp 0,55 + 7,60 lux desta linha para baixo, para
        o dono desfazer numa querystring se a GPU dele discordar da conta. */
-    const temEnv = !!this.scene.environment;   // _buildEnv() rodou lá em cima (mesmo frame)
+    const temEnv = !!this._vmEnv;   // _buildEnv() rodou lá em cima (mesmo frame)
     const fixVmMaterials = (obj) => obj.traverse((o) => {
       if (!o.isMesh || !o.material) return;
       if (!VM_MAT_LEGACY && temEnv) return;   // MAT1: mesmo GLB, mesmo material, nos 3 caminhos
@@ -8391,7 +8396,7 @@ export class Game {
     try { this._mp?.dispose(); } catch { /* já foi */ }
     this._mp = null;
     try { this.sfx.stopRound(); } catch {}   // vinheta não sobrevive ao fim da partida   // lazy-load de VM em voo (_ensureStaticVm) aborta no then
-    if (this._envRT) { this._envRT.dispose(); this._envRT = null; this.scene.environment = null; }   // libera o env map (IBL)
+    if (this._envRT) { this._envRT.dispose(); this._envRT = null; this._vmEnv = null; this.scene.environment = null; if (this.vmScene) this.vmScene.environment = null; }   // libera o env map (IBL)
     document.removeEventListener('keydown', this._kd);
     document.removeEventListener('keyup', this._ku);
     document.removeEventListener('mousedown', this._md);
