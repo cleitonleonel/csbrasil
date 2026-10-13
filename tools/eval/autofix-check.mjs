@@ -197,10 +197,10 @@ for (const nome of WORKFLOWS) {
 if (MUT === 'sem-varredura-pos-release') wf = wf.replace(/\n  push:\n    branches: \[main\]/, '');
 const temPush = /^\s{2}push:\n\s{4}branches: \[main\]/m.test(wf);
 const temVarredura = /varredura:\n\s+if: github\.event_name == 'push'/.test(wf);
-const filtraAtrasado = /mergeable != "MERGEABLE"/.test(wf) && /gh workflow run autofix\.yml/.test(wf);
+const filtraAtrasado = /"CONFLICTING"/.test(wf) && /gh workflow run autofix\.yml/.test(wf);
 if (!temPush) falhas.push('AF6 autofix.yml não acorda quando a main anda — PR parado esperando revisão nunca é consertado');
 else if (!temVarredura) falhas.push('AF6 o gatilho de push existe mas não há job de varredura');
-else if (!filtraAtrasado) falhas.push('AF6 a varredura não seleciona os PRs desatualizados nem dispara o autofix de cada um');
+else if (!filtraAtrasado) falhas.push('AF6 a varredura não seleciona os PRs em conflito nem dispara o autofix de cada um');
 
 /* ---- AF4: e nenhum outro workflow mergeia tampouco ---- */
 for (const nome of WORKFLOWS) {

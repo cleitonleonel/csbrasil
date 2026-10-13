@@ -41,7 +41,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Varredura pós-release: descobre quem ficou para trás e dispara o autofix de cada um
+  # Varredura pós-release: descobre quem entrou em CONFLITO e dispara o autofix de cada um
   # pelo `workflow_dispatch`, que é o caminho que enxerga secret. Barato — quem já está
   # em dia sai no primeiro passo do autofix, sem clonar nada pesado.
   varredura:
@@ -62,16 +62,19 @@ jobs:
           # Logo depois de um push na main o GitHub devolve `UNKNOWN` para quase todo PR:
           # ele ainda está recalculando. Tratar UNKNOWN como conflito disparava o autofix em
           # massa à toa — cada disparo vira merge da base + CI inteiro de novo. Espera o
-          # cálculo (até 3 × 30 s) e só segue para quem está CONFLICTING ou ficou UNKNOWN.
+          # cálculo (até 3 × 30 s) antes de escolher quem dispara.
           for tentativa in 1 2 3 4; do
             gh pr list --repo "$REPO" --state open --base main \
               --json number,mergeable,isDraft \
-              --jq '.[] | select(.isDraft | not) | select(.mergeable != "MERGEABLE") | "\(.number) \(.mergeable)"' > /tmp/estado.txt
+              --jq '.[] | select(.isDraft | not) | "\(.number) \(.mergeable)"' > /tmp/estado.txt
             grep -q ' UNKNOWN$' /tmp/estado.txt || break
             [ "$tentativa" = 4 ] || sleep 30
           done
-          cut -d' ' -f1 /tmp/estado.txt > /tmp/atrasados.txt
-          echo "PRs desatualizados: $(wc -l < /tmp/atrasados.txt)"
+          # Só CONFLICTING. PR só atrasado (MERGEABLE) não precisa de merge da base, e o que
+          # continuou UNKNOWN depois da espera fica para o próximo push na main: disparar no
+          # escuro é o que gerava merge e CI inteiro à toa (13/10: 58 merges, 18% dos minutos).
+          awk '$2 == "CONFLICTING" { print $1 }' /tmp/estado.txt > /tmp/atrasados.txt
+          echo "PRs em conflito: $(wc -l < /tmp/atrasados.txt) · ainda UNKNOWN: $(grep -c ' UNKNOWN$' /tmp/estado.txt || true)"
           while read -r pr; do
             [ -n "$pr" ] || continue
             echo "  → #$pr"
