@@ -723,6 +723,9 @@ export class Game {
     this.renderer = renderer;
     this.sfx = sfx;
     this.settings = settings;
+    /* `online` = autoridade do servidor. `_mp` é injetado pelo main.js; este arquivo nunca
+       importa rede. Single-player: `_mp` null e nada de rede roda. Ver docs/MULTIPLAYER.md. */
+    this.online = !!(mpFactory && net);
     this.testMode = testMode;
     // MOBILE (fase 1): controles de toque no lugar do pointer lock + teclado/mouse.
     this.mobile = mobile;
@@ -818,9 +821,6 @@ export class Game {
     /* Servidor dedicado: o `player` que ninguém controla fica FORA do elenco, senão vira corpo
        parado e imortal que os inimigos abatem em loop. Ver docs/MULTIPLAYER.md. */
     this.dedicated = !!dedicated;
-    /* `online` = autoridade do servidor. `_mp` é injetado pelo main.js; este arquivo nunca
-       importa rede. Single-player: `_mp` null e nada de rede roda. Ver docs/MULTIPLAYER.md. */
-    this.online = !!(mpFactory && net);
     this._mp = null;
     this._mpPend = this.online ? { mpFactory, net } : null;
 
@@ -6594,6 +6594,8 @@ export class Game {
      regra de arma amarrada a um id de mapa e o mapa não existe mais. Nenhum mapa vivo força
      AWP-only — quem escolhe é o menu. */
   _wpnMode() {
+    // MP: as armas são da sala (o nó não tem modo de armas); o modo do menu é só do single player.
+    if (this.online) return 'all';
     // `?.` porque o HUD de loadout agora lê o modo, e há caminho (vmlab) que monta o Game
     // sem `settings`: sem a guarda o render do menu estoura e o HUD1 fica vermelho.
     return this.settings?.wpnMode || 'all';
