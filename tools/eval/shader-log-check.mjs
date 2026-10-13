@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 
 const mutant = (process.argv.find((arg) => arg.startsWith('--mutante=')) || '').split('=')[1] || '';
-if (mutant && !['sem-guardas', 'sem-cache-bust', 'addons-immutable', 'cloudflare-vendor', 'framebuffer-nulo', 'sem-contexto-sincrono'].includes(mutant)) {
+if (mutant && !['sem-guardas', 'sem-cache-bust', 'addons-immutable', 'cloudflare-vendor', 'framebuffer-nulo', 'sem-contexto-sincrono', 'layout-sem-cache-bust', 'layout-dynamic-three', 'layout-side-effect-three', 'layout-three-addon'].includes(mutant)) {
   throw new Error(`mutante desconhecido: ${mutant}`);
 }
 
@@ -43,6 +43,15 @@ if (mutant === 'sem-contexto-sincrono') {
     'if ( _isContextLost === true ) return;',
   );
   if (vendor === before) throw new Error('MUTANTE NAO APLICOU: sem-contexto-sincrono');
+}
+const layoutImports = {
+  'layout-sem-cache-bust': "import * as THREE from '/vendor/three.module.js';",
+  'layout-dynamic-three': "await import('three');",
+  'layout-side-effect-three': "import 'three';",
+  'layout-three-addon': "import { OrbitControls } from 'three/addons/controls/OrbitControls.js';",
+};
+if (layoutImports[mutant]) {
+  productSources = productSources.map(([file, source]) => [file, file === 'src/layouts/Layout.astro' ? `${source}\n<script type="module">${layoutImports[mutant]}</script>` : source]);
 }
 if (mutant === 'sem-cache-bust') {
   productSources = productSources.map(([file, source]) => [file, source.replace('?v=${V}', '')]);
@@ -102,6 +111,7 @@ const vendorRoute = vercel.headers?.find((route) => route.source === '/vendor/(.
 const vendorCache = vendorRoute?.headers?.find((header) => header.key.toLowerCase() === 'cache-control')?.value || '';
 const immutableVendor = /(?:^|,)\s*immutable(?:\s*,|$)/i.test(vendorCache);
 for (const [file, source] of productSources) {
+  if (file !== 'src/pages/index.astro' && !/vendor\/three\.module\.js|['"]three(?:\/[^'"]*)?['"]|\bTHREE\./.test(source)) continue;
   if (!/["'`]\/?\.??\/vendor\/three\.module\.js\?v=\$\{V\}["'`]/.test(source)) {
     failures.push(`SL4 ${file} não versiona o core do Three`);
   }

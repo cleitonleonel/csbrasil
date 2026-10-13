@@ -33,7 +33,7 @@ import { MENU_MUSIC_ACTIVE_IDS } from './menu-music-selection.js';
 import { createMapPreview, VIDEO_MAPS } from './map_preview.js';
 /* Multiplayer. O game.js NÃO importa nada disto: o netcode é injetado por aqui
    (`new Game({ mpFactory, net })`), e sem sessão de rede nenhuma linha dele executa. */
-import { NOS, NO_RE, ordenarNos, melhorNoParaJogar, mpUrls, sondarNos, listRooms, listMaps, createRoom, NetClient, parseConvite, linkDeConvite, salaPorConvite, httpDoNo, resolvePlayerSide, ladoOnline, transitionSlot } from './net.js';
+import { NOS, NO_RE, ordenarNos, melhorNoParaJogar, mpUrls, sondarNos, listRooms, listMaps, createRoom, NetClient, parseConvite, linkDeConvite, salaPorConvite, httpDoNo, resolvePlayerSide, ladoOnline, transitionSlot, decidirPersonagemMp } from './net.js';
 import { montarChatSala } from './chat-painel.js';
 import { makeNetcode } from './netgame.js';
 
@@ -76,6 +76,16 @@ let telemetryGameContext = {
   gameType: null, node: null, roomId: null, roomOfficial: null, createdRoom: null,
 };
 let _matchEventId = null;
+// Commit e coorte em toda telemetria; cohort só rotula, quem filtra é a consulta.
+// O backend ignora campo desconhecido (perf.ts): mandar antes da coluna existir é seguro.
+function sinaisDeBuild() {
+  let cohort = 'organico';
+  try {
+    if (navigator.webdriver) cohort = 'automacao';
+    else if (new URLSearchParams(location.search).has('qa') || localStorage.getItem('cs_qa') === '1') cohort = 'qa';
+  } catch { /* storage bloqueado: fica orgânico */ }
+  return { buildSha: String(window.__CS_BUILD?.sha || '') || null, cohort };
+}
 function clearTelemetryGameContext() {
   telemetryGameContext = {
     gameType: null, node: null, roomId: null, roomOfficial: null, createdRoom: null,
@@ -1358,7 +1368,7 @@ function _perfFinish(bootMs, frames) {
   const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   const payload = {
     anonId: getAnonId(), version: versaoComOrigem(VERSION),
-    sessionId: getSessionId(), ...telemetryGameContext,
+    sessionId: getSessionId(), ...telemetryGameContext, ...sinaisDeBuild(),
     fps: frames, bootMs, loadMs: _perfLoadMs,
     cores: navigator.hardwareConcurrency || null,
     memoryGb: navigator.deviceMemory || null,
@@ -1390,7 +1400,7 @@ function sendMatchEvent(result) {
   const payload = {
     anonId: getAnonId(),
     sessionId: getSessionId(), eventId: _matchEventId, version: versaoComOrigem(VERSION),
-    ...telemetryGameContext,
+    ...telemetryGameContext, ...sinaisDeBuild(),
     map: currentMap, mode: matchMode === 'ctf' ? 'ctf' : 'rounds',
     character: currentChar, team: g.playerTeam,
     faction: g.playerFaction || currentFaction,
@@ -2407,10 +2417,13 @@ function matchRounds() {
 // Ficha da partida IMPRESSA NO CARTAZ (modo · formato · armas). O dono pediu "maior dimensão
 // pro mapa" com "nome, modo, bots" — então o resumo mora sobre a arte, e não numa coluna
 // de formulário ao lado dela.
+const hubSels = [];
+function syncHubSels() { for (const s of hubSels) s.sync(); }
 function setMapMeta() {
   const el = $('map-meta'); if (!el) return;
   const modo = frase(matchMode === 'ctf' ? 'ctfMelhorDeN' : 'melhorDeN', matchRounds());
   el.textContent = frase('resumoPartida', modo, 1 + settings.allyBots, settings.enemyBots, tr(WPN_MODE_LABEL[settings.wpnMode || 'all'] || 'TODAS'));
+  syncHubSels();
 }
 function setMapMode() {
   const m = $('map-mode');
@@ -2729,6 +2742,77 @@ if (msRounds) msRounds.onchange = () => {
 };
 const diffSel = $('diff-select');
 syncMapOptions();
+/* Home: cada opção da partida é um select que abre, na cara do card de ROUNDS (dono, 13/10).
+   Delegam aos controles de sempre; régua: tools/eval/home-selects-browser.mjs. */
+function montarHubSels() {
+  const host = $('hub-sels');
+  if (!host) return;
+  const fechar = (menos) => { for (const s of hubSels) if (s !== menos) s.abrir(false); };
+  const montar = (id, rotulo, opcoes, atual, escolher) => {
+    const box = document.createElement('div'); box.className = 'hub-sel'; box.id = `hub-sel-${id}`;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'hub-sel-btn';
+    btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = `<small>${tr(rotulo)}</small><strong></strong>`;
+    const lista = document.createElement('div'); lista.className = 'hub-sel-list'; lista.hidden = true; lista.id = `hub-sel-${id}-lista`; btn.setAttribute('aria-controls', lista.id);
+    lista.setAttribute('role', 'listbox'); lista.setAttribute('aria-label', tr(rotulo));
+    box.append(btn, lista); host.appendChild(box);
+    const sel = {
+      sync() {
+        const v = atual(), op = opcoes().find((o) => o.v === v);
+        btn.querySelector('strong').textContent = op ? op.t : v;
+      },
+      abrir(on) {
+        lista.hidden = !on; btn.setAttribute('aria-expanded', String(on));
+        if (!on) return;
+        const v = atual();
+        lista.replaceChildren(...opcoes().map((o) => {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'hub-sel-opt';
+          b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(o.v === v)); b.dataset.v = o.v;
+          if (o.img) { const im = document.createElement('img'); im.src = o.img; im.alt = ''; im.loading = 'lazy'; b.appendChild(im); }
+          b.append(o.t);
+          b.onclick = (e) => { e.stopPropagation(); sel.abrir(false); if (o.v !== atual()) escolher(o.v); else ui.click(); btn.focus(); };
+          return b;
+        }));
+        /* A lista sai do #menu-setup (que rola e cortava) e mora no body, presa ao botão;
+           no celular vira folha na base da tela. */
+        if (lista.parentElement !== document.body) document.body.appendChild(lista);
+        const r = btn.getBoundingClientRect(), folha = matchMedia('(max-width: 760px)').matches;
+        lista.classList.toggle('folha', folha);
+        lista.style.minWidth = `${r.width}px`;
+        lista.style.bottom = `${Math.round(innerHeight - r.top + 4)}px`;
+        lista.style.left = `${Math.round(Math.max(14, Math.min(r.left, innerWidth - 14 - Math.max(r.width, lista.offsetWidth))))}px`;
+        (lista.querySelector('[aria-selected="true"]') || lista.firstChild)?.focus();
+      },
+    };
+    btn.onclick = (e) => { e.stopPropagation(); fechar(sel); ui.click(); sel.abrir(lista.hidden); };
+    // Foco que sai para outro elemento fecha; relatedTarget nulo é clique, e o clique fora já fecha.
+    const sair = (e) => { const a = e.relatedTarget; if (!lista.hidden && a && !box.contains(a) && !lista.contains(a)) sel.abrir(false); };
+    box.addEventListener('focusout', sair); lista.addEventListener('focusout', sair);
+    lista.onkeydown = box.onkeydown = (e) => {
+      if (e.key === 'Escape' && !lista.hidden) { e.preventDefault(); e.stopPropagation(); sel.abrir(false); btn.focus(); return; }
+      if (lista.hidden || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+      e.preventDefault();
+      const ops = [...lista.children], i = ops.indexOf(document.activeElement);
+      ops[(i + (e.key === 'ArrowDown' ? 1 : -1) + ops.length) % ops.length]?.focus();
+    };
+    hubSels.push(sel);
+  };
+  const faixa = (de, ate, rot) => Array.from({ length: ate - de + 1 }, (_, k) => ({ v: String(de + k), t: rot(de + k) }));
+  montar('mapa', 'MAPA', () => MAPAS_MENU.map((id) => ({ v: id, t: MAPS[id].name, img: mapPreviewPoster(id, VERSION) })),
+    () => currentMap, (v) => { ui.click(); gotoMap(MAPAS_MENU.indexOf(v)); });
+  montar('modo', 'MODO', () => [{ v: 'rounds', t: tr('MATA-MATA') }, { v: 'ctf', t: tr('CAPTURA') }],
+    () => matchMode, (v) => $(v === 'ctf' ? 'hub-mode-ctf' : 'hub-mode-rounds').click());
+  montar('armas', 'ARMAS', () => WPN_MODES.map((m) => ({ v: m.id, t: tr(m.label) })),
+    () => settings.wpnMode || 'all', (v) => { msWpnMode.value = v; msWpnMode.onchange(); });
+  montar('time', 'SEU TIME', () => faixa(0, 7, botsLabel), () => String(settings.allyBots), (v) => { msAlly.value = v; msAlly.onchange(); });
+  montar('inimigos', 'INIMIGOS', () => faixa(1, 8, botsLabel), () => String(settings.enemyBots), (v) => { msEnemy.value = v; msEnemy.onchange(); });
+  montar('rounds', 'ROUNDS', () => faixa(1, ROUNDS_CUSTOM_MAX, String), () => String(matchRounds()), (v) => { msRounds.value = v; msRounds.onchange(); });
+  document.addEventListener('click', () => fechar(null));
+  addEventListener('resize', () => fechar(null));
+  menuSetup.addEventListener('scroll', () => fechar(null), { passive: true });
+  syncHubSels();
+}
+if (HUB_ENABLED) montarHubSels();
 if (diffSel) {
   [['easy', 'FÁCIL'], ['normal', 'NORMAL'], ['hard', 'DIFÍCIL'], ['insane', 'INSANO']].forEach(([v, l]) => { const o = document.createElement('option'); o.value = v; o.textContent = l; diffSel.appendChild(o); });
   diffSel.value = settings.difficulty || 'normal';
@@ -2906,6 +2990,7 @@ $('char-confirm').onclick = () => {
   if (switchMode === 'mp' && game && mpSessao) {
     switchMode = false;
     localStorage.setItem('csbr-home-character', selChar.id);
+    if (escolhaSpAntesDoMp) escolhaSpAntesDoMp.char = selChar.id;
     mpSessao.net.pedirPersonagem(selChar.id);
     show(null); game.resume();
     return;
@@ -3763,6 +3848,29 @@ function rosterDoServidor(lado, charId) {
 /* Sessão de rede em curso. `null` = single-player, e é o estado normal: nada de rede roda
    até alguém entrar numa sala. */
 let mpSessao = null;
+/* A sala MP escreve mapa e modo; o SP é do jogador: guarda na entrada, devolve em toda saída.
+   Causa e régua: tools/eval/mapa-sp-pos-mp-check.mjs. */
+let escolhaSpAntesDoMp = null;
+function mpGuardarEscolhaSp() {
+  if (!escolhaSpAntesDoMp) escolhaSpAntesDoMp = {
+    map: currentMap, mode: matchMode, escolhido: modoEscolhido,
+    char: currentChar, team: currentTeam, faction: currentFaction, enemyFaction: currentEnemyFaction,
+  };
+}
+function mpDevolverEscolhaSp() {
+  const e = escolhaSpAntesDoMp; escolhaSpAntesDoMp = null;
+  if (!e) return;
+  currentMap = e.map; matchMode = e.mode; modoEscolhido = e.escolhido;
+  mapIdx = Math.max(0, MAPAS_MENU.indexOf(currentMap));
+  setMapMode();
+  currentChar = e.char; currentTeam = e.team; currentFaction = e.faction; currentEnemyFaction = e.enemyFaction;
+  syncHomeCharacter();
+}
+// O personagem do jogador: dentro do MP é o guardado na entrada (a sala só empresta o corpo).
+function personagemEscolhido() {
+  const id = escolhaSpAntesDoMp ? escolhaSpAntesDoMp.char : currentChar;
+  return CHARACTERS.find((c) => c.id === id) || null;
+}
 let mpNoAtual = null;
 let mpConectando = false;   // trava de reentrada do mpEntrar (BUG-88)
 let mpNos = [];
@@ -3773,6 +3881,7 @@ let mpIdentityTimer = null;
 function mpLimparIdentidade() {
   clearTimeout(mpIdentityTimer);
   mpIdentityTimer = null;
+  mpAvisoPersonagem(null);
   for (const id of ['mp-identity-toast', 'mp-identity-pause']) {
     const card = document.getElementById(id);
     if (card) card.hidden = true;
@@ -3858,6 +3967,7 @@ function noServeMapaParado(id, net) {
   try { net?.close?.(); } catch { /* fechar é cortesia; a recusa vale de qualquer jeito */ }
   mpSessao?.chat?.destruir();
   mpSessao = null;
+  mpDevolverEscolhaSp();
   mpErro(`Este servidor sorteou "${MAPS[resolveMapId(id)]?.name || id}", que saiu do jogo para retrabalho. `
     + 'O nó ainda não foi atualizado — escolha outra sala ou outra região.', true);
   return true;
@@ -4338,6 +4448,7 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
      Nó desatualizado ainda sorteia mapa PARADO: recusar é a única saída honesta — trocar o
      mapa por conta própria dessincroniza do servidor. Contrato: docs/maps/MAPAS-PARADOS.md. */
   if (noServeMapaParado(welcome.map, net)) return;
+  mpGuardarEscolhaSp();
   if (MAPS[welcome.map]) currentMap = welcome.map;
   matchMode = welcome.ctf ? 'ctf' : 'rounds';
   modoEscolhido = true;
@@ -4353,7 +4464,7 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
       if (mpSessao?.net === net) await startGame(currentTeam, currentChar, currentEnemyFaction, true);
       if (mpSessao?.net === net && net.yourEnt === m.yourEnt && game?.online) {
         mpMostrarIdentidade({ ...net.meta, ...m });
-        mpPedirPersonagemPreferido(net);
+        mpPedirPersonagemPreferido(net, m.motivo);
       }
     });
   };
@@ -4370,6 +4481,7 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
     if (mpSessao?.net !== net) return;
     mpSessao.chat?.aoMudarMeta(net.meta);
     if (noServeMapaParado(m.map, net)) return;
+    mpGuardarEscolhaSp();
     if (MAPS[m.map]) currentMap = m.map;
     matchMode = m.ctf ? 'ctf' : 'rounds';
     await mpMontarPartida(net, m);
@@ -4395,13 +4507,42 @@ async function mpMontarPartida(net, m) {
   }
 }
 
-/* O personagem escolhido no hub vale no multiplayer: o servidor troca o corpo herdado do bot. */
-function mpPedirPersonagemPreferido(net) {
-  const lado = net.yourTeam;
-  if (!net.aceitaPersonagem() || net.espectador || (lado !== 'E' && lado !== 'B')) return;
-  const pref = CHARACTERS.find((c) => c.id === localStorage.getItem('csbr-home-character'));
-  if (!pref || pref.id === currentChar || !podeNoLado(pref, lado)) return;
-  net.pedirPersonagem(pref.id);
+/* O personagem escolhido vale no multiplayer: o servidor troca o corpo herdado do bot.
+   Fora do lado, avisa e oferece a troca (docs/adr/0007-personagem-escolhido.md). */
+function mpPedirPersonagemPreferido(net, motivo = null) {
+  const escolhido = personagemEscolhido();
+  const d = decidirPersonagemMp({
+    escolhido, atual: currentChar, lado: net.yourTeam, espectador: net.espectador,
+    aceita: net.aceitaPersonagem(), podeNoLado,
+  });
+  mpAvisoPersonagem(null);
+  if (d.acao === 'pedir') net.pedirPersonagem(d.id);
+  else if (d.acao === 'avisar-servidor') mpAvisoPersonagem(`${escolhido.name}: este servidor ainda não troca o personagem.`);
+  else if (d.acao === 'avisar-lado') {
+    const nomeLado = (l) => (l === 'E' ? 'ESQUERDA' : 'DIREITA');
+    const cheio = motivo === 'lado_cheio' ? ` A ${nomeLado(d.outroLado)} está cheia agora.` : '';
+    mpAvisoPersonagem(`${escolhido.name} não joga na ${nomeLado(net.yourTeam)}.${cheio}`, {
+      ir: `IR PARA A ${nomeLado(d.outroLado)}`,
+      onIr: () => { ui.click(); net.pedirTime(d.outroLado); game?.resume(); },
+    });
+  }
+}
+function mpAvisoPersonagem(texto, oferta = null) {
+  for (const id of ['mp-identity-toast', 'mp-identity-pause']) {
+    const el = document.querySelector(`#${id} .mp-identity-aviso`);
+    if (el) { el.textContent = (texto || '') + (oferta && id === 'mp-identity-toast' ? ' ESC para trocar.' : ''); el.hidden = !texto; }
+  }
+  const acoes = $('mp-personagem-acoes');
+  if (!acoes) return;
+  acoes.hidden = !oferta;
+  if (!oferta) return;
+  $('mp-personagem-ir').textContent = oferta.ir;
+  $('mp-personagem-ir').onclick = oferta.onIr;
+  $('mp-personagem-outro').onclick = () => { ui.click(); if (mpSessao) abrirTrocaOnline(); };
+  if (texto) {
+    const toast = $('mp-identity-toast');
+    if (toast) { toast.hidden = false; clearTimeout(mpIdentityTimer); mpIdentityTimer = setTimeout(() => { toast.hidden = true; }, 9000); }
+  }
 }
 
 /* Conexão caiu no meio da partida. Nada de "reconectar sozinho e fingir que não houve nada":
@@ -4412,6 +4553,7 @@ function mpDesconectou() {
   try { if (game) { sendTelemetry(); sendMatchEvent('quit'); } } catch { /* diagnóstico não bloqueia a saída */ }
   mpSessao.chat?.destruir();
   mpSessao = null;
+  mpDevolverEscolhaSp();
   clearTelemetryGameContext();
   mpFecharBarraSpec();
   try { if (game) game.dispose(); } catch { /* já foi */ }
@@ -4468,6 +4610,7 @@ function mpFecharBarraSpec() {
 }
 function mpEncerrarSessao() {
   const s = mpSessao; mpSessao = null;
+  mpDevolverEscolhaSp();
   mpLimparIdentidade();
   s?.chat?.destruir();
   mpFecharBarraSpec();

@@ -12,3 +12,4 @@ dizer outra coisa depois de aceita.
 | [0004](0004-regua-mutavel.md) | Quality gate com régua mutável |
 | [0005](0005-godot-recusado.md) | Cliente Godot recusado como direção |
 | [0006](0006-doc-interna-fora.md) | Documentação interna não vive neste repo |
+| [0007](0007-personagem-escolhido.md) | O personagem escolhido vale em toda partida |

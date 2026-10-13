@@ -8,12 +8,13 @@ import { FACCOES, PERSONAGENS } from '../data/jogo';
 import { BRAND_FULL, GAME_ID } from '../lib/site';
 
 const FAC_EN: Record<string, { nome: string; lema: string; nota: string }> = {
+  P: { nome: 'Politicians', lema: 'The fight crosses both sides!', nota: 'Satirical caricatures of public figures. In the menu lineup it is the first group.' },
   E: { nome: 'Team E', lema: 'The fight is at the square!', nota: 'The red team of the arena. Eight caricature left-wing archetypes - none of them a real person.' },
-  B: { nome: 'Team B', lema: 'The fight is on the highway!', nota: 'The green-and-yellow team. Eight caricature right-wing archetypes - none of them a real person.' },
+  B: { nome: 'Team B', lema: 'The fight is on the highway!', nota: 'The blue team. Caricature right-wing archetypes - none of them a real person.' },
   urbanas: { nome: 'Urban Tribes', lema: 'The fight is in the hood!', nota: 'Nine urban tribes with zero politics: they join the fight for the style.' },
   palhacos: { nome: 'Clowns', lema: 'The fight is at the circus ring!', nota: 'Nine circus clowns. Honk honk, bang bang.' },
   funkeiros: { nome: 'Funkeiros', lema: 'The fight is at the baile!', nota: 'Nine baile funk archetypes straight from the paredão.' },
-  mitico: { nome: 'Mythic', lema: 'The fight spans centuries!', nota: 'Brazilian historical heroes and folklore: Zumbi, Lampião, Saci, Cuca, Curupira and more.' },
+  mitico: { nome: 'Mythic', lema: 'The fight spans centuries!', nota: 'Brazilian historical heroes and folklore: Zumbi, Lampião, Saci, Curupira, Caipora and more.' },
 };
 const BLURB_EN: Record<string, string> = {
   esquerdomacho: 'Beard, tote bag and 47 pins. Academic aim: analyzes the fight before shooting.',
@@ -60,6 +61,15 @@ const BLURB_EN: Record<string, string> = {
   trapfunk: 'Autotune in the war cry, 808 in the chest. Trap in double dose.',
   fluxo: 'Lives where the crowd is thickest. The fight IS the flow.',
   ostentacao: 'Gold, motors and bass. Wins loud.',
+  "lobisomem": "A character inspired by Brazilian folklore and history. Choose Lobisomem from the Mythic group in the game menu.",
+  "mariabonita": "A character inspired by Brazilian folklore and history. Choose Maria Bonita from the Mythic group in the game menu.",
+  "lampiao": "A character inspired by Brazilian folklore and history. Choose Lampião from the Mythic group in the game menu.",
+  "bandeirante": "A character inspired by Brazilian folklore and history. Choose Bandeirante from the Mythic group in the game menu.",
+  "boto": "A character inspired by Brazilian folklore and history. Choose Boto Cor de Rosa from the Mythic group in the game menu.",
+  "zumbi": "A character inspired by Brazilian folklore and history. Choose Zumbi dos Palmares from the Mythic group in the game menu.",
+  "curupira": "A character inspired by Brazilian folklore and history. Choose Curupira from the Mythic group in the game menu.",
+  "saci": "A character inspired by Brazilian folklore and history. Choose Saci-Pererê from the Mythic group in the game menu.",
+  "caipora": "A character inspired by Brazilian folklore and history. Choose Caipora from the Mythic group in the game menu.",
 };
 const grupos = FACCOES.map(f => ({
   ...f,
@@ -67,23 +77,22 @@ const grupos = FACCOES.map(f => ({
   elenco: PERSONAGENS.filter(p => p.faccao === f.id),
 }));
 const total = PERSONAGENS.length;
-const PLACA: Record<string, string> = { E: 'time-e', B: 'time-b', urbanas: 'tribos', palhacos: 'palhacos', funkeiros: 'funkeiros' };
+const PLACA: Record<string, string> = { E: 'time-e', B: 'time-b', urbanas: 'tribos', palhacos: 'palhacos', funkeiros: 'funkeiros', mitico: 'mitico' };
 const placa = (id: string) => (PLACA[id] ? `/img/faccoes/${PLACA[id]}.webp` : null);
 const slug = (nome: string) => nome.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const jsonld = [{ '@id': GAME_ID }];
 ---
 <Layout
   title={`Characters - all ${total} | ${BRAND_FULL}`}
-  description={`All ${total} playable characters of ${BRAND_FULL} across ${FACCOES.length} factions: Team E, Team B, Urban Tribes, Clowns and Funkeiros. 100% fictional archetypes - no real people.`}
+  description={`The ${total} characters of ${BRAND_FULL} across ${FACCOES.length} catalog groups: Brazilian satire, folklore and political caricatures.`}
   jsonld={jsonld}
   h1="Characters"
   kicker={`${total} characters · ${FACCOES.length} factions`}
   heroImg={placa('palhacos')}
   heroPos="64%">
   <Fragment slot="sub">
-    {total} playable archetypes in {FACCOES.length} factions, all 100% fictional and original -
-    no real person was consulted (or spared). Each one has its own silhouette, props and style,
-    modeled in 3D. <strong>Your pick is style, not advantage:</strong> everyone plays exactly the same.
+    {total} characters across {FACCOES.length} catalog groups. Brazilian satire, folklore and
+    political caricatures, each with its own silhouette, props and style. Choose your character in the menu before playing.
   </Fragment>
 
   <nav class="tstat" aria-label="Factions">
@@ -114,7 +123,7 @@ const jsonld = [{ '@id': GAME_ID }];
       <div class="grid roster">
         {g.elenco.map(p => (
           <article class="pcard">
-            {p.id && <img class="pfoto" src={`/img/chars/${p.id}.webp`} width="180" height="231"
+            {p.id && <img class="pfoto" src={`/img/chars/avatars/${p.id}.webp`} width="256" height="256"
               loading="lazy" decoding="async" alt={`${p.nome} - ${BRAND_FULL} character`} />}
             <strong>{p.nome}</strong>
             <p>{(p.id && BLURB_EN[p.id]) || p.blurb}</p>
@@ -126,29 +135,16 @@ const jsonld = [{ '@id': GAME_ID }];
 
   <h2>About the cast</h2>
   <p>
-    Two of the five factions have nothing political about them: <strong>Urban Tribes</strong> and
-    <strong> Funkeiros</strong> - they join the fight for the style and play whichever side they
-    want. No character depicts a real person, living or dead. They are archetypes, and the mockery
-    is evenly distributed.
+    The cast mixes satirical archetypes, urban culture, Brazilian folklore and history, and caricatures of public political figures. Each character’s availability is shown in the game menu.
   </p>
 
   <div class="cta-row">
     <a class="btn-cta" href="/?lang=en">▶ Pick yours</a>
-    <a class="btn-cta btn-2" href="/mapas">See the arenas</a>
+    <a class="btn-cta btn-2" href="/maps">See the arenas</a>
   </div>
 </Layout>
 
-<script>
-  // idioma resolvido = ?lang > localStorage > navigator (mesmas regras do i18n.js do jogo);
-  // quem chega aqui em pt vai pra /personagens (e o par faz o inverso).
-  try {
-    const q = new URLSearchParams(location.search).get('lang');
-    const ls = localStorage.getItem('cs_lang');
-    const lang = (q === 'pt' || q === 'en') ? q : (ls === 'pt' || ls === 'en') ? ls
-      : (/^pt/i.test(navigator.language || '') ? 'pt' : 'en');
-    if (lang === 'pt') location.replace('/personagens');
-  } catch { /* storage bloqueado: fica onde está */ }
-</script>
+
 
 <style>
   .faccao{margin:44px 0 0}
@@ -159,8 +155,14 @@ const jsonld = [{ '@id': GAME_ID }];
   .fmeta{padding:16px 20px}
   .fmotto{color:var(--fc);font-style:italic;margin:4px 0}
   .fnota{color:var(--ink-300)}
-  .pcard{text-align:center}
-  .pfoto{width:100%;max-width:180px;aspect-ratio:7/9;object-fit:cover;object-position:top;
+  .pcard{text-align:center;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--fc);
+    padding:12px 14px;transition:border-color .14s,background .14s}
+  .pcard:hover{background:var(--panel-2);border-color:var(--line-hi);border-left-color:var(--fc)}
+  .pcard strong{color:var(--ink);letter-spacing:1px;font-size:13px;display:block}
+  .pcard p{margin-top:5px;font-size:12.5px;line-height:1.55}
+  .grid.roster{grid-template-columns:repeat(auto-fill,minmax(238px,1fr));margin-top:12px}
+  @media(max-width:860px){.grid.roster{grid-template-columns:1fr}}
+  .pfoto{width:100%;height:auto;max-width:180px;aspect-ratio:1;object-fit:cover;object-position:center;
     border-radius:6px;border:1px solid var(--line-2,#333);margin:0 auto 8px;display:block;
     background:#1c1a20}
 </style>

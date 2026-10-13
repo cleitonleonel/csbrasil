@@ -391,6 +391,29 @@ html[data-home-ui="hub"] #hub-mp-host #mp-criar{background:linear-gradient(180de
 html[data-home-ui="hub"] #menu-setup .hub-match-chips>button{position:relative;padding-right:23px}
 html[data-home-ui="hub"] #menu-setup .hub-match-chips>button::after{content:"▸";position:absolute;right:8px;top:50%;transform:translateY(-50%);font:700 16px/1 var(--font);opacity:.8}
 html[data-home-ui="hub"] #menu-setup .hub-match-chips>button:hover,html[data-home-ui="hub"] #menu-setup .hub-match-chips>button:focus-visible{border-color:#b4d92e;outline:2px solid #b4d92e;outline-offset:1px}
+/* Home: opções da partida como selects que abrem, na cara do card de ROUNDS. */
+html[data-home-ui="hub"] #menu-setup .hub-sels:not(:empty)+.hub-match-chips{display:none}
+.hub-sels{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.hub-sels:empty{display:none}
+.hub-sel{position:relative;min-width:0}
+.hub-sel-btn{position:relative;display:block;width:100%;min-height:55px;padding:8px 23px 8px 9px;text-align:left;border:1px solid #34302b;background:#0d0e11e0;color:#d3d3d1;cursor:pointer;overflow:hidden;box-shadow:inset 0 1px 0 #ffffff20,inset 0 -2px 0 #0005,0 2px 0 #080b0c}
+.hub-sel-btn small{display:block;font:700 9px/1 var(--font);letter-spacing:.5px;color:#a9a7a2}
+.hub-sel-btn strong{display:block;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 14px/1.1 var(--font)}
+.hub-sel-btn::after{content:"▾";position:absolute;right:8px;top:50%;transform:translateY(-50%);font:700 14px/1 var(--font);opacity:.8;transition:transform .12s}
+.hub-sel-btn[aria-expanded="true"]{border-color:#f3b958}
+.hub-sel-btn[aria-expanded="true"]::after{transform:translateY(-50%) rotate(180deg)}
+.hub-sel-btn:hover,.hub-sel-btn:focus-visible{border-color:#b4d92e;outline:2px solid #b4d92e;outline-offset:1px}
+.hub-sel-list{position:fixed;z-index:60;width:max-content;max-width:min(320px,calc(100vw - 28px));max-height:min(300px,42vh);overflow-y:auto;padding:4px;border:1px solid #f3b958;background:#0d0e11;box-shadow:0 10px 28px #000a}
+.hub-sel-list[hidden]{display:none}
+.hub-sel-opt{display:flex;align-items:center;gap:8px;width:100%;min-height:36px;padding:6px 10px;border:0;background:none;color:#d3d3d1;text-align:left;font:700 13px/1.1 var(--font);cursor:pointer}
+.hub-sel-opt img{width:48px;height:27px;flex:0 0 48px;object-fit:cover;background:#24262b}
+.hub-sel-opt:hover,.hub-sel-opt:focus-visible{background:#24262b;color:#fff;outline:none}
+.hub-sel-opt[aria-selected="true"]{background:linear-gradient(135deg,#ffd95e,#f3b958);color:#131313}
+@media(max-width:760px){
+  .hub-sels{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hub-sel-list.folha{left:14px!important;right:14px;bottom:calc(var(--hub-mobile-footer-height,52px) + 8px)!important;width:auto;min-width:0!important;max-width:none;max-height:min(420px,60dvh)}
+  .hub-sel-opt{min-height:44px}
+}
 .hub-tip{display:flex;align-items:center;gap:6px;min-width:0}.hub-tip #hub-tip-text{margin-right:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hub-footer-social .mf-social{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:0}
 .hub-footer-social .mf-social a{display:grid;place-items:center;width:28px;height:28px;border:1px solid #504c44;color:#d3d3d1}
@@ -1098,6 +1121,10 @@ body:has(#pause-menu:not(.hidden)) #hud{opacity:.12;transition:opacity var(--t) 
 .mp-identity-copy small{color:#b4d92e;font:700 10px/1.2 var(--aaa-font-body);letter-spacing:1.5px}
 .mp-identity-copy strong{font-size:18px;line-height:1.15;overflow-wrap:anywhere}
 .mp-identity-copy span{font-size:12px;color:#bcbeb9;line-height:1.2}
+.mp-identity-aviso{font:700 12px/1.25 var(--aaa-font-body);color:#ffc93f;font-style:normal}
+.mp-identity-aviso[hidden],.mp-personagem-acoes[hidden]{display:none}
+.mp-personagem-acoes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.mp-personagem-acoes .btn{flex:1 1 160px;border-color:#ffc93f;color:#ffc93f}
 #mp-identity-toast{position:fixed;z-index:29;left:50%;top:max(76px,calc(env(safe-area-inset-top) + 68px));
   transform:translateX(-50%);pointer-events:none}
 body:has(#pause-menu:not(.hidden)) #mp-identity-toast{display:none}
@@ -3289,3 +3316,25 @@ html[data-ui="legacy"] #load-map{font-family:var(--font);font-weight:700}
 @media(prefers-reduced-motion:reduce){
   .chat-linha,.chat-divisor{animation:chat-some 12.6s step-end forwards;animation-duration:12.6s!important}
 }
+
+.hub-faq{max-width:960px;margin-top:24px}.hub-faq h3{font:700 18px/1.3 var(--font);color:#f3b958;margin-bottom:12px}.hub-faq details{padding:14px 18px;margin-bottom:8px;border:1px solid #34302b;background:#0d0e11ed}.hub-faq summary{cursor:pointer;font:700 18px/1.3 var(--font);color:#f0f0ed}.hub-faq summary::marker{color:#b4d92e}.hub-faq details p{margin-top:10px;font:400 18px/1.5 var(--font);color:#d3d3d1}
+
+/* Guias públicos consultados dentro da seção SOBRE O JOGO. */
+.hub-content-tabs{display:flex;gap:6px;overflow-x:auto;margin:16px 0 20px;border-bottom:1px solid #34302b;scrollbar-width:thin}
+.hub-content-tabs>[role="tab"]{flex:none;padding:11px 12px;border:0;background:#0d0e11c9;color:#bcbab6;font:700 15px/1 var(--font);letter-spacing:.5px;text-decoration:none;cursor:pointer}
+.hub-content-tabs>[aria-selected="true"]{color:#b4d92e;box-shadow:inset 0 -2px #b4d92e}
+.hub-content-tabs>[role="tab"]:focus-visible{outline:2px solid #b4d92e;outline-offset:-2px}
+.hub-about-content[hidden],#hub-about-overview[hidden],#hub-guide-frame[hidden]{display:none!important}
+#hub-guide-frame{display:block;border:0;width:100%;min-height:400px;background:transparent}
+.hub-guide-loading{color:#f3b958;font:14px var(--mono);padding:20px 0}
+@media(max-width:600px){.hub-content-tabs>[role="tab"]{padding:10px;font-size:13px}}
+
+/* Guias acompanham a rolagem do documento; o jogo mantém seu viewport fixo. */
+html[data-home-ui="hub"]:has(#main-menu[data-hub-tab="sobre"]:not(.hidden)),
+html[data-home-ui="hub"]:has(#main-menu[data-hub-tab="sobre"]:not(.hidden)) body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
+html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"]{position:relative;inset:auto;display:block;min-height:100dvh}
+html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] .hub-ui{position:relative;inset:auto;display:flex;flex-direction:column;min-height:100dvh;width:100%}
+html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] .hub-header{position:relative;inset:auto;padding-inline:clamp(14px,2vw,32px)}
+html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] #hub-about{position:relative;inset:auto;flex:1;width:100%;max-width:none;overflow:visible;padding:24px clamp(14px,2vw,32px) 44px}
+html[data-home-ui="hub"] #hub-about .hub-faq{max-width:none}
+html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] .hub-footer{position:relative;inset:auto;margin-top:auto;padding-inline:clamp(14px,2vw,32px)}

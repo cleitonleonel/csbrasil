@@ -73,8 +73,9 @@ const val = (k, d) => { const v = (args.find((a) => a.startsWith(`--${k}=`)) || 
 const MUTANTE = val('mutante', '');
 
 const RAIZ = process.cwd();
-const FUNC = resolve('.vercel/output/functions/_render.func');
-const ENTRY = join(FUNC, 'dist/server/entry.mjs');
+const legacy = resolve('.vercel/output/functions/_render.func');
+const FUNC = existsSync(join(legacy, 'dist/server/entry.mjs')) ? legacy : resolve('.vercel/output/_functions');
+const ENTRY = existsSync(join(legacy, 'dist/server/entry.mjs')) ? join(legacy, 'dist/server/entry.mjs') : join(FUNC, 'entry.mjs');
 
 /* As rotas SSR saem do FONTE, não de lista escrita à mão: página nova com
    `prerender = false` entra nesta régua sozinha, no commit que a cria. Lista fechada
@@ -126,8 +127,9 @@ if (MUTANTE === 'sem-publicjs') {
   // um cwd temporário com o mesmo conteúdo da função, MENOS qualquer public/ — é o
   // pacote que a Vercel monta hoje. Se a régua não ficar vermelha aqui, ela é teatro.
   const t = mkdtempSync(join(tmpdir(), 'ssr-mut-'));
-  symlinkSync(join(FUNC, 'dist'), join(t, 'dist'));
-  symlinkSync(join(FUNC, 'node_modules'), join(t, 'node_modules'));
+  for (const entry of readdirSync(FUNC)) {
+    if (entry !== 'public') symlinkSync(join(FUNC, entry), join(t, entry));
+  }
   cwdMedicao = t;
 }
 process.chdir(cwdMedicao);
@@ -155,7 +157,9 @@ for (const rota of rotas) {
     catch (e) { erro = e.message.split('\n')[0]; }
   } catch (e) { erro = e.message.split('\n')[0]; }
   if (erro) ssr2 = false;
-  if (!(status === 200 && bytes >= PISO)) ssr1 = false;
+  // Convite inexistente deve entregar a página 404, com corpo completo.
+  const esperado = rota.startsWith('/sala/') ? 404 : 200;
+  if (!(status === esperado && bytes >= PISO)) ssr1 = false;
   linhas.push({ rota, status, bytes, erro });
 }
 process.chdir(RAIZ);
