@@ -193,7 +193,7 @@ css = muta('menu-wall-contain-volta', css,
   '.cs-wallpaper::after{inset:0;z-index:1;background-size:cover}',
   '.cs-wallpaper::after{inset:0;z-index:1;background-size:contain}');
 main = muta('opcoes-mapa-decorativas', main,
-  'roundsMax: matchRounds(),',
+  'roundsMax: sessao ? undefined : matchRounds(),',
   'roundsMax: 5,');
 css = muta('borda-tracejada-volta', css,
   'background:transparent;border:1px solid var(--line);color:var(--ink3);padding:10px}',
@@ -908,7 +908,7 @@ const opcoesPartidaNoMapa = /id="ms-wpn-mode"/.test(astro)
   && /settings\.enemyBots = Math\.max\(1, Math\.min\(8, msEnemy\.value \| 0\)\)/.test(main)
   && /settings\[matchMode === 'ctf' \? 'ctfRounds' : 'rounds'\] = sanitizeRounds\(msRounds\.value\)/.test(main)
   && /function matchRounds\(\)[\s\S]{0,400}settings\.ctfRounds[\s\S]{0,400}settings\.rounds/.test(main)
-  && /roundsMax: matchRounds\(\),/.test(main)
+  && /roundsMax: sessao \? undefined : matchRounds\(\),/.test(main)
   && /constructor\(\{[^}]*roundsMax/.test(game)
   && /export const sanitizeRounds[\s\S]{0,200}ROUNDS_CUSTOM_MAX \? n : 0;/.test(game)
   && /const requestedRounds = sanitizeRounds\(roundsMax\);/.test(game)

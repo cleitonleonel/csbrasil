@@ -9,10 +9,17 @@
    `fixo` descarta a escolha antes de construir o jogo; `maioria` restaura o encerramento
    antecipado em 3 × 0 quando o jogador escolheu 5. Ambos precisam deixar a régua vermelha.
 
+   MULTIPLAYER: o servidor (Room do backend) cria o Game SEM roundsMax, então a sala online
+   joga o padrão 5 / 3 e o fim chega pelo estado `matchEnd` dele. O cliente não pode passar
+   o teto LOCAL (1–15) na sessão online, senão o HUD mostra "RODADA 1 / 15" numa partida que
+   acaba na 5ª. Cláusula de fonte; o mutante `mp-local` restaura o teto local no online.
+
    Uso: npm run eval:matchoptions
         node tools/eval/match-options-check.mjs --mutante=fixo
         node tools/eval/match-options-check.mjs --mutante=maioria
+        node tools/eval/match-options-check.mjs --mutante=mp-local
 */
+import { readFileSync } from 'node:fs';
 import { bootGame, initTextures } from './harness.mjs';
 
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
@@ -59,6 +66,17 @@ for (const [ctf, expected] of [[false, 5], [true, 3]]) {
   const g = bootGame('praca_poderes', { textures, ctf, seed: 29299 + +ctf });
   expect(g.roundsMax === expected, `${ctf ? 'ctf' : 'mata-mata'} padrão=${g.roundsMax}, esperado=${expected}`);
   g.dispose?.();
+}
+
+/* MP: o `roundsMax` passado ao Game do lançamento tem que ceder ao servidor na sessão online. */
+{
+  let main = readFileSync(new URL('../../public/js/main.js', import.meta.url), 'utf8');
+  if (MUT === 'mp-local') main = main.replace(/roundsMax:\s*sessao\s*\?\s*undefined\s*:\s*matchRounds\(\)/, 'roundsMax: matchRounds()');
+  const linhas = main.match(/^\s*roundsMax:.*$/gm) || [];
+  expect(linhas.length === 1, `main.js: esperado 1 roundsMax no new Game, achei ${linhas.length}`);
+  expect(linhas.every((l) => /roundsMax:\s*sessao\s*\?\s*undefined\s*:\s*matchRounds\(\)/.test(l)),
+    `main.js: no online o teto de rounds é do servidor, mas o Game recebe o local (${(linhas[0] || '').trim()})`);
+  rows.push(`multiplayer       roundsMax ${linhas.length === 1 && /sessao/.test(linhas[0]) ? 'cede ao servidor' : 'LOCAL'}`);
 }
 
 console.log('┌─ MATCH-OPTIONS-CHECK');
