@@ -246,6 +246,18 @@ function suite(api, quiet = false) {
     const independent = criarSuporteGrafite(root, production.gradeEspacial);
     assert.ok(actual.every(p => independent(p)), 'all live pieces satisfy unmutated support measurement');
   });
+  test('live placement slides past a panel seam to a supported spot', 'live', () => {
+    // Chapas de 0,997 m com fresta de 3 mm: o encaixe tolerante aceita a âncora em
+    // cima da fresta, o suporte estrito recusa, e o deslize de 0,5 m acha chapa inteira.
+    const panels = Array.from({ length: 8 }, (_, i) => {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(.997, 4, .2), new THREE.MeshLambertMaterial());
+      mesh.position.set(-3.5 + i, 2, 0); mesh.name = 'fixture-panel'; return mesh;
+    });
+    const root = grouped(...panels); const result = api.pintarParedes(liveConfig(root));
+    assert.ok(result.pecas >= 3, `seam must not discard a slide that fits (got ${result.pecas})`);
+    const independent = criarSuporteGrafite(root, production.gradeEspacial);
+    assert.ok((root.userData.graffitiPecas || []).every(p => independent(p)), 'slid pieces satisfy support');
+  });
   test('live generation rejects translucent plant directly in front of wall', 'live', () => {
     const plant = plane(.115, 'samambaia', new THREE.MeshLambertMaterial({ transparent: true, opacity: .7 }), 8, 4);
     plant.userData.nonSolidSurface = true;

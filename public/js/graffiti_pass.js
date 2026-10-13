@@ -491,18 +491,20 @@ export function pintarParedes(opts) {
            por isso, e são elas que seguravam a cobertura em 78,7%. O deslize testa o
            mesmo tamanho meio metro pra cada lado; o cache de amostra faz isso custar
            quase nada. */
-        let recuo = null, du = 0;
+        let quad = null, du = 0;
         /* `margem` (opcional): papel colado não encosta em batente; a parede tem de
            continuar inteira, sem vão, `margem` metros para cada lado da peça. */
         const wTeste = w + 2 * (B.margem || 0), minAchou = B.margem ? AMOSTRAS_15.length : 13;
+        /* O suporte estrito decide em cada deslize: o primeiro encaixe tolerante
+           pode cair na quina, com a parede inteira livre meio metro ao lado. */
         for (const d of [0, -0.5, 0.5, -1.0, 1.0]) {
-          recuo = _encaixar(null, rc, A, yc, wTeste, h, amostra, d, B.planura, minAchou);
-          if (recuo !== null) { du = d; break; }
+          const recuo = _encaixar(null, rc, A, yc, wTeste, h, amostra, d, B.planura, minAchou);
+          if (recuo === null) continue;
+          const ax = A.x + Math.cos(A.ry) * d, az = A.z - Math.sin(A.ry) * d;
+          const px = ax - Math.sin(A.ry) * recuo, pz = az - Math.cos(A.ry) * recuo;
+          quad = quantizarGrafite({ x: px, y: yc, z: pz, ry: A.ry, w, h }, suporte);
+          if (quad) { du = d; break; }
         }
-        if (recuo === null) { rec.semParede++; continue; }
-        const ax = A.x + Math.cos(A.ry) * du, az = A.z - Math.sin(A.ry) * du;
-        const px = ax - Math.sin(A.ry) * recuo, pz = az - Math.cos(A.ry) * recuo;
-        const quad = quantizarGrafite({ x: px, y: yc, z: pz, ry: A.ry, w, h }, suporte);
         if (!quad) { rec.semParede++; continue; }
         if (_cobreDemais(postas, quad.x, quad.y, quad.z, quad.ry, quad.w, quad.h, cobre)) { rec.cobria++; continue; }
         if (exigeChao && B.exigeChao !== false && !_temChao(amostra, du, quad.w, quad.y - quad.h / 2)) { rec.noAr++; continue; }
