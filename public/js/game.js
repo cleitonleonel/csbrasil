@@ -242,6 +242,13 @@ const BOT_HS_MAX = 0.07;
 const BOT_HS_MUL = { rifle: 2.0, smg: 2.0, pistol: 2.0, lmg: 1.9, shotgun: 1.5, sniper: 2.5 };
 const BOT_REACT_MIN = 0.20;
 const BOT_FOCUS_MIN = 0.16;
+// Sentidos do bot contra o jogador: cone de 120°, periferia, audição de tiro/passo (PR #856).
+// ?botsentidos=0 volta ao comportamento antigo; bot×bot não muda (botsim-golden).
+const BOT_SENTIDOS = QS.get('botsentidos') !== '0';
+const BOT_FOV_HALF = 60 * Math.PI / 180;
+const BOT_PERIF = 4;
+const BOT_OUVE_TIRO = 40;
+const BOT_OUVE_PASSO = 14;
 /* ===================== 5. RAJADA E TURNO (causa-raiz medida do BOT4) =====================
    O harness (tools/eval/botdiag.mjs) imprimiu a rajada que MATA, tiro a tiro. O padrão era
    sempre o mesmo, nos 4 mapas: 4 acertos de 22-33 de dano, dos quais 3 dentro de 0,25 s —
@@ -3653,6 +3660,7 @@ export class Game {
     a.mag--;
     p.nextShotAt = this.time + w.rate;
     p.revealedAt = this.time;
+    if (BOT_SENTIDOS) this._botOuve(p.pos, BOT_OUVE_TIRO, 3);   // tiro faz barulho
     this.vm.authored?.shoot(p.weapon);
     if (p.weapon === 'awp') setTimeout(() => this.sfx.bolt(), 420);
     this.sfx.shotWeapon(p.weapon, 0);   // 1ª pessoa = distância 0 no mix do synth
@@ -6206,7 +6214,11 @@ export class Game {
     if (moving) {
       p.stepPhase += dt * sp * 1.6;
       const prev = Math.sin(p.stepPhase - dt * sp * 1.6), now = Math.sin(p.stepPhase);
-      if (prev >= 0 && now < 0) this.sfx.step(this._footstepSurface(p.pos));
+      if (prev >= 0 && now < 0) {
+        this.sfx.step(this._footstepSurface(p.pos));
+        // passo correndo é ouvido; Shift silencioso (sfx._quiet) não
+        if (BOT_SENTIDOS && !this.sfx._quiet) this._botOuve(p.pos, BOT_OUVE_PASSO, 1.5);
+      }
     }
     // Lunetas ocultam a arma; ADS sem luneta usa foco com a cruz como referência do tiro.
     const realScope = p.scoped && !!WEAPONS[p.weapon].scope;
@@ -7018,6 +7030,19 @@ export class Game {
     if (b.mesh.isGLB) b.mesh.ctrl.revive();
   }
 
+  // Som alerta (360°) e marca o ponto ouvido para investigar; adquirir alvo ainda exige visão.
+  _botOuve(pos, raio, dur) {
+    const pt = this.player && this.player.team;
+    for (const b of this.bots) {
+      if (!b.alive || b.team === pt) continue;
+      const dx = b.pos.x - pos.x, dz = b.pos.z - pos.z;
+      if (dx * dx + dz * dz > raio * raio) continue;
+      b.alertUntil = Math.max(b.alertUntil || 0, this.time + dur);
+      (b._heardPos || (b._heardPos = new THREE.Vector3())).copy(pos);
+      b._heardAt = this.time;
+    }
+  }
+
   _updateBot(b, dt) {
 
     if (b._remote) {
@@ -7094,6 +7119,11 @@ export class Game {
         // bot-vs-bot = first hit kills) — nobody roamed. 45m forces bots to close
         // in through mid-map, so the varied roam routes actually play out.
         if (d < bd && d < view) {
+          // CONE DE VISÃO (ver SENTIDOS DO BOT): alvo NOVO só dentro dos 120° da frente.
+          if (BOT_SENTIDOS && !this.__mutBot360 && e.isPlayer && e !== b.target && d > BOT_PERIF && this.time >= (b.alertUntil || 0)) {
+            const ang = Math.atan2(e.pos.x - b.pos.x, e.pos.z - b.pos.z) - b.yaw;
+            if (Math.abs(Math.atan2(Math.sin(ang), Math.cos(ang))) > BOT_FOV_HALF) continue;
+          }
           const eye = this._botEye(b);
           const teye = e.isPlayer ? this.camera.position.clone() : this._botEye(e);
           if (this._losClear(eye, teye)) { best = e; bd = d; }
@@ -7534,6 +7564,21 @@ export class Game {
             b.path = null; b.repathAt = this.time + 1.0;
             pocket = true;
           }
+        }
+        // INVESTIGAR (ver SENTIDOS DO BOT): ouviu o jogador há <4 s e está sem alvo → o destino
+        // vira o nó ALCANÇÁVEL (mesmo componente do grafo) mais perto do som, por até 6 s.
+        if (BOT_SENTIDOS && !pocket && b._heardAt && b._heardUsed !== b._heardAt && this.time - b._heardAt < 4) {
+          b._heardUsed = b._heardAt;
+          const nodes = W.waypoints.nodes, comp = this._wpComp();
+          const myComp = comp && comp.length ? comp[from] : -1;
+          let hi = -1, hd = 1e9;
+          for (let i = 0; i < nodes.length; i++) {
+            if (myComp >= 0 && comp[i] !== myComp) continue;
+            if (b._unreach && b._unreach.has(i)) continue;
+            const d = Math.hypot(nodes[i].x - b._heardPos.x, nodes[i].z - b._heardPos.z);
+            if (d < hd) { hd = d; hi = i; }
+          }
+          if (hi >= 0 && hi !== from) { b.roamIdx = hi; b.roamUntil = this.time + 6; }
         }
         if (!pocket && (this.time > (b.roamUntil || 0) || b.roamIdx === undefined)) {
           // Enemy direction derived from the spawn LAYOUT (not hardcoded — the spawn
