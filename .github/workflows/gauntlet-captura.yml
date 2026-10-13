@@ -58,17 +58,32 @@ jobs:
           npm i -g "playwright@$(node -pe "require('./package.json').devDependencies.playwright.replace(/^[^0-9]*/,'')")"
           npx playwright install --with-deps chromium
 
-      - name: Sobe o jogo e fotografa
+      # BUILD DE PRODUÇÃO servido estático — não o `astro dev` do serve.mjs. Medido em
+      # 13/10 num Linux headless limpo (o que é todo runner): no dev o Vite otimiza deps na
+      # 1ª carga, o import dinâmico de `.astro/eval-vite/deps/astro-*.js` falha e o jogo
+      # abre o modal "A ARENA NÃO ABRIU" — 2 de 2 capturas saíram só com o modal. Com o
+      # build estático o mesmo mapa chega a `live` e a foto mostra o jogo. É também o que o
+      # jogador recebe. Sem os assets privados (sem segredo aqui) a faca cai no fallback
+      # procedural; o resto do mapa é o mesmo.
+      # Grafite: o pacote público de decalques (release do repo). Sem ele os mapas saem
+      # sem pichação e o crítico acusaria um defeito que produção não tem.
+      - name: Build de produção
+        run: |
+          bash scripts/fetch-decals.sh
+          npm run build
+
+      - name: Sobe o build estático e fotografa
         env:
           ONLY: ${{ steps.mapa.outputs.id }}
           GL_SWIFTSHADER: '1'
+          BASE: http://127.0.0.1:8124
         run: |
-          node tools/eval/serve.mjs 8123 > /tmp/serve.log 2>&1 &
-          for i in $(seq 1 90); do curl -fsS http://127.0.0.1:8123/ >/dev/null 2>&1 && break; sleep 2; done
+          (cd .vercel/output/static && python3 -m http.server 8124 --bind 127.0.0.1 > /tmp/static.log 2>&1 &)
+          for i in $(seq 1 30); do curl -fsS "$BASE/" >/dev/null 2>&1 && break; sleep 1; done
           OUT="artifacts/gauntlet/$ONLY"
           mkdir -p "$OUT"
-          # 24 min de teto para a câmera: o resto do job é boot e upload.
-          timeout 1440 node tools/eval/gl-shots.mjs "$OUT" game || echo "::warning::gl-shots saiu com $? — o que foi capturado sobe mesmo assim"
+          # 20 min de teto para a câmera: o resto do job é build, boot e upload.
+          timeout 1200 node tools/eval/gl-shots.mjs "$OUT" game || echo "::warning::gl-shots saiu com $? — o que foi capturado sobe mesmo assim"
           {
             echo "{\"mapa\":\"$ONLY\",\"sha\":\"$GITHUB_SHA\",\"run\":\"$GITHUB_RUN_ID\","
             echo "\"quando\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"renderer\":\"swiftshader\"}"
