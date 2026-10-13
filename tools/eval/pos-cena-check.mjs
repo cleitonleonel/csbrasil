@@ -10,18 +10,23 @@
  *   PC2  e o pós não conhece mais a cena (`alvoDoPos` devolve null);
  *   PC3  o REINICIAR descarta a partida e aguarda o preload com `game` ainda apontando para
  *        ela, então o loop continua desenhando a cena morta: o pós não pode adotá-la de novo.
+ *   PC4  `rebuildMenuBackdrop` de main.js (extraída do texto, como em tests/menu-backdrop)
+ *        libera o pós do fundo de menu que ela troca.
  *
  * Mutações (sai 1 se a mutação PASSAR):
  *   --mutante=sem-chamada   remonta `Game.prototype.dispose` sem a linha que libera o pós
  *   --mutante=libera-vazio  troca a liberação instalada pelo bloom por uma função vazia
+ *   --mutante=menu-sem-chamada  apaga de rebuildMenuBackdrop a linha que libera o pós
  *
  *   node tools/eval/pos-cena-check.mjs
  */
-import { renderer, bootGame, initTextures, Game } from './harness.mjs';
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+import { renderer, bootGame, initTextures, Game, THREE } from './harness.mjs';
 import { enableLightBloom, alvoDoPos } from '../../public/js/bloom.js';
 
 const MUTANTE = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-if (!['', 'sem-chamada', 'libera-vazio'].includes(MUTANTE)) {
+if (!['', 'sem-chamada', 'libera-vazio', 'menu-sem-chamada'].includes(MUTANTE)) {
   console.error(`mutante desconhecido: ${MUTANTE}`);
   process.exit(1);
 }
@@ -50,6 +55,24 @@ const depois = alvoDoPos(g.scene);
 renderer.render(g.scene, g.camera);
 const readotada = alvoDoPos(g.scene);
 
+const main = readFileSync(new URL('../../public/js/main.js', import.meta.url), 'utf8');
+const ini = main.indexOf('function rebuildMenuBackdrop() {');
+const fim = main.indexOf('\n}', ini);
+if (ini < 0 || fim < 0) { console.error('rebuildMenuBackdrop não encontrada em public/js/main.js'); process.exit(1); }
+let rebuild = main.slice(ini, fim + 2);
+if (MUTANTE === 'menu-sem-chamada') {
+  const mutada = rebuild.replace(/^.*liberaPosDaCena.*$/m, '');
+  if (mutada === rebuild) { console.error('MUTANTE NAO APLICOU: menu-sem-chamada'); process.exit(1); }
+  rebuild = mutada;
+}
+const fundoVelho = new THREE.Scene();
+fundoVelho.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial()));
+renderer.render(fundoVelho, g.camera);
+const menuAntes = alvoDoPos(fundoVelho);
+const ctx = vm.createContext({ renderer, THREE, menuScene: fundoVelho, currentMap: 'm', textures: null, MAPS: { m: { build() {} } } });
+vm.runInContext(`${rebuild}\nrebuildMenuBackdrop();`, ctx);
+const menuDepois = alvoDoPos(fundoVelho);
+
 const res = [
   ['PC1', 'render targets do pós liberados no dispose da partida',
     nUsados > 0 && vivos.size === 0, `${nUsados - vivos.size}/${nUsados} liberados`],
@@ -57,6 +80,9 @@ const res = [
     !!antes && depois === null, `antes=${JSON.stringify(antes)} depois=${JSON.stringify(depois)}`],
   ['PC3', 'desenhar a cena descartada não recria o composer',
     readotada === null, `depois de desenhar=${JSON.stringify(readotada)}`],
+  ['PC4', 'trocar o fundo de menu libera o pós do fundo antigo',
+    !!menuAntes && menuDepois === null && ctx.menuScene !== fundoVelho,
+    `antes=${JSON.stringify(menuAntes)} depois=${JSON.stringify(menuDepois)} — public/js/main.js rebuildMenuBackdrop`],
 ];
 for (const [id, desc, ok, evid] of res) console.log(`${ok ? '✓' : '✗'} ${id}  ${desc} — ${evid}`);
 const falhou = res.some(([, , ok]) => !ok);
