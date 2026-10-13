@@ -14,7 +14,7 @@
 import * as THREE from 'three';
 import { initTextures } from './js/textures.js';
 import { MAPS, resolveMapId } from './js/maps.js';
-import { preloadMapProps } from './js/mapprops.js';
+import { preloadMapProps, COMMON_MAP_PROPS } from './js/mapprops.js';
 import { preloadAmbientLife } from './js/ambientlife.js';
 import { lookAtual } from './js/bloom.js';
 
@@ -37,8 +37,7 @@ const scene = new THREE.Scene();
 const cam = new THREE.PerspectiveCamera(55, W/H, 0.1, 2000);
 
 // união dos props globais (main.js MAP_PROPS) + props por-mapa (Havan/Ferro Velho)
-const GLOBAL_PROPS = ['congresso','catedral','ministerio','palacio','justica','tires','stall','tent','bus','drinkstand','urna','towner',
-  'quiosque','skate_ramp','lifeguard_tower','guarda_sol','arquibancada'];
+const GLOBAL_PROPS = COMMON_MAP_PROPS;
 const allProps = [...new Set([...GLOBAL_PROPS, ...(MAPS[MAP].props || [])])];
 
 window.MAPEVAL = {

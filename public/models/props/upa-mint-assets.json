@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-11",
+  "provider": "Mint.gg",
+  "model": "TRIPO_P1",
+  "project": "zd7b0v30hn2xpc5yxfcg8t5sz18g34wt",
+  "chat": "ph73atymj1ytxe133gcst1b93x8g3f8e",
+  "projectURL": "https://mint.gg/project/zd7b0v30hn2xpc5yxfcg8t5sz18g34wt?chat=ph73atymj1ytxe133gcst1b93x8g3f8e",
+  "termsStatus": "Procedência confirmada; termos/licença de publicação não confirmados nesta sessão. Não declarar CC0.",
+  "individualAssetIds": "Não expostos pela UI observada; projeto/chat, packs, nomes originais e hashes identificam os downloads.",
+  "texturePolicy": "BaseColor e ORM JPEG1024 qualidade95; normal PNG1024; GLB autocontido.",
+  "runtimeScale": 1,
+  "assets": [
+    {
+      "id": "upa_maca",
+      "registryKey": "upa_maca"
+    },
+    {
+      "id": "upa_longarina",
+      "registryKey": "upa_longarina"
+    },
+    {
+      "id": "upa_oxigenio",
+      "registryKey": "upa_oxigenio"
+    },
+    {
+      "id": "upa_biombo",
+      "registryKey": "upa_biombo"
+    },
+    {
+      "id": "upa_armario",
+      "registryKey": "upa_armario"
+    },
+    {
+      "id": "upa_monitor",
+      "registryKey": "upa_monitor"
+    },
+    {
+      "id": "upa_cadeira_rodas",
+      "registryKey": "upa_cadeira_rodas"
+    },
+    {
+      "id": "upa_soro",
+      "registryKey": "upa_soro"
+    },
+    {
+      "id": "upa_balcao",
+      "registryKey": "upa_balcao"
+    }
+  ],
+  "registry": "../../../mint-assets.json"
+}
