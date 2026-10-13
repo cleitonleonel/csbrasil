@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.82`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.84`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -71,6 +71,26 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.84] — 2026-10-13
+
+### Mudado
+- Adiciona captura local de gameplay com caminho confinado (#851)
+- Regenera docs com os scripts da captura local
+- Cobra confinamento do proxy de captura no CI
+- Confina take e áudio da captura à pasta de cada um
+- Adiciona ferramenta local de captura de gameplay
+
+## [2.1.0-alpha.83] — 2026-10-13
+
+### Mudado
+- feat(partida): times de tamanho livre, rounds 1-15 e escalação manual (#809)
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Make roster cards fill their lineup cell
+- Keep the server's round cap in online matches
+- docs(partida): regenera ARCH e zonas após o formato livre
+- feat(partida): times de tamanho livre, rounds 1-15 e escalação manual
 
 ## [2.1.0-alpha.82] — 2026-10-13
 
