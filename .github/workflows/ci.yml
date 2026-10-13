@@ -69,8 +69,11 @@ jobs:
         run: node tools/eval/runner.mjs eval:escadao-graph eval:escadao-home eval:escadao-structure eval:escadao-descent eval:escadao-details
       - name: Escadão — compatibilidade com pacote de áudio publicado
         run: node tools/eval/escadao-audio-pack-check.mjs
+      # eval:lajes-spawn-space e eval:lajes-raycast saíram daqui porque as invariantes
+      # rodam os MESMOS scripts (LSP1 e LRP1, críticas e fora do KNOWN-RED) e reprovam
+      # o PR com condição mais forte que o código de saída: saída 0 E a linha ✓.
       - name: Lajes — geometria, ambiência, integração e preview
-        run: node tools/eval/runner.mjs eval:lajes-cache eval:lajes-visual eval:lajes-ruas eval:lajes-game eval:lajes-ambiencia eval:lajes-santos eval:lajes-airspace eval:lajes-soundscape eval:lajes-spawn-space eval:lajes-raycast eval:mappreview
+        run: node tools/eval/runner.mjs eval:lajes-cache eval:lajes-visual eval:lajes-ruas eval:lajes-game eval:lajes-ambiencia eval:lajes-santos eval:lajes-airspace eval:lajes-soundscape eval:mappreview
       - name: Sertão (tema, rotas, criação e integração)
         run: |
           npm run eval:sertao
@@ -125,6 +128,9 @@ jobs:
       - name: Enquadramento do viewmodel por arma (26 armas, GLB real)
         run: node tools/eval/vm-mint-audit.mjs
       - name: Invariantes (portão — falha crítica reprova o PR)
+        env:
+          # Saída de cada sub-simulação, para o passo dos bots não rodar o botsim de novo.
+          INVARIANTES_SAIDAS: ${{ runner.temp }}/invariantes
         run: |
           node --test tests/fresh-report.test.mjs
           node tools/eval/invariants.mjs
@@ -138,8 +144,17 @@ jobs:
       # catálogo privado e navegador; aqui o CI cobra o RESULTADO assado delas.
       - name: Placar das réguas de imagem do viewmodel em dia
         run: npm run eval:vm-placar
+      # As invariantes já rodaram `botsim.mjs` sem argumento, que é `60 all` (o default
+      # do script), com o mesmo ambiente deste job. Este passo publica aquela execução e
+      # reprova com o código de saída dela, em vez de gastar ~1 min rodando de novo.
+      # Arquivo ausente (invariantes não rodaram o botsim) também reprova.
       - name: Navegação dos bots (60 s × 5 mapas, sementes fixas)
-        run: node tools/eval/botsim.mjs 60 all
+        env:
+          SAIDA: ${{ runner.temp }}/invariantes/botsim.mjs
+        run: |
+          cat "$SAIDA.out"
+          cat "$SAIDA.err" >&2
+          exit "$(cat "$SAIDA.code")"
 
       - name: Astro build
         run: npm run build

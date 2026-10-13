@@ -49,6 +49,33 @@ test('relatório novo inválido não vira dado de geometria', () => {
   }
 });
 
+// Auditor assíncrono (as invariantes medem e rodam os auditores fora do fio principal):
+// o relatório velho some ANTES de ele começar e a leitura espera ele terminar.
+test('auditor assíncrono: remove antes de começar e lê depois de terminar', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'map-audit-fresh-'));
+  const path = join(dir, 'map_check.json');
+  try {
+    writeFileSync(path, JSON.stringify({ mapas: [{ map: 'resultado-antigo' }] }));
+    let viuAntigo = null;
+    const pendente = freshReport(path, () => {
+      viuAntigo = existsSync(path);
+      return new Promise((resolve) => setTimeout(() => {
+        writeFileSync(path, JSON.stringify({ mapas: [{ map: 'novo' }] }));
+        resolve('');
+      }, 10));
+    });
+    assert.equal(viuAntigo, false);
+    const result = await pendente;
+    assert.equal(result.error, null);
+    assert.equal(result.data.mapas[0].map, 'novo');
+    const interrompido = await freshReport(path, () => Promise.resolve('__ERRO__ timeout'));
+    assert.equal(interrompido.data, null);
+    assert.match(interrompido.error, /timeout/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 // Todo relatório versionado que as invariantes regeram passa pelo freshReport (#652).
 const REGERADOS = ['map_check', 'pickup_check', 'char_probe', 'mat_check'];
 const semFreshReport = (src) => REGERADOS.filter((nome) => {
