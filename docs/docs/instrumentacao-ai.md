@@ -96,7 +96,8 @@ herda a justificativa, e a justificativa é justamente o que precisa ser testado
 
 ### 4. Construtores em paralelo, particionados por faixa de linha
 
-Esta é a peça que permite N agentes no mesmo arquivo de 6.427 linhas sem conflito. Ela
+Esta é a peça que permite N agentes no mesmo arquivo gigante (o `game.js`, hoje o maior
+do repo) sem conflito. Ela
 tem página própria: [Arquitetura](./arquitetura.md#faixas-de-linha-disjuntas).
 
 O resumo operacional:

@@ -34,8 +34,8 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 
 | O que | Quanto | Onde confere |
 |---|---:|---|
-| Código do jogo | 59.880 linhas em 129 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
-| `game.js` | **8.388** linhas | `wc -l public/js/game.js` |
+| Código do jogo | 59.894 linhas em 129 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| `game.js` | **8.401** linhas | `wc -l public/js/game.js` |
 | `main.js` | 4.405 linhas | `wc -l public/js/main.js` |
 | Armas com GLB | 27 | `git ls-files 'public/models/weapons/*.glb' \| wc -l` |
 | GLBs de personagem | 74 | `git ls-files 'public/models/characters/*.glb' \| wc -l` |
@@ -44,10 +44,10 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 | Personagens jogáveis | 63, em 7 facções | array `CHARACTERS` de `characters.js` |
 | Mapas no registro | 18 | objeto `MAPS` de `maps.js` |
 | Arnêses visuais em HTML | 22 | `git ls-files 'public/*.html' \| wc -l` |
-| Scripts do arnês | 685 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
+| Scripts do arnês | 687 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
 | Scripts de pipeline | 103 | `git ls-files 'tools/*.mjs' \| wc -l` |
 | Tarefas de entrada escritas | 26 | `git ls-files 'docs/issues/[0-9]*.md' \| wc -l` |
-| Versão | `2.1.0-alpha.74` | `public/js/version.js` e `package.json` (batem) |
+| Versão | `2.1.0-alpha.76` | `public/js/version.js` e `package.json` (batem) |
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `o comando da coluna direita de cada linha`
 
@@ -55,8 +55,11 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 
 > **O multiplayer está em beta.** O cliente de rede vive em
 > [`public/js/net.js`](public/js/net.js), com os transportes em
-> [`public/js/transporte.js`](public/js/transporte.js). Para testar o jogo local
-> sem configurar um servidor multiplayer, comece pelo modo singleplayer.
+> [`public/js/transporte.js`](public/js/transporte.js) — salas públicas e privadas
+> por código de convite saem do mesmo cliente. Para testar o jogo local sem
+> configurar um servidor multiplayer, comece pelo modo singleplayer.
+> No celular há beta instalável como PWA com controles de toque
+> ([`public/site.webmanifest`](public/site.webmanifest)).
 
 ▶ **Jogue:** <https://www.corosolto.com.br/>
 
@@ -210,8 +213,8 @@ Nada commita com invariante vermelha. O catálogo do arnês está em
 uma linha afirmando "`game.js` tem 3.234 linhas" sobreviveu até o arquivo
 dobrar de tamanho.
 
-> `npm run check` lê GLBs de `public/models/`. Numa árvore sem os assets
-> baixados, `eval:invariants` e `eval:vm` falham com `ENOENT` — é ambiente, não
+> `npm run eval:vm` e `npm run eval:invariants` leem GLBs de `public/models/`. Numa
+> árvore sem os assets baixados, os dois falham com `ENOENT` — é ambiente, não
 > regressão.
 
 ## Knowledge graph com Graphify
@@ -236,7 +239,7 @@ Arquivos principais:
 Build inicial do grafo:
 
 - foi gerado em modo `code-only`, local e determinístico
-- inclui SQL (`supabase/schema.sql` e migrations)
+- inclui SQL (schema e migrations; o schema saiu da árvore pública, é privado)
 - não usa API externa
 
 Atualizar depois de mudanças de código:
@@ -353,8 +356,7 @@ O motivo é o de sempre nesta base — o modelo é **client-authoritative**, o p
 rate limit por nick/IP/dia, tetos absolutos e consistência física) e a telemetria
 nova continua medindo. Quando o ranking voltar, o histórico está lá.
 
-- Schema e migrations: [`supabase/`](supabase/) (a contagem está no bloco
-  gerado no topo)
+- Schema e migrations: privados, fora da árvore
 - O que foi endurecido no pré-release: [`docs/seguranca.md`](docs/seguranca.md)
 
 A correção definitiva é o servidor de jogo escrever com `service_role` e o RLS
