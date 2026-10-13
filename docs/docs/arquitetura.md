@@ -140,7 +140,7 @@ Do `tools/eval/ARCH.md` (bloco gerado — as faixas abaixo são as da geração 
 | **SITE / BACKEND** | `src/` |
 
 :::caution Dois arquivos de mapa NÃO têm dono declarado
-`map_quebrada.js` (1.319 linhas, o mapa mais novo) e `map_decals.js` **não aparecem em
+`map_quebrada.js` (o mapa mais novo) e `map_decals.js` **não aparecem em
 frente nenhuma** de `tools/gen-arch.mjs` — a lista acima é cópia fiel do `FRENTES`, e eles
 não estão lá. Quem editar os dois não colide com ninguém *segundo a tabela*, que é
 justamente a garantia que a tabela deveria dar e não dá. Acrescentá-los é uma linha em

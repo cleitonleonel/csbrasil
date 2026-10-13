@@ -322,6 +322,6 @@ A ordem da barra lateral **é** a ordem de leitura, e cada página entrega uma c
    desde a última medição colada.
 
 Para onde o projeto **vai** não está nesta documentação: é o
-[`ROADMAP.md`](https://github.com/corosolto/client/blob/main/ROADMAP.md), e o
-plano executável é o
-o plano de release `plans/08`.
+[`ROADMAP.md`](https://github.com/corosolto/client/blob/main/ROADMAP.md); os planos
+executáveis por frente vivem em
+[`plans/`](https://github.com/corosolto/client/tree/main/plans).
