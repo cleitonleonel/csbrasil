@@ -41,16 +41,10 @@ export const prerender = false;
 // prioridade/frequência: sinal fraco pro Google, mas o Bing e os crawlers de
 // IA ainda leem. Custa nada e ajuda a ordenar o rastreio.
 //
-// `/ranking` e os perfis `/u/*` SÓ ENTRAM COM `RANKING_ON`. Com a flag em
-// false essas páginas respondem `<meta name="robots" content="noindex">`
-// (ranking.astro, u/[...path].astro), e listar em sitemap uma URL que a própria
-// página manda não indexar é mandar dois sinais opostos pro mesmo crawler. A
-// documentação do Google é explícita: "don't include noindex URLs in your
-// sitemap" - https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
-// Quando `RANKING_ON` voltar a true, as duas voltam sozinhas.
+// Só URL final e indexável: `/ranking` responde 302 para o hub e fica fora; os
+// perfis `/u/*` só entram com `RANKING_ON`.
 export const STATIC: [string, string, string][] = [
   ['/',            '1.0', 'daily'],
-  ...(RANKING_ON ? [['/ranking', '0.9', 'hourly'] as [string, string, string]] : []),
   ['/como-jogar',  '0.8', 'weekly'],
   ['/personagens', '0.8', 'weekly'],
   /* As 5 facções saem de FACCOES, não de uma lista digitada aqui: facção nova
