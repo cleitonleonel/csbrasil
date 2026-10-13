@@ -125,6 +125,13 @@ window.__GEO_LANG__ = (function () {
     /* `host` na 1ª migalha: sem ele o painel não separa ruído de worktree local de defeito
        no ar, e `version` não serve. Triagem de 13/09 no KNOWN-BUGS.md. */
     var c = { version: versao(), route: location.pathname, breadcrumbs: ['host ' + location.host].concat(migalhas.slice(-(MIGALHAS - 1))) };
+    /* build + coorte, a mesma regra do sinaisDeBuild() de main.js: crash ligado ao commit,
+       e headless/QA separável de jogador. O backend ignora o campo até ter a coluna. */
+    try{
+      c.buildSha = (window.__CS_BUILD && window.__CS_BUILD.sha) || null;
+      c.cohort = navigator.webdriver ? 'automacao'
+        : (/[?&]qa(=|&|$)/.test(location.search) || localStorage.getItem('cs_qa') === '1') ? 'qa' : 'organico';
+    }catch(_){ c.cohort = 'organico'; }
     try{
       // 'cs_anon' é a MESMA chave do `ANON_KEY` de main.js:403 - sem isso o erro não
       // cruza com a telemetria do mesmo navegador, que é metade da utilidade.
