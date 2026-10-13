@@ -329,6 +329,7 @@ function hideLoading() {
   _lo.box.classList.add('hidden');
 }
 function rebuildMenuBackdrop() {
+  renderer.liberaPosDaCena?.(menuScene);
   menuScene = new THREE.Scene();
   MAPS[currentMap].build(menuScene, textures);
   ajustarAnisotropia(menuScene, settings.quality);

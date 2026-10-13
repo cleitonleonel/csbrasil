@@ -3,14 +3,14 @@
 <!-- BEGIN:GERADO — não edite à mão, rode `npm run arch` -->
 
 > Gerado por `node tools/gen-arch.mjs`. **Não edite este bloco à mão.**
-> Versão do jogo: 2.1.0-alpha.81 · `npm run arch` para regenerar · `npm run arch:check` no CI.
+> Versão do jogo: 2.1.0-alpha.82 · `npm run arch` para regenerar · `npm run arch:check` no CI.
 
 ## Tamanho dos arquivos indexados
 
 | Arquivo | Linhas | Símbolos |
 |---|---:|---:|
-| `public/js/game.js` | 8401 | 329 |
-| `public/js/main.js` | 4406 | 332 |
+| `public/js/game.js` | 8402 | 329 |
+| `public/js/main.js` | 4407 | 332 |
 | `public/js/glbchars.js` | 855 | 60 |
 | `public/js/characters.js` | 1143 | 42 |
 | `public/js/vmattach.js` | 633 | 4 |
@@ -60,7 +60,7 @@ faixas disjuntas simultaneamente com zero conflito de conteúdo.
 
 Nenhuma sobreposição entre frentes — todas as faixas são disjuntas. ✓
 
-Cobertura: **3902 de 8401 linhas (46%)** do `game.js` têm dono declarado. O resto é território neutro — declare a frente mesmo assim.
+Cobertura: **3902 de 8402 linhas (46%)** do `game.js` têm dono declarado. O resto é território neutro — declare a frente mesmo assim.
 
 <details><summary><strong>Índice completo de <code>game.js</code> (todos os símbolos)</strong></summary>
 
@@ -346,7 +346,7 @@ Cobertura: **3902 de 8401 linhas (46%)** do `game.js` têm dono declarado. O res
 | 8137 | `_updateWeaponHud()` | 35 |
 | 8172 | `_updateHud()` | 88 |
 | 8260 | `update()` | 90 |
-| 8350 | `dispose()` | 51 |
+| 8350 | `dispose()` | 52 |
 
 </details>
 
