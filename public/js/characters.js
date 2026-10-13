@@ -834,6 +834,7 @@ export function buildCharacter(def) {
   }
   // rifle in front of chest
   const gun = buildRifle();
+  gun.name = 'arma-caixa';   // mesmo nome do caminho GLB (glbchars): o tracer de 3ª pessoa acha a boca
   gun.position.set(0.10, ombroY - alturaQuadril - 0.18, 0.30);
   torso.add(gun); parts.gun = gun;
 
