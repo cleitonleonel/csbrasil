@@ -11,3 +11,5 @@ Definição de pronto: corte revisado e validado, PR própria empilhada sobre #8
 Objetivo completo e sequência das 23PRs: progress/worktrees/progress-growth-readiness-20261012/docs/growth/CONTINUATION.md e PR-MERGE-ORDER-20261013.md. Quatro emails de teste continuam preparados para o destinatário aprovado; único remetente fale@corosolto.com.br, cadastro raiz pendente de confirmação exigida pelo conector para substituir o domínio auth.
 
 Próximo: terminar revisão/gates do corte, checkpoint e publicar PR draft sem tocar a branch ativa do dono; empilhar itens sobre este corte. Backend #73 já contém o contrato 056 de itens e precisa de extração/revisão antes de declarar o split completo do par. CI verde anterior de #819 não valida este candidato.
+
+Marco validado: Node24 syntax/modgraph/treta-skins/rewards/classic 5/5 PASS; build exit0 (log privado approved-skins-build.log). Chrome confirmou teclado quests→skins. Crítico independente items-off-review.md/adendos aceita corte de12skins e ausência de acessórios; nenhum fit/compra/release aprovado. Checkpoint270c4c49d. Próximo: hook obrigatório e PR draft, depois itens empilhados.
