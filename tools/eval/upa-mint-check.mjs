@@ -59,9 +59,10 @@ function witness(world, object, geometry, empty) {
   return null;
 }
 
-const spec = readFileSync(new URL('../../plans/27-UPA-CLINICAL-MINT.md', import.meta.url), 'utf8');
-const expected = [...spec.matchAll(/^\| `(upa_[a-z_]+)` \|/gm)].map(match => match[1]);
-if (expected.length !== 9) throw new Error('Ficha UPA não permite medir o inventário clínico de nove props');
+// O inventário esperado vem do registro de procedência dos GLBs, não do map_upa.js.
+const registry = JSON.parse(readFileSync(new URL('../../public/models/props/upa-mint-assets.json', import.meta.url), 'utf8'));
+const expected = registry.assets.map(asset => asset.id).filter(id => /^upa_[a-z_]+$/.test(id));
+if (expected.length !== 9) throw new Error('Registro UPA não permite medir o inventário clínico de nove props');
 const checks = [];
 const shotWitnesses = [];
 const add = (id, pass, note) => checks.push([id, pass, note]);
