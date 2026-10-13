@@ -242,20 +242,8 @@ const BOT_HS_MAX = 0.07;
 const BOT_HS_MUL = { rifle: 2.0, smg: 2.0, pistol: 2.0, lmg: 1.9, shotgun: 1.5, sniper: 2.5 };
 const BOT_REACT_MIN = 0.20;
 const BOT_FOCUS_MIN = 0.16;
-/* ===================== SENTIDOS DO BOT (13/10/2026) =====================
-   Duas lacunas medidas no código, não opinião: (1) o bot via 360° — o alcance mais a
-   linha de visão bastavam, então flanquear e pegar de costas não valia nada; (2) o bot
-   NÃO OUVIA o jogador: o `alertUntil` só nascia de levar tiro, de colega atirando a <30 m
-   ou do callout do time. Atirar a 10 m de um bot de costas não mudava nada nele, e o
-   Shift (andar silencioso) não tinha contra-parte nenhuma na IA.
-   Agora, SÓ contra o JOGADOR (bot×bot fica como estava — o botsim-golden mede isso):
-     · CONE DE VISÃO de 120° para ADQUIRIR alvo novo; alvo já engajado continua rastreado,
-       e bot alerta (ouviu/levou tiro) volta a olhar em volta (360°).
-     · PERIFERIA: a menos de BOT_PERIF m o bot "sente" o jogador mesmo fora do cone.
-     · AUDIÇÃO: tiro do jogador alerta inimigos a até BOT_OUVE_TIRO m; passo correndo, a
-       BOT_OUVE_PASSO m. Andando com Shift não faz barulho — agora isso tem valor.
-     · INVESTIGAR: bot sem alvo que ouviu vai até o nó mais perto de onde veio o som.
-   ?botsentidos=0 devolve o comportamento antigo (A/B pro dono, como ?botfair/?botmove). */
+// Sentidos do bot contra o jogador: cone de 120°, periferia, audição de tiro/passo (PR #856).
+// ?botsentidos=0 volta ao comportamento antigo; bot×bot não muda (botsim-golden).
 const BOT_SENTIDOS = QS.get('botsentidos') !== '0';
 const BOT_FOV_HALF = 60 * Math.PI / 180;   // meio-cone: 120° no total
 const BOT_PERIF = 4;                       // m — encostado o bot percebe mesmo de costas
@@ -6226,7 +6214,7 @@ export class Game {
       const prev = Math.sin(p.stepPhase - dt * sp * 1.6), now = Math.sin(p.stepPhase);
       if (prev >= 0 && now < 0) {
         this.sfx.step(this._footstepSurface(p.pos));
-        // passo correndo é ouvido; o Shift silencioso (sfx._quiet) não — ver SENTIDOS DO BOT
+        // passo correndo é ouvido; Shift silencioso (sfx._quiet) não
         if (BOT_SENTIDOS && !this.sfx._quiet) this._botOuve(p.pos, BOT_OUVE_PASSO, 1.5);
       }
     }
@@ -7040,9 +7028,7 @@ export class Game {
     if (b.mesh.isGLB) b.mesh.ctrl.revive();
   }
 
-  /* AUDIÇÃO do bot (ver SENTIDOS DO BOT). Só inimigos do jogador, só no raio. O som abre a
-     visão (alertUntil → 360° e alcance de alerta) e deixa um "último ponto ouvido" que o
-     roam usa para investigar. Não entrega o alvo: adquirir ainda exige linha de visão. */
+  // Som alerta (360°) e marca o ponto ouvido para investigar; adquirir alvo ainda exige visão.
   _botOuve(pos, raio, dur) {
     const pt = this.player && this.player.team;
     for (const b of this.bots) {
