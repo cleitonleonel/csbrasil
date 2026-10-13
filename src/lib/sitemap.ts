@@ -29,7 +29,7 @@ export const POR_PAGINA = 5000;
 
 export interface Entrada {
   loc: string;
-  lastmod: string;
+  lastmod?: string;
   changefreq: string;
   priority: string;
 }
@@ -50,16 +50,16 @@ export function offsetDaPagina(pagina: number, porPagina = POR_PAGINA): number {
 
 export function xmlUrlset(entradas: Entrada[]): string {
   const linhas = entradas.map((e) =>
-    `  <url><loc>${escXml(e.loc)}</loc><lastmod>${e.lastmod}</lastmod>` +
+    `  <url><loc>${escXml(e.loc)}</loc>${e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : ''}` +
     `<changefreq>${e.changefreq}</changefreq><priority>${e.priority}</priority></url>`);
   return `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     linhas.join('\n') + `\n</urlset>\n`;
 }
 
-export function xmlIndex(paginas: { loc: string; lastmod: string }[]): string {
+export function xmlIndex(paginas: { loc: string; lastmod?: string }[]): string {
   const linhas = paginas.map((p) =>
-    `  <sitemap><loc>${escXml(p.loc)}</loc><lastmod>${p.lastmod}</lastmod></sitemap>`);
+    `  <sitemap><loc>${escXml(p.loc)}</loc>${p.lastmod ? `<lastmod>${p.lastmod}</lastmod>` : ''}</sitemap>`);
   return `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     linhas.join('\n') + `\n</sitemapindex>\n`;
