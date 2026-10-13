@@ -2773,6 +2773,9 @@ function montarHubSels() {
       },
     };
     btn.onclick = (e) => { e.stopPropagation(); fechar(sel); ui.click(); sel.abrir(lista.hidden); };
+    // Foco que sai para outro elemento fecha; relatedTarget nulo é clique, e o clique fora já fecha.
+    const sair = (e) => { const a = e.relatedTarget; if (!lista.hidden && a && !box.contains(a) && !lista.contains(a)) sel.abrir(false); };
+    box.addEventListener('focusout', sair); lista.addEventListener('focusout', sair);
     lista.onkeydown = box.onkeydown = (e) => {
       if (e.key === 'Escape' && !lista.hidden) { e.preventDefault(); e.stopPropagation(); sel.abrir(false); btn.focus(); return; }
       if (lista.hidden || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;

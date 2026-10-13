@@ -18,7 +18,8 @@
      VIEWPORT=390x844 (celular) · OUT=<pasta> grava uma figura por select aberto
      --mutante=lista-fora  empurra a lista para fora da tela (HS2 tem de reprovar)
      --mutante=sem-efeito  engole o clique da opção (HS3 tem de reprovar)
-     --mutante=sem-tr      serve o main.js com os rótulos sem tr() (HS5 tem de reprovar) */
+     --mutante=sem-tr      serve o main.js com os rótulos sem tr() (HS5 tem de reprovar)
+     --mutante=tab-aberta  serve o main.js sem o fechamento no focusout (HS6 tem de reprovar) */
 import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -56,6 +57,7 @@ try {
     localStorage.setItem('awpbr_nick', 'RUBAO'); localStorage.setItem('cs_lang', 'pt');
     localStorage.setItem('awpbr_settings', JSON.stringify({ map: 'praca_poderes', mapPinned: true, wpnMode: 'all', allyBots: 3, enemyBots: 4, rounds: 5, ctfRounds: 3 }));
   });
+  if (MUT === 'tab-aberta') await mutarMain(page, [["box.addEventListener('focusout', sair); lista.addEventListener('focusout', sair);", '']]);
   await page.goto(`${BASE}/?secao=jogar&partida=singleplayer`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#splash-enter:not(.hidden)', { timeout: 180000 });
   await page.keyboard.press('Space');
@@ -128,6 +130,18 @@ try {
   const depois = await page.evaluate(() => [...document.querySelectorAll('.hub-sel-list')].filter((l) => !l.hidden).length);
   cobra(abertos === 1 && depois === 0, `HS4 uma lista aberta por vez (${abertos}) e clique fora fecha (${depois})`);
   if (OUT) await page.screenshot({ path: `${OUT}/home-${W}x${H}.png` });
+
+  // HS6: Shift+Tab até o foco sair da lista fecha a lista
+  // o clique fora do HS4 pode cair no botão de conta e abrir o diálogo no celular
+  await page.evaluate(() => document.querySelectorAll('dialog[open]').forEach((d) => d.close()));
+  await page.$eval('#hub-sel-armas .hub-sel-btn', (b) => b.click()); await page.waitForTimeout(200);
+  let saiu = false;
+  for (let k = 0; k < 20 && !saiu; k++) {
+    await page.keyboard.press('Shift+Tab'); await page.waitForTimeout(60);
+    saiu = await page.evaluate(() => { const a = document.activeElement; return !a?.closest?.('#hub-sel-armas, #hub-sel-armas-lista'); });
+  }
+  const aberta = await page.evaluate(() => document.getElementById('hub-sel-armas-lista')?.hidden === false);
+  cobra(saiu && !aberta, `HS6 foco sai pelo teclado e a lista fecha (saiu ${saiu}, aberta ${aberta})`);
 
   // HS5: em inglês os rótulos e as opções de modo saem traduzidos
   const en = await browser.newPage({ viewport: { width: W, height: H } });
