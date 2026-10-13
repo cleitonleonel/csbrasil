@@ -392,4 +392,4 @@ node tools/eval/invariants.mjs --json    # machine-readable output
 npm run check                            # syntax + gate + vm + recoil + bots
 ```
 
-Current production, data, and debt sources: [Current state](./status).
+Current production, data, and debt sources: [Current state](./estado).

@@ -7,24 +7,11 @@
 // pasta `public/docs/` é servida em `https://.../docs/`. Se você for publicar em
 // outro host (GitHub Pages num repo próprio, Netlify, etc), troque baseUrl para '/'.
 
-// Links INTERNOS do footer por locale: o Docusaurus 3.6 não traduz `to:` — o theme JSON
-// (i18n/en/docusaurus-theme-classic/footer.json) só traduz label/título/copyright. Como os
-// slugs EN diferem dos ids PT (/colaborar -> /contributing etc), o `to` certo depende da
-// locale do build. Sem isto, o footer do /en apontava para /docs/en/colaborar — 404 e
-// build vermelho (onBrokenLinks: 'throw' valida os links do footer).
-//
-// POR QUE UMA FUNÇÃO: o build seta DOCUSAURUS_CURRENT_LOCALE antes de CADA locale
-// (core/lib/commands/build/buildLocale.js), mas o jiti cacheia o MÓDULO na primeira
-// avaliação — um `const` no top-level congela no valor da 1ª locale (medido: o log só
-// imprimia uma vez, com a env undefined). Exportando uma função (config creator), o
-// Docusaurus CHAMA a função a cada locale (core/lib/server/config.js), e a env é lida
-// no momento certo. Sem a env (dev, ou a leitura inicial de i18n) vale o caminho PT.
 function createConfig() {
-const EN = process.env.DOCUSAURUS_CURRENT_LOCALE === 'en';
 const L = {
   comecando: '/',
-  colaborar: EN ? '/contributing' : '/colaborar',
-  instrumentacao: EN ? '/ai-instrumentation' : '/instrumentacao-ai',
+  colaborar: '/colaborar',
+  instrumentacao: '/instrumentacao-ai',
   qualityGates: '/quality-gates',
 };
 

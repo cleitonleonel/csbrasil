@@ -3,7 +3,6 @@ id: colaborar
 title: How to contribute
 sidebar_label: How to contribute
 sidebar_position: 6
-slug: /contributing
 description: Setup, how to run the gate, what a PR needs, how to add a weapon / character / map, and the good first tasks.
 ---
 
@@ -147,7 +146,7 @@ silently destroyed an aesthetic decision that no invariant encoded. Full case in
 Paste the output of `node tools/eval/invariants.mjs` before and after. If any critical one went
 red, the PR does not go in. If you **fixed** a red one, say which and show it.
 
-The gate is red today ([see which ones](./status), and the living list with root causes is
+The gate is red today ([see which ones](./estado), and the living list with root causes is
 in `KNOWN-BUGS.md`). That is not a license to make it worse: the commitment is *"your change
 adds no red"*.
 
@@ -281,7 +280,7 @@ Two warnings that cost time if you do not know them:
 - **`praca_old` ("Praça (clássico)") NO longer exists.** It left the registry and
   `public/js/map.js` was deleted along with it (the owner's literal request: *"let's delete
   classic praça"*). If you find `praca_old` in a ruler output, that output predates the
-  removal — it is the case of the table pasted in [Current state](./status).
+  removal — it is the case of the table pasted in [Current state](./estado).
 - **`map_piscinao_ramos.js` exists on disk and is NOT in the registry** (it is the "Piscinão"
   version, out of the menu). A map file in `public/js/` does not imply a playable map; what decides is
   the `MAPS` object.
