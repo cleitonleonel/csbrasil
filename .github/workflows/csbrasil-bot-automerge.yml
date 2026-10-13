@@ -20,6 +20,15 @@ permissions:
   contents: write
   pull-requests: write
 
+# Uma avaliação por PR de cada vez, e a mais nova é a que vale (status mais recente).
+# EXCEÇÃO no `labeled`: o próprio job põe `pronto-pra-merge` com o PAT, e isso dispara
+# um run `labeled` na hora. Se ele cancelasse o run em andamento, o cancelamento cairia
+# entre a etiqueta e o comentário. O run `labeled` então espera na fila em vez de matar.
+# push na main (workflow_run sem PR) cai no run_id e não agrupa com ninguém.
+concurrency:
+  group: automerge-${{ github.event.pull_request.number || inputs.pr_number || github.event.workflow_run.pull_requests[0].number || github.run_id }}
+  cancel-in-progress: ${{ github.event.action != 'labeled' }}
+
 jobs:
   bot-token:
     runs-on: ubuntu-latest

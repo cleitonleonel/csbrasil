@@ -13,6 +13,11 @@ on:
 permissions:
   contents: read
 
+# Push novo no MESMO PR cancela o run velho: o veredito que vale é o da cabeça.
+concurrency:
+  group: pr-gates-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   versao-bumpada:
     runs-on: ubuntu-latest

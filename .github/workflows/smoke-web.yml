@@ -16,6 +16,12 @@ on:
 permissions:
   contents: read
 
+# Push novo no MESMO PR cancela o smoke velho: ele testaria um commit que já não é
+# a cabeça do PR e prende runner do plano Free (teto de 20 jobs) por até 40 min.
+concurrency:
+  group: smoke-web-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   smoke:
     runs-on: ubuntu-latest

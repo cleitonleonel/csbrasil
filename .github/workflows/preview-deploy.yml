@@ -24,9 +24,13 @@ permissions:
   contents: read
   pull-requests: write
 
+# Um deploy por PR. O agrupamento é pela branch de origem (repo + branch) porque em
+# PR de fork o `workflow_run.pull_requests` chega vazio. Build novo do MESMO PR
+# cancela o deploy velho: ele seria descartado de qualquer jeito no passo que
+# confere o SHA ("o PR avançou desde o build"), só que depois de ocupar runner.
 concurrency:
-  group: preview-deploy-${{ github.event.workflow_run.id }}
-  cancel-in-progress: false
+  group: preview-deploy-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
