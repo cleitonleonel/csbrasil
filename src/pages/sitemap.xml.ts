@@ -42,7 +42,7 @@ export const prerender = false;
 // IA ainda leem. Custa nada e ajuda a ordenar o rastreio.
 //
 // Só URL final e indexável: `/ranking` responde 302 para o hub e fica fora; os
-// perfis `/u/*` só entram com `RANKING_ON`.
+// perfis `/u/*` só entram com `RANKING_ON`. Sem data real de modificação, sem <lastmod>.
 export const STATIC: [string, string, string][] = [
   ['/',            '1.0', 'daily'],
   ['/como-jogar',  '0.8', 'weekly'],
@@ -60,9 +60,8 @@ export const STATIC: [string, string, string][] = [
 ];
 
 export const GET: APIRoute = async () => {
-  const today = new Date().toISOString().slice(0, 10);
   const fixas: Entrada[] = STATIC.map(([path, prio, freq]) => ({
-    loc: `${SITE}${path}`, lastmod: today, changefreq: freq, priority: prio,
+    loc: `${SITE}${path}`, changefreq: freq, priority: prio,
   }));
 
   /* QUANTOS PERFIS EXISTEM. Precisa saber ANTES de decidir entre urlset e
@@ -84,16 +83,16 @@ export const GET: APIRoute = async () => {
   if (total > POR_PAGINA) {
     const n = numeroDePaginas(total);
     return xmlResposta(xmlIndex(
-      Array.from({ length: n }, (_, i) => ({ loc: `${SITE}/sitemap-${i + 1}.xml`, lastmod: today })),
+      Array.from({ length: n }, (_, i) => ({ loc: `${SITE}/sitemap-${i + 1}.xml` })),
     ));
   }
 
-  const entradas = fixas.concat(await perfis(0, POR_PAGINA - fixas.length, today));
+  const entradas = fixas.concat(await perfis(0, POR_PAGINA - fixas.length));
   return xmlResposta(xmlUrlset(entradas));
 };
 
 /** Uma fatia dos perfis, já como entradas de sitemap. Usada pelas duas rotas. */
-export async function perfis(offset: number, limite: number, today: string): Promise<Entrada[]> {
+export async function perfis(offset: number, limite: number): Promise<Entrada[]> {
   if (!RANKING_ON || !supabaseAdmin || limite <= 0) return [];
   const { data } = await supabaseAdmin
     .from('player_points')
@@ -106,7 +105,6 @@ export async function perfis(offset: number, limite: number, today: string): Pro
     if (!p?.id || !p?.nick) continue;
     out.push({
       loc: `${SITE}/u/${p.id}/${encodeURIComponent(p.nick)}`,
-      lastmod: today,
       changefreq: 'weekly',
       priority: '0.6',
     });
