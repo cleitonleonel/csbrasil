@@ -575,7 +575,7 @@ console.log('\n· server browser mede RTT aquecido, não o custo único de TLS')
   globalThis.fetch = fetchSonda;
   const [no] = await sondarNos([{ id: 'xx', nome: 'Teste', url: 'wss://teste.invalid/ws' }], 1000);
   cobra(chamadas >= 2, `a sonda aquece a conexão antes de dar nota (${chamadas} chamada(s))`);
-  cobra(no.ping < 80, `o ping publicado exclui o handshake único (${no.ping} ms, RTT fabricado 20 ms)`);
+  cobra(no.ping < 45, `o ping publicado exclui o handshake único (${no.ping} ms, RTT fabricado 20 ms)`);
   cobra(no.ticketNode === 'eu', 'a autorização usa a região declarada pelo nó, não um apelido inventado pelo cliente');
 
   let autorizacao = '';
