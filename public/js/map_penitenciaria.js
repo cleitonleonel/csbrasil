@@ -245,9 +245,9 @@ export function buildPenitenciaria(scene, T) {
     mesa: texturaMesa(),
   };
   const MAT = {
-    concrete: new THREE.MeshStandardMaterial({ map: tex.concrete, bumpMap: tex.concrete, bumpScale: .045, color: 0xb8bbb5, roughness: .93 }),
+    concrete: new THREE.MeshStandardMaterial({ map: tex.concrete, bumpMap: tex.concrete, bumpScale: .028, color: 0xb8bbb5, roughness: .93 }),
     darkConcrete: new THREE.MeshStandardMaterial({ map: tex.darkConcrete, bumpMap: tex.darkConcrete, bumpScale: .035, color: 0x747b7b, roughness: .97 }),
-    yard: new THREE.MeshStandardMaterial({ map: tex.yard, bumpMap: tex.yard, bumpScale: .055, color: 0x8b8f89, roughness: 1 }),
+    yard: new THREE.MeshStandardMaterial({ map: tex.yard, bumpMap: tex.yard, bumpScale: .035, color: 0x8b8f89, roughness: 1 }),
     steel: new THREE.MeshStandardMaterial({ map: tex.steel, bumpMap: tex.steel, bumpScale: .025, color: 0x8a9292, metalness: .72, roughness: .5 }),
     rust: new THREE.MeshStandardMaterial({ color: 0x714529, metalness: .42, roughness: .82 }),
     white: new THREE.MeshStandardMaterial({ map: tex.concrete, bumpMap: tex.concrete, bumpScale: .025, color: 0xe6e2cf, roughness: .75 }),
@@ -259,7 +259,7 @@ export function buildPenitenciaria(scene, T) {
     rubber: new THREE.MeshStandardMaterial({ color: 0x17191a, roughness: .96 }),
     grass: new THREE.MeshStandardMaterial({ color: 0x52643c, roughness: 1 }),
     ammo: new THREE.MeshStandardMaterial({ map: tex.ammo, bumpMap: tex.ammo, bumpScale: .035, color: 0xffffff, roughness: .76, metalness: .18 }),
-    reboco: Object.assign(new THREE.MeshStandardMaterial({ map: tex.reboco, bumpMap: tex.reboco, bumpScale: .06, color: 0xcfc8ba, roughness: .9 }), { userData: { uvElevacao: true } }),
+    reboco: Object.assign(new THREE.MeshStandardMaterial({ map: tex.reboco, bumpMap: tex.reboco, bumpScale: .035, color: 0xcfc8ba, roughness: .9 }), { userData: { uvElevacao: true } }),
     galvanizado: new THREE.MeshStandardMaterial({ map: tex.galvanizado, bumpMap: tex.galvanizado, bumpScale: .02, color: 0xb9c0c4, metalness: .68, roughness: .44 }),
     arame: new THREE.MeshStandardMaterial({ map: tex.arame, color: 0x9a7a5c, metalness: .55, roughness: .6 }),
     grade: new THREE.MeshStandardMaterial({ map: tex.grade, color: 0xaab2b6, metalness: .6, roughness: .5 }),
