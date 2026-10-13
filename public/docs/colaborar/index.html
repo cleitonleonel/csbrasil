@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.10.2">
 <title data-rh="true">Como colaborar | CORO SOLTO — Docs do Dev</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://www.csbrasil.online/docs/img/og-image.jpg"><meta data-rh="true" name="twitter:image" content="https://www.csbrasil.online/docs/img/og-image.jpg"><meta data-rh="true" property="og:url" content="https://www.csbrasil.online/docs/colaborar"><meta data-rh="true" property="og:locale" content="pt"><meta data-rh="true" property="og:locale:alternate" content="en"><meta data-rh="true" name="docusaurus_locale" content="pt"><meta data-rh="true" name="docsearch:language" content="pt"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Como colaborar | CORO SOLTO — Docs do Dev"><meta data-rh="true" name="description" content="Setup, como rodar o quality gate, o que um PR precisa, como adicionar arma / personagem / mapa, e as boas primeiras tarefas."><meta data-rh="true" property="og:description" content="Setup, como rodar o quality gate, o que um PR precisa, como adicionar arma / personagem / mapa, e as boas primeiras tarefas."><link data-rh="true" rel="icon" href="/docs/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://www.csbrasil.online/docs/colaborar"><link data-rh="true" rel="alternate" href="https://www.csbrasil.online/docs/colaborar" hreflang="pt"><link data-rh="true" rel="alternate" href="https://www.csbrasil.online/docs/en/colaborar" hreflang="en"><link data-rh="true" rel="alternate" href="https://www.csbrasil.online/docs/colaborar" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Como colaborar","item":"https://www.csbrasil.online/docs/colaborar"}]}</script><link rel="stylesheet" href="/docs/assets/css/styles.86501d9c.css">
-<script src="/docs/assets/js/runtime~main.77c22cff.js" defer="defer"></script>
+<script src="/docs/assets/js/runtime~main.37eea8a9.js" defer="defer"></script>
 <script src="/docs/assets/js/main.2ce13a79.js" defer="defer"></script>
 </head>
 <body>
@@ -48,9 +48,8 @@ Use <code>npm run dev</code>. Detalhes e prova em
 <code>eval:vm</code> quem <strong>escreve</strong>. Rodar as invariantes com esse JSON velho mede o viewmodel de
 ontem e <strong>inventa vermelha</strong>: em 04/08/2026 o JSON estava em <code>V0=80°</code> contra o <code>game.js</code>
 em <code>V0=42°</code>, e a VM5 acusava <strong>26/26 armas fora</strong>; depois de <code>npm run eval:vm</code>, <strong>3/26</strong>.
-A VM1 caiu de 26/26 para 2/26 e a VM9 ficou verde.</p><p>A ordem do <code>npm run check</code> já foi corrigida (<code>package.json</code>) — o cuidado é para quando
-você chamar <code>node tools/eval/invariants.mjs</code> na mão. Detalhe: BUG-02 do
-as issues do repositório.</p></div></div>
+A VM1 caiu de 26/26 para 2/26 e a VM9 ficou verde.</p><p>A ordem dos passos acima já está correta — o cuidado é para quando
+você chamar <code>node tools/eval/invariants.mjs</code> na mão: rode <code>npm run eval:vm</code> antes.</p></div></div>
 <p>Custo real: numa máquina de 2 CPUs, <strong>cerca de 10 minutos</strong>. Ele sobe o jogo real cinco
 vezes (uma por mapa), roda 60 s de simulação de bot por mapa e audita todos os GLBs de arma.
 Rode antes de abrir o PR, não depois de receber a review.</p>
@@ -106,8 +105,9 @@ que sobrevive ao próximo handoff.</li>
 <li class=""><strong>Nunca delete comentário de procedência</strong> num PR de limpeza. Aquele parágrafo longo
 explicando de onde veio o número 0,513 é o que impede a próxima rodada de repetir três
 dias perdidos.</li>
-<li class="">Mexeu em <code>public/js/*.js</code>? <strong>Bump o <code>?v=</code> nos dois lados</strong> — <code>public/js/version.js</code> e o
-import map de <code>src/pages/index.astro</code>. Já custou dias de &quot;correção que não chegava&quot;.</li>
+<li class="">Mexeu em <code>public/js/*.js</code>? <strong>Não bumpa o <code>?v=</code> à mão</strong>: desde 08/08 o <code>release.yml</code>
+bumpa, taga e publica sozinho. O <code>pr-gates.yml</code> reprova se <code>public/js/version.js</code>
+e o import map de <code>src/pages/index.astro</code> divergirem entre si.</li>
 <li class="">Mexeu em <code>public/js/*.js</code>, no <code>maps.js</code>, no <code>characters.js</code> ou numa dependência?
 <strong>Rode <code>npm run docs</code></strong> e commite junto. O <code>docs:check</code> está no <code>check:fast</code> e vai
 reprovar — leva menos de um segundo e é o que impede a doc de voltar a mentir.</li>
@@ -151,7 +151,8 @@ de invariantes se cruza vazio e por quanto</strong>.</li>
 <li class=""><strong>Commite o <code>vm_mint_audit.json</code> atualizado</strong> junto com o resto.</li>
 </ol>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="como-adicionar-um-personagem">Como adicionar um personagem<a href="#como-adicionar-um-personagem" class="hash-link" aria-label="Link direto para Como adicionar um personagem" title="Link direto para Como adicionar um personagem" translate="no">​</a></h2>
-<p>45 GLBs em <code>public/models/characters/</code>, 44 medidos pelo <code>char-probe.mjs</code>.</p>
+<p>Os GLBs vivem em <code>public/models/characters/</code> e o <code>char-probe.mjs</code> mede cada um (a
+contagem atual está no bloco gerado do README).</p>
 <ol>
 <li class=""><strong>GLB com rig</strong>, na bind pose, pés no chão. <code>CHR3</code> exige <code>|base da bbox| ≤ 0,01 m</code> na
 bind pose <strong>e em cada clipe</strong> — o sinal separa dois defeitos: <code>y &lt; 0</code> é pé dentro do
@@ -174,7 +175,7 @@ Personagem novo <strong>sem</strong> normal + roughness reabre a vermelha — tr
 </li>
 </ol>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="como-adicionar-um-mapa">Como adicionar um mapa<a href="#como-adicionar-um-mapa" class="hash-link" aria-label="Link direto para Como adicionar um mapa" title="Link direto para Como adicionar um mapa" translate="no">​</a></h2>
-<p>Hoje mapas são <strong>código</strong>, não dado: cada <code>map_*.js</code> é geometria declarada à mão, e os
+<p>Hoje mapas são <strong>código</strong>, não dado: cada <code>map_*.js</code>  é geometria declarada à mão, e os
 maiores rivalizam em tamanho com os módulos de sistema. Migrar isso para JSON é a Fase 2
 conteúdo como dado do
 <a href="https://github.com/corosolto/client/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer" class=""><code>ROADMAP.md</code></a>, e é a
@@ -239,13 +240,13 @@ tocar. O <code>README.md</code> de lá indexa por tempo disponível (30 min / 1 
 é o código onde os agentes de gameplay trabalham em paralelo e onde a tabela de conflito
 do <code>tools/eval/ARCH.md</code> manda.</p>
 <div class="theme-admonition theme-admonition-caution admonition_xJq3 alert alert--warning"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>Elas ainda NÃO estão abertas no GitHub</div><div class="admonitionContent_BuS1"><p>Elas existem como arquivo, não como issue. Existe um script pronto —
-<code>docs/issues/abrir-issues.sh</code>, com <a href="https://cli.github.com/" target="_blank" rel="noopener noreferrer" class=""><code>gh</code></a> autenticado:</p><div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#bfc7d5;--prism-background-color:#292d3e"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#bfc7d5;background-color:#292d3e"><code class="codeBlockLines_e6Vv"><div class="token-line" style="color:#bfc7d5"><span class="token function" style="color:rgb(130, 170, 255)">bash</span><span class="token plain"> docs/issues/abrir-issues.sh --dry-run   </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic"># imprime título + labels, não abre nada</span><span class="token plain"></span><br></div><div class="token-line" style="color:#bfc7d5"><span class="token plain"></span><span class="token function" style="color:rgb(130, 170, 255)">bash</span><span class="token plain"> docs/issues/abrir-issues.sh </span><span class="token parameter variable" style="color:rgb(191, 199, 213)">--labels</span><span class="token plain">    </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic"># cria as 8 labels usadas</span><span class="token plain"></span><br></div><div class="token-line" style="color:#bfc7d5"><span class="token plain"></span><span class="token function" style="color:rgb(130, 170, 255)">bash</span><span class="token plain"> docs/issues/abrir-issues.sh             </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic"># abre as 15</span><br></div></code></pre></div></div><p>Ele é idempotente (procura issue com o mesmo título antes de criar) e <strong>nunca foi
+<code>docs/issues/abrir-issues.sh</code>, com <a href="https://cli.github.com/" target="_blank" rel="noopener noreferrer" class=""><code>gh</code></a> autenticado:</p><div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#bfc7d5;--prism-background-color:#292d3e"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#bfc7d5;background-color:#292d3e"><code class="codeBlockLines_e6Vv"><div class="token-line" style="color:#bfc7d5"><span class="token function" style="color:rgb(130, 170, 255)">bash</span><span class="token plain"> docs/issues/abrir-issues.sh --dry-run   </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic"># imprime título + labels, não abre nada</span><span class="token plain"></span><br></div><div class="token-line" style="color:#bfc7d5"><span class="token plain"></span><span class="token function" style="color:rgb(130, 170, 255)">bash</span><span class="token plain"> docs/issues/abrir-issues.sh </span><span class="token parameter variable" style="color:rgb(191, 199, 213)">--labels</span><span class="token plain">    </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic"># cria as 8 labels usadas</span><span class="token plain"></span><br></div><div class="token-line" style="color:#bfc7d5"><span class="token plain"></span><span class="token function" style="color:rgb(130, 170, 255)">bash</span><span class="token plain"> docs/issues/abrir-issues.sh             </span><span class="token comment" style="color:rgb(105, 112, 152);font-style:italic"># abre as tarefas de entrada</span><br></div></code></pre></div></div><p>Ele é idempotente (procura issue com o mesmo título antes de criar) e <strong>nunca foi
 executado</strong>: o repositório é do dono e abrir issue é ação irreversível com o nome dele.
 Ou seja, se você procurar as tarefas na aba Issues, não vai achar — leia os <code>.md</code>.</p></div></div>
 <div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>Esta lista já teve cinco itens, e quatro foram feitos</div><div class="admonitionContent_BuS1"><p>Ela mandava corrigir o <code>README.md</code> (feito), adicionar <code>arch</code>/<code>arch:check</code> ao
 <code>package.json</code> (existem hoje), regenerar o <code>ARCH.md</code> e fazer o <code>tp-mount-probe</code> pular
-quando faltasse <code>public/models/anims/</code> — pasta que <strong>hoje está versionada</strong> (438 arquivos
-em <code>git ls-files public/models/anims</code>). Doc que manda fazer o que já foi feito queima a
+quando faltasse <code>public/models/anims/</code> — pasta que <strong>hoje está versionada</strong> (a contagem
+está no bloco gerado do README). Doc que manda fazer o que já foi feito queima a
 primeira contribuição de alguém; por isso a lista virou ponteiro para <code>docs/issues/</code>,
 que é mantida.</p><p>O único item da lista antiga que <strong>continua valendo</strong> — e agora está consertado:
 a mensagem das invariantes PX1–PX4 apontava para <code>tools/eval/motion.mjs</code>, que
@@ -260,16 +261,6 @@ arnês de viewmodel dedicado continua sendo trabalho aberto.</p></div></div>
 com 0,660 contra o teto 0,62); VM1 em 2 de 26 (<code>famas</code>, <code>uzi</code>). São correções por arma,
 com faixa medida e <code>vm-solve.mjs</code> disponível para provar viabilidade. <em>Frente:
 ARMAS/VIEWMODEL.</em></p>
-</li>
-<li class="">
-<p><strong>BOT8 — bot com linha de visão e sem atirar.</strong> É a dívida mais barata da lista, e a
-causa raiz já está achada: <code>game.js:5361</code> avalia <code>const hasTurn = … this._duelToken(b)</code>
-<strong>todo frame</strong>, antes de qualquer gate de &quot;pode atirar&quot; — e <code>_duelToken</code> não consulta,
-ele <strong>reserva</strong> o token. Bot recarregando ou sem linha de tiro rouba um dos 2 tokens e
-segura; os outros atravessam o campo de visão sem disparar. A correção é mover a chamada
-para dentro do <code>if</code>. Medido na última execução registrada: <strong>4 episódios, silêncio
-máximo 4,23 s</strong> — e note que <strong>piorou</strong> desde os 2,7 / 3,03 s do baseline, o que faz
-dela também um bom A/B. <em>Frente: BOTS/JOGABILIDADE. Detalhe: BUG-03.</em></p>
 </li>
 <li class="">
 <p><strong>Personagens: proporção (CHR1) e mapas de superfície.</strong> Cuidado com doc velha aqui: a
@@ -287,8 +278,11 @@ PR de higiene com efeito medível no heap. <em>Frente: zona vermelha <code>const
 — coordene antes.</em></p>
 </li>
 </ol>
+<p><em>(O antigo item 2, &quot;BOT8 — bot com linha de visão e sem atirar&quot;, saiu em 13/10: a
+correção do turno de duelo está no código com medição A/B; busque <code>BUG-03</code> em
+<code>public/js/game.js</code>.)</em></p>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="alto-valor-precisa-de-conversa-antes">Alto valor, precisa de conversa antes<a href="#alto-valor-precisa-de-conversa-antes" class="hash-link" aria-label="Link direto para Alto valor, precisa de conversa antes" title="Link direto para Alto valor, precisa de conversa antes" translate="no">​</a></h3>
-<ol start="5">
+<ol start="4">
 <li class="">
 <p><strong>Extrair <code>_updateBot()</code> (772 linhas).</strong> Marcado como candidato a extração pelo
 próprio índice gerado. Precisa de acordo prévio sobre a partição, porque a região é
@@ -312,7 +306,7 @@ estão puladas desde sempre.</p>
 concreto: em 04/08 a branch de trabalho ainda se chamava <code>feat/evio-feel</code> — nome de uma
 feature de julho — com <strong>143 commits</strong> de assuntos diferentes empilhados. Nome que não
 diz o que a branch é vira depósito. (Fonte: <code>CONTRIBUTING.md</code>.)</li>
-<li class="">Rode <code>npm run check</code>. Cole a saída no PR.</li>
+<li class="">Rode <code>npm run check:deploy</code>. Cole a saída no PR.</li>
 <li class="">PR pequeno, uma frente, descrição com números e <code>arquivo:linha</code>.</li>
 <li class=""><strong>Ao contribuir você licencia sob a licença que o <code>LICENSE</code> disser no momento do seu
 PR.</strong> Qual é ela hoje e quais arquivos mudam junto numa troca: a seção de licença do
