@@ -27,7 +27,7 @@ const avatar=p?.avatar_url===`/api/social-avatar?id=${p?.id}`?p.avatar_url:https
 {!p && <meta name="robots" content="noindex"/>}
 </head><body>
 <a class="skip-link" href="#perfil">Ir para o perfil</a>
-<header><a href="/" aria-label="CORO SOLTO — voltar ao jogo"><img src="/logo.png" alt="CORO SOLTO: Treta Suprema" width="140" height="84"/></a><a class="play" href="/">JOGAR AGORA ↗</a></header>
+<header><a href="/" aria-label="CORO SOLTO - voltar ao jogo"><img src="/logo.png" alt="CORO SOLTO: Treta Suprema" width="140" height="84"/></a><a class="play" href="/">JOGAR AGORA ↗</a></header>
 <main id="perfil" tabindex="-1">
 {p?<article class="profile-sheet">
   <div class="profile-details">
@@ -37,7 +37,7 @@ const avatar=p?.avatar_url===`/api/social-avatar?id=${p?.id}`?p.avatar_url:https
     {p.bio && <p class="bio">{p.bio}</p>}
     <p class="level">Nível {p.level} · {p.next_level_points} pontos para o próximo</p>
     <div class="profile-career"><CareerRank points={p.points}/>{careerRankTitle(p.points) && <p>{careerRankTitle(p.points)}</p>}</div>
-    <div class="profile-ranking" aria-label="Posição no ranking geral"><span>Ranking geral</span><strong>{p.position?`#${p.position}`:'—'}</strong></div>
+    <div class="profile-ranking" aria-label="Posição no ranking geral"><span>Ranking geral</span><strong>{p.position?`#${p.position}`:'-'}</strong></div>
     <dl class="profile-stats">{stats.map(([label,value])=><div><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
     {p.source==='historical_plus_server_verified' && <p class="source">Histórico preservado + partidas confirmadas pelo servidor.</p>}
     {socials.length>0 && <nav class="socials" aria-label="Redes do jogador">{socials.map((s:any)=><a href={s.url} target="_blank" rel="noopener noreferrer nofollow">{s.name} ↗</a>)}</nav>}
