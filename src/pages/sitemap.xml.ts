@@ -23,9 +23,8 @@
 // jogador, criada em runtime. Um sitemap que lista 8 páginas fixas e ignora os
 // perfis deixa de fora exatamente o que faz o site crescer.
 //
-// Este endpoint lista as páginas fixas + todos os jogadores do ranking (a view
-// `leaderboard` já filtra `hidden`, então quem foi escondido pela moderação não
-// entra). Sem envs do Supabase, degrada pras páginas fixas e não quebra.
+// Fixas + perfis de `player_points`, que só tem público e não hidden: o conjunto que /u
+// serve a anônimo (backend migrations 048/049, test/ranking-cutover.mjs). Sem Supabase, só as fixas.
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../lib/supabase';
 import { SITE, RANKING_ON } from '../lib/site';
@@ -101,21 +100,26 @@ export const GET: APIRoute = async () => {
 /** Uma fatia dos perfis, já como entradas de sitemap. Usada pelas duas rotas. */
 export async function perfis(offset: number, limite: number, today: string): Promise<Entrada[]> {
   if (!RANKING_ON || !supabaseAdmin || limite <= 0) return [];
-  const { data } = await supabaseAdmin
-    .from('player_points')
-    .select('id,nick')
-    .order('id', { ascending: true })
-    .range(offset, offset + limite - 1);
   const out: Entrada[] = [];
-  for (const row of (data ?? []) as any[]) {
-    const p = row;
-    if (!p?.id || !p?.nick) continue;
-    out.push({
-      loc: `${SITE}/u/${p.id}/${encodeURIComponent(p.nick)}`,
-      lastmod: today,
-      changefreq: 'weekly',
-      priority: '0.6',
-    });
+  // O PostgREST do Supabase corta cada resposta em max-rows (1.000) sem erro.
+  for (let de = offset, fim = offset + limite; de < fim;) {
+    const { data } = await supabaseAdmin
+      .from('player_points')
+      .select('id,nick')
+      .order('id', { ascending: true })
+      .range(de, fim - 1);
+    const linhas = (data ?? []) as any[];
+    if (!linhas.length) break;
+    de += linhas.length;
+    for (const p of linhas) {
+      if (!p?.id || !p?.nick) continue;
+      out.push({
+        loc: `${SITE}/u/${p.id}/${encodeURIComponent(p.nick)}`,
+        lastmod: today,
+        changefreq: 'weekly',
+        priority: '0.6',
+      });
+    }
   }
   return out;
 }
