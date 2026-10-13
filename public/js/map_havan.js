@@ -6,6 +6,7 @@
 // no ESTACIONAMENTO (carros GLB texturizados + Estátua da Liberdade). 3 bandeiras:
 // estacionamento, estátua, gôndolas. Contrato buildWorld + A*. Props de /Users/ruben/glb.
 import * as THREE from 'three';
+import { commercialSlab } from './map_surface_finish.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp, PropBatch, StaticBatch, PROP_BATCH } from './mapprops.js';
 import { VAO_BANDS, aoBoxGeo, aoMatFactory, ContactSkirt, BASE_FLOATING, onGround } from './vao.js';
@@ -130,12 +131,13 @@ export function havanCarSelection(n = 12) {
 // props p/ preload da partida atual (maps.js consome via getter)
 const STORE_PROPS = ['gondola_mercado', 'gondola_eletro', 'arara_roupas', 'caixa_cobranca', 'painel_tvs', 'manequim', 'onibus_urbano'];
 export function havanPropsForMatch() { return ['statue_liberty', 'shopping_cart', ...STORE_PROPS, ...havanCarSelection()]; }
+export function havanPropsPool() { return ['statue_liberty', 'shopping_cart', ...STORE_PROPS, ...LIGHT_CARS, ...MINT_BR]; }
 
 function tileTex(base, line, n, rx, rz) {
   const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
   x.fillStyle = base; x.fillRect(0, 0, 128, 128); x.strokeStyle = line; x.lineWidth = 3;
   const s = 128 / n; for (let i = 0; i <= n; i++) { x.beginPath(); x.moveTo(i * s, 0); x.lineTo(i * s, 128); x.stroke(); x.beginPath(); x.moveTo(0, i * s); x.lineTo(128, i * s); x.stroke(); }
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, rz); return t;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, rz); detailFor(t); return t;
 }
 // textura rica: manchas + rachaduras + pontos (asfalto/concreto pintado, sem cara de low-poly)
 function noiseTex(base, blotches, rx, rz, opts = {}) {
@@ -352,7 +354,7 @@ function tintaTex(color) {
   }
   x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; detailFor(t); return t;
 }
 // LETREIRO HAVAN: caixa azul com letras AMARELAS (a identidade nº1 da loja, e o que
 // faltava — o logo antigo era azul sobre branco e sumia na fachada branca).
@@ -394,7 +396,7 @@ export function buildHavan(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -436,7 +438,7 @@ export function buildHavan(scene, T) {
     lot: lam({ map: asfaltoTex(13, 11) }),   // v4: asfalto com brita+recape (as "bolhas" sumiram)
     // piso da loja: porcelanato POLIDO — roughness baixa dá o brilho de espelho sob a
     // fluorescente, que é metade da leitura "estou dentro de uma loja" (contra o sol fosco)
-    floor: lam({ map: noiseTex('#c9cfd6', [['#b2b9c0', 40, 8, 22, 0.45], ['#dde2e7', 30, 6, 18, 0.35], ['#8a929a', 14, 4, 12, 0.4]], 16, 16, { cracks: '#9aa2aa', pebbles: '#eef1f4', seed: 9 }), roughness: 0.22, metalness: 0.10, envMapIntensity: 1.6 }),
+    floor: lam({ map: commercialSlab(16, 16), roughness: 0.52, metalness: 0, envMapIntensity: 0.8 }),
     wall: lam({ map: acmTex(8, 2) }),                                    // painel ACM azul c/ emendas
     trim: lam({ color: 0xf4c020, map: reTile(GESSO_TEX, 3, 3) }),   // TEX1: amarelo Havan com desgaste
     shelf: lam({ color: 0xb9bec4 }), goods: lam({ color: 0xe07a3a }), rack: lam({ color: 0x3a3f45 }),
@@ -459,8 +461,8 @@ export function buildHavan(scene, T) {
     // O MESMO canvas entra como bumpMap: a junta rebaixada vira relevo no shader sem
     // custo de textura nova, que é o que dá micro-detalhe a < 2 m da câmera (B5).
     // vertexColors: o encardido/AO da base vem da geometria (ver bakeMuroAO).
-    muro: lam({ map: muroMap, bumpMap: muroMap, bumpScale: 0.45, roughness: 0.93, vertexColors: true }),
-    muroS: lam({ map: muroSMap, bumpMap: muroSMap, bumpScale: 0.45, roughness: 0.93, vertexColors: true }),
+    muro: lam({ map: muroMap, bumpMap: muroMap, bumpScale: 0.18, roughness: 0.93, vertexColors: true }),
+    muroS: lam({ map: muroSMap, bumpMap: muroSMap, bumpScale: 0.18, roughness: 0.93, vertexColors: true }),
     paintW: new THREE.MeshBasicMaterial({ map: tintaTex('#e8e6dd'), transparent: true, depthWrite: false }),
     paintY: new THREE.MeshBasicMaterial({ map: tintaTex('#e0b028'), transparent: true, depthWrite: false }),
   };
@@ -1412,8 +1414,8 @@ export function buildHavan(scene, T) {
     const pil = lam({ map: reTile(MURO_TEX, 0.45, 3.1), bumpMap: reTile(MURO_TEX, 0.45, 3.1), bumpScale: 0.4, roughness: 0.93 });
     addBox(2 * HALF_X + 2.4, 0.22, 1.4, cap, 0, 3, wZ, { collide: false });
     for (const sx of [-1, 1]) addBox(1.4, 0.22, HALF_Z - SF, cap, sx * (HALF_X + 0.5), 3, (wZ + SF) / 2, { collide: false });
-    // passo maior em quality low: metade dos pilaretes, mesma leitura, metade dos draw calls
-    const PSTEP = DECO_HI ? 8 : 16;
+    // Pilastras bloqueiam tiros: mesma presença em todas as qualidades.
+    const PSTEP = 8;
     // capitel EM CIMA + plinto EMBAIXO: sem a base, a pilastra "flutua" (critério A2 —
     // todo objeto apoiado precisa de escurecimento encostado no chão) e volta a ler como
     // peça solta. O plinto é o mesmo concreto do rufo, 20 cm mais largo que o fuste.
@@ -1508,6 +1510,7 @@ export function buildHavan(scene, T) {
     g.addColorStop(0, 'rgba(14,15,18,0.85)'); g.addColorStop(0.55, 'rgba(20,22,26,0.45)'); g.addColorStop(1, 'rgba(20,22,26,0)');
     cx.fillStyle = g; cx.fillRect(0, 0, S, S);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    detailFor(t);
     const oilMat = new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false });
     for (const [x, z, r, sd] of [[-14, 26, 1.9, 1], [8, 40, 1.3, 2], [22, 16, 2.1, 3], [-26, 46, 1.5, 4], [4, 8, 1.2, 5], [-19, 12, 1.6, 6], [30, 38, 1.4, 7]]) {
       const p = new THREE.Mesh(new THREE.PlaneGeometry(r * 2, r * 2 * (0.7 + (sd % 3) * 0.15)), oilMat);
@@ -1518,7 +1521,7 @@ export function buildHavan(scene, T) {
   // CARRINHOS DE COMPRAS espalhados + baia de devolução (a assinatura de estacionamento
   // de loja: carrinho abandonado atravessado na vaga)
   const carts = [[-20, 48, 0], [24, 12, 0.8], [-30, 30, 2.1], [15.5, 24, 1.4], [-8.5, 34, 0.3], [27, 47, 2.6]];
-  if (DECO_HI) carts.push([-15.5, 15, 1.9], [33, 29, 0.5], [-3.5, 47, 2.2], [20, 55, 1.1]);
+  carts.push([-15.5, 15, 1.9], [33, 29, 0.5], [-3.5, 47, 2.2], [20, 55, 1.1]);
   for (const [cx, cz, cry] of carts) gprop('shopping_cart', cx, cz, 1.0, cry);
   if (DECO) for (const [bx, bz] of [[-8.5, 30], [8.5, 42]]) {   // baia: dois trilhos + placa
     // trilhos SÓLIDOS: a régua viu a ponta do trilho dentro do colisor do carro vizinho
@@ -1530,8 +1533,9 @@ export function buildHavan(scene, T) {
   // Usa a SELEÇÃO da partida (12 modelos leves sorteados por seed — ver havanCarSelection).
   let ci = 0;
   const carPool = havanCarSelection();
+  let carState = _carSeed;
+  const carRandom = () => (carState = (carState * 16807) % 2147483647) / 2147483647;
   const parkSpots = [];
-  let _spot = 0;
   for (const zc of [10, 18, 28, 36, 44, 52]) for (const xc of [-32, -25, -18, -11, 11, 18, 25, 32]) {
     if (Math.hypot(xc, zc - 20) < 9) continue;   // deixa espaço ao redor da estátua
     /* FLANCOS DO RESPAWN P LIVRES. A fileira de waypoints mais ao norte é z = 52,8 (a grade
@@ -1542,15 +1546,11 @@ export function buildHavan(scene, T) {
        até a bandeira LOJA L (CTF2). Duas vagas VAZIAS aqui (com a tinta de demarcação à
        mostra, que é conteúdo que já existe) valem mais que dois carros. */
     if (zc === 52 && Math.abs(xc) === 11) continue;
-    // GATE DE QUALIDADE (item 5 da auditoria de custo): em 'low' o pátio fica com METADE
-    // dos carros, em xadrez — continua lendo como estacionamento cheio, com metade da
-    // geometria. As vagas vazias mostram a tinta de demarcação, que é conteúdo que já existe.
-    if (LOWQ && (_spot++ % 2)) continue;
     parkSpots.push([xc, zc]);
   }
   for (const [x, z] of parkSpots) {
     const id = carPool[ci % carPool.length]; ci++;
-    const ry = (z > 28 ? 0 : Math.PI) + (RY_FIX[id] || 0) + (Math.random() - 0.5) * 0.12;   // fileiras retas, quase alinhadas
+    const ry = (z > 28 ? 0 : Math.PI) + (RY_FIX[id] || 0) + (carRandom() - 0.5) * 0.12;   // fileiras retas, quase alinhadas
     placeCar(id, x, z, ry);
     carCover(x, z, 1.2, 2.2, 1.4);
   }
@@ -1568,9 +1568,8 @@ export function buildHavan(scene, T) {
        • as duas faixas LATERAIS, |x| ∈ [33, 38], entre a última coluna de vagas e o muro
          (x = ±35,5, três carros por lado, espaçados 16 m — não fecham a faixa). */
   for (const [xc, zc] of [[-32, 3], [-25, 3], [-18, 3], [-11, 3], [11, 3], [18, 3], [25, 3], [32, 3]]) {
-    if (LOWQ && ((xc + zc) % 7 < 3)) continue;   // mesmo gate de qualidade da grade principal
     const id = carPool[ci++ % carPool.length];
-    const ry = Math.PI + (RY_FIX[id] || 0) + (Math.random() - 0.5) * 0.12;
+    const ry = Math.PI + (RY_FIX[id] || 0) + (carRandom() - 0.5) * 0.12;
     placeCar(id, xc, zc, ry);
     carCover(xc, zc, 1.2, 2.2, 1.4);
   }
@@ -1583,7 +1582,6 @@ export function buildHavan(scene, T) {
      penetração 0,825 m. O colisor quadrado cobre a maior dimensão do carro em QUALQUER
      rotação — 4,4/2 = 2,2 m contra 2,1 m de meia-carroceria. */
   for (const [xc, zc] of [[-35.5, 14], [-35.5, 30], [-35.5, 46], [35.5, 14], [35.5, 30], [35.5, 46]]) {
-    if (LOWQ && ((xc + zc) % 7 < 3)) continue;
     const id = carPool[ci++ % carPool.length];
     placeCar(id, xc, zc, (xc < 0 ? -Math.PI / 2 : Math.PI / 2) + (RY_FIX[id] || 0));
     carCover(xc, zc, 2.2, 2.2, 1.4);
@@ -1594,7 +1592,7 @@ export function buildHavan(scene, T) {
   // e os flancos ficam livres pro A* (vãos ≥4m).
   for (const [cx, cz] of [[-5, 8], [5, 13], [-5, 26], [5, 31], [-5, 38], [5, 43]]) {
     const id = carPool[ci++ % carPool.length];
-    const ry = (cz > 28 ? 0 : Math.PI) + (RY_FIX[id] || 0) + (Math.random() - 0.5) * 0.12;
+    const ry = (cz > 28 ? 0 : Math.PI) + (RY_FIX[id] || 0) + (carRandom() - 0.5) * 0.12;
     placeCar(id, cx, cz, ry);
     carCover(cx, cz, 1.2, 2.2, 1.4);
   }
