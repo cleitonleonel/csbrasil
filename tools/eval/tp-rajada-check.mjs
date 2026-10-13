@@ -7,7 +7,9 @@
 
    Mede em node, quadro a quadro (dt 1/60), o mst + AK pelo buildCharacterModel real:
      TPR1 · rajada SP parado, 0,1 s           peso ≥ 0,99 e mão L ≤ 2 cm em todo quadro
-     TPR2 · rajada MP, tiro a cada snapshot   idem, pelo Netcode.prototype.updateRemoteBot real
+     TPR1b · rajada SP andando (walkfire)     idem
+     TPR2 · rajada MP, tiro a cada snapshot   idem: o tiro entra como no applySnapshot (ctrl.shoot) e
+            a pose sai do Netcode.prototype.updateRemoteBot real
      TPR3 · rajada MP na cadência da AK       idem
      TPR4 · tiro único: quadro a quadro igual ao shoot() antigo (o conserto só toca a rajada)
      TPR5 · idle/walk/run/death: peso ≥ 0,99 e mão L igual à da main
@@ -63,7 +65,7 @@ function shootAntigo() {
 
 function monta(shootFn) {
   const m = G.buildCharacterModel(def, { weaponId: ARMA });
-  if (!m?.ctrl?.ikL) throw new Error('sem IK da mão L no mst+AK — a régua não sabe medir');
+  if (!m?.ctrl?.ikL || !m.ctrl.actions.shoot) throw new Error('sem IK da mão L ou sem clipe shoot no mst+AK — a régua não sabe medir');
   if (shootFn) m.ctrl.shoot = shootFn;
   else if (MUT === 'fade') m.ctrl.shoot = shootAntigo;
   m.ctrl.aimPitch = 0;
@@ -124,7 +126,8 @@ function mp(m, { segundos, tiroACada }) {
 
 const falhas = [];
 const fmt = (v) => v.toFixed(2).replace('.', ',');
-function cobra(cod, txt, serie) {
+function cobra(cod, txt, serie, { exigeClipe } = {}) {
+  if (exigeClipe && !serie.some((s) => s.clip === exigeClipe)) { console.log(`${cod} · ${txt}\n   nenhum quadro em ${exigeClipe} — a rajada não chegou ao clipe, nada foi medido\n   FALHA`); falhas.push(cod); return; }
   const pMin = Math.min(...serie.map((s) => s.peso)), mMax = Math.max(...serie.map((s) => s.mao));
   const iP = serie.findIndex((s) => s.peso < PESO_MIN), iM = serie.findIndex((s) => s.mao > MAO_MAX_CM);
   const ok = iP < 0 && iM < 0;
@@ -134,9 +137,10 @@ function cobra(cod, txt, serie) {
   if (!ok) falhas.push(cod);
 }
 
-cobra('TPR1', 'rajada SP parado, tiro a cada 0,1 s por 0,6 s + 0,6 s depois', sp(monta(), { segundos: 1.2, tiroACada: CADENCIA_AK, tiros: 6 }));
-cobra('TPR2', 'rajada MP, tiro a cada snapshot (20 Hz), Netcode.updateRemoteBot', mp(monta(), { segundos: 1.2, tiroACada: 0.05 }));
-cobra('TPR3', 'rajada MP na cadência da AK (0,1 s), Netcode.updateRemoteBot', mp(monta(), { segundos: 1.2, tiroACada: CADENCIA_AK }));
+cobra('TPR1', 'rajada SP parado, tiro a cada 0,1 s por 0,6 s + 0,6 s depois', sp(monta(), { segundos: 1.2, tiroACada: CADENCIA_AK, tiros: 6 }), { exigeClipe: 'shoot' });
+cobra('TPR1b', 'rajada SP andando 1,6 m/s, tiro a cada 0,1 s (walkfire)', sp(monta(), { segundos: 1.2, tiroACada: CADENCIA_AK, tiros: 6, vf: 1.6 }), { exigeClipe: 'walkfire' });
+cobra('TPR2', 'rajada MP, tiro a cada snapshot (20 Hz), Netcode.updateRemoteBot', mp(monta(), { segundos: 1.2, tiroACada: 0.05 }), { exigeClipe: 'shoot' });
+cobra('TPR3', 'rajada MP na cadência da AK (0,1 s), Netcode.updateRemoteBot', mp(monta(), { segundos: 1.2, tiroACada: CADENCIA_AK }), { exigeClipe: 'shoot' });
 
 {
   const novo = sp(monta(Object.getPrototypeOf(monta().ctrl).shoot), { segundos: 1.2, tiroACada: 9, tiros: 1 });
