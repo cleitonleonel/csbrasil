@@ -84,16 +84,22 @@ const skip = (id, desc, why) => results.push({ id, desc, ok: null, evid: why, se
 
 const num = (v, d = 3) => (typeof v === 'number' && isFinite(v) ? +v.toFixed(d) : String(v));
 
-/* SUB-SIMULAÇÕES — cada uma tem o tempo medido.
+/* SUB-SIMULAÇÕES — cada uma roda UMA vez e tem o tempo medido.
    O portão gastava 16,3 dos 20,8 min do pr-fast/build (medido em 13/10) e não dizia
    onde. Agora toda sub-simulação passa por `simular`, que:
+   · guarda a execução pela chave (script, env, args, cwd): o mesmo comando pedido
+     duas vezes reaproveita a saída da primeira (o tp-mount-probe era rodado 2×);
    · mede o tempo de parede de cada uma e imprime a tabela no stderr no fim (o stdout
      do --json continua só JSON);
    O stderr do filho sai no stderr daqui quando ele termina, como no execFileSync. */
+const SIMS = new Map();
 const TEMPOS = [];
 const rotuloSim = (script, env, args) =>
   [script, ...args, ...Object.entries(env).map(([k, v]) => `${k}=${v}`)].join(' ');
 function simular(script, env = {}, args = [], { timeout = 600000, cwd = ROOT, caminho = join(HERE, script) } = {}) {
+  const chave = JSON.stringify([caminho, env, args, cwd]);
+  const ja = SIMS.get(chave);
+  if (ja) { ja.reusos++; return ja.promessa; }
   const reg = { rotulo: rotuloSim(script, env, args), reusos: 0, ms: null, codigo: null };
   TEMPOS.push(reg);
   reg.promessa = new Promise((resolve) => {
@@ -108,6 +114,7 @@ function simular(script, env = {}, args = [], { timeout = 600000, cwd = ROOT, ca
       resolve({ stdout: stdout || '', erro });
     });
   });
+  SIMS.set(chave, reg);
   return reg.promessa;
 }
 
