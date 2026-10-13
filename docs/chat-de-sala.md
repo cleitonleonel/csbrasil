@@ -359,6 +359,11 @@ Procedência dos valores:
   atira nem anda (CC8). Com o painel aberto, clicar no outro botão troca de canal. No
   espectador a faixa do HUD fica coberta pela `#mp-spec-bar` (z 99999): o caminho dele
   continua Y/U no teclado e `#chat-toque` no toque.
+- **Aceite para publicar:** o compositor oferece `/regras-de-uso` e uma caixa não
+  pré-marcada. Submit e Enter passam pela mesma guarda; sem aceite a mensagem não é
+  enviada e o foco vai para a caixa. Retirar o aceite bloqueia novos envios (CC8 e
+  mutante `sem-aceite`). O aceite permanece apenas na página aberta, sem novo dado
+  persistido. Bloquear e denunciar continuam disponíveis sem publicar mensagens.
 - **Fechar o compositor sem enviar:** Esc, o botão FECHAR do cabeçalho, um clique ou toque
   fora do painel (`pointerdown` no documento, porque o Safari do iOS não sintetiza
   `mousedown` para um toque no canvas) e, no toque, o segundo toque em `#chat-toque`.
