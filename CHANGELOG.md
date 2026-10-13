@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.69`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.72`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -70,6 +70,41 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.72] — 2026-10-13
+
+### Mudado
+- Reusar geometria do entorno de Lajes na virada (#815)
+- Matricula a régua de cache das Lajes no portão
+- docs: refresh generated map build counts
+- fix: reuse Lajes background geometry during map build
+
+## [2.1.0-alpha.71] — 2026-10-13
+
+### Mudado
+- feat(marketing): kit social com personagens estilizados e fade para preto (#811)
+- docs(marketing): confirmar envio do checkpoint do PR
+- docs(marketing): registrar dependências e estado do PR
+- chore(marketing): redisparar deploy do preview
+- docs(marketing): registrar entrega do layout de altura inteira
+- docs(marketing): registrar revisão do fade e altura inteira
+- feat(marketing): usar personagens de altura inteira e fade para preto
+- docs(marketing): registrar revisão dos personagens e variantes
+- feat(marketing): ampliar personagens e adicionar caricaturas políticas
+- Record failed remote marketing preview
+- Record draft marketing delivery and next step
+- Record marketing review and delivery checks
+- Invalidate stale marketing approvals on edits
+- Prepare reviewable October channel queue
+- Prepare October copy and community calendar
+- Add editable October cards and approval queue tool
+- Add sourced assets for October marketing kit
+
+## [2.1.0-alpha.70] — 2026-10-13
+
+### Mudado
+- fix: libere a entrada sem esperar fauna decorativa (#812)
+- fix: libere a entrada sem esperar fauna decorativa
 
 ## [2.1.0-alpha.69] — 2026-10-13
 
