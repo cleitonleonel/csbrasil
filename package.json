@@ -1,6 +1,6 @@
 {
   "name": "coro-solto",
-  "version": "2.1.0-alpha.86",
+  "version": "2.1.0-alpha.87",
   "license": "AGPL-3.0-only",
   "description": "CORO SOLTO: Treta Suprema (ex-CS BRASIL) — FPS satírico de navegador com facções brasileiras fictícias (site Astro + jogo vanilla em Three.js), gerado em par com agentes de IA (AI generated & AI friendly)",
   "scripts": {
@@ -143,7 +143,7 @@
     "eval:seo": "node tools/eval/seo-check.mjs",
     "eval:pwa-install": "node tools/eval/pwa-install-contract.mjs",
     "eval:seo:mutate": "node tools/eval/seo-check.mjs --mutate",
-    "check:seo": "npm run build && node tools/eval/seo-check.mjs",
+    "check:seo": "npm run build && node tools/eval/seo-check.mjs && node tools/eval/canonical-host-check.mjs",
     "eval:jsonld": "node tools/eval/jsonld-validate.mjs",
     "eval:pause": "node tools/eval/pause-check.mjs",
     "eval:select": "node tools/eval/select-inflate.mjs",
@@ -289,7 +289,7 @@
     "eval:dificuldade": "node tools/eval/dificuldade-check.mjs",
     "eval:tiro-mp": "node tools/eval/tiro-mp-browser.mjs",
     "eval:chat-mp": "node tools/eval/chat-mp-browser.mjs",
-    "eval:noescolha": "node tools/eval/no-escolha-check.mjs",
+    "eval:noescolha": "node tools/eval/no-escolha-check.mjs && node tools/eval/convite-origem-check.mjs",
     "eval:maqfraca": "node tools/eval/maquina-fraca-check.mjs",
     "eval:qualadapt": "node tools/eval/qualidade-adaptativa-check.mjs",
     "eval:sonda": "node tools/eval/sonda-prazo-check.mjs",
@@ -545,7 +545,7 @@
   "bugs": {
     "url": "https://github.com/corosolto/client/issues"
   },
-  "homepage": "https://www.csbrasil.online",
+  "homepage": "https://www.corosolto.com.br",
   "dependencies": {
     "@astrojs/vercel": "^11.0.6",
     "@resvg/resvg-js": "^2.6.2",

@@ -3,7 +3,7 @@ import pkg from '../../package.json';
 import Community from '../components/Community.astro';
 import AccountEntry from '../components/AccountEntry.astro';
 import '../styles/career-rank.css';
-import { DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON } from '../lib/site';
+import { SITE, abs, DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON } from '../lib/site';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
@@ -502,25 +502,25 @@ window.__GEO_LANG__ = (function () {
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CORO SOLTO">
 <link rel="manifest" href="/site.webmanifest">
-<!-- CANONICAL COM www: a produção responde em www.csbrasil.online. Este link
+<!-- CANONICAL: host de src/lib/site-origin.mjs. Este link
      estava no host sem www e brigava com o canonical das outras páginas
      (que sai de astro.config.mjs) - dois hosts, sinal diluído. -->
-<link rel="canonical" href="https://www.csbrasil.online/">
+<link rel="canonical" href={abs('/')}>
 <!-- HREFLANG. Repetido aqui porque esta página tem <head> PRÓPRIO e não passa
      pelo Layout.astro - a home é o jogo, não uma página de conteúdo. Deixar de
      fora justamente a URL mais importante do site é o tipo de buraco que só
      aparece quando alguém compara página por página.
      Mesmo host e mesma forma do canonical acima. Ver Layout.astro pro porquê
      de `x-default` e da auto-referência. -->
-<link rel="alternate" hreflang="pt-BR" href="https://www.csbrasil.online/">
-<link rel="alternate" hreflang="x-default" href="https://www.csbrasil.online/">
+<link rel="alternate" hreflang="pt-BR" href={abs('/')}>
+<link rel="alternate" hreflang="x-default" href={abs('/')}>
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CORO SOLTO: Treta Suprema">
 <meta property="og:title" content="CORO SOLTO: Treta Suprema - FPS grátis de navegador">
 <meta property="og:description" content="FPS satírico de navegador com Esquerda, Direita e outras facções fictícias, 26 armas, bots, rounds e muita treta. Jogue grátis no navegador.">
-<meta property="og:url" content="https://www.csbrasil.online/">
-<meta property="og:image" content="https://www.csbrasil.online/og-image.jpg">
+<meta property="og:url" content={abs('/')}>
+<meta property="og:image" content={abs('/og-image.jpg')}>
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="CORO SOLTO: Treta Suprema - FPS satírico de navegador com facções brasileiras">
@@ -529,7 +529,7 @@ window.__GEO_LANG__ = (function () {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="CORO SOLTO: Treta Suprema - FPS grátis de navegador">
 <meta name="twitter:description" content="FPS satírico de navegador com Esquerda, Direita e outras facções fictícias, 26 armas e muitos mapas. Jogue grátis no navegador.">
-<meta name="twitter:image" content="https://www.csbrasil.online/og-image.jpg">
+<meta name="twitter:image" content={abs('/og-image.jpg')}>
 <meta name="twitter:image:alt" content="CORO SOLTO: Treta Suprema - FPS satírico de navegador com facções brasileiras">
 <!-- JSON-LD: UM nó VideoGame no site inteiro, e ele mora AQUI.
      Antes, index.astro e sobre.astro emitiam cada um um VideoGame com a MESMA
@@ -538,31 +538,31 @@ window.__GEO_LANG__ = (function () {
      Agora o nó canônico tem @id estável (…/#game) e vive na home, que é a url
      do próprio jogo; /sobre e as outras páginas só REFERENCIAM esse @id.
      Uma entidade, um dono. (a fonte dos textos é src/lib/site.ts) -->
-<script type="application/ld+json" is:inline>
+<script type="application/ld+json" is:inline set:html={`
 {
   "@context": "https://schema.org",
   "@graph": [
-    { "@type": "WebSite", "@id": "https://www.csbrasil.online/#website",
-      "url": "https://www.csbrasil.online/",
+    { "@type": "WebSite", "@id": "${SITE}/#website",
+      "url": "${SITE}/",
       "name": "CORO SOLTO: Treta Suprema",
       "alternateName": ["CORO SOLTO", "CS BRASIL", "CS BRASIL: Treta Suprema"],
       "inLanguage": "pt-BR",
-      "publisher": { "@id": "https://www.csbrasil.online/#org" } },
-    { "@type": "Organization", "@id": "https://www.csbrasil.online/#org",
+      "publisher": { "@id": "${SITE}/#org" } },
+    { "@type": "Organization", "@id": "${SITE}/#org",
       "name": "CORO SOLTO contributors",
-      "url": "https://www.csbrasil.online/",
-      "logo": "https://www.csbrasil.online/og-image.jpg" },
-    { "@type": "WebPage", "@id": "https://www.csbrasil.online/#webpage",
-      "url": "https://www.csbrasil.online/",
+      "url": "${SITE}/",
+      "logo": "${SITE}/og-image.jpg" },
+    { "@type": "WebPage", "@id": "${SITE}/#webpage",
+      "url": "${SITE}/",
       "name": "CORO SOLTO: Treta Suprema - FPS grátis de navegador (ex-CS BRASIL)",
-      "isPartOf": { "@id": "https://www.csbrasil.online/#website" },
-      "primaryImageOfPage": { "@type": "ImageObject", "url": "https://www.csbrasil.online/og-image.jpg", "width": 1200, "height": 630 },
-      "mainEntity": { "@id": "https://www.csbrasil.online/#game" } },
-    { "@type": "VideoGame", "@id": "https://www.csbrasil.online/#game",
+      "isPartOf": { "@id": "${SITE}/#website" },
+      "primaryImageOfPage": { "@type": "ImageObject", "url": "${SITE}/og-image.jpg", "width": 1200, "height": 630 },
+      "mainEntity": { "@id": "${SITE}/#game" } },
+    { "@type": "VideoGame", "@id": "${SITE}/#game",
       "name": "CORO SOLTO: Treta Suprema",
       "alternateName": ["CORO SOLTO", "CS BRASIL", "CS BRASIL: Treta Suprema"],
-      "url": "https://www.csbrasil.online/",
-      "image": "https://www.csbrasil.online/og-image.jpg",
+      "url": "${SITE}/",
+      "image": "${SITE}/og-image.jpg",
       "description": "FPS de navegador gratuito e satírico com Esquerda, Direita e outras facções fictícias, 26 armas, bots, rounds e Capture the Flag - de uma Brasília fictícia ao ferro velho.",
       "genre": ["Shooter", "FPS", "Comédia", "Sátira"],
       "gamePlatform": ["Web Browser", "Desktop", "Mobile"],
@@ -575,9 +575,9 @@ window.__GEO_LANG__ = (function () {
       "license": "https://www.gnu.org/licenses/agpl-3.0.html",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL",
                   "availability": "https://schema.org/InStock",
-                  "url": "https://www.csbrasil.online/" },
-      "author": { "@id": "https://www.csbrasil.online/#org" },
-      "publisher": { "@id": "https://www.csbrasil.online/#org" },
+                  "url": "${SITE}/" },
+      "author": { "@id": "${SITE}/#org" },
+      "publisher": { "@id": "${SITE}/#org" },
       "gameLocation": [
         { "@type": "Place", "name": "Praça dos Três Poderes" },
         { "@type": "Place", "name": "Piscina da Treta" },
@@ -586,12 +586,12 @@ window.__GEO_LANG__ = (function () {
       ] }
   ]
 }
-</script>
-<script type="application/ld+json" is:inline>
+`}></script>
+<script type="application/ld+json" is:inline set:html={`
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  "@id": "https://www.csbrasil.online/#faq",
+  "@id": "${SITE}/#faq",
   "mainEntity": [
     { "@type": "Question", "name": "O que é CORO SOLTO: Treta Suprema?",
       "acceptedAnswer": { "@type": "Answer", "text": "Um jogo FPS gratuito que roda no navegador: seis facções jogáveis (Esquerda, Direita, Tribos Urbanas, Palhaços, Funkeiros e Mítico), 53 personagens, mapas satíricos, 26 armas, bots, rounds e Capture the Flag. O jogo já se chamou CS BRASIL." } },
@@ -611,7 +611,7 @@ window.__GEO_LANG__ = (function () {
       "acceptedAnswer": { "@type": "Answer", "text": "Sim. O beta web tem controles de toque; use o celular na horizontal para jogar. O desempenho varia conforme o aparelho e o navegador." } }
   ]
 }
-</script>
+`}></script>
 <!-- O ICO tem recortes próprios por tamanho; regenere com tools/eval/canarinho-icon.mjs. -->
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
