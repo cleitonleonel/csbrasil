@@ -62,6 +62,22 @@ let telemetryGameContext = {
   gameType: null, node: null, roomId: null, roomOfficial: null, createdRoom: null,
 };
 let _matchEventId = null;
+/* BUILD + COORTE em toda linha de telemetria (13/10/2026). Antes só mp_session/mp_round
+   tinham SHA: crash e queda de FPS chegavam com o semver, que não diz qual commit entrou
+   no ar (o trem de release junta vários merges numa versão). E não existia como separar
+   QA/automação de jogador: 66 de 183 amostras de perf do MP eram SwiftShader — os
+   headless do CI e do ops-diag misturados com gente. `cohort` é o rótulo; quem decide o
+   que filtrar é a consulta. O backend descarta campo que ainda não conhece (perf.ts), então
+   o client pode mandar antes da coluna existir. */
+function sinaisDeBuild() {
+  let cohort = 'organico';
+  try {
+    if (navigator.webdriver) cohort = 'automacao';
+    else if (new URLSearchParams(location.search).has('qa') || localStorage.getItem('cs_qa') === '1') cohort = 'qa';
+    else if (window.__csWebgl?.softwareEstado === 'sim') cohort = 'software';
+  } catch { /* storage bloqueado: fica orgânico */ }
+  return { buildSha: String(window.__CS_BUILD?.sha || '') || null, cohort };
+}
 function clearTelemetryGameContext() {
   telemetryGameContext = {
     gameType: null, node: null, roomId: null, roomOfficial: null, createdRoom: null,
@@ -1300,7 +1316,7 @@ function _perfFinish(bootMs, frames) {
   const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   const payload = {
     anonId: getAnonId(), version: versaoComOrigem(VERSION),
-    sessionId: getSessionId(), ...telemetryGameContext,
+    sessionId: getSessionId(), ...telemetryGameContext, ...sinaisDeBuild(),
     fps: frames, bootMs, loadMs: _perfLoadMs,
     cores: navigator.hardwareConcurrency || null,
     memoryGb: navigator.deviceMemory || null,
@@ -1332,7 +1348,7 @@ function sendMatchEvent(result) {
   const payload = {
     anonId: getAnonId(),
     sessionId: getSessionId(), eventId: _matchEventId, version: versaoComOrigem(VERSION),
-    ...telemetryGameContext,
+    ...telemetryGameContext, ...sinaisDeBuild(),
     map: currentMap, mode: matchMode === 'ctf' ? 'ctf' : 'rounds',
     character: currentChar, team: g.playerTeam,
     faction: g.playerFaction || currentFaction,
