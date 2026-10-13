@@ -104,6 +104,8 @@ jobs:
       - name: ARCH.md gerado está em dia
         if: github.event_name == 'pull_request' || startsWith(github.event.head_commit.message, 'chore(release):')
         run: npm run arch:check
+      - name: hreflang dos docs resolve nas duas línguas
+        run: npm run eval:docs-hreflang
       # Precisa de rede, por isso NÃO entra no check:deploy (que roda dentro do
       # build da Vercel). Vulnerabilidade nova em dep de produção reprova aqui.
       - name: Dependência de produção sem vulnerabilidade nova
