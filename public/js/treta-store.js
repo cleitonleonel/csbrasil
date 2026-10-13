@@ -1,6 +1,5 @@
 import {initTretaRewards,updateTretaRewards} from './treta-rewards.js';
 import {TRETA_SKINS,TRETA_COINS,TRETA_DEFAULT_REWARDS,TRETA_COIN_ART} from './treta-catalog.js';
-import {TRETA_ACCESSORY_PROPOSALS} from './treta-proposals.js';
 import {loadAccount,socialApi} from './account-entry.js';
 
 const node=(tag,text='',cls='')=>{const e=document.createElement(tag);e.textContent=text;e.className=cls;return e;};
@@ -70,7 +69,7 @@ function draw() {
   $('treta-retry').hidden=!refreshFailed;
   $('treta-view-title').replaceChildren(node('span',view==='quests'?'COMPLETE ':view==='accessories'?'SEU ':'LOJA '),node('em',view==='quests'?'QUESTS':view==='accessories'?'DRIP':filter==='owned'?'E ARMÁRIO':'DE SKINS'));
   $('treta-view-description').textContent=view==='quests'?'Ganhe TRETA$ jogando e completando quests.':view==='accessories'?'Mais jeitos de vestir seu coro.':filter==='owned'?'Seus visuais, prontos para a próxima partida.':'Seu estilo entra em jogo.';
-  const skins=TRETA_SKINS.filter(s=>filter==='owned'?owned(s.id):filter==='drip'?s.id.endsWith('-drip'):true);
+  const skins=TRETA_SKINS.filter(s=>manifest.skins[s.id]?.approved===true).filter(s=>filter==='owned'?owned(s.id):filter==='drip'?s.id.endsWith('-drip'):true);
   $('treta-grid').replaceChildren(...skins.map(s=>{
     const button=node('button','','treta-card');button.type='button';button.style.setProperty('--skin-color',s.color);
     const label=node('span',refreshFailed?'CONSULTA INDISPONÍVEL':loading?'CONSULTANDO…':equipped(s.id)?'EQUIPADA':owned(s.id)?'NO SEU ARMÁRIO':available(s.id)?manifest.skins[s.id]?.poster?'NOVA SKIN':'PRÉVIA 3D NO DETALHE':'EM PRODUÇÃO','treta-label');
@@ -197,7 +196,6 @@ async function buy() {
 }
 
 function initProposals() {
-  $('treta-accessories').replaceChildren(...TRETA_ACCESSORY_PROPOSALS.map(a=>{const card=node('article','','treta-accessory');card.append(node('span',a.mark),node('h4',a.name),node('p',a.description),node('p',a.compatibility),node('small','EM ESTUDO · SEM VENDA ATIVA'));return card;}));
   const tabs=[...document.querySelectorAll('[data-treta-view]')];
   const select=button=>{
     view=button.dataset.tretaView;

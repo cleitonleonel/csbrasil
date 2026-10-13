@@ -102,10 +102,8 @@ try {
   assert.match(await page.locator('#treta-quest-limit').textContent(),new RegExp(`70.*${state().campaign.daily_match_cap}`),'Shared daily match cap visible');
   assert.equal(await page.locator('#treta-packs').count(),0,'No purchasable currency offer rendered');
   await page.locator('[data-treta-view="quests"]').press('ArrowRight');
-  assert.equal(await page.locator('[data-treta-view="accessories"]').getAttribute('aria-selected'),'true');
-  await page.locator('[data-treta-view="accessories"]').press('Home');
-  assert.equal(await page.locator('[data-treta-view="skins"]').getAttribute('aria-selected'),'true');
-  await page.locator('[data-treta-view="accessories"]').click();await shot('accessories');
+  assert.equal(await page.locator('[data-treta-view="skins"]').getAttribute('aria-selected'),'true','Keyboard wraps through the enabled store tabs');
+  assert.equal(await page.locator('[data-treta-view="accessories"]:visible').count(),0,'Accessory previews remain outside the normal store');
   await page.locator('#treta-balance').click();await page.locator('#treta-info[open]').waitFor();await page.waitForFunction(()=>window.__tretaMeasures?.some(s=>s.host==='treta-info-coin'));await shot('wallet');
   await page.locator('#treta-info [data-treta-close]').last().click();
   await page.locator('[data-treta-view="skins"]').click();
