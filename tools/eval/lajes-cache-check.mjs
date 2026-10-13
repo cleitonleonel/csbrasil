@@ -61,10 +61,11 @@ console.log(JSON.stringify({ first, second, overlap }));
 // Os digests estruturais (boxes/geometria/colisão/navegação/oclusão) vêm da base
 // 261cf59a, fixada antes da otimização, e seguem batendo. O nextRandom foi remedido
 // no #816: o grafite das Lajes voltou a montar no boot (chave fy_lajes→lajes) e
-// consome sorteios a mais sem alterar nenhum digest do mundo.
+// consome sorteios a mais sem alterar nenhum digest do mundo. Remedido de novo no
+// reasse de 13/10 (Lajes 31 para 55 peças); os digests continuam os mesmos.
 const expectedNextRandom = [
-  [0.7632988421246409, 0.40656328364275396, 0.8578036532271653, 0.6119431748520583],
-  [0.09000999364070594, 0.2445941676851362, 0.7449362024199218, 0.3830185495316982],
+  [0.33314384054392576, 0.287667001131922, 0.7576107266359031, 0.7355576294939965],
+  [0.1951357435900718, 0.157128227641806, 0.14873098023235798, 0.4225075759459287],
 ];
 for (const [index, value] of [first, second].entries()) {
   assert.equal(value.boxes, 9162);
