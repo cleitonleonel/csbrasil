@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.69`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.73`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -70,6 +70,91 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.73] — 2026-10-13
+
+### Mudado
+- feat: integrar comunidade e conta Supabase ao jogo (#807)
+- Navegador do portão de boot consente com a medição
+- Contrato do /ranking aceita o redirect para o hub da comunidade
+- Sincroniza o lockfile com o package.json da composição
+- Fecha os gates sociais demonstrados no check:fast do candidato
+- Protege os estados da home do ranking no portão
+- Alinha estado do ranking à resposta da API
+- Atualiza a arte dos emails com personagens armados
+- Add GPT character artwork for email templates
+- Add career badges to rankings and profiles
+- docs: refresh inventories after profile hierarchy adjustment
+- fix(social): prioritize ranking and simplify profile metrics
+- docs: atualizar catalogo de modulos do perfil publico
+- feat(social): mostrar perfil publico com ultimo personagem confirmado
+- docs: atualizar inventario de modulos apos selo de conta
+- feat(social): exibir selo de conta confirmada no perfil e ranking
+- docs: refresh module inventory for community inbox
+- feat: add community missions and private messages
+- docs: refresh module inventory and privacy gate
+- feat(auth): link social identities and separate optional choices
+- fix: use verified official contact and simplify legal heading
+- feat: align legal pages with the current hub design
+- feat: add privacy and terms pages for launch review
+- feat(ranking): adiciona aba semanal com calendário do servidor
+- docs(ranking): refresh generated module and test inventories
+- fix(ranking): preserve player links and present current team scores
+- fix(social): 404 upstream das rotas sociais vira 503 no proxy
+- docs(social): registra checkpoint e repetição do gate
+- feat(social): amplia personagem no cartão público
+- fix(social): refresh eval URLs after module edits
+- fix(social): render the CI entry and enter as guest
+- test(social): declare profile card route and verify preview isolation
+- docs(social): record profile share validation and regenerate counts
+- feat(social): share public handles and verified profile cards
+- feat(social): reuse game portraits for public profile cards
+- docs: consolidar aceite local do candidato social reconciliado
+- fix: preservar fronteira pública da conta e revisar reconciliação
+- docs: registrar retomada da reconciliação social
+- fix: liberar comunidade em retrato no celular
+- test: medir entrada social e documentar configuração real
+- feat: trazer comunidade e entrada de conta para a UI do jogo
+- Explain moderated sessions and record paired social reviews
+- Document social rollout and verify private community flows
+- feat(social): abra a comunidade integrada ao jogo
+- feat(social): integre sessão e feche leituras privadas no site
+- docs(social): registre objetivo e isolamento
+
+## [2.1.0-alpha.72] — 2026-10-13
+
+### Mudado
+- Reusar geometria do entorno de Lajes na virada (#815)
+- Matricula a régua de cache das Lajes no portão
+- docs: refresh generated map build counts
+- fix: reuse Lajes background geometry during map build
+
+## [2.1.0-alpha.71] — 2026-10-13
+
+### Mudado
+- feat(marketing): kit social com personagens estilizados e fade para preto (#811)
+- docs(marketing): confirmar envio do checkpoint do PR
+- docs(marketing): registrar dependências e estado do PR
+- chore(marketing): redisparar deploy do preview
+- docs(marketing): registrar entrega do layout de altura inteira
+- docs(marketing): registrar revisão do fade e altura inteira
+- feat(marketing): usar personagens de altura inteira e fade para preto
+- docs(marketing): registrar revisão dos personagens e variantes
+- feat(marketing): ampliar personagens e adicionar caricaturas políticas
+- Record failed remote marketing preview
+- Record draft marketing delivery and next step
+- Record marketing review and delivery checks
+- Invalidate stale marketing approvals on edits
+- Prepare reviewable October channel queue
+- Prepare October copy and community calendar
+- Add editable October cards and approval queue tool
+- Add sourced assets for October marketing kit
+
+## [2.1.0-alpha.70] — 2026-10-13
+
+### Mudado
+- fix: libere a entrada sem esperar fauna decorativa (#812)
+- fix: libere a entrada sem esperar fauna decorativa
 
 ## [2.1.0-alpha.69] — 2026-10-13
 
