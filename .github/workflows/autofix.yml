@@ -139,21 +139,22 @@ jobs:
           # allowlist liberaria a si mesmo.
           git show "base/$BASE:scripts/ci/autofix_allowlist.py" > /tmp/allowlist-base.py \
             || git show FETCH_HEAD:scripts/ci/autofix_allowlist.py > /tmp/allowlist-base.py
-          # A BASE SÓ ENTRA QUANDO HÁ CONFLITO (13/10). O bot trazia a main para todo PR
-          # atrasado, mesmo sem conflito: 58 merges num dia, 18% dos minutos de CI, e cada
-          # merge reinicia o CI inteiro do PR. Atraso sem conflito não precisa de merge: o
-          # GitHub testa e mescla o PR contra a base sozinho. Por isso o merge é de TESTE
-          # (`--no-commit`): mesclou limpo, aborta e o PR fica como está. Só segue quem
-          # conflita, e mesmo assim só se o conflito for todo em arquivo gerado (abaixo).
-          # A chamada continua com mensagem e trailers explícitos, como toda chamada de
-          # `git merge` dos workflows (AF7): se um dia ela voltar a commitar, o commit não
-          # sai sem `Agent:` e `Signed-off-by` e o dco não reprova o próprio bot (#406).
+          # A BASE SÓ SOBE PARA O PR QUANDO FAZ FALTA (13/10). O bot trazia a main para todo
+          # PR atrasado, mesmo sem conflito: 58 merges num dia, 18% dos minutos de CI, e cada
+          # merge reinicia o CI inteiro do PR.
+          # Sem conflito, o merge fica SÓ LOCAL e o `mesclou` não acende: os geradores abaixo
+          # rodam na árvore MESCLADA, que é a que o CI testa (refs/pull/N/merge). Se eles
+          # mudarem algo, a trava acende `commitar` e sobem merge + regeneração. É o cenário
+          # A/B: A e B somam 1 à mesma contagem (242 -> 243), A entra, o merge de B junta
+          # limpo com 243 e a árvore tem 244; sem regenerar a árvore mesclada, o docs:check
+          # do B reprova e nenhuma varredura o acha, porque ele está MERGEABLE. Se os
+          # geradores não mudarem nada, o merge morre com o runner e o PR fica como está.
+          # A mensagem vai EXPLÍCITA: `--no-edit` usa a mensagem automática do git, que não
+          # leva `Agent:` nem `Signed-off-by` — e aí o dco reprova o commit do bot (#406).
           if git merge --no-edit -m "Merge da base (autofix)" \
                        -m "Agent: csbrasil-bot (autofix)" \
-                       -m "Signed-off-by: csbrasil-bot <csbrasil-bot@users.noreply.github.com>" \
-                       --no-commit --no-ff FETCH_HEAD; then
-            git merge --abort 2>/dev/null || true
-            echo "Sem conflito com a base: nada a trazer, o PR fica como está."
+                       -m "Signed-off-by: csbrasil-bot <csbrasil-bot@users.noreply.github.com>" FETCH_HEAD; then
+            echo "Sem conflito com a base: merge só local; sobe apenas se a regeneração mudar algo."
             exit 0
           fi
           git diff --name-only --diff-filter=U > /tmp/conflitos.txt
