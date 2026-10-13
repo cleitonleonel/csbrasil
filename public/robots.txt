@@ -1,5 +1,5 @@
 # CORO SOLTO: Treta Suprema (ex-CS BRASIL)
-# https://www.csbrasil.online
+# https://www.corosolto.com.br
 #
 # SEM LINHA EM BRANCO DENTRO DE UM GRUPO. Pela RFC 9309 a linha vazia não
 # encerra o grupo (só uma nova linha `User-agent` ou o fim do arquivo), e o
@@ -63,5 +63,6 @@ Disallow: /vm-inspect.html
 Disallow: /iktest.html
 Disallow: /mounttest.html
 
-Sitemap: https://www.csbrasil.online/sitemap.xml
-Sitemap: https://www.csbrasil.online/docs/sitemap.xml
+Sitemap: https://www.corosolto.com.br/sitemap.xml
+Sitemap: https://www.corosolto.com.br/docs/sitemap.xml
+Sitemap: https://www.corosolto.com.br/docs/en/sitemap.xml

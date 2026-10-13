@@ -1,6 +1,6 @@
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const number=v=>Number.isFinite(Number(v))&&Number(v)>=0?Number(v).toLocaleString('pt-BR'):'—';
-export function profileCardSvg(p,character=null,portrait=null){
+export function profileCardSvg(p,character,portrait,site){
  if(!['server_verified','historical_plus_server_verified'].includes(p?.source) || p.visibility!=='public')throw Error('Public ranking profile required');
  const cells=[['PONTOS',number(p.points)],['POSIÇÃO',p.position?'#'+number(p.position):'—'],['ABATES',number(p.kills)],['MORTES',number(p.deaths)],['K/D',number(p.kd)],['HORAS ATIVAS',number(Math.round(Number(p.verified_play_seconds ?? p.play_seconds)/36)/100)]];
  const image=character&&portrait&&/^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(portrait)?`<image href="${portrait}" x="650" y="8" width="550" height="614" preserveAspectRatio="xMidYMid meet"/>`:'';
@@ -15,5 +15,5 @@ export function profileCardSvg(p,character=null,portrait=null){
  <text x="60" y="252" font-size="19" fill="#8a8064">${p.source==='historical_plus_server_verified'?'HISTÓRICO + PARTIDAS CONFIRMADAS':'ESTATÍSTICAS CONFIRMADAS NA ARENA'}</text>
  ${cells.map(([label,value],i)=>{const x=60+i%2*277,y=274+Math.floor(i/2)*86;return `<rect x="${x}" y="${y}" width="258" height="76" fill="#12160e" stroke="#3a3325"/><text x="${x+16}" y="${y+35}" font-size="32" font-weight="bold" fill="#ffd23f">${esc(value)}</text><text x="${x+16}" y="${y+62}" font-size="15" fill="#d8cfae">${label}</text>`;}).join('')}
  <text x="60" y="559" font-size="18" fill="#f2ead8">${character?(image?'ÚLTIMO PERSONAGEM: ':'RETRATO INDISPONÍVEL: ')+esc(character.nome):'PERSONAGEM NÃO COMPARTILHADO'}</text>
- <text x="60" y="591" font-size="20" fill="#8a8064">www.corosolto.com.br</text></g></svg>`;
+ <text x="60" y="591" font-size="20" fill="#8a8064">${esc(new URL(site).host)}</text></g></svg>`;
 }
