@@ -98,3 +98,9 @@ jobs:
           path: artifacts/gauntlet/
           retention-days: 21
           if-no-files-found: warn
+
+      # Depois do upload: o que saiu fica guardado, mas captura vazia ou mapa sem live deixa o job vermelho.
+      - name: Confere que a captura existe e chegou a live
+        env:
+          ONLY: ${{ steps.mapa.outputs.id }}
+        run: node tools/eval/gauntlet-captura-confere.mjs "artifacts/gauntlet/$ONLY" "$ONLY"
