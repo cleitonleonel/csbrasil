@@ -48,7 +48,7 @@ factionCounts = factionCounts.map(f => ({ ...f, pct: factionTotal ? Math.round((
 const mapData = { online: online.filter(o => o.lat && o.lon), cities: cities.filter(c => c.lat && c.lon) };
 ---
 <Layout
-  title={`Mapa da treta ao vivo - quem está jogando agora | ${BRAND_FULL}`}
+  title={`Mapa da treta - de onde a comunidade joga | ${BRAND_FULL}`}
   description={LIVE_MAP.description}
   jsonld={[{ '@id': GAME_ID }, { '@type': 'FAQPage', '@id': abs('/mapa') + '#faq', mainEntity: LIVE_MAP.faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }, {
     '@type': 'BreadcrumbList',
@@ -58,7 +58,7 @@ const mapData = { online: online.filter(o => o.lat && o.lon), cities: cities.fil
     ],
   }]}
   h1="Mapa da treta"
-  kicker="Ao vivo · quem está jogando agora"
+  kicker="Comunidade · histórico por cidade"
   heroImg="/img/map-previews/quebrada.jpg"
   heroPos="40%">
   <Fragment slot="sub">
