@@ -3,7 +3,6 @@ id: estado
 title: 'Current state: production, data, and debt'
 sidebar_label: Current state
 sidebar_position: 8
-slug: /status
 description: Live sources for the deployed version, production health, known debt, and data coverage.
 ---
 
