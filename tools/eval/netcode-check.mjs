@@ -720,7 +720,7 @@ console.log('\n· multiplayer→sair→single player não reaproveita a sessão 
   const guard = /const sessao = online \? mpSessao : null;/;
   const usosGuardados = [
     /const tamanhoTime = sessao \?/,
-    /const matchRoster = sessao \?/,
+    /const matchRoster = sessao\s*\?/,
     /const matchWeapons = sessao\s*\?/,
     /settings: sessao \?/,
     /mpFactory: sessao \?/,
@@ -729,6 +729,9 @@ console.log('\n· multiplayer→sair→single player não reaproveita a sessão 
   ];
   cobra(guard.test(main) && usosGuardados.every((re) => re.test(main)),
     'online=false isola o start single-player de roster, socket e netcode de qualquer sessão MP velha');
+  const mutRoster = main.replace(/const matchRoster = sessao(\s*)\?/, 'const matchRoster = mpSessao$1?');
+  cobra(mutRoster !== main && !usosGuardados.every((re) => re.test(mutRoster)),
+    'MUTANTE com o roster lendo mpSessao direto deixa a cláusula do BUG-101 vermelha');
 
   const encerraAntes = /function mpEncerrarSessao\(\)\s*{[\s\S]{0,160}const s = mpSessao; mpSessao = null;[\s\S]{0,220}s\?\.net\.close\(\)/;
   const quitLimpa = /function quitToMenu\(\)\s*{[\s\S]{0,3200}mpEncerrarSessao\(\);/;
