@@ -49,9 +49,9 @@ export function aeoCurado({ site, title, description }) {
         const faq = nodes.find(n => n['@type'] === 'FAQPage');
         if (!game?.description || !faq?.mainEntity?.length) throw new Error('Home sem descrição e FAQ para AEO');
         const links = [...CONTENT_PAGES, ...factionPages, LIVE_MAP.pathname].map(p => `- [${p}](${site}${p})`).join('\n');
-        const summary = `# ${title}\n\n${game.description}\n\n` + faq.mainEntity
-          .map(q => `## ${q.name}\n\n${q.acceptedAnswer.text}`).join('\n\n');
-        writeFileSync(join(clientDir, 'llms.txt'), summary + '\n\n## Páginas\n\n' + links + '\n');
+        const faqTxt = faq.mainEntity.map(q => `## ${q.name}\n\n${q.acceptedAnswer.text}`).join('\n\n');
+        const summary = `# ${title}\n\n${game.description}\n\n` + faqTxt;
+        writeFileSync(join(clientDir, 'llms.txt'), `# ${title}\n\n${game.description}\n\nSite: ${site}\n\n` + faqTxt + '\n\n## Páginas\n\n' + links + '\n');
         pages.unshift({ pathname: '/', title, description: game.description, content: summary });
         pages.push({ ...LIVE_MAP, content: `# ${LIVE_MAP.title}\n\n${LIVE_MAP.description}\n\n` + LIVE_MAP.faq.map(([q, a]) => `## ${q}\n\n${a}`).join('\n\n') });
 
