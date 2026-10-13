@@ -24,7 +24,7 @@
  *       main, docs:check, arch:check e a autoria só rodam no commit `chore(release):`; no PR
  *       docs:check e arch:check continuam valendo sempre, e o release regenera os dois.
  *
- * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | trem-por-push | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | release-sem-arch.
+ * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | trem-por-push | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -113,12 +113,15 @@ let tremRelease = validaTrem();
 /* RLS10 — o passo de gerado roda no PR sempre e, no push, só no commit do release. */
 let workflowCi = readFileSync('.github/workflows/ci.yml', 'utf8');
 const SO_PR_OU_RELEASE = "if: github.event_name == 'pull_request' || startsWith(github.event.head_commit.message, 'chore(release):')";
+/* Igualdade EXATA, não "contém": `if: false && startsWith(...)` contém o startsWith e
+   desliga a conferência de vez; sem o `event_name == 'push'` o job roda onde não deve. */
+const AUTORIA_SO_RELEASE = "if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'chore(release):')";
 const validaGerados = () => {
   const passo = (script) => new RegExp(`- name: [^\\n]+\\n\\s+(if: [^\\n]+)\\n\\s+run: npm run ${script}\\n`).exec(workflowCi)?.[1];
   const autoria = /^  autoria-na-main:\n    (if: [^\n]+)$/m.exec(workflowCi)?.[1] || '';
   return passo('docs:check') === SO_PR_OU_RELEASE
     && passo('arch:check') === SO_PR_OU_RELEASE
-    && autoria.includes("startsWith(github.event.head_commit.message, 'chore(release):')")
+    && autoria === AUTORIA_SO_RELEASE
     && /node tools\/gen-docs\.mjs/.test(workflowRelease)
     && /node tools\/gen-arch\.mjs/.test(workflowRelease);
 };
@@ -167,6 +170,10 @@ if (mutante) {
   }
   else if (mutante === 'autoria-trava-trem') {
     workflowCi = workflowCi.replace(/^(  autoria-na-main:\n    if: github\.event_name == 'push').*$/m, '$1');
+    geradosNoTrem = validaGerados();
+  }
+  else if (mutante === 'autoria-desligada') {
+    workflowCi = workflowCi.replace(AUTORIA_SO_RELEASE, "if: false && startsWith(github.event.head_commit.message, 'chore(release):')");
     geradosNoTrem = validaGerados();
   }
   else if (mutante === 'release-sem-arch') {
