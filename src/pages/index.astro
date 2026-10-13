@@ -1665,7 +1665,7 @@ window.__GEO_LANG__ = (function () {
 
 <div id="mp-identity-toast" class="mp-identity-card" role="status" aria-live="polite" hidden>
   <img class="mp-identity-portrait" alt="" width="64" height="64" hidden>
-  <span class="mp-identity-copy"><small>SEU PERSONAGEM NO MULTIPLAYER</small><strong></strong><span></span></span>
+  <span class="mp-identity-copy"><small>SEU PERSONAGEM NO MULTIPLAYER</small><strong></strong><span></span><em class="mp-identity-aviso" hidden></em></span>
 </div>
 
 <!-- CHAT DE SALA (#686, docs/chat-de-sala.md). Irmã do #hud, em camada própria (z 31, acima
@@ -1719,9 +1719,13 @@ window.__GEO_LANG__ = (function () {
   <h2 class="screen-title">PAUSA NA TRETA</h2>
   <div id="mp-identity-pause" class="mp-identity-card" aria-label="Personagem atribuído pelo servidor" hidden>
     <img class="mp-identity-portrait" alt="" width="64" height="64" hidden>
-    <span class="mp-identity-copy"><small>SEU PERSONAGEM NO MULTIPLAYER</small><strong></strong><span></span></span>
+    <span class="mp-identity-copy"><small>SEU PERSONAGEM NO MULTIPLAYER</small><strong></strong><span></span><em class="mp-identity-aviso" hidden></em></span>
   </div>
   <div class="pause-actions panel">
+    <div id="mp-personagem-acoes" class="mp-personagem-acoes" hidden>
+      <button id="mp-personagem-ir" class="btn" type="button">IR PARA O OUTRO LADO</button>
+      <button id="mp-personagem-outro" class="btn" type="button">ESCOLHER OUTRO</button>
+    </div>
     <button id="btn-resume" class="btn btn-big">CONTINUAR</button>
     <button id="btn-pause-settings" class="btn">CONFIGURAÇÕES</button>
     <button id="btn-pause-controls" class="btn">CONTROLES</button>
