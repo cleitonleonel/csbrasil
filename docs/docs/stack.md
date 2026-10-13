@@ -17,7 +17,7 @@ a partir do `package.json`, do `docs/package.json` e do próprio Three.js vendor
 | Camada | Ferramenta | Versão |
 |---|---|---|
 | Motor 3D (WebGL) | **Three.js**, vendorizado | `r160` |
-| Jogo | ES modules vanilla, **zero build** | 116 arquivos |
+| Jogo | ES modules vanilla, **zero build** | 126 arquivos |
 | Site | **Astro** com SSR | `^7.1.1` |
 | Hospedagem | adapter **Vercel** | `^11.0.6` |
 | Banco | **Postgres gerenciado** (RLS; schema privado, fora do repo) | `^2.110.7` |
@@ -186,21 +186,6 @@ assim que quatro cartazes de elenco viraram quatro retratos de UM personagem. O 
 não oferece essa proporção, então quem publica é quem fecha a conta: gera no aspecto mais
 próximo e recorta pelo centro até a proporção **real** da caixa. Assim o que se olha antes
 de commitar é byte a byte o que o jogador vê.
-
-### Sprites do elenco e rotação
-
-`tools/gen-roster-wallpapers.mjs --prepare-only` prepara a ficha e os prompts dos
-Políticos e Míticos; `--import-masters` converte masters revisados para WebP e
-normaliza os seis loadings. Menus mantêm 3:2; loading usa 16:9 exato para preencher
-telas largas sem faixas laterais. Depois da importação, `npm run media` atualiza
-a rotação e `npm run menuwalls` gera as variantes de menu.
-
-`tools/gen-roster-sprites.mjs` renderiza os GLBs de Políticos e Míticos no
-`charvideo.html`, sem arma adicional. Publica WebP com alpha em 192×192, 24 quadros
-a 12 fps, mais um still por personagem. O cabeçalho usa o manifesto de
-`public/img/roster-sprites/`; `roster-sprite.js` pré-carrega a próxima imagem.
-Sprites e fundos de menu alternam a cada 20 segundos. `media-rotation.js` pausa
-em aba oculta ou com movimento reduzido; o menu pausa também durante a partida.
 
 ### As chaves
 

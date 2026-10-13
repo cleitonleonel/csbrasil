@@ -20,7 +20,7 @@ from `package.json`, `docs/package.json` and the vendored Three.js itself.
 | Layer | Tool | Version |
 |---|---|---|
 | 3D engine (WebGL) | **Three.js**, vendored | `r160` |
-| Game | vanilla ES modules, **zero build** | 116 files |
+| Game | vanilla ES modules, **zero build** | 126 files |
 | Site | **Astro** with SSR | `^7.1.1` |
 | Hosting | **Vercel** adapter | `^11.0.6` |
 | Database | **managed Postgres** (RLS; private schema) | `^2.110.7` |
@@ -185,21 +185,6 @@ how four cast posters became four portraits of ONE character. The generator
 does not offer that aspect ratio, so whoever publishes is who settles the bill: generate at the closest
 aspect and center-crop down to the box's **real** ratio. That way what you look at before
 committing is byte for byte what the player sees.
-
-### Roster sprites and rotation {#roster-sprites-and-rotation}
-
-`tools/gen-roster-wallpapers.mjs --prepare-only` prepares the Politicians and
-Mythicals specification and prompts; `--import-masters` converts reviewed masters
-to WebP and normalizes the six loading images. Menus keep 3:2; loading uses exact
-16:9 to fill wide screens without side bands. After import, `npm run media`
-updates rotation and `npm run menuwalls` generates the menu variants.
-
-`tools/gen-roster-sprites.mjs` renders the Politicians and Mythicals GLBs in
-`charvideo.html`, without an additional weapon. It publishes 192×192 WebP with
-alpha, 24 frames at 12 fps, and a still for each character. The header reads the
-manifest in `public/img/roster-sprites/`; `roster-sprite.js` preloads the next image.
-Sprites and menu backgrounds rotate every 20 seconds. `media-rotation.js` pauses
-in hidden tabs or with reduced motion; the menu also pauses during a match.
 
 ### The keys {#the-keys}
 
