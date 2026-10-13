@@ -24,17 +24,16 @@ export const GET: APIRoute = async ({ params }) => {
   // devolver XML válido pra ela ensina o crawler a pedir lixo.
   if (!Number.isInteger(n) || n < 1) return new Response('not found', { status: 404 });
 
-  const today = new Date().toISOString().slice(0, 10);
   const fixas: Entrada[] = n === 1
     ? STATIC.map(([path, prio, freq]) => ({
-        loc: `${SITE}${path}`, lastmod: today, changefreq: freq, priority: prio,
+        loc: `${SITE}${path}`, changefreq: freq, priority: prio,
       }))
     : [];
 
   // O offset dos perfis desconta as fixas que a página 1 consumiu, senão a
   // fronteira entre a página 1 e a 2 perderia tantos perfis quantas são as fixas.
   const offset = Math.max(0, offsetDaPagina(n) - (n === 1 ? 0 : fixasCount()));
-  const entradas = fixas.concat(await perfis(offset, POR_PAGINA - fixas.length, today));
+  const entradas = fixas.concat(await perfis(offset, POR_PAGINA - fixas.length));
 
   if (!entradas.length) return new Response('not found', { status: 404 });
   return xmlResposta(xmlUrlset(entradas));

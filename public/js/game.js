@@ -4012,7 +4012,6 @@ export class Game {
      netcode ao ver a queda de hp no snapshot. */
   _playerHurtFx() {
     try { this.sfx.hurt?.(this.player.def?.id); } catch { /* ctx mudo */ }
-    this._tintFx(0xff2222, false, 96);
     this.player.recoilP = (this.player.recoilP || 0) + 0.02;
   }
 
