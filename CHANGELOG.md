@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.85`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.87`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -71,6 +71,28 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.87] — 2026-10-13
+
+### Mudado
+- Mede o ping dos servidores pela rede (#871)
+- feat(release): trem de release 2×/dia — produção só sai com a main verde (#854)
+- Corrigir cache dos assets estáticos (#863)
+- Reduzir os 5 brasões pesados para 256 px (#864)
+- Regenera as contagens da documentação
+- Lê o ping da rede pelo PerformanceObserver
+- Regenera as contagens da documentação
+- Mede o ping dos servidores pela rede
+- Shrink five faction crests to 256px
+- Fix static asset cache headers
+- feat(release): trem de release 2×/dia — produção só sai com a main verde
+
+## [2.1.0-alpha.86] — 2026-10-13
+
+### Mudado
+- Deixa jogar quando o nó roda outra versão (#869)
+- Regenera as contagens da documentação
+- Deixa jogar quando o nó roda outra versão
 
 ## [2.1.0-alpha.85] — 2026-10-13
 
