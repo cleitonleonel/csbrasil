@@ -10,11 +10,14 @@
  *   CS2  nenhum passo deles cai num BASE padrão em :8123, e o total de arnêses com esse
  *        padrão em tools/ e scripts/ não cresce (TETO);
  *   CS3  sem BASE, gerador, censo, auditoria e gl-metrics saem != 0 dizendo "BASE ausente"
- *        e não mudam nada na árvore (git status antes e depois).
+ *        e não mudam nada na árvore (git status antes e depois);
+ *   CS4  nenhum script de passo do portão grava arquivo versionado por caminho literal
+ *        (tools|public|src|docs) fora de `process.env.JSON === '1'`.
  *
  * Mutações (sai 1 se a mutação PASSAR):
  *   --mutante=gerador      devolve `grafite` ao check:fast
  *   --mutante=base-padrao  devolve o padrão localhost:8123 ao graffiti-census
+ *   --mutante=audit-grava  devolve a gravação incondicional do graffiti_audit.json
  *
  *   node tools/eval/check-sem-escrita-check.mjs
  */
@@ -24,7 +27,7 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const MUTANTE = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-if (!['', 'gerador', 'base-padrao'].includes(MUTANTE)) { console.error(`mutante desconhecido: ${MUTANTE}`); process.exit(1); }
+if (!['', 'gerador', 'base-padrao', 'audit-grava'].includes(MUTANTE)) { console.error(`mutante desconhecido: ${MUTANTE}`); process.exit(1); }
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const TETO = 73;
 const PADRAO = /(\|\||\?\?)\s*['"`]https?:\/\/(localhost|127\.0\.0\.1):8123/;
@@ -38,6 +41,11 @@ if (MUTANTE === 'gerador') {
 }
 const lerFonte = (rel) => {
   const s = readFileSync(join(ROOT, rel), 'utf8');
+  if (MUTANTE === 'audit-grava' && rel === 'tools/eval/graffiti-audit.mjs') {
+    const m = s.replace("if (process.env.JSON === '1') writeFileSync('tools/eval/graffiti_audit.json'", "writeFileSync('tools/eval/graffiti_audit.json'");
+    if (m === s) { console.error('MUTANTE NAO APLICOU: audit-grava'); process.exit(1); }
+    return m;
+  }
   if (MUTANTE !== 'base-padrao' || rel !== 'tools/eval/graffiti-census.mjs') return s;
   const m = s.replace('const BASE = process.env.BASE;', `const BASE = process.env.BASE || 'http://localhost:${8123}';`);
   if (m === s) { console.error('MUTANTE NAO APLICOU: base-padrao'); process.exit(1); }
@@ -50,13 +58,22 @@ for (const portao of ['check:fast', 'check:deploy']) {
   if (!cmd || !cmd.includes('runner.mjs')) { console.error(`${portao} não usa tools/eval/runner.mjs; não sei ler os passos`); process.exit(1); }
   for (const p of cmd.split(/\s+/).slice(cmd.split(/\s+/).indexOf('tools/eval/runner.mjs') + 1)) passos.add(p);
 }
-const geradores = [], comPadrao = [];
+const geradores = [], comPadrao = [], gravadores = [];
+const JSON_1 = /process\.env\.JSON === '1'/;
 for (const p of passos) {
   const cmd = scripts[p];
   if (cmd === undefined) { geradores.push(`${p} (script inexistente)`); continue; }
   if (/(^|\s)node\s+(tools|scripts)\/(\S*\/)?gen-[\w-]+\.mjs/.test(cmd) && !/--check\b/.test(cmd)) geradores.push(`${p}: ${cmd}`);
   for (const [, arq] of cmd.matchAll(/node\s+(\S+\.mjs)/g)) {
-    try { if (PADRAO.test(lerFonte(arq))) comPadrao.push(`${p} (${arq})`); } catch { /* script fora do repo */ }
+    let fonte;
+    try { fonte = lerFonte(arq); } catch { continue; }
+    if (PADRAO.test(fonte)) comPadrao.push(`${p} (${arq})`);
+    const linhas = fonte.split('\n');
+    linhas.forEach((l, i) => {
+      if (!/writeFileSync\(\s*['"`](tools|public|src|docs)\//.test(l)) return;
+      const anterior = linhas.slice(0, i).reverse().find((x) => x.trim()) || '';
+      if (!JSON_1.test(l) && !(JSON_1.test(anterior) && /\{\s*$/.test(anterior))) gravadores.push(`${arq}:${i + 1}`);
+    });
   }
 }
 
@@ -86,6 +103,8 @@ const res = [
       + (comPadraoTotal.length < TETO ? ` — baixe TETO para ${comPadraoTotal.length}` : '')],
   ['CS3', 'sem BASE os arnêses de grafite e gl-metrics param com "BASE ausente" sem escrever', rodadas.every((r) => r.ok) && !mudou,
     rodadas.map((r) => `${r.f.split('/').pop()}=${r.status}${r.ok ? '' : ' (sem a mensagem)'}`).join(', ') + (mudou ? ' — a árvore mudou' : '')],
+  ['CS4', 'nenhum passo do portão grava arquivo versionado sem JSON=1', gravadores.length === 0,
+    gravadores.length ? `${gravadores.join(', ')} — guarde a gravação com process.env.JSON === '1', como o graffiti-census` : 'só com JSON=1'],
 ];
 const falhou = res.some(([, , ok]) => !ok);
 for (const [id, desc, ok, evid] of res) console.log(`${ok ? '✓' : '✗'} ${id}  ${desc} — ${evid}`);
