@@ -10,6 +10,7 @@ Entrega na branch `feat/social-community`, com client e backend em repositórios
 | API | `SOCIAL_SESSION_KEY` | Segredo aleatório com pelo menos 32 caracteres, cifra credenciais de sessão/PKCE; rotação encerra sessões antigas |
 | API | `SOCIAL_SITE_URL` | Origem canônica `https://www.corosolto.com.br`, sem path |
 | API | `SOCIAL_ALLOWED_ORIGINS` | Origens adicionais exatas, separadas por vírgula, apenas se realmente utilizadas; sem wildcard |
+| API | `SOCIAL_MESSAGES` | `true` habilita mensagens somente após migration052 e validação no alvo; padrão desligado |
 | API produção | `SOCIAL_EMAIL_LOGIN` | `true` somente após configurar e testar SMTP próprio no Supabase; padrão de produção é desligado |
 | API e nó | `MP_TICKET_SECRET` | Segredo existente compartilhado; tickets assinados pelo servidor vinculado à conta |
 | API e nó | `MP_METRICS_TOKEN` | Segredo existente para rounds e presença vindos do nó |
@@ -89,3 +90,28 @@ Configurações no menu Comunidade: escolher ID e optar por mostrar último pers
 Retratos são PNG empacotados no build a partir do catálogo atual de public/js/characters.js. Não há fetch arbitrário de avatar/rede social nem leitura de public em runtime. Fonte embutida é materializada em diretório temporário próprio para o renderizador nativo; não depende da fonte do sistema. Míticos usam frames de vídeos já versionados, reproduzíveis por scripts/social-portraits.mjs; arquivos do trailer preservados. Renderização final em Linux/Vercel e navegação visual nova ainda dependem de infraestrutura/slot de browser; build local não é deploy.
 
 Ensaios: node tools/eval/profile-card-contract.mjs (mutantes unsafe-source/no-font/no-portrait), node tools/eval/social-entry-contract.mjs --only=H01/H02/H03 (mutantes handle-action/share-opt-in/copy-origin), backend test/social-handle-integration.mjs com env local, test/social-public-character.sql em transação e test/social-stats-contract.mjs. O orçamento SOCIAL_VM_TIMEOUT ajusta apenas execução do harness VM quando o host está saturado, sem alterar timeouts do produto ou invariantes de comportamento. Captura artifacts/social/profile-card-fixture.png é composição de fixture, não prova de partida.
+
+
+## Central e mensagens privadas
+
+Aplicar052 somente após reconciliar040–051 no alvo; validar Auth/API/DB antes
+de ativar SOCIAL_MESSAGES=true. Manter flag desligada durante rollout parcial.
+A conta participante deve estar autenticada/visível, sem bloqueio e com amizade
+aceita. Perfil privado não publica a conversa; participantes continuam podendo
+conversar. Remover amizade/bloquear impede leitura/envio, preserva histórico.
+A migração concede tabela/RPC só a service_role e o servidor deriva ator da sessão.
+Não conceder leitura a anon/authenticated nem expor essa chave no client.
+
+Envio:20/min por conta e180/min por IP; até1000 caracteres, texto simples.
+Retry usa mesmo client_id/body/target; edição começa outra mensagem. Inbox
+retorna50 conversas; conversa50 mensagens com cursor preso ao par. Marcar lidas
+envia apenas IDs incoming realmente exibidos, sem atualizar mensagens invisíveis.
+Unread da Central soma avisos+DM; missões não contam como mensagens pendentes.
+Denúncia usa fila existente, não aplica punição automática. Designar operador
+e processo de acesso/retenção/eliminação antes de liberação pública; sem SLA ou
+prazo fictício. Nenhum TRETa$ distribuído nesta etapa.
+
+Ensaios: tools/eval/community-inbox-check.mjs e backend
+test/social-messages-integration.mjs no ambiente isolado. Logs e crítica estão
+no artifactroot do CONTINUATION.md. Rollback operacional: flagOFF e retorno ao
+client anterior, preservando tabela/histórico; não usar DROP destrutivo.

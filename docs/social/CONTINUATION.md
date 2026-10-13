@@ -225,3 +225,64 @@ e efeito em Auth.identities. Conferir SMTP, migrations049/050/051 e envs em
 ambiente autorizado antes de publicação. Ranking semanal Brasília, histórico
 preservado e MP2× humano continuam requisitos; campanha/loja/mapas permanecem
 abertos no ledger growth-readiness. Nenhum merge, push, deploy ou envio externo.
+
+
+## Marco 13/10 — provedores habilitados e central local
+
+Titular concluiu as credenciais: leitura real de Authentication → Providers
+confirmou Email, Google, Discord, X OAuth2 e LinkedIn OIDC Enabled. Facebook e
+GitHub ficam adiados para esta entrega. Enabled certifica configuração, não
+login/vínculo no jogo. Google Externo/Testando, branding/publicação e URLs legais
+públicas seguem gates até prova atual no alvo; não transportar segredos.
+
+Central dentro do hub: Missões, Avisos e Mensagens. Missões usam handle da conta,
+amizade aceita, Auth.identities e conquistas persistidas; pedidos pendentes,
+links de perfis e contadores históricos não comprovam conclusão. Nenhuma
+recompensa TRETa$, verificação de follow ou moeda foi ligada. Central é base
+para futuras quests; regras/pagamentos são outra entrega.
+
+DM inicial somente entre amigos (preferência opcional ainda sem resposta), botão
+no perfil/lista de amigos apenas quando feature ativa, texto até1000 caracteres,
+conversas persistentes/paginadas, inbox/unread, IDs exatos de leitura, bloqueio e
+denúncia pela moderação existente. Migration052 privada com RLS/ACL service_role,
+ator derivado da sessão, locks compartilhados com amizade/bloqueio, retry
+idempotente por sender/client_id; SOCIAL_MESSAGES defaultOFF. Aplicada apenas no
+Docker local54322 e API8197 com flagON; nenhuma migration remota/deploy.
+
+Botões do hub/conta/comunidade ganharam relevo de borda/sombra e estado pressionado;
+hover preserva relevo. Privacidade explica dados das DMs, duas contas participantes,
+moderação, leitura explícita e que bloquear não apaga histórico. Não há E2EE.
+
+Régua independente: quests baseline0/12 RED e schema sem tabelas/RPC; candidato
+client23/23 PASS,19 mutantes RED; backend Auth/API/Postgres reais21/21 PASS,
+2 mutantes SQL RED e restauração com hashes idênticos. Critic clean-context
+reproduziu e fechou3 falhas: DOM privado na troca de conta, rascunho durante envio
+com rerender e401 antigo invalidando nova conta. Probe independentePASS +3mutantes
+RED; nenhum P0/P1/P2 confirmado aberto no recorte. Build final PASS, grafo módulos,
+docs/ARCH em dia, SEO/AEO6/6. Não reabrir suite ampla jáRED por baseline registrada.
+
+Evidências privadas na raiz agregada private-assets/growth-readiness/ranking-20261012:
+community-inbox-race-final.log, community-inbox-mutant-*.log,
+social-messages-contract-restored.log, social-messages-mutant-*.log,
+community-inbox-independent-review-20261013.md e critic-repro/logs adjacentes.
+Browser local DonaResenha→ReiDaTreta (fixtures existentes): enviou uma mensagem de
+ensaio e viu texto/preview após reload. Capturas desktop examinadas:
+community-quests-desktop-20261013.jpg e community-messages-desktop-20261013.jpg.
+Isso não prova OAuth externo nem combate humano. Segunda aba não autenticada,
+sem prova visual de receptor. Emulação390×844 não aplicada (DOM1466×690), override
+resetado; viewport-unverified é desktop, NÃO prova mobile. Controle do navegador
+retornou Not allowed na última tentativa. Mobile/teclado real continuamUNKNOWN.
+
+Lanes exclusivas codex/ranking-launch-20261012, bases clientc1b83e046/backendd21ed09;
+progress codex/growth-readiness-20261012 base782fdc1. Primary/outras lanes preservadas.
+Nenhum push, merge, publicação, email, post ou pagamento externo neste marco.
+
+Próximo: prova mobile/teclado; login/vínculo externo com contas independentes,
+identidade já pertencente a outra conta, SMTP próprio e confirmação/retirada real;
+reconciliar schema/migrations040–045/047/049/050/051/052 conforme preflight antes
+de qualquer rollout autorizado. Decidir operador/retenção das DMs (incluindo
+pedido de eliminação) sem inventar prazo, auditar acesso service_role, canário no
+alvo antes de flagON. Ranking geral+semanal Brasília/segunda00, preservar histórico,
+remover fraude comprovada somente, MP2× humano confirmado continuam requisitos.
+Campanha, shop/TRETa$/Pix/Portugal, mapas/chat e automação de distribuição permanecem
+no roadmap integral; configuração verde não encerra a liberação da campanha.
