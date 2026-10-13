@@ -95,10 +95,13 @@ const num = (v, d = 3) => (typeof v === 'number' && isFinite(v) ? +v.toFixed(d) 
      uma. O pr-fast usa isso para não rodar o botsim de novo no passo seguinte.
    O stderr do filho sai no stderr daqui quando ele termina, como no execFileSync. */
 const SIMS = new Map();
-/* PARALELO (padrão 3): quantas sub-simulações rodam ao mesmo tempo. O runner do
-   GitHub tem 4 vCPU; cada sub-simulação é um node de um fio só, e sobra um núcleo
-   para o processo daqui e para o GC. INVARIANTES_PARALELO=1 volta ao serial. */
-const PARALELO = Math.max(1, Math.floor(Number(process.env.INVARIANTES_PARALELO)) || 3);
+/* PARALELO (padrão 2): quantas sub-simulações rodam ao mesmo tempo. INVARIANTES_PARALELO=1
+   volta ao serial. Por que 2 e não 3 nos 4 vCPU do runner (medido em 13/10, 2 runs do CI):
+   o map-check sozinho é ~60% do portão, então o portão dura o map-check; o resto (~410 s
+   no runner lento) cabe inteiro numa segunda vaga, à sombra dele. Com 3 vagas o map-check
+   ficou 16-17% mais lento dividindo CPU (395 -> 457 s e 654 -> 765 s) sem o portão
+   terminar antes, e 765 s já é 85% do teto de 900 s dele. Mais vaga só come a folga. */
+const PARALELO = Math.max(1, Math.floor(Number(process.env.INVARIANTES_PARALELO)) || 2);
 let ocupadas = 0;
 const fila = [];
 const vaga = () => new Promise((r) => { if (ocupadas < PARALELO) { ocupadas++; r(); } else fila.push(r); });
