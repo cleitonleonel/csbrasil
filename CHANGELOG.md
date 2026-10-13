@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.88`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.89`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,34 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.89] — 2026-10-13
+
+### Mudado
+- Lote: consentimento tardio, check sem escrita, recuo MP, rajada 3P e brasão versionado (#885)
+- Regenerate docs counts for the batch
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Regenera as contagens da documentação
+- Atualiza o manifesto de versões dos brasões
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Regenerate docs counts after merging main
+- Roda eval:brasao-versao no pr-fast
+- Project MP remote velocity on the segment's yaw
+- Cover strafe while turning in MP backpedal check
+- Cobra a gravação do JSON só com JSON=1 na régua
+- Aceita o ?v= do brasão no screen-query do placar
+- Tira o gerador de grafite do check:fast
+- Grava graffiti_audit.json só com JSON=1
+- Exige BASE explícito nos arnêses de grafite
+- Play backpedal for MP remotes moving backward
+- Add MP remote backpedal animation check
+- Require shoot frames in the 3P burst check
+- Keep shoot weight across a 3P burst
+- Add 3P burst animation weight check
+- Enviar aquisição e land no consentimento tardio
+- Versiona por conteúdo o brasão da bandeira e do placar
 
 ## [2.1.0-alpha.88] — 2026-10-13
 
