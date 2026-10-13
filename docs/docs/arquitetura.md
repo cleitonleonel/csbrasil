@@ -62,15 +62,15 @@ Tamanho dos arquivos que o `gen-arch.mjs` indexa — bloco gerado, regenerado po
 
 | Arquivo | Linhas |
 |---|---:|
-| `public/js/game.js` | 8.386 |
+| `public/js/game.js` | 8.399 |
 | `public/js/main.js` | 4.402 |
-| `public/js/characters.js` | 1.141 |
+| `public/js/characters.js` | 1.142 |
 | `public/js/glbchars.js` | 854 |
 | `public/js/vmattach.js` | 632 |
 | `public/js/weapons.js` | 353 |
 | `public/js/springs.js` | 259 |
 
-Total de `public/js/`: **59.171 linhas em 124 arquivos**. O índice símbolo→linha, com a tabela de conflito, é outro bloco gerado: `tools/eval/ARCH.md` (`npm run arch`).
+Total de `public/js/`: **59.185 linhas em 124 arquivos**. O índice símbolo→linha, com a tabela de conflito, é outro bloco gerado: `tools/eval/ARCH.md` (`npm run arch`).
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: ``git ls-files public/js/*.js | xargs wc -l``
 
@@ -140,7 +140,7 @@ Do `tools/eval/ARCH.md` (bloco gerado — as faixas abaixo são as da geração 
 | **SITE / BACKEND** | `src/` |
 
 :::caution Dois arquivos de mapa NÃO têm dono declarado
-`map_quebrada.js` (1.319 linhas, o mapa mais novo) e `map_decals.js` **não aparecem em
+`map_quebrada.js` (o mapa mais novo) e `map_decals.js` **não aparecem em
 frente nenhuma** de `tools/gen-arch.mjs` — a lista acima é cópia fiel do `FRENTES`, e eles
 não estão lá. Quem editar os dois não colide com ninguém *segundo a tabela*, que é
 justamente a garantia que a tabela deveria dar e não dá. Acrescentá-los é uma linha em

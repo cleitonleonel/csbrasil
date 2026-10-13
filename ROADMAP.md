@@ -1,6 +1,6 @@
 # ROADMAP — próximos passos
 
-> Atualizado em **07/08/2026** (`2.0.0-alpha.32`). Este arquivo é a VISTA DE CIMA:
+> Atualizado em **13/10/2026** (`v2.1.0-alpha.69`). Este arquivo é a VISTA DE CIMA:
 > a ordem e o porquê. O detalhe de execução (TRILHA-V2 e planos por frente já
 > executados) saiu da árvore pública; as fichas de conteúdo vivo continuam em
 > [`plans/`](plans/). Tarefa de entrada pra contribuidor é
@@ -29,24 +29,26 @@
    medido por `npm run eval:grafite`.
 3. **Aplicar a migration `013_feedback.sql` no Supabase de prod** — o form de
    FEEDBACK do menu (semente da newsletter) responde "indisponível" até isso.
-4. **BOT8 / BUG-03** — bot com linha de visão no jogador por segundos sem atirar.
-   Última dívida de *jogabilidade* de verdade; régua existe, botsim reproduz.
-5. **Blocos 2–7 da trilha, na ordem** — AI engineering (mutation testing, portão
+4. **Blocos 2–7 da trilha, na ordem** — AI engineering (mutation testing, portão
    por severidade, CI comentando placar), telemetria, canais, primeira impressão,
    repo de colaborador, release. T25 (form de feedback) **já caiu em 07/08**;
    T23 (captura mobile) e T28 (issues no GitHub) estão meio andados.
+   *(BOT8/BUG-03, que morava aqui, saiu: a correção do turno de duelo está no
+   código com medição — `game.js`, busca `BUG-03`.)*
 
 ## Depois do release
 
-- **Multiplayer 4×4 com servidor autoritativo** — a maior frente; decisão de
-  02/08, plano em [`PLANS/03-MULTIPLAYER-4V4.md`](PLANS/03-MULTIPLAYER-4V4.md). É v3.
+- **Multiplayer** — beta no ar: servidores públicos e salas privadas por código de
+  convite (`public/js/net.js`, `transporte.js`, `netgame.js`). A frente aberta é
+  robustez de conexão e a ativação do chat de sala (backend).
 - **Dívidas do portão** ([`tools/eval/KNOWN-RED.json`](tools/eval/KNOWN-RED.json)) —
   13 críticas conhecidas que não reprovam o CI mas continuam devidas:
   enquadramento de viewmodel (VM1/3/9/12/16/18/19/20), antropometria do elenco
   (CHR1/3/4), CTF1. Quitar uma → remover da lista (o portão avisa).
 - **Braços FP** — rig sem forma; padrão hoje é arma sozinha (`?hands=1` religa).
-- **HUD mobile retrato** — o menu foi consertado (07/08); o HUD in-game em pé
-  ainda é um amasso. Mobile continua "aviso + dá pra entrar".
+- **Mobile/PWA** — beta instalável com controles de toque publicado
+  (`public/site.webmanifest`); validação em aparelhos reais e o HUD in-game em
+  retrato seguem abertos.
 - **Newsletter de verdade** — o funil: exportar `feedback where newsletter=true`,
   escolher provedor, primeira edição (capturas em `newsletter/`, fora do git).
 - **Monetização** — doações + anúncios próprios + portais (CrazyGames/itch:
@@ -79,4 +81,4 @@ Comece por [`CONTRIBUTING.md`](CONTRIBUTING.md) e pelas
 arquivo, linha e critério de aceite. As de entrada estão espelhadas em
 [`docs/issues/`](docs/issues/). Regras que não se negociam:
 régua antes do conserto, mutação que prova a régua, nenhuma crítica verde vira
-vermelha (`npm run check`), e comentário explica o *porquê*.
+vermelha (`npm run check:deploy`), e comentário explica o *porquê*.

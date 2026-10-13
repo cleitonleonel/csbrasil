@@ -50,6 +50,14 @@ export const DISCORD_URL = '/discord';
 export const TELEGRAM_URL = '/telegram';
 export const GITHUB_URL = 'https://github.com/corosolto/client';
 
+export const REDES_OFICIAIS = [
+  { nome: 'X', url: 'https://x.com/corosolto', icone: 'M3 3h4l5.2 6.8L18 3h3l-7.2 8.9L21 21h-4l-5.3-7L6 21H3l7.1-8.9L3 3Z' },
+  { nome: 'Instagram', url: 'https://www.instagram.com/corosolto/', icone: 'M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm6-4a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z' },
+  { nome: 'TikTok', url: 'https://www.tiktok.com/@corosolto', icone: 'M13 2h3c.3 3 2 4.5 5 5v3a10 10 0 0 1-5-2v8a6 6 0 1 1-6-6v3a3 3 0 1 0 3 3V2Z' },
+  { nome: 'YouTube', url: 'https://www.youtube.com/@corosolto', icone: 'M5 4h14a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4Zm5 4v8l7-4-7-4Z' },
+  { nome: 'LinkedIn', url: 'https://www.linkedin.com/company/corosolto/', icone: 'M3 8h4v13H3V8Zm2-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm5 6h4v2c1-2 7-3 7 4v7h-4v-7c0-3-3-3-3 0v7h-4V8Z' },
+];
+
 // Apoio: o endereço da campanha brasileira entra depois que ela for criada no MeApoia.
 // Os fallbacks deixam a página utilizável no primeiro deploy e podem ser trocados só por
 // variáveis públicas, sem espalhar URL de plataforma pelo jogo.
