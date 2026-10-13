@@ -34,8 +34,8 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 
 | O que | Quanto | Onde confere |
 |---|---:|---|
-| Código do jogo | 59.184 linhas em 124 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
-| `game.js` | **8.399** linhas | `wc -l public/js/game.js` |
+| Código do jogo | 59.183 linhas em 124 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| `game.js` | **8.398** linhas | `wc -l public/js/game.js` |
 | `main.js` | 4.402 linhas | `wc -l public/js/main.js` |
 | Armas com GLB | 27 | `git ls-files 'public/models/weapons/*.glb' \| wc -l` |
 | GLBs de personagem | 74 | `git ls-files 'public/models/characters/*.glb' \| wc -l` |
