@@ -143,7 +143,7 @@
     "eval:seo": "node tools/eval/seo-check.mjs",
     "eval:pwa-install": "node tools/eval/pwa-install-contract.mjs",
     "eval:seo:mutate": "node tools/eval/seo-check.mjs --mutate",
-    "check:seo": "npm run build && node tools/eval/seo-check.mjs",
+    "check:seo": "npm run build && node tools/eval/seo-check.mjs && node tools/eval/canonical-host-check.mjs",
     "eval:jsonld": "node tools/eval/jsonld-validate.mjs",
     "eval:pause": "node tools/eval/pause-check.mjs",
     "eval:select": "node tools/eval/select-inflate.mjs",
@@ -544,7 +544,7 @@
   "bugs": {
     "url": "https://github.com/corosolto/client/issues"
   },
-  "homepage": "https://www.csbrasil.online",
+  "homepage": "https://www.corosolto.com.br",
   "dependencies": {
     "@astrojs/vercel": "^11.0.6",
     "@resvg/resvg-js": "^2.6.2",

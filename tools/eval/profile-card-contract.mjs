@@ -13,7 +13,9 @@ if(mutant){
  const patches={'unsafe-source':["!['server_verified','historical_plus_server_verified'].includes(p?.source) || p.visibility!=='public'","false"],'no-portrait':["const image=character&&portrait&&",'const image=false&&character&&portrait&&'],'small-portrait':['x="650" y="8" width="550" height="614"','x="840" y="140" width="300" height="365"'],'other-character-small':['height="614"','height="${character.id===\'canarinho\'?614:365}"']};
  if(!['no-font','square-source'].includes(mutant)){assert(patches[mutant],'Unknown mutant');const [from,to]=patches[mutant];assert(source.includes(from),'Mutation must apply');source=source.replace(from,to);}
 }
-const {profileCardSvg}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const {profileCardSvg:cardSvg}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const {SITE}=await import('../../src/lib/site-origin.mjs');
+const profileCardSvg=(p,character=null,portrait=null)=>cardSvg(p,character,portrait,SITE);
 const font=readFileSync('src/lib/font-data.ts','utf8');
 const dir=mkdtempSync(path.join(tmpdir(),'profile-contract-')),file=path.join(dir,'bold.ttf');
 writeFileSync(file,Buffer.from([...font.matchAll(/'([A-Za-z0-9+/=]+)'/g)].map(m=>m[1]).join(''),'base64'));
@@ -56,6 +58,7 @@ assert(imagePixels>0,'portrait missing from rendered pixels');assert(textPixels>
 assert(minY<=8&&maxY>=621,`portrait must span the card between its existing 8px border bands; actual y=${minY}..${maxY}`);
 assert.throws(()=>profileCardSvg({...p,source:'browser'}));assert.throws(()=>profileCardSvg({...p,visibility:'private'}));
 assert(!profileCardSvg({...p,nick:'<script>"&'}).includes('<script>'),'nickname escapes XML');
+assert(profileCardSvg(p).includes(`>${new URL(SITE).host}</text>`),'card must print the canonical host');
 assert(!profileCardSvg(p,characters.canarinho,'https://evil.test/image').includes('https://evil.test'),'no arbitrary image fetch');
 mkdirSync('artifacts/social',{recursive:true});writeFileSync('artifacts/social/profile-card-fixture.png',actual.asPng());
 if(process.argv.includes('--gallery')){
