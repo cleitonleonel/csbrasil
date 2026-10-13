@@ -68,7 +68,7 @@
 // ============================================================================
 
 import { execFile, execFileSync } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { freshReport } from './fresh-report.mjs';
@@ -91,11 +91,15 @@ const num = (v, d = 3) => (typeof v === 'number' && isFinite(v) ? +v.toFixed(d) 
      duas vezes reaproveita a saída da primeira (o tp-mount-probe era rodado 2×);
    · mede o tempo de parede de cada uma e imprime a tabela no stderr no fim (o stdout
      do --json continua só JSON);
+   · com INVARIANTES_SAIDAS=<pasta>, grava stdout, stderr e código de saída de cada
+     uma. O pr-fast usa isso para não rodar o botsim de novo no passo seguinte.
    O stderr do filho sai no stderr daqui quando ele termina, como no execFileSync. */
 const SIMS = new Map();
 const TEMPOS = [];
+const SAIDAS = process.env.INVARIANTES_SAIDAS || '';
 const rotuloSim = (script, env, args) =>
   [script, ...args, ...Object.entries(env).map(([k, v]) => `${k}=${v}`)].join(' ');
+const arquivoSim = (rotulo) => rotulo.replace(/[^A-Za-z0-9._=-]+/g, '_');
 function simular(script, env = {}, args = [], { timeout = 600000, cwd = ROOT, caminho = join(HERE, script) } = {}) {
   const chave = JSON.stringify([caminho, env, args, cwd]);
   const ja = SIMS.get(chave);
@@ -111,6 +115,13 @@ function simular(script, env = {}, args = [], { timeout = 600000, cwd = ROOT, ca
       reg.ms = performance.now() - t0;
       reg.codigo = erro ? (erro.killed ? 'morto' : erro.code ?? 'erro') : 0;
       if (stderr) process.stderr.write(stderr);
+      if (SAIDAS) {
+        mkdirSync(SAIDAS, { recursive: true });
+        const base = join(SAIDAS, arquivoSim(reg.rotulo));
+        writeFileSync(base + '.out', stdout || '');
+        writeFileSync(base + '.err', stderr || '');
+        writeFileSync(base + '.code', String(typeof reg.codigo === 'number' ? reg.codigo : 1));
+      }
       resolve({ stdout: stdout || '', erro });
     });
   });
