@@ -18,13 +18,13 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:4321';
 // no CI o Chromium é o do Playwright; local, CHROME_BIN aponta para o navegador instalado
 test.use({ launchOptions: { executablePath: process.env.CHROME_BIN || undefined }, actionTimeout: 20_000, navigationTimeout: 60_000 });
 /* SMOKE_THROTTLE=4 simula o CI lento: CPU 4× mais devagar via CDP, a mesma régua. */
-test.beforeEach(async ({ page }) => {
+async function desacelerar(page) {
   const f = Number(process.env.SMOKE_THROTTLE || 0);
   if (f > 0) {
     const s = await page.context().newCDPSession(page);
     await s.send('Emulation.setCPUThrottlingRate', { rate: f });
   }
-});
+}
 
 const META = {
   v: 1, eu: { h: 'K3F' }, pode: 1, canais: ['sala', 'time'], max: 160, epoca: 'QX9W2A7B',
@@ -47,11 +47,10 @@ function zonaMira(VW, VH) {
 }
 const cruza = (a, b) => a && b && a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
 
-test.afterEach(async ({ page }, testInfo) => {
-  if (testInfo.status === testInfo.expectedStatus) return;
+async function retratarFalha(page, testInfo) {
   testInfo.setTimeout(testInfo.timeout + 10_000);
   await page.screenshot({ path: `test-results/${testInfo.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.png` });
-});
+}
 
 async function aplicarMutante(page, testInfo) {
   if (MUTANTE === 'painel-largo') {
@@ -312,15 +311,27 @@ async function agirEVerAviso(page, esperado, agir) {
 }
 
 test.describe('chat de sala', () => {
-  test('desktop: ARIA, Y/Enter/Esc, foco, IME, XSS e RTL, bloqueio, denúncia e geometria', async ({ page }, testInfo) => {
-    test.slow();
+  /* Um teste por passo sobre a mesma partida: cada passo tem o próprio orçamento. Num só
+     teste o roteiro inteiro dividia 15 min e o CI lento já gastava 12,6 a 15,4 min nele. */
+  test.describe('desktop: ARIA, Y/Enter/Esc, foco, IME, XSS e RTL, bloqueio, denúncia e geometria', () => {
+    test.describe.configure({ mode: 'serial' });
+    let page;
     const errosDePagina = [];
-    page.on('pageerror', (e) => errosDePagina.push(String(e)));
-    await aplicarMutante(page, testInfo);
-    await page.setViewportSize({ width: 1600, height: 900 });
-    await bootarPartida(page);
+    test.beforeAll(async ({ browser }, testInfo) => {
+      page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+      page.setDefaultTimeout(20_000);
+      page.setDefaultNavigationTimeout(60_000);
+      await desacelerar(page);
+      page.on('pageerror', (e) => errosDePagina.push(String(e)));
+      await aplicarMutante(page, testInfo);
+      await bootarPartida(page);
+    });
+    test.afterEach(async ({}, testInfo) => {
+      if (testInfo.status !== testInfo.expectedStatus) await retratarFalha(page, testInfo);
+    });
+    test.afterAll(async () => { await page?.close(); });
 
-    await test.step('sem meta.chat o cliente é inerte: Y não abre nada', async () => {
+    test('sem meta.chat o cliente é inerte: Y não abre nada', async () => {
       await montarChat(page, { comMeta: false });
       await teclaChat(page, 'y');
       await expect(page.locator('#chat-sala')).toBeHidden();
@@ -333,7 +344,7 @@ test.describe('chat de sala', () => {
       await expect(page.locator('#hud-chat-time')).toHaveText('U TIME');
     });
 
-    await test.step('botões da HUD: clique abre o canal do rótulo, digitar não vaza pro jogo', async () => {
+    test('botões da HUD: clique abre o canal do rótulo, digitar não vaza pro jogo', async () => {
       await teclaChat(page, 'y');   // espera o jogo estar em live, como o jogador
       await page.locator('#chat-entrada').fill('');
       // no dev local um console.error de asset que falta (ex.: viewmodel de granada) abre o
@@ -358,7 +369,7 @@ test.describe('chat de sala', () => {
       await page.locator('#chat-entrada').fill('');   // o rascunho sobrevive ao fechar: não polui os passos seguintes
       await page.keyboard.press('Escape');
     });
-    await test.step('ARIA: log vivo, campo com rótulo, seção nomeada', async () => {
+    test('ARIA: log vivo, campo com rótulo, seção nomeada', async () => {
       const log = page.locator('#chat-log');
       await expect(log).toHaveAttribute('role', 'log');
       await expect(log).toHaveAttribute('aria-live', 'polite');
@@ -369,7 +380,7 @@ test.describe('chat de sala', () => {
       await expect(page.locator('#chat-entrada')).toHaveAttribute('enterkeyhint', 'send');
     });
 
-    await test.step('histórico e mensagens: rótulo do servidor, XSS e RTL como texto, nick do navegador nunca aparece', async () => {
+    test('histórico e mensagens: rótulo do servidor, XSS e RTL como texto, nick do navegador nunca aparece', async () => {
       await entregar(page, { type: 'chat_hist', list: [
         { type: 'chat', id: 1, t: 1, ch: 'sala', aud: 'todos', h: 'ABC', esp: 0, time: 'E', txt: 'primeira do histórico' },
         { type: 'chat', id: 2, t: 2, ch: 'sala', aud: 'todos', h: 'DEF', nk: 'Rubao', esp: 0, time: 'B', txt: 'segunda do histórico' },
@@ -396,7 +407,7 @@ test.describe('chat de sala', () => {
     });
 
     for (const [w, h] of VIEWPORTS_DESKTOP) {
-      await test.step(`geometria ${w}x${h}: fechado e aberto fora da ZONA_MIRA e do #crosshair`, async () => {
+      test(`geometria ${w}x${h}: fechado e aberto fora da ZONA_MIRA e do #crosshair`, async () => {
         await page.setViewportSize({ width: w, height: h });
         await page.waitForTimeout(150);
         await cobrarGeometria(page, `${w}x${h}`, false);
@@ -409,9 +420,9 @@ test.describe('chat de sala', () => {
         expect(await chatAberto(page)).toBe(false);
       });
     }
-    await page.setViewportSize({ width: 1600, height: 900 });
 
-    await test.step('Y abre com o foco no campo e trava o jogo; teclas e clique no campo não chegam ao jogo; perder o lock não pausa', async () => {
+    test('Y abre com o foco no campo e trava o jogo; teclas e clique no campo não chegam ao jogo; perder o lock não pausa', async () => {
+      await page.setViewportSize({ width: 1600, height: 900 });
       await teclaChat(page, 'y');
       expect(await chatAberto(page)).toBe(true);
       let s = await estadoJogo(page);
@@ -433,7 +444,7 @@ test.describe('chat de sala', () => {
       await expect(page.locator('#chat-contador')).toHaveText('5/160');
     });
 
-    await test.step('Enter envia pelo net, o eco desenha a própria linha, o compositor fecha e devolve o foco', async () => {
+    test('Enter envia pelo net, o eco desenha a própria linha, o compositor fecha e devolve o foco', async () => {
       await page.locator('#chat-entrada').fill('  oi   galera  ');
       await page.keyboard.press('Enter');
       const enviados = await page.evaluate(() => window.__chatNet.enviados);
@@ -452,7 +463,7 @@ test.describe('chat de sala', () => {
       await expect(page.locator('#chat-entrada')).toHaveValue('');
     });
 
-    await test.step('Esc fecha e devolve o foco; clique fora fecha sem atirar', async () => {
+    test('Esc fecha e devolve o foco; clique fora fecha sem atirar', async () => {
       await teclaChat(page, 'y');
       await expect(page.locator('#chat-entrada')).toBeFocused();
       await page.keyboard.press('Escape');
@@ -465,7 +476,7 @@ test.describe('chat de sala', () => {
       expect((await estadoJogo(page)).tiros).toBe(0);
     });
 
-    await test.step('Tab fica preso no painel, nos dois sentidos', async () => {
+    test('Tab fica preso no painel, nos dois sentidos', async () => {
       await teclaChat(page, 'y');
       for (let i = 0; i < 12; i++) {
         await page.keyboard.press('Tab');
@@ -479,7 +490,7 @@ test.describe('chat de sala', () => {
       await page.keyboard.press('Escape');
     });
 
-    await test.step('IME: Enter com isComposing ou keyCode 229 não envia; Enter real envia', async () => {
+    test('IME: Enter com isComposing ou keyCode 229 não envia; Enter real envia', async () => {
       await teclaChat(page, 'y');
       await page.locator('#chat-entrada').fill('composição');
       await page.evaluate(() => {
@@ -496,7 +507,7 @@ test.describe('chat de sala', () => {
       expect(await chatAberto(page)).toBe(false);
     });
 
-    await test.step('nack devolve o rascunho ao campo e mostra o motivo', async () => {
+    test('nack devolve o rascunho ao campo e mostra o motivo', async () => {
       await page.evaluate(() => { window.__chatNet.modoNack = 'rapido'; });
       await teclaChat(page, 'y');
       await page.locator('#chat-entrada').fill('recusada');
@@ -511,7 +522,7 @@ test.describe('chat de sala', () => {
       await page.keyboard.press('Escape');
     });
 
-    await test.step('vazia e longa não saem do cliente', async () => {
+    test('vazia e longa não saem do cliente', async () => {
       await teclaChat(page, 'y');
       await page.locator('#chat-entrada').fill('   ');
       await page.keyboard.press('Enter');
@@ -526,7 +537,7 @@ test.describe('chat de sala', () => {
       await page.keyboard.press('Escape');
     });
 
-    await test.step('ArrowUp percorre as linhas; Enter abre BLOQUEAR/DENUNCIAR; bloquear esconde e BLOQUEADOS desbloqueia', async () => {
+    test('ArrowUp percorre as linhas; Enter abre BLOQUEAR/DENUNCIAR; bloquear esconde e BLOQUEADOS desbloqueia', async () => {
       await teclaChat(page, 'y');
       await page.keyboard.press('ArrowUp');
       expect(await page.evaluate(() => document.activeElement?.classList.contains('chat-linha'))).toBe(true);
@@ -558,7 +569,7 @@ test.describe('chat de sala', () => {
       await page.keyboard.press('Escape');
     });
 
-    await test.step('a própria linha não abre ações; denúncia sai sem texto livre e oferece bloquear', async () => {
+    test('a própria linha não abre ações; denúncia sai sem texto livre e oferece bloquear', async () => {
       await teclaChat(page, 'y');
       await agirEVerAviso(page, /sua/i, () => page.locator('#chat-log .chat-linha.propria').first().click());
       await expect(page.locator('#chat-acoes')).toBeHidden();
@@ -583,7 +594,7 @@ test.describe('chat de sala', () => {
     /* Depois da denúncia o foco volta para a linha denunciada (fecharAcoes). Fechar com Esc
        nesse estado deixava o foco preso numa linha do painel, e entradaPropria() em game.js
        engolia toda tecla: nem Y reabria, nem W andava (achado pelo eval:chat-mp, CE5). */
-    await test.step('depois de denunciar, Esc devolve o foco ao jogo: W anda e Y reabre', async () => {
+    test('depois de denunciar, Esc devolve o foco ao jogo: W anda e Y reabre', async () => {
       await teclaChat(page, 'y');
       await page.locator('#chat-log .chat-linha[data-id="4"]').click();
       await page.locator('#chat-denunciar').click();
@@ -601,7 +612,7 @@ test.describe('chat de sala', () => {
       await page.keyboard.press('Escape');
     });
 
-    await test.step('OCULTAR silencia o log e conta as não lidas', async () => {
+    test('OCULTAR silencia o log e conta as não lidas', async () => {
       await teclaChat(page, 'y');
       await page.locator('#chat-ocultar').click();
       await expect(page.locator('#chat-log')).toHaveAttribute('aria-hidden', 'true');
@@ -616,7 +627,7 @@ test.describe('chat de sala', () => {
       await page.keyboard.press('Escape');
     });
 
-    await test.step('U abre no canal time; espectador só tem sala', async () => {
+    test('U abre no canal time; espectador só tem sala', async () => {
       await teclaChat(page, 'u');
       expect(await page.evaluate(() => window.__chat.canal())).toBe('time');
       await expect(page.locator('#chat-canal')).toHaveText('TIME');
@@ -641,7 +652,7 @@ test.describe('chat de sala', () => {
       const cs = getComputedStyle(li);
       return { animacoes: anims.length, opacity: cs.opacity, animacao: `${cs.animationName} ${cs.animationTimingFunction} atraso ${cs.animationDelay}` };
     }, [id, t]);
-    await test.step('reduzir movimento: a linha some por corte aos 12,6 s em vez de ficar para sempre', async () => {
+    test('reduzir movimento: a linha some por corte aos 12,6 s em vez de ficar para sempre', async () => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await entregar(page, { type: 'chat', id: 90, t: 90, ch: 'sala', aud: 'todos', h: 'STU', esp: 0, time: 'E', txt: 'sem movimento' });
       const antes = await opacidadeEm(90, 12000);
@@ -657,7 +668,7 @@ test.describe('chat de sala', () => {
       expect((await opacidadeEm(91, 12650)).opacity).toBe('0');
     });
 
-    await test.step('redesenhar não ressuscita linha: o fade continua de onde estava e o log fica mudo no redesenho', async () => {
+    test('redesenhar não ressuscita linha: o fade continua de onde estava e o log fica mudo no redesenho', async () => {
       await entregar(page, { type: 'chat', id: 92, t: 92, ch: 'sala', aud: 'todos', h: 'VWX', esp: 0, time: 'E', txt: 'antiga' });
       await page.waitForTimeout(1500);
       const r = await page.evaluate((meta) => {
@@ -679,7 +690,7 @@ test.describe('chat de sala', () => {
       expect(r.fim).toBe('polite');
     });
 
-    await test.step('destruir apaga log, rascunho e fila', async () => {
+    test('destruir apaga log, rascunho e fila', async () => {
       await teclaChat(page, 'y');
       await page.locator('#chat-entrada').fill('rascunho');
       await page.evaluate(() => window.__chat.destruir());
@@ -691,11 +702,17 @@ test.describe('chat de sala', () => {
       await expect(page.locator('#chat-sala')).toBeHidden();
     });
 
-    expect(errosDePagina, `pageerror: ${errosDePagina.join(' | ')}`).toEqual([]);
+    test('nenhum pageerror no roteiro desktop', () => {
+      expect(errosDePagina, `pageerror: ${errosDePagina.join(' | ')}`).toEqual([]);
+    });
   });
 
   test.describe('toque 844x390', () => {
     test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
+    test.beforeEach(async ({ page }) => { await desacelerar(page); });
+    test.afterEach(async ({ page }, testInfo) => {
+      if (testInfo.status !== testInfo.expectedStatus) await retratarFalha(page, testInfo);
+    });
     test('botão de toque, #touch-ui some com o chat aberto e a geometria não cruza a mira', async ({ page }, testInfo) => {
       test.slow();
       const errosDePagina = [];
