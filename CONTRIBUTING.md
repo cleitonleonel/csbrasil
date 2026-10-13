@@ -29,10 +29,13 @@ critério de aceite; compare com as issues existentes antes de abrir outra.
    navegador serve módulo velho do cache e "a correção não chega" — já custou dias
    (ver `public/js/version.js`). O workflow `pr-gates.yml` reprova a divergência. O
    BUMP da versão NÃO é mais tarefa do PR: desde 08/08 o `release.yml` bumpa, taga e
-   publica o GitHub Release sozinho a cada push na `main`.
-2. **Produção publica no MERGE** (auto-deploy da Vercel na `main`, decisão do dono em
-   08/08); o Release/tag/bump saem juntos, automáticos, via `release.yml`. O caminho
-   manual por tag (`deploy-prod.yml` via dispatch) continua de pé como fallback.
+   publica o GitHub Release sozinho — em TREM, 2×/dia (desde 13/10; antes era a cada push).
+2. **Produção publica no TREM, não no merge** (13/10): a integração Git da Vercel na `main`
+   continua sendo o caminho (decisão do dono em 08/08), mas o `ignoreCommand`
+   (`scripts/ci/vercel-ignore.sh`) só deixa buildar produção no commit `chore(release):`.
+   O `release.yml` sai 2×/dia, e só com o `pr-fast` verde na head da `main`. Hotfix:
+   `gh workflow run release.yml`. O caminho manual por tag (`deploy-prod.yml`) continua
+   de pé como fallback.
 3. **Preview de fork exige revisão humana**: o `cs-brasil-ai-bot` (`preview-bot.yml`)
    classifica o diff sem executá-lo. Um mantenedor revisa o SHA atual e aplica
    `preview-autorizado`; qualquer push revoga a aprovação.
