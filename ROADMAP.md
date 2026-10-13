@@ -2,8 +2,8 @@
 
 > Atualizado em **13/10/2026** (`v2.1.0-alpha.69`). Este arquivo é a VISTA DE CIMA:
 > a ordem e o porquê. O detalhe de execução (TRILHA-V2 e planos por frente já
-> executados) saiu da árvore pública; as fichas de conteúdo vivo continuam em
-> [`plans/`](plans/). Tarefa de entrada pra contribuidor é
+> executados) saiu da árvore pública; as fichas de conteúdo vivo ficam no repo privado
+> (`../progress` → `archive/plans/`). Tarefa de entrada pra contribuidor é
 > [issue no GitHub](https://github.com/corosolto/client/issues)
 > + [`docs/issues/`](docs/issues/). Quando um item daqui fechar, ele sai daqui —
 > histórico é o git, não este arquivo.

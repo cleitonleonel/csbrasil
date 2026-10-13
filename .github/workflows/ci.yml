@@ -80,6 +80,8 @@ jobs:
         run: npm run eval:escala
       - name: Orçamento de shader WebGL1
         run: npm run eval:shaderbudget
+      - name: Sitemap pagina além do max-rows do PostgREST
+        run: npm run eval:sitemap-paginacao
       - name: Sitemap só com URL final e sem lastmod inventado
         run: npm run eval:sitemap-higiene
 
