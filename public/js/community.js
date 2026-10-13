@@ -50,7 +50,7 @@ if(root) {
         mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onAuthenticated:boot,message});
       } else {
         account.append(empty('Sua conta e seu progresso ficam salvos no servidor. O modo offline continua disponível.'));
-        const buttons=el('div','','social-actions');buttons.append(button('SOLO VERIFICADO',async()=>{const out=await api('/api/social',{action:'solo',node:'br'});location.assign(out.join);}));
+        const buttons=el('div','','social-actions');
         buttons.append(link('SEU PERFIL',state?.profile?.url || `/u/${auth.profile.id}/${encodeURIComponent(auth.profile.nick)}`));
         buttons.append(button('SAIR DA CONTA',async()=>{await logoutAccount(auth);auth=null;state=null;profileId='';clearConversation();await boot();}));account.append(buttons);
       }
