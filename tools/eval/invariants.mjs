@@ -68,7 +68,7 @@
 // ============================================================================
 
 import { execFile, execFileSync } from 'node:child_process';
-import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, writeFileSync, lstatSync, rmSync, symlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { freshReport } from './fresh-report.mjs';
@@ -95,6 +95,18 @@ const num = (v, d = 3) => (typeof v === 'number' && isFinite(v) ? +v.toFixed(d) 
      uma. O pr-fast usa isso para não rodar o botsim de novo no passo seguinte.
    O stderr do filho sai no stderr daqui quando ele termina, como no execFileSync. */
 const SIMS = new Map();
+/* PARALELO (padrão 2): quantas sub-simulações rodam ao mesmo tempo. INVARIANTES_PARALELO=1
+   volta ao serial. Por que 2 e não 3 nos 4 vCPU do runner (medido em 13/10, 2 runs do CI):
+   o map-check sozinho é ~60% do portão, então o portão dura o map-check; o resto (~410 s
+   no runner lento) cabe inteiro numa segunda vaga, à sombra dele. Com 3 vagas o map-check
+   ficou 16-17% mais lento dividindo CPU (395 -> 457 s e 654 -> 765 s) sem o portão
+   terminar antes, e 765 s já é 85% do teto de 900 s dele. Mais vaga só come a folga. */
+const PARALELO = Math.max(1, Math.floor(Number(process.env.INVARIANTES_PARALELO)) || 2);
+let ocupadas = 0;
+const fila = [];
+const vaga = () => new Promise((r) => { if (ocupadas < PARALELO) { ocupadas++; r(); } else fila.push(r); });
+const solta = () => { const prox = fila.shift(); if (prox) prox(); else ocupadas--; };
+let PRE_DISPARO = false;
 const TEMPOS = [];
 const SAIDAS = process.env.INVARIANTES_SAIDAS || '';
 const rotuloSim = (script, env, args) =>
@@ -104,10 +116,12 @@ function simular(script, env = {}, args = [], { timeout = 600000, cwd = ROOT, ca
   const chave = JSON.stringify([caminho, env, args, cwd]);
   const ja = SIMS.get(chave);
   if (ja) { ja.reusos++; return ja.promessa; }
-  const reg = { rotulo: rotuloSim(script, env, args), reusos: 0, ms: null, codigo: null };
+  const criada = performance.now();
+  const reg = { rotulo: rotuloSim(script, env, args), reusos: 0, ms: null, codigo: null, esperaMs: 0, pre: PRE_DISPARO };
   TEMPOS.push(reg);
-  reg.promessa = new Promise((resolve) => {
+  reg.promessa = vaga().then(() => new Promise((resolve) => {
     const t0 = performance.now();
+    reg.esperaMs = t0 - criada;
     execFile(process.execPath, [caminho, ...args], {
       cwd, encoding: 'utf8', timeout, maxBuffer: 64 * 1024 * 1024,
       env: { ...process.env, ...env },
@@ -122,17 +136,91 @@ function simular(script, env = {}, args = [], { timeout = 600000, cwd = ROOT, ca
         writeFileSync(base + '.err', stderr || '');
         writeFileSync(base + '.code', String(typeof reg.codigo === 'number' ? reg.codigo : 1));
       }
+      solta();
       resolve({ stdout: stdout || '', erro });
     });
-  });
+  }));
   SIMS.set(chave, reg);
   return reg.promessa;
+}
+
+/* PONTES DO `three` ANTES DO PARALELO. Várias sub-simulações plantam, na primeira
+   execução de um checkout limpo, o pacote-ponte que resolve `import 'three'` em node:
+   harness.mjs dentro do projeto, e botsim/botdiag/char-probe/harness-stub um nível
+   acima. Plantar é escrever package.json e criar symlink, e duas plantando ao mesmo
+   tempo podem ler package.json pela metade ou estourar EEXIST no symlink. Aqui as duas
+   pontes nascem UMA vez, antes de qualquer sub-simulação, com o MESMO conteúdo e a
+   mesma guarda (`index.js` existe = não mexe) dos scripts; eles então só encontram. */
+function plantarPontesThree() {
+  const pacote = JSON.stringify({
+    name: 'three', version: '0.160.0', type: 'module', main: 'index.js',
+    exports: { '.': './index.js', './addons/*': './addons/*' },
+  });
+  const plantar = (raiz, consertaPendurado) => {
+    const shim = join(raiz, 'node_modules', 'three');
+    if (existsSync(join(shim, 'index.js'))) return;
+    mkdirSync(shim, { recursive: true });
+    writeFileSync(join(shim, 'package.json'), pacote);
+    for (const [de, para, tipo] of [
+      [join(shim, 'index.js'), join(ROOT, 'public/vendor/three.module.js')],
+      [join(shim, 'addons'), join(ROOT, 'public/vendor/addons'), 'dir'],
+    ]) {
+      // harness.mjs conserta link pendurado; os outros engolem o EEXIST. Mesma coisa aqui.
+      if (consertaPendurado) { try { lstatSync(de); rmSync(de, { recursive: true, force: true }); } catch { /* não existe */ } }
+      try { symlinkSync(para, de, tipo); } catch (e) { if (consertaPendurado) throw e; }
+    }
+  };
+  plantar(ROOT, true);                 // harness.mjs
+  plantar(join(ROOT, '..'), false);    // botsim, botdiag, char-probe, harness-stub
 }
 
 async function runNode(script, env = {}, args = [], timeout = 600000) {
   const { stdout, erro } = await simular(script, env, args, { timeout });
   return erro ? stdout + '\n__ERRO__ ' + (erro.message || '') : stdout;
 }
+
+// ── 0. PRÉ-DISPARO DAS SUB-SIMULAÇÕES ───────────────────────────────────────
+/* As ~20 sub-simulações não dependem umas das outras: cada uma lê o jogo e grava, no
+   máximo, o PRÓPRIO relatório. Elas são todas disparadas aqui, até PARALELO por vez,
+   na ordem da mais lenta para a mais rápida (tempos medidos com INVARIANTES_PARALELO=1,
+   ver a tabela que este arquivo imprime no fim). Os blocos abaixo continuam na mesma
+   ordem e só esperam a saída que já está pronta ou a caminho: o relatório sai idêntico.
+   QUEM NÃO ENTRA AQUI roda na hora em que o bloco pede, como antes.
+   Os relatórios versionados (map/mat/pickup/char) passam pelo freshReport AQUI: o
+   arquivo velho some ANTES de o auditor começar, e o bloco lê o novo depois (#652). */
+plantarPontesThree();
+PRE_DISPARO = true;
+const MAP_JSON = join(ROOT, 'tools', 'eval', 'map_check.json');
+const REL_MAP = existsSync(join(HERE, 'map-check.mjs'))
+  ? freshReport(MAP_JSON, () => runNode('map-check.mjs', {}, [], 900000)) : null;
+const MAT_JSON = join(ROOT, 'tools', 'eval', 'mat_check.json');
+const REL_MAT = existsSync(join(HERE, 'mat-check.mjs'))
+  ? freshReport(MAT_JSON, () => runNode('mat-check.mjs')) : null;
+const CHAR_JSON = join(ROOT, 'tools', 'eval', 'char_probe.json');
+const REL_CHAR = freshReport(CHAR_JSON, () => runNode('char-probe.mjs', {}, ['--sem-c4']));
+const PICKUP_JSON = join(ROOT, 'tools', 'eval', 'pickup_check.json');
+const REL_PICKUP = existsSync(join(HERE, 'pickup-check.mjs'))
+  ? freshReport(PICKUP_JSON, () => runNode('pickup-check.mjs')) : null;
+for (const [script, env, args, ...resto] of [
+  ['botdiag.mjs', { SIM_SHOOTGATE: '1' }, ['180', 'all']],
+  ['botsim.mjs', { SIM_DUEL: '1' }, []],
+  ['botsim.mjs', {}, []],
+  ['tp-mount-probe.mjs', {}, []],
+  ['vmrig-test.mjs', {}, []],
+  ['char-floor.mjs', {}, []],
+  ['lajes-spawn-space-check.mjs', {}, []],
+  ['lajes-raycast-check.mjs', {}, []],
+  ['amazonia-water-movement-check.mjs', {}, []],
+  ['amazonia-agua-estacoes-check.mjs', {}, []],
+  ['pause-check.mjs', {}, []],
+  ['mode-check.mjs', {}, []],
+  ['vmlab-hud-check.mjs', {}, ['--json']],
+  ['vm-kick-sim.mjs', {}, ['--json']],
+]) if (existsSync(join(HERE, script))) simular(script, env, args, ...resto);
+for (const nome of ['authored-attach-check.mjs', 'authored-transition-check.mjs']) {
+  simular(nome, {}, [], { timeout: 0, cwd: process.cwd(), caminho: join(ROOT, 'tools/eval/' + nome) });
+}
+PRE_DISPARO = false;
 
 // ── 1. SINTAXE ──────────────────────────────────────────────────────────────
 // Barato e pega o erro mais caro: um arquivo que não parseia derruba o jogo
@@ -1464,8 +1552,7 @@ async function runNode(script, env = {}, args = [], timeout = 600000) {
   if (!existsSync(join(HERE, 'pickup-check.mjs'))) {
     skip('VM14', 'todo pickup é alcançável', 'pickup-check.mjs ausente');
   } else {
-    const p = join(ROOT, 'tools', 'eval', 'pickup_check.json');
-    const { data: j, error } = await freshReport(p, () => runNode('pickup-check.mjs'));
+    const { data: j, error } = await REL_PICKUP;
     if (error) {
       skip('VM14', 'todo pickup é alcançável', 'pickup-check.mjs: ' + error);
     } else {
@@ -1581,8 +1668,7 @@ async function runNode(script, env = {}, args = [], timeout = 600000) {
    (glbchars.js:296, BoxGeometry(0.26, 0.30, 0.26)) e 0,98 de IoU é o mesmo patamar que a
    PX2 já usa para silhueta de arma. Nenhum deles é palpite novo. */
 {
-  const arq = join(ROOT, 'tools', 'eval', 'char_probe.json');
-  const { data: j, error } = await freshReport(arq, () => runNode('char-probe.mjs', {}, ['--sem-c4']));
+  const { data: j, error } = await REL_CHAR;
   if (error) {
     for (const id of ['CHR1', 'CHR2', 'CHR3', 'CHR5', 'CHR6']) {
       skip(id, 'régua de personagem', 'char-probe.mjs: ' + error);
@@ -1905,10 +1991,10 @@ async function runNode(script, env = {}, args = [], timeout = 600000) {
     const respawnBecoValido = !beco.includes('__ERRO__') && beco.includes('✓ LSP1');
     put('LSP1', 'Lajes: slots térreos distintos, espaço para corpos e saída física até o campo',
       respawnBecoValido, beco.split('\n').find(linha => linha.includes('LSP1')) || beco.slice(-400));
-    const pj = join(ROOT, 'tools', 'eval', 'map_check.json');
     // A medição completa de 18 mapas levou quase 10 min no runner do CI; mantenha
-    // a falha explícita, mas dê tempo para o relatório fresco terminar.
-    const { data: j, error } = await freshReport(pj, () => runNode('map-check.mjs', {}, [], 900000));
+    // a falha explícita, mas dê tempo para o relatório fresco terminar (900 s, no
+    // pré-disparo).
+    const { data: j, error } = await REL_MAP;
     if (error || !Array.isArray(j?.mapas) || j.mapas.length === 0) {
       put('MAPAUD', 'map-check.mjs gera relatório fresco e válido de geometria',
         false, error || 'map-check.mjs gerou JSON sem mapas');
@@ -2183,8 +2269,7 @@ async function runNode(script, env = {}, args = [], timeout = 600000) {
   if (!existsSync(join(HERE, 'mat-check.mjs'))) {
     skip('MAT*', 'material/luz/superfície', 'mat-check.mjs ausente');
   } else {
-    const pj = join(ROOT, 'tools', 'eval', 'mat_check.json');
-    const { data: j, error } = await freshReport(pj, () => runNode('mat-check.mjs'));
+    const { data: j, error } = await REL_MAT;
     if (error) {
       skip('MAT*', 'material/luz/superfície', 'mat-check.mjs: ' + error);
     } else {
@@ -2445,8 +2530,9 @@ if (JSON_OUT) {
   const total = TEMPOS.reduce((a, t) => a + (t.ms || 0), 0);
   const linhas = [...TEMPOS].sort((a, b) => (b.ms || 0) - (a.ms || 0)).map((t) =>
     `  ${((t.ms || 0) / 1000).toFixed(1).padStart(7)} s  ${t.rotulo}`
-    + (t.codigo ? `  [saída ${t.codigo}]` : '') + (t.reusos ? `  [reaproveitada ${t.reusos}×]` : ''));
-  console.error(`\nTEMPO DAS SUB-SIMULAÇÕES (${TEMPOS.length} execuções, soma ${(total / 1000).toFixed(1)} s, `
+    + (t.codigo ? `  [saída ${t.codigo}]` : '') + (t.reusos ? `  [reaproveitada ${t.reusos}×]` : '')
+    + (t.pre ? '' : '  [fora do pré-disparo]'));
+  console.error(`\nTEMPO DAS SUB-SIMULAÇÕES (${TEMPOS.length} execuções, até ${PARALELO} ao mesmo tempo, soma ${(total / 1000).toFixed(1)} s, `
     + `parede do portão ${(performance.now() / 1000).toFixed(1)} s)\n${linhas.join('\n')}\n`);
 }
 
