@@ -96,6 +96,23 @@ export function prazoAcordado(ms, aoEstourar) {
   return () => clearInterval(id);
 }
 
+// Ping de REDE via PerformanceObserver: o relógio do JS soma a thread ocupada no boot e o
+// buffer da Resource Timing já está cheio (250) quando o menu sonda (Madri 20 ms → 212 ms, 13/10).
+function observaRede(url) {
+  let duracao = null, obs = null;
+  try {
+    obs = new PerformanceObserver((lista) => {
+      for (const e of lista.getEntries()) if (e.name === url && e.duration > 0) duracao = e.duration;
+    });
+    obs.observe({ type: 'resource' });
+  } catch { obs = null; }
+  return async (t0) => {
+    for (let i = 0; obs && duracao == null && i < 5; i++) await new Promise((r) => setTimeout(r, 20));
+    obs?.disconnect();
+    return duracao ?? performance.now() - t0;
+  };
+}
+
 export async function sondarNos(nos = NOS, timeoutMs = 2500, amostras = 2) {
   return Promise.all(nos.map(async (no) => {
     const { http } = mpUrls(no.url);
@@ -107,9 +124,10 @@ export async function sondarNos(nos = NOS, timeoutMs = 2500, amostras = 2) {
     try {
       const n = Math.max(1, Math.min(3, amostras | 0));
       for (let i = 0; i < n; i++) {
+        const fecha = observaRede(`${http}/health`);
         const t0 = performance.now();
         const r = await j(`${http}/health`, { signal: ctrl.signal });
-        h = r; ping = performance.now() - t0;   // a última que chegou é a mais quente
+        h = r; ping = await fecha(t0);   // a última que chegou é a mais quente
       }
     } catch { /* a amostra que faltou não apaga a que veio */ }
     finally { cancelaPrazo(); }
