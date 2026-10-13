@@ -57,6 +57,8 @@ jobs:
         run: npm run eval:uuid
       - name: Acúmulo de armas no chão tem teto
         run: npm run eval:drop
+      - name: Proxy de captura grava só dentro da pasta de saída
+        run: npm run eval:capturecodex
       # Pendurar a régua só no `check:fast` a faria rodar na máquina de quem lembra
       # de rodar, e NÃO no portão: este job lista cada `npm run eval:*` explicitamente.
       - name: Todo mapa devolve o que o game.js consome
@@ -80,6 +82,10 @@ jobs:
         run: npm run eval:escala
       - name: Orçamento de shader WebGL1
         run: npm run eval:shaderbudget
+      - name: Sitemap pagina além do max-rows do PostgREST
+        run: npm run eval:sitemap-paginacao
+      - name: Sitemap só com URL final e sem lastmod inventado
+        run: npm run eval:sitemap-higiene
 
       # O ARCH.md (índice por linha + tabela de conflito) é GERADO. Escrito à
       # mão ele desatualiza no primeiro commit, e uma tabela de conflito com
@@ -131,6 +137,8 @@ jobs:
         run: |
           node tools/eval/seo-check.mjs
           node tools/eval/seo-check.mjs --mutate
+          node tools/eval/canonical-host-check.mjs
+          node tools/eval/canonical-host-check.mjs --mutate
 
       # PORTÃO DO SITE. `astro build` verde não prova nada sobre as rotas:
       # /ranking pode dar 500, /sitemap.xml pode sair vazio e o build passa em

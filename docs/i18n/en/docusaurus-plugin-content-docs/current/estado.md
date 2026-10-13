@@ -16,11 +16,11 @@ if they were still current.
 
 | Question | Current source | Rule |
 |---|---|---|
-| Which version is deployed? | [`/changelog`](https://www.csbrasil.online/changelog) and `package.json` | release automation creates an entry and `docs:check` requires matching versions |
+| Which version is deployed? | [`/changelog`](https://www.corosolto.com.br/changelog) and `package.json` | release automation creates an entry and `docs:check` requires matching versions |
 | Is production healthy? | `/api/health` and `prod-watch.yml` | the monitor runs every 15 minutes and opens an issue after persistent failures |
 | What is broken or incomplete? | `KNOWN-BUGS.md` and `tools/eval/KNOWN-RED.json` | new debt fails the ratchet unless explicitly justified |
 | Which checks must a PR pass? | `npm run check:fast` and `.github/workflows/` | each important check has a mutation or a known failure case |
-| Where are matches happening? | [`/mapa`](https://www.csbrasil.online/mapa) | presence is city-level; matches are split across all five factions |
+| Where are matches happening? | [`/mapa`](https://www.corosolto.com.br/mapa) | presence is city-level; matches are split across all five factions |
 
 ## Public data coverage
 

@@ -13,8 +13,9 @@
  * Cláusulas:
  *   P1 · `versaoCompativel` aceita igual e recusa diferente.
  *   P2 · versão ausente (nó anterior ao conserto) NÃO derruba ninguém — degrada.
- *   P3 · o caminho real de conexão recusa: `welcome` com versão alheia rejeita com
- *        `versao_incompativel` e fecha o socket, sem virar sessão.
+ *   P3 · o caminho real de conexão NÃO tira ninguém da partida: `welcome` com versão alheia
+ *        entra e marca `versaoDiferente` (decisão do dono, 13/10); com ?mpversao=1 recusa
+ *        com `versao_incompativel` e fecha o socket.
  *   P4 · a UI tem mensagem própria para esse erro (não cai no genérico).
  *   P5 · o nó anuncia `clientVersion` no welcome e no /health.
  *   P6 · com `simHash` dos dois lados vale o código simulado, não o rótulo: versão diferente
@@ -22,7 +23,8 @@
  *        recusado mesmo com a versão igual, e nó sem hash cai na regra de versão.
  *
  * Mutação (no FONTE, não no teste): --mutante=aceita-tudo faz `versaoCompativel` devolver
- * sempre true → P1 e P3b têm de ficar vermelhas. --mutante=ignora-hash faz a regra
+ * sempre true → P1 e P3b têm de ficar vermelhas. --mutante=bloqueia volta a recusar por
+ * padrão → P3b tem de ficar vermelha. --mutante=ignora-hash faz a regra
  * ignorar o `simHash` → P6 tem de ficar vermelha.
  *
  *   node tools/eval/mp-paridade-check.mjs [--mutante=aceita-tudo]
@@ -52,6 +54,11 @@ if (MUT === 'aceita-tudo') {
     'export const versaoCompativel = () => true;',
   );
   if (fonte === antes) { console.error('mutante não encontrou versaoCompativel em net.js'); process.exit(1); }
+}
+if (MUT === 'bloqueia') {
+  const antes = fonte;
+  fonte = fonte.replace(".get('mpversao') === '1'", ".get('mpversao') !== '0'");
+  if (fonte === antes) { console.error('mutante não encontrou o modo estrito em net.js'); process.exit(1); }
 }
 if (MUT === 'ignora-hash') {
   const antes = fonte;
@@ -98,12 +105,13 @@ const transporteFalso = (versao, simHash) => {
 };
 
 const NetClient = mod.NetClient || mod.default;
-async function tentar(versao, simHash) {
+async function tentar(versao, simHash, busca = '') {
+  globalThis.location = { search: busca };
   const cli = new NetClient('ws://x/ws', { nome: 'r', room: 'r' });
   const tp = transporteFalso(versao, simHash);
   try {
     await cli._conectar(2000, () => tp);
-    return { entrou: true, fechou: tp.fechado };
+    return { entrou: true, fechou: tp.fechado, diferente: cli.versaoDiferente };
   } catch (e) {
     return { entrou: false, erro: String(e.message || e), fechou: tp.fechado, detalhe: e.detalhe };
   }
@@ -113,16 +121,20 @@ if (typeof NetClient === 'function') {
   const igual = await tentar(VERSION);
   const outra = await tentar('2.0.0-alpha.1');
   cobra(igual.entrou === true, 'P3a · versão igual entra normalmente', igual.erro || '');
-  cobra(outra.entrou === false && /versao_incompativel/.test(outra.erro || '') && outra.fechou,
-    'P3b · versão diferente é recusada e o socket fecha',
+  cobra(outra.entrou === true && !outra.fechou && outra.diferente?.no === '2.0.0-alpha.1' && !igual.diferente,
+    'P3b · versão diferente entra mesmo assim e fica marcada em versaoDiferente',
     `entrou=${outra.entrou} erro=${outra.erro || '-'} fechou=${outra.fechou}`);
+  const estrito = await tentar('2.0.0-alpha.1', undefined, '?mpversao=1');
+  cobra(estrito.entrou === false && /versao_incompativel/.test(estrito.erro || '') && estrito.fechou,
+    'P3c · com ?mpversao=1 a versão diferente é recusada e o socket fecha',
+    `entrou=${estrito.entrou} erro=${estrito.erro || '-'}`);
   /* P6 no caminho real: só mede quando esta árvore já tem SIM_HASH (o release grava). */
   const { SIM_HASH } = await import(pathToFileURL(path.join(ROOT, 'public/js/version.js')).href);
   if (SIM_HASH) {
     const mesmoSim = await tentar('2.0.0-alpha.1', SIM_HASH);
-    const outroSim = await tentar(VERSION, '0000000000000000');
-    cobra(mesmoSim.entrou === true && outroSim.entrou === false && /versao_incompativel/.test(outroSim.erro || ''),
-      'P6b · welcome com o mesmo simHash entra mesmo com outra versão; simHash diferente é recusado',
+    const outroSim = await tentar(VERSION, '0000000000000000', '?mpversao=1');
+    cobra(mesmoSim.entrou === true && !mesmoSim.diferente && outroSim.entrou === false && /versao_incompativel/.test(outroSim.erro || ''),
+      'P6b · mesmo simHash entra sem marca; simHash diferente é detectado (recusado no modo estrito)',
       `mesmo=${mesmoSim.entrou} outro=${outroSim.entrou}`);
   } else {
     console.log('  NOTA P6b · version.js sem SIM_HASH; caminho real não medido');

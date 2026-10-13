@@ -13,6 +13,9 @@
  *   node tools/eval/map-contrato-check.mjs --mutante=sem-waypoints|grafo-partido
  */
 import { THREE, MAPS, initTextures } from './harness.mjs';
+const { grafiteNoDedicado } = await import('../../public/js/graffiti_pass.js');
+
+grafiteNoDedicado(true);
 
 const arg = (n, d) => {
   const a = process.argv.find((x) => x.startsWith(`--${n}=`));
