@@ -17,7 +17,8 @@
      BASE=http://localhost:<serve.mjs> tools/eval/with-browser-lock.sh node tools/eval/home-selects-browser.mjs
      VIEWPORT=390x844 (celular) · OUT=<pasta> grava uma figura por select aberto
      --mutante=lista-fora  empurra a lista para fora da tela (HS2 tem de reprovar)
-     --mutante=sem-efeito  engole o clique da opção (HS3 tem de reprovar) */
+     --mutante=sem-efeito  engole o clique da opção (HS3 tem de reprovar)
+     --mutante=sem-tr      serve o main.js com os rótulos sem tr() (HS5 tem de reprovar) */
 import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -39,6 +40,14 @@ const falhas = [];
 const cobra = (ok, msg) => { console.log(`  ${ok ? 'ok  ' : 'FALHA'} ${msg}`); if (!ok) falhas.push(msg); };
 const ORDEM = ['mapa', 'modo', 'armas', 'time', 'inimigos', 'rounds'];
 const ROTULOS = ['MAPA', 'MODO', 'ARMAS', 'SEU TIME', 'INIMIGOS', 'ROUNDS'];
+const ROTULOS_EN = ['MAP', 'MODE', 'WEAPONS', 'YOUR TEAM', 'ENEMIES', 'ROUNDS'];
+// Mutante de fonte: serve o main.js com as trocas pedidas, sem tocar no arquivo.
+const mutarMain = (page, trocas) => page.route(/\/js\/main\.js/, async (route) => {
+  const resp = await route.fetch();
+  let body = await resp.text();
+  for (const [de, para] of trocas) { if (!body.includes(de)) throw new Error(`mutante não achou: ${de}`); body = body.replace(de, para); }
+  await route.fulfill({ response: resp, body });
+});
 
 try {
   const page = await browser.newPage({ viewport: { width: W, height: H } });
@@ -119,6 +128,23 @@ try {
   const depois = await page.evaluate(() => [...document.querySelectorAll('.hub-sel-list')].filter((l) => !l.hidden).length);
   cobra(abertos === 1 && depois === 0, `HS4 uma lista aberta por vez (${abertos}) e clique fora fecha (${depois})`);
   if (OUT) await page.screenshot({ path: `${OUT}/home-${W}x${H}.png` });
+
+  // HS5: em inglês os rótulos e as opções de modo saem traduzidos
+  const en = await browser.newPage({ viewport: { width: W, height: H } });
+  await en.route(/corosolto\.com\.br/, (r) => r.abort());
+  if (MUT === 'sem-tr') await mutarMain(en, [["`<small>${tr(rotulo)}</small>", "`<small>${rotulo}</small>"], ["t: tr('MATA-MATA')", "t: 'MATA-MATA'"]]);
+  await en.addInitScript(() => { localStorage.setItem('awpbr_nick', 'RUBAO'); localStorage.setItem('cs_lang', 'en'); });
+  await en.goto(`${BASE}/?secao=jogar&partida=singleplayer`, { waitUntil: 'domcontentloaded' });
+  await en.waitForSelector('#splash-enter:not(.hidden)', { timeout: 180000 });
+  await en.keyboard.press('Space');
+  await en.waitForSelector('#hub-ui:not([hidden])', { timeout: 120000 });
+  await en.waitForTimeout(800);
+  const rotEn = await en.evaluate(() => [...document.querySelectorAll('#hub-sels > .hub-sel small')].map((x) => x.textContent));
+  await en.click('#hub-sel-modo .hub-sel-btn'); await en.waitForTimeout(200);
+  const modosEn = await en.evaluate(() => [...document.querySelectorAll('#hub-sel-modo-lista .hub-sel-opt')].map((x) => x.textContent));
+  cobra(JSON.stringify(rotEn) === JSON.stringify(ROTULOS_EN) && JSON.stringify(modosEn) === '["DEATHMATCH","CAPTURE"]',
+    `HS5 em inglês: rótulos ${JSON.stringify(rotEn)}, modos ${JSON.stringify(modosEn)}`);
+  await en.close();
 } finally {
   await browser.close();
 }

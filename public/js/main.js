@@ -2740,9 +2740,9 @@ function montarHubSels() {
     const box = document.createElement('div'); box.className = 'hub-sel'; box.id = `hub-sel-${id}`;
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'hub-sel-btn';
     btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false');
-    btn.innerHTML = `<small>${rotulo}</small><strong></strong>`;
+    btn.innerHTML = `<small>${tr(rotulo)}</small><strong></strong>`;
     const lista = document.createElement('div'); lista.className = 'hub-sel-list'; lista.hidden = true; lista.id = `hub-sel-${id}-lista`; btn.setAttribute('aria-controls', lista.id);
-    lista.setAttribute('role', 'listbox'); lista.setAttribute('aria-label', rotulo);
+    lista.setAttribute('role', 'listbox'); lista.setAttribute('aria-label', tr(rotulo));
     box.append(btn, lista); host.appendChild(box);
     const sel = {
       sync() {
@@ -2785,7 +2785,7 @@ function montarHubSels() {
   const faixa = (de, ate, rot) => Array.from({ length: ate - de + 1 }, (_, k) => ({ v: String(de + k), t: rot(de + k) }));
   montar('mapa', 'MAPA', () => MAPAS_MENU.map((id) => ({ v: id, t: MAPS[id].name, img: mapPreviewPoster(id, VERSION) })),
     () => currentMap, (v) => { ui.click(); gotoMap(MAPAS_MENU.indexOf(v)); });
-  montar('modo', 'MODO', () => [{ v: 'rounds', t: 'MATA-MATA' }, { v: 'ctf', t: 'CAPTURA' }],
+  montar('modo', 'MODO', () => [{ v: 'rounds', t: tr('MATA-MATA') }, { v: 'ctf', t: tr('CAPTURA') }],
     () => matchMode, (v) => $(v === 'ctf' ? 'hub-mode-ctf' : 'hub-mode-rounds').click());
   montar('armas', 'ARMAS', () => WPN_MODES.map((m) => ({ v: m.id, t: tr(m.label) })),
     () => settings.wpnMode || 'all', (v) => { msWpnMode.value = v; msWpnMode.onchange(); });
