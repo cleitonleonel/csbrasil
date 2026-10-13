@@ -28,7 +28,9 @@ jobs:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
-          if git diff --name-only "$BASE...$HEAD" | grep -qE '^(public/|src/|astro\.config\.mjs$|package(-lock)?\.json$|tools/ui-regression/)'; then
+          set -o pipefail
+          arquivos=$(git diff --name-only "$BASE...$HEAD") || { echo "::error::git diff falhou — não dá para decidir o pulo"; exit 1; }
+          if printf '%s\n' "$arquivos" | grep -qE '^(public/|src/|scripts/|astro\.config\.mjs$|tsconfig\.json$|package(-lock)?\.json$|tools/ui-regression/|\.github/workflows/ui-regression\.yml$)'; then
             echo "ui=1" >> "$GITHUB_OUTPUT"
           else
             echo "::notice::nenhum arquivo de tela no diff — ui-regression pulado"
