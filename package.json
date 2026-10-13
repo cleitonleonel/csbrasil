@@ -510,7 +510,7 @@
   "bugs": {
     "url": "https://github.com/corosolto/client/issues"
   },
-  "homepage": "https://www.csbrasil.online",
+  "homepage": "https://www.corosolto.com.br",
   "dependencies": {
     "@astrojs/vercel": "^11.0.6",
     "@resvg/resvg-js": "^2.6.2",
