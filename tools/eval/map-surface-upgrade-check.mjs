@@ -18,45 +18,45 @@ const BASELINES = {
   },
   "atacadao_treta": {
     "contract": "13a4772ebc99eb056748119bdc11a1cb11f083ccf97361db22e3b5f19e60cf61",
-    "geometry": "b740e82d8ac670f37cd6868f7dcbe3d80264057f21a6154e044568a93498ec19",
-    "randomCalls": 8556,
+    "geometry": "a06b1b5be896934e1894e45e1bc294530497cff9e72235c94012ce5eed71fceb",
+    "randomCalls": 8620,
     "meshCount": 1021
   },
   "campomorro": {
     "contract": "d9444d10273595463c5fb7ae47b803e126d0ebe63448c776dec66d88cb0a3eed",
-    "geometry": "524c7e5a9ab7cde8b3ef1949ab5aa902625f7db53bd098b700dec3897ea0c3ff",
-    "randomCalls": 5248,
+    "geometry": "2eb7538b40e03c178bd447a343fa95e491f3200bfdab6a207f8eeb3ffe2227ea",
+    "randomCalls": 5240,
     "meshCount": 568
   },
   "corrego": {
     "contract": "8e332c653ad795f9203f49b5e019d78556cdeb88cda57c2d8608228fbf018c92",
-    "geometry": "886d89e3896d7d990abc7eb47947427fc93707a6009b04f3e60d09aae68452b1",
-    "randomCalls": 13432,
-    "meshCount": 655
+    "geometry": "fdee09ef349604ef84ecbeec73285f5d6546d9e272b1b59e77b909bcbe46046d",
+    "randomCalls": 13528,
+    "meshCount": 656
   },
   "escadao": {
     "contract": "fa88560e2845456feb591fc7e1c233df81790b9ff12a63c94d0c3c5a157ac463",
-    "geometry": "2cd9441c95a1a035289ae6789c637427b87e7fbaafb57ca79736056cff64d032",
-    "randomCalls": 12756,
-    "meshCount": 1138
+    "geometry": "9f9fa0e327cb44fb80d2159776f80e270c83054eebdafce84df41e6c08f0939c",
+    "randomCalls": 12976,
+    "meshCount": 1141
   },
   "ferro_velho": {
     "contract": "6bb1fa05ef69ca19739cb64ebfd10dfbd8a12b3de4f586138497c98d46bab12e",
-    "geometry": "9e4450a689901723bda2bb8be7ee301153d5324c6a06d6cc645a4232f242291e",
-    "randomCalls": 11840,
-    "meshCount": 757
+    "geometry": "382bdfab1848d222dce811de9191a4fad58962a38574f416346e574ec31f19e2",
+    "randomCalls": 12088,
+    "meshCount": 759
   },
   "lajes": {
     "contract": "c179e5527cf74f1e3a800591738c2f0ba841e5e390294b076788f8bd81c531c3",
-    "geometry": "ddc0be0660341312f77a4622f46a60512f1cff7ee59371843831ca256295f9f9",
-    "randomCalls": 153032,
+    "geometry": "e47c68444d4dee6e45a38b34423264f133f462ceb46773d0e7ba92df33c5e1a5",
+    "randomCalls": 153128,
     "meshCount": 809
   },
   "loja_h": {
     "contract": "a6fb4f5f9f343913e87a9d778aca92ec07709da71380558eb6acb04785d25e13",
-    "geometry": "e5d2aca00dfc3a22330d48dcf7388a703754047bd40e3bab7ac37bdaf5d864ff",
-    "randomCalls": 11976,
-    "meshCount": 315
+    "geometry": "04bf12a6448d6dff05bdfbceea4c12f37296609371b5db5e6260ddffae4c172b",
+    "randomCalls": 12024,
+    "meshCount": 317
   },
   "mansao": {
     "contract": "2bab712cfd9bb628ed7d03a67fb96fa04215695b0f0237c4e0bfdfe974c5f425",
@@ -66,8 +66,8 @@ const BASELINES = {
   },
   "obras_prefeitura": {
     "contract": "5bf2b0f5837d572140c314e4098ad2f82f69de3b0f891f0fb46a7c8f5a4ac42e",
-    "geometry": "317d73cc9823aa0230d0acdebe9367744bdc6eeee6f78fe53dbfd17675d803bb",
-    "randomCalls": 9512,
+    "geometry": "1188cd6a7c5d3824adacc904752cea1f46c32df02f37b7acf206ff4173f1c6de",
+    "randomCalls": 9516,
     "meshCount": 765
   },
   "parque_treta": {
@@ -84,15 +84,15 @@ const BASELINES = {
   },
   "piscina_treta": {
     "contract": "e6b0cdbf91e8698c99d1762d10afbf578e1341c69af94ca1f8d4049a35af1cf8",
-    "geometry": "10af51aff36aad151d83d05e55c0cf88a5eeaf89ede03007b8da9a59a77beb6a",
-    "randomCalls": 9448,
-    "meshCount": 323
+    "geometry": "938f739a3024aef96b6fb5be1c6f8c4c9e8e7f8285ac8ceb41f6665dc773ce66",
+    "randomCalls": 9524,
+    "meshCount": 322
   },
   "posto_treta": {
-    "contract": "8175294e4e074ee36a48efdda1f35bc95432ad636459be1693f4912ceec16a9f",
-    "geometry": "319f2f5e5dad75bdfdc32ca6363e2a292f1311d07916ddae5b6ba8eb7142c914",
-    "randomCalls": 19020,
-    "meshCount": 1275
+    "contract": "65de86dc59452fde64bd2992d99101a53070e555729dbe58fe5ef5dc1ecb90e9",
+    "geometry": "60b687eddb0ebe1f9e8f738afe2e23901fd96e65cb101fc77422bbd948b596e7",
+    "randomCalls": 19032,
+    "meshCount": 1276
   },
   "praca_poderes": {
     "contract": "bbbbcbd622cb28e4e2216206d6b57902411b9dc6ec5951f95fb4db1cb289f5f5",
@@ -102,13 +102,13 @@ const BASELINES = {
   },
   "quebrada": {
     "contract": "3924a6d4e5624221e9740e1bfef932f555d1b987f85eca846b9f787a5ec3479d",
-    "geometry": "9a8ccbd3275b5761d95a65fca4f8136e1ab5f6dfee9d9d7c785f1ddf060f7344",
-    "randomCalls": 15636,
-    "meshCount": 1548
+    "geometry": "29a892afbdedeca15fa56f01f0321b8fc711f33509aadfa7ee8fc10ab14ea8f8",
+    "randomCalls": 17036,
+    "meshCount": 1563
   },
   "upa_24h": {
     "contract": "c2d56a7dee2ffc40c15ed4a9fc72d93f176674bba6a0bc715e9acee82020e262",
-    "geometry": "0d465573c8a10a54df818f548444af520edf39f1930c89d68b93413e45c248c2",
+    "geometry": "547baca232074d43d8c42df17fc6b47ade11006c6d5e7c168909a492cc263906",
     "randomCalls": 5860,
     "meshCount": 363
   },
