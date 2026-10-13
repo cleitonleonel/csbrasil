@@ -986,9 +986,11 @@ export function enableLightBloom(renderer, opts = {}) {
   // (nem passe, nem patch de shader) — é o A/B lado a lado.
   const charMaskOn = qp.get('charbloom') !== '1';
 
+  const liberadas = new WeakSet();
   const patched = (scene, camera) => {
     // Pós só para cena desenhada na tela: o PMREM do IBL desenha Mesh no próprio render target.
     if (!scene.isScene || renderer.getRenderTarget() !== null) return rawRender(scene, camera);
+    if (liberadas.has(scene)) return rawRender(scene, camera);
     const cp = forScene(scene, camera);
     // EffectComposer.render() chama renderer.render internamente (quads dos passes):
     // restaura o raw durante o composer p/ não recursar infinito, reinstala depois.
@@ -1112,6 +1114,15 @@ export function enableLightBloom(renderer, opts = {}) {
       if (cp._aa) cp._aa.uniforms.uTexel.value.set(1 / (innerWidth * renderer.getPixelRatio()), 1 / (innerHeight * renderer.getPixelRatio()));
     }
     return cp;
+  };
+  // O composer prende a cena e os alvos de tela cheia: quem descarta a cena chama isto.
+  renderer.liberaPosDaCena = (scene) => {
+    liberadas.add(scene);   // o REINICIAR ainda desenha a partida morta durante o preload
+    const cp = composers.get(scene);
+    if (!cp) return;
+    composers.delete(scene); _composersDebug.delete(scene);
+    for (const pass of cp.passes) pass.dispose();
+    cp.dispose();
   };
   renderer.render = patched;
   return () => { renderer.render = rawRender; renderer.__postPatched = false; composers.clear(); };   // off switch (debug)
