@@ -1,10 +1,12 @@
 // CÓRREGO (corrego) — spec em plans/13-CORREGO.md. Planta: eixo longo = z, norte = −z;
 // córrego em x ∈ [−3, 3] (água rasa), margens em ±[3, 24], pontes em z = −22, 0, 22.
 import * as THREE from 'three';
+import { directedMasonry } from './map_surface_finish.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp, hasProp, PropBatch, StaticBatch, InstBatch } from './mapprops.js';
 import { decalIds } from './map_decals.js';
-import { grafitar } from './graffiti_pass.js';
+import { grafitar, retanguloGrafiteDesenhado } from './graffiti_pass.js';
+import { criarSuporteGrafite } from './graffiti_surface.js';
 import { GRAFITE } from './graffiti_layout.js';
 import { VAO_BANDS, aoBoxGeo, aoMatFactory, ContactSkirt, BASE_FLOATING, onGround } from './vao.js';
 import { detailFor } from './textures.js';
@@ -75,6 +77,7 @@ export const CORREGO_PROPS = ['pilha_pneus', 'tires', 'dumpster', 'moto_cg', 'fu
 export const CORREGO_ARTE_SUBSTITUICOES = Object.freeze({
   'folha-person-02.png': 'or-mitico-mural.png',
   'personagens-graffiti-01.png': 'or-mitico-mural.png',
+  'poster:DOLLYNHO.png': 'poster:or-quebrada-vive.jpg',
   'poster:despisque-leao.jpg': 'poster:or-quebrada-vive.jpg',
   'poster:ashtar-meme.jpg': 'poster:or-quebrada-vive.jpg',
   'poster:ashtar.png': 'poster:or-quebrada-vive.jpg',
@@ -98,7 +101,7 @@ export function buildCorrego(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -167,9 +170,9 @@ export function buildCorrego(scene, T) {
   /* ── ALVENARIA: favela_wall.webp já era consumida por escadão/campomorro/lajes, menos
      aqui. Uma fonte só variando por tinta e repeat; cores das fotos (foto_001/005/040/012). */
   const _srcTijolo = TEX.tijolo.map;
-  const tijoloTex = (rx, ry) => {
+  const tijoloTex = (rx, ry, variant = 0, raw = false) => {
     if (!_srcTijolo) return null;
-    const t = _srcTijolo.clone(); t.needsUpdate = true;
+    const t = directedMasonry(rx, ry, variant, raw); t.needsUpdate = true;
     t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry);
     return t;
   };
@@ -178,9 +181,9 @@ export function buildCorrego(scene, T) {
      foto_040/foto_012. `0xffffff` = a textura crua, sem tinta. */
   const CORES_ALVENARIA = [0xffffff, 0xe6d4b4, 0xc9a883, 0xb9c9b4, 0xd9c78e, 0xa9c2c6, 0xd8b3a2, 0xcdc4ae];
   const MURO = CORES_ALVENARIA.map((color, i) =>
-    lam({ map: tijoloTex(1.6 + (i % 3) * 0.4, 1.6 + (i % 2) * 0.5) || T.dirt, color, roughness: 0.97 }));
+    lam({ map: tijoloTex(1.6 + (i % 3) * 0.4, 1.6 + (i % 2) * 0.5, i) || T.dirt, color, roughness: 0.97 }));
   // Pavimento de cima sem reboco nenhum: tijolo cru, mais vermelho e mais miúdo.
-  const matTijoloCru = lam({ map: tijoloTex(2.4, 2.0) || T.dirt, color: 0xc98a63, roughness: 1 });
+  const matTijoloCru = lam({ map: tijoloTex(2.4, 2.0, 0, true) || T.dirt, color: 0xc98a63, roughness: 1 });
   // Reboco liso: o embasamento de concreto que sobe da água (foto_001) e as platibandas.
   const matReboco = lam({ map: TEX.concrete.map || T.concrete, color: 0xb4ada0, roughness: 0.96 });
   const matRebocoSujo = lam({ map: TEX.concrete.map || T.concrete, color: 0x8d8579, roughness: 0.98 });
@@ -1079,11 +1082,6 @@ export function buildCorrego(scene, T) {
     propComFallback(id, x, z, h, ry, () => addBox(1.35, h, 1.35, PAREDES[(Math.abs(z) / 10 | 0) & 3], x, 0, z));
   }
 
-  /* Empenas de pixo nas paredes cegas altas voltadas aos becos — pixo de empena existe
-     onde há parede cega e alguém para olhar, não atrás da fileira C. */
-  if (TEX.pixo) for (const [x, z, ry] of [[23.72, -28, -Math.PI / 2], [-23.72, 24, Math.PI / 2], [23.72, 8, -Math.PI / 2], [-23.72, -12, Math.PI / 2]])
-    addBox(0.05, 4.6, 6.0, TEX.pixo, x, 1.4, z, { collide: false, ry, skirt: false, bala: true });
-
   /* ===================== MUROS EXTERNOS =====================
      8 m fecha o horizonte (o muro liso de 3 m era o ímã dos cartazes reprovados) e EM SEGMENTOS de 8 m — face de 80 m não fecha uma volta de UV e o vao estica a textura. */
   const SEG = 8;
@@ -1703,6 +1701,25 @@ export function buildCorrego(scene, T) {
     occluders.push(c);
   }
 
+  // A pintura é um plano sem colisão; o muro preserva a superfície física.
+  // Montagem: tools/eval/corrego-graffiti-mount-check.mjs.
+  if (TEX.pixo) {
+    const suporte = criarSuporteGrafite(root);
+    for (const [lado, z] of [[1, -28], [-1, 24], [1, 8], [-1, -12]]) {
+      // A faixa 3,4–7 m fica acima dos beirais da fileira C e dentro do muro.
+      const piece = { x: lado * (HALF_X - .25 - .012), y: 5.2, z,
+        ry: -lado * Math.PI / 2, w: 6, h: 3.6 };
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(piece.w, piece.h), TEX.pixo);
+      mesh.position.set(piece.x, piece.y, piece.z); mesh.rotation.y = piece.ry;
+      mesh.updateMatrixWorld(true);
+      const drawn = retanguloGrafiteDesenhado(mesh.geometry, mesh.matrixWorld);
+      if (!suporte(piece) || !drawn || !suporte(drawn)) { mesh.geometry.dispose(); continue; }
+      mesh.name = 'decal:corrego_streetart_pixo.webp';
+      mesh.receiveShadow = true;
+      root.add(mesh);
+    }
+  }
+
   /* ===================== GRAFFITI ===================== */
   const D_PIXO = decalIds(T, ['folha-pixaca-01.png', 'folha-pixaca-02.png', 'folha-pixaca-03.png', 'folha-pixaca-04.png', 'folha-pixaca-05.png']);
   const D_THROW = decalIds(T, ['folha-throwu-01.png', 'folha-throwu-02.png', 'folha-throwu-03.png', 'folha-throwu-04.png', 'folha-throwu-05.png']);
@@ -1727,7 +1744,7 @@ export function buildCorrego(scene, T) {
       /* chance 30 → 12: o cartaz era a banda mais frequente e a que o dono nomeou
          ("CHEIO DE POSTER") — cai para ~1 em 8 âncoras; as outras bandas ficam. */
       { y0: 0.4, y1: 2.6, larg: 1.9, alturas: [1.5, 1.15, 0.85], chance: 12, fonte: 'poster',
-        pool: ((T && T.posterFiles) || []).map((nome, i) => [nome, i]).filter(([nome]) => !['despisque-leao.jpg','ashtar-meme.jpg','ashtar.png'].includes(nome)).map(([,i]) => i) },
+        pool: ((T && T.posterFiles) || []).map((nome, i) => [nome, i]).filter(([nome]) => !['DOLLYNHO.png','despisque-leao.jpg','ashtar-meme.jpg','ashtar.png'].includes(nome)).map(([,i]) => i) },
       { y0: 0.25, y1: 2.35, larg: 3.6, alturas: [2.0, 1.5, 1.1, 0.8, 0.6], chance: 45,
         pool: D_PIXO.concat(D_THROW, D_TAG, D_CARTAZERA, D_LAMBE, D_PERSO) },
       { y0: 2.3, y1: 4.3, larg: 4.4, alturas: [1.9, 1.4, 1.0], chance: 38,
