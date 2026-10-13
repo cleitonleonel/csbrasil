@@ -112,6 +112,9 @@ jobs:
       - name: Enquadramento do viewmodel por arma (26 armas, GLB real)
         run: node tools/eval/vm-mint-audit.mjs
       - name: Invariantes (portão — falha crítica reprova o PR)
+        env:
+          # Saída de cada sub-simulação, para o passo dos bots não rodar o botsim de novo.
+          INVARIANTES_SAIDAS: ${{ runner.temp }}/invariantes
         run: |
           node --test tests/fresh-report.test.mjs
           node tools/eval/invariants.mjs
@@ -125,8 +128,17 @@ jobs:
       # catálogo privado e navegador; aqui o CI cobra o RESULTADO assado delas.
       - name: Placar das réguas de imagem do viewmodel em dia
         run: npm run eval:vm-placar
+      # As invariantes já rodaram `botsim.mjs` sem argumento, que é `60 all` (o default
+      # do script), com o mesmo ambiente deste job. Este passo publica aquela execução e
+      # reprova com o código de saída dela, em vez de gastar ~1 min rodando de novo.
+      # Arquivo ausente (invariantes não rodaram o botsim) também reprova.
       - name: Navegação dos bots (60 s × 5 mapas, sementes fixas)
-        run: node tools/eval/botsim.mjs 60 all
+        env:
+          SAIDA: ${{ runner.temp }}/invariantes/botsim.mjs
+        run: |
+          cat "$SAIDA.out"
+          cat "$SAIDA.err" >&2
+          exit "$(cat "$SAIDA.code")"
 
       - name: Astro build
         run: npm run build
