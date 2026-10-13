@@ -18,7 +18,13 @@
  *       verdade com as três mensagens que importam) e o release.yml não volta a disparar
  *       por push na main — 126 releases em 130 merges era o motor do churn de bot.
  *
- * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | trem-por-push | ignora-sem-filtro.
+ * RLS10: GERADO VELHO NÃO TRAVA O TREM (13/10/2026, c2ca685). Dois PRs testados sobre bases
+ *       diferentes mesclam limpo e deixam contagem velha na main; com o DOCS1 reprovando o push,
+ *       o embarque (que exige pr-fast verde) nunca saía, e o trem é quem regenera. No push da
+ *       main, docs:check, arch:check e a autoria só rodam no commit `chore(release):`; no PR
+ *       docs:check e arch:check continuam valendo sempre, e o release regenera os dois.
+ *
+ * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | trem-por-push | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | release-sem-arch.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -104,8 +110,22 @@ const validaTrem = () => {
 };
 let tremRelease = validaTrem();
 
+/* RLS10 — o passo de gerado roda no PR sempre e, no push, só no commit do release. */
+let workflowCi = readFileSync('.github/workflows/ci.yml', 'utf8');
+const SO_PR_OU_RELEASE = "if: github.event_name == 'pull_request' || startsWith(github.event.head_commit.message, 'chore(release):')";
+const validaGerados = () => {
+  const passo = (script) => new RegExp(`- name: [^\\n]+\\n\\s+(if: [^\\n]+)\\n\\s+run: npm run ${script}\\n`).exec(workflowCi)?.[1];
+  const autoria = /^  autoria-na-main:\n    (if: [^\n]+)$/m.exec(workflowCi)?.[1] || '';
+  return passo('docs:check') === SO_PR_OU_RELEASE
+    && passo('arch:check') === SO_PR_OU_RELEASE
+    && autoria.includes("startsWith(github.event.head_commit.message, 'chore(release):')")
+    && /node tools\/gen-docs\.mjs/.test(workflowRelease)
+    && /node tools\/gen-arch\.mjs/.test(workflowRelease);
+};
+let geradosNoTrem = validaGerados();
+
 if (mutante) {
-  const antes = JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease]);
+  const antes = JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease, geradosNoTrem]);
   if (mutante === 'nome-antigo') comandos[0].linha = comandos[0].linha.replace('"CSBR ', '"CORO SOLTO ');
   else if (mutante === 'semcreditos') comandos[0].linha = comandos[0].linha.replace(' --generate-notes', '');
   else if (mutante === 'semdco') {
@@ -137,8 +157,24 @@ if (mutante) {
     scriptIgnora = scriptIgnora.replace(/^exit 0$/m, 'exit 1');
     tremRelease = validaTrem();
   }
+  else if (mutante === 'gerado-trava-trem') {
+    workflowCi = workflowCi.replace(`${SO_PR_OU_RELEASE}\n        run: npm run docs:check`, 'run: npm run docs:check');
+    geradosNoTrem = validaGerados();
+  }
+  else if (mutante === 'gerado-fora-do-pr') {
+    workflowCi = workflowCi.replace(`${SO_PR_OU_RELEASE}\n        run: npm run arch:check`, "if: startsWith(github.event.head_commit.message, 'chore(release):')\n        run: npm run arch:check");
+    geradosNoTrem = validaGerados();
+  }
+  else if (mutante === 'autoria-trava-trem') {
+    workflowCi = workflowCi.replace(/^(  autoria-na-main:\n    if: github\.event_name == 'push').*$/m, '$1');
+    geradosNoTrem = validaGerados();
+  }
+  else if (mutante === 'release-sem-arch') {
+    workflowRelease = workflowRelease.replace(/node tools\/gen-arch\.mjs/g, 'true');
+    geradosNoTrem = validaGerados();
+  }
   else throw new Error(`mutante desconhecido: ${mutante}`);
-  if (JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease]) === antes) throw new Error(`MUTANTE NAO APLICOU: ${mutante}`);
+  if (JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease, geradosNoTrem]) === antes) throw new Error(`MUTANTE NAO APLICOU: ${mutante}`);
 }
 
 const nomes = comandos.filter(({ linha }) => /--title "CSBR \$/.test(linha)).length;
@@ -147,7 +183,7 @@ const total = comandos.length;
 const dco = commitsRelease.filter(temDco).length;
 const totalCommits = commitsRelease.length;
 const docsOk = docsRelease.filter(Boolean).length;
-const ok = total > 0 && nomes === total && creditos === total && totalCommits > 0 && dco === totalCommits && docsOk === docsRelease.length && rollbackRelease && caminhoProdUnico && animacoesNoDeploy && concorrenciaRelease && tremRelease;
+const ok = total > 0 && nomes === total && creditos === total && totalCommits > 0 && dco === totalCommits && docsOk === docsRelease.length && rollbackRelease && caminhoProdUnico && animacoesNoDeploy && concorrenciaRelease && tremRelease && geradosNoTrem;
 
 console.log(`${nomes === total && total ? '✓' : '✗'} RLS1 título CSBR: ${nomes}/${total} caminhos`);
 console.log(`${creditos === total && total ? '✓' : '✗'} RLS2 notas com contribuidores: ${creditos}/${total} caminhos`);
@@ -158,6 +194,7 @@ console.log(`${caminhoProdUnico ? '✓' : '✗'} RLS6 produção tem um caminho 
 console.log(`${animacoesNoDeploy ? '✓' : '✗'} RLS7 deploy valida manifesto e GLBs mesclados de animação`);
 console.log(`${concorrenciaRelease ? '✓' : '✗'} RLS8 push do bot não cancela publicação e dispatch`);
 console.log(`${tremRelease ? '✓' : '✗'} RLS9 produção só sai no trem de release, e o trem só sai com a main verde`);
+console.log(`${geradosNoTrem ? '✓' : '✗'} RLS10 bloco gerado velho na main não trava o trem; o PR e o commit do release conferem`);
 if (!ok) {
   console.error('Release inválido: preserve créditos, DCO, docs, concorrência segura e um único caminho automático de produção.');
   process.exit(1);
