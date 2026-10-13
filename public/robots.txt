@@ -65,3 +65,4 @@ Disallow: /mounttest.html
 
 Sitemap: https://www.corosolto.com.br/sitemap.xml
 Sitemap: https://www.corosolto.com.br/docs/sitemap.xml
+Sitemap: https://www.corosolto.com.br/docs/en/sitemap.xml
