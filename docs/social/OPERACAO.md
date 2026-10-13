@@ -11,6 +11,7 @@ Entrega na branch `feat/social-community`, com client e backend em repositórios
 | API | `SOCIAL_SITE_URL` | Origem canônica `https://www.corosolto.com.br`, sem path |
 | API | `SOCIAL_ALLOWED_ORIGINS` | Origens adicionais exatas, separadas por vírgula, apenas se realmente utilizadas; sem wildcard |
 | API | `SOCIAL_MESSAGES` | `true` habilita mensagens somente após migration052 e validação no alvo; padrão desligado |
+| API/banco | migration053 | Calcula selo por Auth confirmado + identidade OAuth vinculada; sem migrar ranking ou guardar flag editável no perfil |
 | API produção | `SOCIAL_EMAIL_LOGIN` | `true` somente após configurar e testar SMTP próprio no Supabase; padrão de produção é desligado |
 | API e nó | `MP_TICKET_SECRET` | Segredo existente compartilhado; tickets assinados pelo servidor vinculado à conta |
 | API e nó | `MP_METRICS_TOKEN` | Segredo existente para rounds e presença vindos do nó |
@@ -115,3 +116,35 @@ Ensaios: tools/eval/community-inbox-check.mjs e backend
 test/social-messages-integration.mjs no ambiente isolado. Logs e crítica estão
 no artifactroot do CONTINUATION.md. Rollback operacional: flagOFF e retorno ao
 client anterior, preservando tabela/histórico; não usar DROP destrutivo.
+
+
+## Selo de conta verificada
+
+Aplicar053 junto da API que projeta `account_verified`, antes do client novo.
+O banco calcula a cada consulta: jogador visível ligado a Auth, e-mail não vazio
+e confirmado, usuário não anônimo/deletado e pelo menos uma identidade OAuth
+da mesma conta. Links na bio, dados enviados pelo navegador e metadados não
+concedem selo. Remover o último vínculo ou a confirmação retira o selo na
+próxima consulta; não existe coluna de selo editável nem prêmio de TRETa$.
+
+Perfil, conta e ranking expõem só booleano; o e-mail e o provedor continuam
+privados. RPCs individuais e em lotes de até100 IDs são exclusivas de service_role.
+Falha da RPC fecha a leitura com503; ausência de booleano verdadeiro não exibe
+selo. Conta recém-criada recebe a mesma projeção imediatamente após onboarding.
+
+Antes da liberação, manter Confirm Email ligado no Supabase e validar SMTP
+próprio/entrega/confirmação real: com essa opção desligada, Supabase considera
+e-mails implicitamente confirmados. Referências oficiais:
+https://supabase.com/docs/guides/auth/general-configuration e
+https://supabase.com/docs/guides/auth/auth-identity-linking .
+O selo indica essas verificações de acesso, não identidade civil, apoio oficial
+ou integridade das partidas. Consentimentos opcionais não são requisito.
+
+053 não troca views nem regras do ranking e não depende do cutover049.
+No banco local,049 continua ausente e seu preflight recusou a tentativa, com
+rollback: fonte atual autoritativa040/048, incompatível com legado037 requerido.
+Não falsificar provenance nem desligar a guarda. Resolver o cutover existente
+antes de liberar o ranking da comunidade (contrato de8 argumentos hoje503).
+Ensaio: `node tools/eval/account-verified-check.mjs` no client e
+`node --env-file=.env.social-local test/social-verified-integration.mjs` no backend
+isolado. 053 aplicada apenas localmente; remoto permanece pendente.

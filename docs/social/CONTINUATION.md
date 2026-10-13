@@ -286,3 +286,54 @@ alvo antes de flagON. Ranking geral+semanal Brasília/segunda00, preservar hist�
 remover fraude comprovada somente, MP2× humano confirmado continuam requisitos.
 Campanha, shop/TRETa$/Pix/Portugal, mapas/chat e automação de distribuição permanecem
 no roadmap integral; configuração verde não encerra a liberação da campanha.
+
+
+### Marco 13/10 — Selo de conta verificada (somente local)
+
+Objetivo aceito: selo quando e-mail confirmado + pelo menos uma identidade
+OAuth da mesma conta. Banco Auth calcula em cada consulta, sem flag editável,
+sem confiar em links/bio/browser/metadados. Público recebe só booleano; perfil,
+ranking/home e conta usam a mesma projeção. Remoção/retirada de confirmação
+retira selo na próxima consulta. Conta nova já recebe o selo no onboarding.
+Consentimentos opcionais não são requisito e não há recompensa TRETa$.
+
+053 cria helper+RPC em lotes100, somente service_role, sem alterar SQL/pontos
+do ranking. Aplicada somente ao Docker isolado; nenhuma migração remota.
+Descoberta:049 NÃO estava persistida no local. Fonte de player_points é
+autoritativa040/048; tentativa de049 foi recusada pela guarda de congelamento/
+provenance e fez ROLLBACK. Não falsificar legacy037 nem desativar guarda.
+O contrato atual de8 argumentos da comunidade continua503 por essa pendência;
+não chamar o runtime inteiro verde. Projeção do ranking SQL de7 argumentos
+atual + decorador novo e homeleaderboard reais passaram sem mudar métricas.
+
+Régua independente: client baseline6PASS/3RED; final10/10 e3 mutantes RED.
+SQL27 casos + lotes/ACL PASS;4 mutantes SQL clonados pg_temp RED/rollback.
+Auth/API/DB final10PASS/1RED (somente ranking8arg herdado); email-only, conta
+diferente, revogação e conta escondida PASS. Primeiro onboarding PASS.
+Regressões: inbox23/23; entrada25PASS/0RED/1UNKNOWN login externo.
+Crítica clean-context fechou P2 do selo ausente após onboarding; probePASS e
+mutanteRED. Build final, módulos/imports e test:api PASS. Docs/ARCH atualizados.
+
+Artefatos privados em csbrasil/private-assets/growth-readiness/ranking-20261012:
+account-verified-{client,backend}-final-20261013.log, SQL/mutantes e
+account-verified-independent-review-20261013.md. Capturas reais examinadas:
+account-verified-profile-desktop-20261013.png (selo azul junto ao nick) e
+account-verified-revoked-desktop-20261013.png (mesmo perfil sem último vínculo,
+selo ausente). Fixture isolada ContaSeloTest removida com IDs exatos após prova;
+fixtures existentes preservadas. Isso não prova OAuth externo ou mobile.
+
+Bases deste marco: client9f9628220/backendc79aa53/progressaa13005 nas mesmas
+lanes codex/ranking-launch-20261012 e codex/growth-readiness-20261012. Primary e
+outras lanes preservadas. Sem push, merge, deploy, post/newsletter/pagamento.
+
+Próximo: resolver cutover049 respeitando fonte autoritativa atual; manter
+Confirm Email ligado e validar SMTP/entrega/confirmar/remover com usuário real.
+Validar OAuth/vínculo externo (inclusive identidade de outra conta), mobile/
+teclado e reconciliar migrations alvo antes de publicar API/client/053.
+Central/DM requer052, flagOFF até rollout e operador/retenção definidos.
+Objetivo completo permanece ranking geral/semanal Brasília, histórico preservado/
+só fraude comprovada removida, MP2× humanos distintos confirmados, cinco logins
+escolhidos e newsletter pronta antes da campanha. Loja/skins/TRETa$/Pix com
+atividade Portugal, futuro Brasil2027, mapas/chat e divulgação/automação seguem
+no roadmap integral. Selo verifica acesso à conta, não identidade civil, apoio
+oficial nem integridade das partidas.

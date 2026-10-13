@@ -81,6 +81,7 @@ class Element {
   addEventListener(){}
   showModal(){this.open=true;}
   close(){this.open=false;}
+  querySelector(selector){return all(this).find(node=>node.tagName.toLowerCase()===selector.toLowerCase())||null;}
   get childElementCount(){return this.children.filter(c=>typeof c==='object').length;}
 }
 const all=n=>[n,...n.children.filter(c=>typeof c==='object').flatMap(all)];
@@ -106,13 +107,15 @@ async function ui(authenticated=false,{nick='Guest',bootSplash=false,runCommunit
   const context=vm.createContext({document:{body:new Element('body'),getElementById:id=>ids[id] || null,createElement:tag=>new Element(tag),createTextNode:text=>text,querySelectorAll:()=>[],addEventListener:()=>{},dispatchEvent:()=>{},hidden:false,activeElement:null},CustomEvent:class {constructor(type,{detail}){this.type=type;this.detail=detail}},MutationObserver:class {constructor(fn){observers.push(fn)}observe(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},location:{origin:'http://localhost:4323',search:'',assign:p=>navigation.push(p)},navigator:{clipboard:{writeText:async text=>copied.push(text)}},URL,URLSearchParams,fetch,AbortSignal,setInterval:()=>1,setTimeout,clearTimeout,console});
   let entry=null;
   context.window=context;context.dispatchEvent=()=>{};context.addEventListener=()=>{};context.sessionStorage={removeItem:()=>{}};
+  vm.runInContext(read(path.join(root,'public/js/community-inbox.js')).replace(/export\s+/g,''),context,{timeout:vmTimeout});
+  vm.runInContext(read(path.join(root,'public/js/account-verified.js')).replace(/export\s+/g,''),context,{timeout:vmTimeout});
   vm.runInContext(read(path.join(root,'public/js/privacy-runtime.js')),context,{timeout:vmTimeout});
   const privacySource=read(path.join(root,'public/js/privacy-preferences.js')).replace(/^import .*;\n/gm,'').replace(/export\s+/g,'');
   vm.runInContext(privacySource,context,{timeout:vmTimeout});
   if(entrySource){const names=[...entrySource.matchAll(/export\s+(?:async\s+)?(?:function|const)\s+(\w+)/g)].map(m=>m[1]);entry=vm.runInContext('(function(){'+entrySource.replace(/^import .*;\n/gm,'').replace(/export\s+/g,'')+`;return {${names.join(',')}}})()`,context,{timeout:vmTimeout});context.__entry=entry;}
-  const rankingSource=read(path.join(root,'public/js/ranking-player.js')).replace(/export\s+/g,'');
+  const rankingSource=read(path.join(root,'public/js/ranking-player.js')).replace(/^import .*;\n/gm,'').replace(/export\s+/g,'');
   context.__ranking=vm.runInContext('(function(){'+rankingSource+';return {rankingTable};})()',context,{timeout:vmTimeout});
-  if(runCommunity)vm.runInContext(community.replace(/import\s+\{rankingTable\}\s+from\s+['"]\.\/ranking-player\.js['"];?/g,'const {rankingTable}=__ranking;').replace(/import\s+\{([^}]+)\}\s+from\s+['"]\.\/account-entry\.js['"];?/g,'const {$1}=__entry;'),context,{timeout:vmTimeout});
+  if(runCommunity)vm.runInContext(community.replace(/^import .*(?:account-verified|community-inbox)\.js.*\n/gm,'').replace(/import\s+\{rankingTable\}\s+from\s+['"]\.\/ranking-player\.js['"];?/g,'const {rankingTable}=__ranking;').replace(/import\s+\{([^}]+)\}\s+from\s+['"]\.\/account-entry\.js['"];?/g,'const {$1}=__entry;'),context,{timeout:vmTimeout});
   for(let n=0;n<8;n++)await new Promise(resolve=>setImmediate(resolve));
   return {ids,storage,before,navigation,calls,copied,profile,entry,observers};
 }

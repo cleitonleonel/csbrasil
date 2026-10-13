@@ -1,6 +1,7 @@
 import {mountAccountEntry,mountProfilePreferences,mountAccountIntegrations,loadAccount,loadAuthOptions,acceptAccount,logoutAccount} from './account-entry.js';
 import {rankingTable} from './ranking-player.js';
 import {questList} from './community-inbox.js';
+import {accountVerifiedBadge} from './account-verified.js';
 const root=document.getElementById('community');
 if(root) {
   const status=document.getElementById('social-status'),account=document.getElementById('social-account'),content=document.getElementById('social-content');
@@ -59,6 +60,7 @@ if(root) {
     const {profile:p}=await api('/api/social?action=profile'+(id?`&id=${encodeURIComponent(id)}`:''));
     if(version!==loadVersion)return;
     const c=card(p.nick),identity=el('div','','social-identity');
+    const badge=accountVerifiedBadge(p.account_verified);if(badge)c.querySelector('h2').append(badge);
     if(p.avatar_url){const image=el('img','','social-avatar');image.src=p.avatar_url;image.alt=`Avatar de ${p.nick}`;image.width=76;image.height=76;image.referrerPolicy='no-referrer';identity.append(image);}
     const bio=el('div');bio.append(el('p',p.bio || 'A bio ainda está no aquecimento.'),empty(`Nível ${p.level} · faltam ${p.next_level_points} pontos para o próximo.`));identity.append(bio);c.append(identity);if(p.handle)c.append(empty('@'+p.handle));
     const stats=el('div','','social-stats');

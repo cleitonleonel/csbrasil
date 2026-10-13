@@ -1,4 +1,5 @@
 import {analyticsAllowed,mountPrivacyChoice,setPrivacyChoice} from './privacy-preferences.js';
+import {accountVerifiedBadge} from './account-verified.js';
 const REQUIRED_PROVIDERS=['google','discord','x','linkedin_oidc'];
 const providerChoices=config=>[...new Set([...REQUIRED_PROVIDERS.map(p=>p==='x' && config.providers?.includes('twitter') && !config.providers?.includes('x')?'twitter':p),...(config.providers || [])])];
 const PROVIDER_NAMES={google:'Google',twitter:'X / Twitter',x:'X / Twitter',facebook:'Facebook',linkedin_oidc:'LinkedIn',discord:'Discord',github:'GitHub'};
@@ -56,7 +57,7 @@ export function mountAccountEntry(container,{auth=null,config={providers:[]},ret
   if(auth?.authenticated) {
     if(auth.profile){container.append(node('p',`Salve, ${auth.profile.nick}. Sua conta está salva.`),button('VER MEU PERFIL',()=>{document.querySelector('[data-hub-tab=comunidade]')?.click();document.dispatchEvent(new CustomEvent('cs-community-open',{detail:{tab:'profile'}}));onGuest();}),button('SAIR DA CONTA',async()=>{await logoutAccount(auth);await onAuthenticated({authenticated:false});}));mountAccountIntegrations(container,auth,config,say);void mountProfilePreferences(container,{auth,message:say});container.append(status);return;}
     const form=node('form'),label=node('label','Como a turma vai te chamar?','social-field'),nick=node('input');nick.required=true;nick.maxLength=14;nick.pattern='[A-Za-z0-9_.\\-]{2,14}';nick.autocomplete='nickname';label.append(nick);
-    const submit=button('VESTIR A CAMISA ▸',async()=>{if(!form.reportValidity())return;const out=await socialApi('/api/social-auth',{action:'onboard',nick:nick.value,...(guestProof()?{guest:guestProof()}:{})});auth.profile=out.profile;acceptAccount(auth);await onAuthenticated(auth);});
+    const submit=button('VESTIR A CAMISA ▸',async()=>{if(!form.reportValidity())return;const out=await socialApi('/api/social-auth',{action:'onboard',nick:nick.value,...(guestProof()?{guest:guestProof()}:{})});auth.profile=out.profile;auth.account_verified=out.account_verified===true;acceptAccount(auth);await onAuthenticated(auth);});
     form.append(label,node('p','2 a 14 letras, números, ponto, hífen ou _.','social-muted'),submit);form.onsubmit=e=>{e.preventDefault();submit.click();};container.append(form);void mountProfilePreferences(container,{auth,message:say});container.append(status);return;
   }
   container.append(node('p','Guarde suas conquistas, encontre a turma e volte pra próxima treta.','social-muted'));
@@ -101,7 +102,11 @@ export function mountAccountIntegrations(container,auth,config,message=()=>{}) {
     const linked=identities.has(provider),enabled=(config.providers || []).includes(provider),b=node('button',`${linked?'✓ '+PROVIDER_NAMES[provider]+' VINCULADO':'VINCULAR '+PROVIDER_NAMES[provider]}`,'account-button');b.type='button';b.disabled=linked || !enabled || !config.linking;
     b.onclick=async()=>{b.disabled=true;try{const out=await socialApi('/api/social-auth',{action:'link',provider});location.assign(out.url);}catch(e){message(e.message==='linking_unavailable'?'Vinculação em configuração. Tente novamente mais tarde.':e.message==='identity_already_linked'?'Esta rede já está vinculada. Atualize a página.':e.message==='identity_link_failed'?'Não foi possível vincular. Esta rede pode pertencer a outra conta.':accountError(e));b.disabled=false;}};list.append(b);
   }
-  section.append(list);if(auth.emailVerified)section.append(node('p','✓ E-mail confirmado','social-muted'));if(!list.childElementCount)section.append(node('p','Os logins sociais ainda não estão habilitados neste ambiente.','social-muted'));if(!config.linking)section.append(node('p','A vinculação de novas redes aguarda habilitação neste ambiente.','social-muted'));container.append(section);
+  section.append(list);if(auth.emailVerified)section.append(node('p','✓ E-mail confirmado','social-muted'));
+  const badge=accountVerifiedBadge(auth.account_verified);section.append(node('h3','Selo da conta'));
+  if(badge)section.append(badge,node('p','Seu e-mail está confirmado e uma rede social está vinculada. O selo indica essas verificações da conta.','social-muted'));
+  else section.append(node('p','Para receber o selo de verificado, confirme seu e-mail e vincule pelo menos uma rede social.','social-muted'));
+  if(!list.childElementCount)section.append(node('p','Os logins sociais ainda não estão habilitados neste ambiente.','social-muted'));if(!config.linking)section.append(node('p','A vinculação de novas redes aguarda habilitação neste ambiente.','social-muted'));container.append(section);
 }
 const preferenceMounts=new WeakMap();
 export async function mountProfilePreferences(container,{auth=null,message=()=>{}}={}) {

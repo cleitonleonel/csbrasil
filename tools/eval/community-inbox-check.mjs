@@ -139,6 +139,7 @@ class Element {
   async click(){if(!this.disabled)await this.onclick?.();}
   reportValidity(){return true;}
   closest(){return null;}
+  querySelector(selector){return tree(this).find(node=>node.tagName.toLowerCase()===selector.toLowerCase())||null;}
   get childElementCount(){return this.children.length;}
 }
 const tree=node=>[node,...(node.children||[]).flatMap(tree)];
@@ -167,6 +168,7 @@ async function runtime({auth=account,state=stateBase,tab='notifications',peer=nu
     }
     return {ok:true,json:async()=>copy(data)};
   },mountAccountEntry:container=>container.append(Object.assign(new Element('p'),{textContent:'ENTRAR NA CONTA'})),mountAccountIntegrations:container=>container.append(Object.assign(new Element('p'),{textContent:'LOGINS VINCULADOS'})),mountProfilePreferences:async()=>{},loadAccount:async()=>copy(auth),loadAuthOptions:async()=>({providers:supported,linking:true}),acceptAccount(){},logoutAccount:async()=>{},rankingTable:()=>new Element('table')});
+  vm.runInContext(read('public/js/account-verified.js').replace(/export\s+/g,''),ctx,{timeout:1000});
   let source=communitySource.replace(/^import[^\n]*\n/gm,'');
   source=mutation(source,'  void boot();',`  globalThis.__inboxTest={boot,render,setFixture(a,s,t){auth=a;state=s;tab=t;},getTab(){return tab;}};`);
   vm.runInContext(source,ctx,{timeout:1000});
