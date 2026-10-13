@@ -100,21 +100,26 @@ export const GET: APIRoute = async () => {
 /** Uma fatia dos perfis, já como entradas de sitemap. Usada pelas duas rotas. */
 export async function perfis(offset: number, limite: number, today: string): Promise<Entrada[]> {
   if (!RANKING_ON || !supabaseAdmin || limite <= 0) return [];
-  const { data } = await supabaseAdmin
-    .from('player_points')
-    .select('id,nick')
-    .order('id', { ascending: true })
-    .range(offset, offset + limite - 1);
   const out: Entrada[] = [];
-  for (const row of (data ?? []) as any[]) {
-    const p = row;
-    if (!p?.id || !p?.nick) continue;
-    out.push({
-      loc: `${SITE}/u/${p.id}/${encodeURIComponent(p.nick)}`,
-      lastmod: today,
-      changefreq: 'weekly',
-      priority: '0.6',
-    });
+  // O PostgREST do Supabase corta cada resposta em max-rows (1.000) sem erro.
+  for (let de = offset, fim = offset + limite; de < fim;) {
+    const { data } = await supabaseAdmin
+      .from('player_points')
+      .select('id,nick')
+      .order('id', { ascending: true })
+      .range(de, fim - 1);
+    const linhas = (data ?? []) as any[];
+    if (!linhas.length) break;
+    de += linhas.length;
+    for (const p of linhas) {
+      if (!p?.id || !p?.nick) continue;
+      out.push({
+        loc: `${SITE}/u/${p.id}/${encodeURIComponent(p.nick)}`,
+        lastmod: today,
+        changefreq: 'weekly',
+        priority: '0.6',
+      });
+    }
   }
   return out;
 }
