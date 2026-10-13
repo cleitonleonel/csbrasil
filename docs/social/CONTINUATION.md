@@ -506,3 +506,7 @@ branches e lanes. Próximo: concluir escolha do remetente, enviar quatro testes
 com idempotência e conferir status real; depois instalar transporte/templates
 no rollout autorizado. Revisão de PRs continua no ledger privado de progress.
 Objetivo integral e gates049/semanal/OAuth/news/chat/loja/campanha preservados.
+
+## Estado do ranking13/10
+
+Root corrigiu a copy SSR contraditória em index/main; API real é a fonte do estado. Crítico independente:38/38 sem controle e oito mutantes RED; fotos, perfis e semanal preservados. Check:fast desta lane169/188, com19 falhas preservadas em cutover-closure-20261013/client-check-fast.log; não é liberação geral. Backend pareado82d0c3d capture/fence31/31,7mutantes,history13/13, corte local048 aplicado com72 placares/counters idênticos e423 watermarks. SMTP preparado no Supabase com único remetente fale@corosolto.com.br; titular ainda precisa inserir e salvar credencial. Sem merge/push/deploy público neste marco; sequência autorizada continua após fechamento de gates, loja personagensporúltimo/itensOFF.

@@ -3148,7 +3148,7 @@ async function renderGlobal(nick) {
       '<div class="rg-links"><a href="/mapa" target="_blank" style="color:var(--cs)">MAPA AO VIVO ↗</a></div>';
     return;
   }
-  if (!data || !data.players) {
+  if (!Array.isArray(data?.players)) {
     box.innerHTML = '<h3>RANKING GLOBAL</h3><div class="rg-off">indisponível no momento</div>';
     return;
   }
