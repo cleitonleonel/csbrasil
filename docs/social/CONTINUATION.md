@@ -420,3 +420,56 @@ Objetivo integral preservado: ranking geral/semanal Brasília/segunda00, histór
 mantido e só fraude comprovada removida, MP2× com humanos distintos confirmados;
 Email/Google/Discord/X/LinkedIn, newsletter, social persistente, chat, loja/
 TRETa$/Pix/Portugal→Brasil2027, mapas e campanha/automação de redes.
+
+
+### Marco 13/10 — patentes de carreira e arte dos e-mails
+
+Pedido aceito: distintivos Soldado→General e logo oficial + personagens gerados
+com GPT nos templates. Patentes derivam de pontos acumulados, independentes da
+posição e do filtro semanal: Soldado0/Cabo100/Sargento200/Tenente400/Capitão700/
+Major1100/Tenente-coronel1700/Coronel2400/General3900; correspondem aos níveis
+existentes (1+floor(pontos/100)), sem alterar pontuação nem conceder moedas.
+Ranking filtrado recebe career_points server-side da fonte compatível com o
+contrato ativo. Só IDs já autorizados, lotes100; falha/ausência fica null, sem
+usar pontos da semana nem inventar Soldado. Public/private/friends preservados.
+No perfil: badge e pontos até próxima patente; Verificado continua separado.
+
+Arte: Canarinho + Esquerdomacho por Codex image_gen/GPT com retratos existentes
+como referência. Logo oficial preservado. Assets em client public/img/email/
+(coro-logo-v1.png 29KB, coro-personagens-v1.jpg 87KB, FONTE.md); original privado
+email-characters-gpt-original-20261013.png. Backend emails/templates.mjs gera
+HTML com imagens HTTPS do domínio próprio, alt e CTA/textos fora das imagens;
+plaintext/ConfirmationURL/opt-in/unsubscribe preservados. Preview usa assets
+locais só em --preview-dir. Publicar assets antes de instalar templates/SMTP.
+Esta direção substitui a decisão anterior de templates sem imagens.
+
+Validação: baseline independente RED; patentes14/14 +13mutantes capturados;
+images4/4 +5mutantes; hashes SQL037/045/049 intactos. Ranking-presentationPASS,
+account-verified10/10, profile-character9/9 (SQL+SSR+PNG), inbox23/23;
+build/grafo+mutante/docs:check/backend test:api PASS. Harness existentes agora
+carregam módulo career-rank real; resolver de dataURL corrigido em apresentação.
+Parecer rank-badges-20261013-independent-review.md sem P0/P1/P2 confirmado.
+Capturas privadas examinadas: profile-career-public/community, career-ranks-
+gallery, career-ranking-home-rows, email-art-magic-link-desktop/mobile e
+email-art-weekly-desktop (todas -20261013.png). Mobile magiclink390px semoverflow;
+weeklymobilefinal UNKNOWN (viewport aplicado a outra aba; não contar captura
+como mobile). Gallery é demonstração, home é GET real/71rows: DonaResenha#2/
+4pts/Soldado igual aos perfis. URL local exige ?api=http://localhost:8137 para
+apibase não chamar API pública. Texto estático da home 'global indisponível'
+contradiz tabela carregada: pendência anterior a corrigir no fechamento ranking.
+
+Limites preservados: 049 ausente, ranking social8arg503; sem prova semanal real.
+Não falsificar origem atual040/048 nem desligar freeze/provenance guard.
+Assets ainda não hospedados, SMTP/remetente/endereço postal/instalação/caixas reais
+GmailOutlook/segmento confirmado/webhook-worker/calendário pendentes. OAuth real
+5providers/linking permaneceUNKNOWN; domínio legal/AuthAPI404 no último recheck.
+Nenhum envio/publicação/push/merge/deploy, SQL novo ou alteração fora das lanes.
+Próximo concreto: reconciliar cutover049 com fonte autoritativa; corrigir texto
+home; validar semanal real, OAuth e entrega; publicar assets+API+client/legal e
+instalar templates no fluxo coordenado autorizado para campanha.
+Objetivo integral continua: ranking geral/semanal Brasília segunda00, manter
+histórico/remover só fraude comprovada, MP2× humanos distintos confirmados,
+Email/Google/Discord/X/LinkedIn, newsletter, social/chat, loja TRETa$/Pix e
+Portugal→Brasil2027, mapas e campanha de redes. Bases deste marco clientf52de72a3,
+backendf90da0e/progressf819696; branches codex/ranking-launch-20261012 e growth-
+readiness. Artefatos: csbrasil/private-assets/growth-readiness/ranking-20261012.

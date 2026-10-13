@@ -1,5 +1,6 @@
 import {mountAccountEntry,mountProfilePreferences,mountAccountIntegrations,loadAccount,loadAuthOptions,acceptAccount,logoutAccount} from './account-entry.js';
 import {rankingTable} from './ranking-player.js';
+import {careerRankBadge,careerRankTitle} from './career-rank.js';
 import {questList} from './community-inbox.js';
 import {accountVerifiedBadge} from './account-verified.js';
 import {profileCharacterCard} from './profile-character.js';
@@ -63,7 +64,7 @@ if(root) {
     const c=card(p.nick),identity=el('div','','social-identity');
     const badge=accountVerifiedBadge(p.account_verified);if(badge)c.querySelector('h2').append(badge);
     if(p.avatar_url){const image=el('img','','social-avatar');image.src=p.avatar_url;image.alt=`Avatar de ${p.nick}`;image.width=76;image.height=76;image.referrerPolicy='no-referrer';identity.append(image);}
-    const bio=el('div');bio.append(el('p',p.bio || 'A bio ainda está no aquecimento.'),empty(`Nível ${p.level} · faltam ${p.next_level_points} pontos para o próximo.`));identity.append(bio);c.append(identity);if(p.handle)c.append(empty('@'+p.handle));
+    const bio=el('div');bio.append(el('p',p.bio || 'A bio ainda está no aquecimento.'),empty(`Nível ${p.level} · faltam ${p.next_level_points} pontos para o próximo.`));const rank=careerRankBadge(p.points);if(rank)bio.append(rank,empty(careerRankTitle(p.points)));identity.append(bio);c.append(identity);if(p.handle)c.append(empty('@'+p.handle));
     const ranking=el('div','','social-profile-ranking');ranking.append(el('span','RANKING GERAL'),el('strong',p.position?`#${p.position}`:'Privada'));c.append(ranking);
     const character=profileCharacterCard(p.last_character);c.append(character || empty('Nenhum personagem disponível para mostrar.'));
     const stats=el('div','','social-stats');
@@ -124,7 +125,7 @@ if(root) {
     if(r.disabled){content.append(empty('Ranking ainda indisponível neste ambiente.'));return;}
     if(rankingPeriod==='week'){const w=r.week;if(w?.starts_at && w?.ends_at && w?.timezone){const fmt=at=>new Date(at).toLocaleString('pt-BR',{timeZone:w.timezone,dateStyle:'short',timeStyle:'short'}),zone=w.timezone==='America/Sao_Paulo'?'horário de Brasília':'UTC';content.append(empty(`Semana: ${fmt(w.starts_at)} até ${fmt(w.ends_at)} (${zone}). Contam as rodadas iniciadas nesse intervalo; o horário final já pertence à próxima semana.`));}else content.append(empty('Calendário semanal indisponível neste ambiente.'));content.append(empty('Premiação em TRETA$ ainda não ativada.'));}
     if(r.own)content.append(empty(`Sua posição: #${r.own.position} · ${r.own.points} pontos.`));
-    const wrap=el('div','','social-table-wrap');wrap.append(rankingTable(r.players,{teams:true,offset:rankingOffset}));content.append(wrap);
+    const wrap=el('div','','social-table-wrap');wrap.append(rankingTable(r.players,{teams:true,offset:rankingOffset,careerOnly:true}));content.append(wrap,empty('Patentes usam os pontos acumulados da carreira e permanecem iguais ao trocar de período ou modo.'));
     if(!r.players.length)content.append(empty('Nenhum jogador encontrado nesse ranking.'));
     const pages=el('div','','social-actions');if(rankingOffset>0)pages.append(button('ANTERIOR',async()=>{rankingOffset=Math.max(0,rankingOffset-25);await render();}));if(rankingOffset+25<r.total)pages.append(button('PRÓXIMA',async()=>{rankingOffset+=25;await render();}));content.append(pages,empty('Solo: 1 ponto por abate confirmado. MP: 2 pontos quando o servidor confirma contas distintas juntas na rodada. O placar geral preserva o histórico anterior; filtros e pontos de Esquerda/Direita usam apenas partidas confirmadas após a atualização. O time é o da partida.'));
   }

@@ -171,6 +171,7 @@ async function runtime({auth=account,state=stateBase,tab='notifications',peer=nu
   vm.runInContext(read('public/js/profile-character-catalog.js').replace(/export\s+/g,''),ctx,{timeout:1000});
   vm.runInContext(read('public/js/profile-character.js').replace(/^import .*\n/gm,'').replace(/export\s+/g,''),ctx,{timeout:1000});
   vm.runInContext(read('public/js/account-verified.js').replace(/export\s+/g,''),ctx,{timeout:1000});
+  vm.runInContext('(function(){'+read('public/js/career-rank.js').replace(/export\s+/g,'')+';Object.assign(globalThis,{careerRankBadge,careerRankTitle});})()',ctx,{timeout:1000});
   let source=communitySource.replace(/^import[^\n]*\n/gm,'');
   source=mutation(source,'  void boot();',`  globalThis.__inboxTest={boot,render,setFixture(a,s,t){auth=a;state=s;tab=t;},getTab(){return tab;}};`);
   vm.runInContext(source,ctx,{timeout:1000});

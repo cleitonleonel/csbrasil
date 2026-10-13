@@ -7,10 +7,11 @@ const helper=new URL('public/js/ranking-player.js',root);
 const mutant=process.argv.find(a=>a.startsWith('--mutant='))?.split('=')[1];
 let helperSource=existsSync(helper)?readFileSync(helper,'utf8'):null;
 if(mutant && !['no-import','no-week-tab'].includes(mutant)){assert(helperSource,'helper missing');const pairs={'no-photo':['if(photo){','if(false){'],'no-handle':['/^[a-z][a-z0-9_]{2,23}$/.test','false && /^[a-z][a-z0-9_]{2,23}$/.test']};assert(pairs[mutant],'unknown mutation');const changed=helperSource.replace(...pairs[mutant]);assert.notEqual(changed,helperSource,'mutation did not apply');helperSource=changed;}
+if(helperSource)helperSource=helperSource.replace(/from\s*(['"])(\.\.?\/[^'"]+)\1/g,(_,quote,spec)=>'from '+quote+new URL(spec,helper).href+quote);
 const helpers=helperSource?await import(`data:text/javascript,${encodeURIComponent(helperSource)}`):{};
 const player={id:'c026ab03-2aa8-4775-979c-fcb1414fa50b',nick:'<b>Ruben</b>',public_handle:'ruben',avatar_url:'/api/social-avatar?id=c026ab03-2aa8-4775-979c-fcb1414fa50b',position:1,points:25,kills:18,kd:9,left_points:3,right_points:10,legacy_points:12,socials:[{net:'x',url:'https://x.com/ruben'},{net:'bad',url:'javascript:alert(1)'}]};
 class Element {
- constructor(tag){this.tag=tag;this.children=[];this.textContent='';this.attributes={};}
+ constructor(tag){this.tag=tag;this.children=[];this.textContent='';this.attributes={};this.dataset={};}
  setAttribute(name,value){this.attributes[name]=value;}
  append(...children){this.children.push(...children);}appendChild(child){this.append(child);return child;}
  replaceChildren(...children){this.children=children;}
