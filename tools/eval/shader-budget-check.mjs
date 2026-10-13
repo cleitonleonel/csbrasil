@@ -1,6 +1,7 @@
 /* WebGL1 precisa caber no piso de oito vetores variáveis da especificação. */
 import { readdirSync, readFileSync } from 'node:fs';
 import { posix } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { moduleCacheManifest } from '../../scripts/module-cache.mjs';
 
 const mutant = (process.argv.find((arg) => arg.startsWith('--mutante=')) || '').split('=')[1] || '';
@@ -10,6 +11,7 @@ const mutants = [
   'urna-color', 'urna-clearcoat', 'urna-anisotropy', 'urna-instancing', 'urna-segunda',
   'sombra-extra', 'sombra-condicional', 'sombra-pontual', 'sombra-reativada', 'spot-map',
   'cache-antigo', 'cache-omitido', 'cache-constante', 'cache-podado', 'cache-entry-site', 'cache-layout-site',
+  'cache-serve-constante',
 ];
 if (mutant && !mutants.includes(mutant)) {
   throw new Error(`mutante desconhecido: ${mutant}`);
@@ -36,7 +38,6 @@ let bloom = readFileSync('public/js/bloom.js', 'utf8');
 let brasilia = readFileSync('public/js/map_brasilia.js', 'utf8');
 let indexPage = readFileSync('src/pages/index.astro', 'utf8');
 let layoutPage = readFileSync('src/layouts/Layout.astro', 'utf8');
-let evalServer = readFileSync('tools/eval/serve.mjs', 'utf8');
 const astroConfig = readFileSync('astro.config.mjs', 'utf8');
 const pruneDist = readFileSync('scripts/prune-dist.mjs', 'utf8');
 const loader = readFileSync('public/vendor/addons/loaders/GLTFLoader.js', 'utf8');
@@ -176,7 +177,6 @@ if (mutant === 'cache-layout-site') layoutPage += '\n<script type="module" src="
 if (mutant === 'cache-antigo') {
   indexPage = indexPage.replaceAll('?v=${V}-${JS_REV}', '?v=${V}');
   layoutPage = layoutPage.replaceAll('?v=${V}-${JS_REV}', '?v=${V}');
-  evalServer = evalServer.replaceAll('?v=${V}-${JS_REV}', '?v=${V}');
 }
 
 const primitives = urna.meshes?.flatMap((mesh) => mesh.primitives || []) || [];
@@ -344,8 +344,9 @@ const injectedCacheContract = (source) => source.includes('__MANIFESTO_JS__')
   && (source.match(/\?v=\$\{V\}-\$\{JS_REV\}/g) || []).length >= 2;
 const buildCacheContract = /const MANIFESTO_JS = moduleCacheManifest\(\)/.test(astroConfig)
   && /__MANIFESTO_JS__:\s*JSON\.stringify\(MANIFESTO_JS\)/.test(astroConfig);
-const evalCacheContract = evalServer.includes('moduleCacheManifest')
-  && (evalServer.match(/\?v=\$\{V\}-\$\{JS_REV\}/g) || []).length >= 2;
+const evalCacheProbe = spawnSync(process.execPath, ['tools/eval/social-serve-check.mjs', ...(mutant === 'cache-serve-constante' ? ['--mutante=cache-gele'] : [])], { encoding: 'utf8', maxBuffer: 32768 });
+const evalCacheContract = evalCacheProbe.status === 0;
+if (!evalCacheContract) console.error((evalCacheProbe.stderr || evalCacheProbe.error?.message || 'cache HTTP não medido').slice(-1500));
 const prunedJsPrefixes = [...new Set([...pruneDist.matchAll(
   /['"](?:dist\/client|\.vercel\/output\/static)\/js\/([^'"]+)['"]/g,
 )].map((match) => `${match[1].replace(/\/$/, '')}/`))];
@@ -413,6 +414,7 @@ const mutantClause = {
   'cache-podado': 'SB7',
   'cache-entry-site': 'SB7',
   'cache-layout-site': 'SB7',
+  'cache-serve-constante': 'SB7',
 };
 if (mutant && !failed.some(([id]) => id === mutantClause[mutant])) {
   failed.push(['MUT', false, `mutação ${mutant} não acendeu ${mutantClause[mutant]}`]);
