@@ -52,7 +52,7 @@ esta página envelhecia no primeiro commit — ver
 | Scripts do arnês | 656 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
 | Scripts de pipeline | 103 | `git ls-files 'tools/*.mjs' \| wc -l` |
 | Tarefas de entrada escritas | 26 | `git ls-files 'docs/issues/[0-9]*.md' \| wc -l` |
-| Versão | `2.1.0-alpha.74` | `public/js/version.js` e `package.json` (batem) |
+| Versão | `2.1.0-alpha.75` | `public/js/version.js` e `package.json` (batem) |
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `o comando da coluna direita de cada linha`
 
@@ -322,6 +322,6 @@ A ordem da barra lateral **é** a ordem de leitura, e cada página entrega uma c
    desde a última medição colada.
 
 Para onde o projeto **vai** não está nesta documentação: é o
-[`ROADMAP.md`](https://github.com/corosolto/client/blob/main/ROADMAP.md), e o
-plano executável é o
-o plano de release `plans/08`.
+[`ROADMAP.md`](https://github.com/corosolto/client/blob/main/ROADMAP.md); os planos
+executáveis por frente vivem em
+[`plans/`](https://github.com/corosolto/client/tree/main/plans).
