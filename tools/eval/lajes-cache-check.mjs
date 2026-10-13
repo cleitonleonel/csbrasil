@@ -58,10 +58,13 @@ const overlap = [...first.sourceRefs].filter(geometry => second.sourceRefs.has(g
 for (const value of [first, second]) delete value.sourceRefs;
 console.log(JSON.stringify({ first, second, overlap }));
 
-// Os valores de paridade vêm da base 261cf59a, fixada antes da otimização.
+// Os digests estruturais (boxes/geometria/colisão/navegação/oclusão) vêm da base
+// 261cf59a, fixada antes da otimização, e seguem batendo. O nextRandom foi remedido
+// no #816: o grafite das Lajes voltou a montar no boot (chave fy_lajes→lajes) e
+// consome sorteios a mais sem alterar nenhum digest do mundo.
 const expectedNextRandom = [
-  [0.9769068229943514, 0.16404898068867624, 0.5039992486126721, 0.014668577583506703],
-  [0.33314384054392576, 0.287667001131922, 0.7576107266359031, 0.7355576294939965],
+  [0.7632988421246409, 0.40656328364275396, 0.8578036532271653, 0.6119431748520583],
+  [0.09000999364070594, 0.2445941676851362, 0.7449362024199218, 0.3830185495316982],
 ];
 for (const [index, value] of [first, second].entries()) {
   assert.equal(value.boxes, 9162);
