@@ -34,10 +34,10 @@ const url = abs(`/faccoes/${faccao.id}`);
    um import cruzado entre duas páginas por uma tabela de nome de arquivo é pior
    de achar do que a duplicação. Se virar 3 lugares, aí vai pro data/jogo.ts. */
 const PLACA: Record<string, string> = {
-  E: 'petistas', B: 'bolsonaristas', urbanas: 'tribos',
+  E: 'time-e', B: 'time-b', urbanas: 'tribos',
   palhacos: 'palhacos', funkeiros: 'funkeiros', mitico: 'mitico',
 };
-const placa = PLACA[faccao.id] ? `/img/team-${PLACA[faccao.id]}.webp` : null;
+const placa = PLACA[faccao.id] ? `/img/faccoes/${PLACA[faccao.id]}.webp` : null;
 
 const jsonld = [
   {
@@ -67,7 +67,7 @@ const jsonld = [
 ---
 <Layout
   title={`${faccao.nome} - os ${elenco.length} personagens da facção | ${BRAND_FULL}`}
-  description={`${faccao.nota} Conheça os ${elenco.length} personagens jogáveis da facção ${faccao.nome} no ${BRAND_FULL}, com o lema “${faccao.lema}”.`}
+  description={`${faccao.nota} Conheça os ${elenco.length} personagens do catálogo da facção ${faccao.nome} no ${BRAND_FULL}, com o lema “${faccao.lema}”.`}
   jsonld={jsonld}
   h1={faccao.nome}
   kicker={`facção · ${elenco.length} personagens`}
@@ -89,9 +89,11 @@ const jsonld = [
   )}
 
   <h2>O elenco</h2>
-  <div class="grid" style={`--fc:${faccao.cor}`}>
+  <div class="grid roster" style={`--fc:${faccao.cor}`}>
     {elenco.map((p) => (
       <article class="pcard">
+        <img class="pfoto" src={`/img/chars/avatars/${p.id}.webp`} width="256" height="256"
+             loading="lazy" decoding="async" alt={p.nome}>
         <strong>{p.nome}</strong>
         <p>{p.blurb}</p>
       </article>
@@ -114,7 +116,11 @@ const jsonld = [
 </Layout>
 
 <style>
-  .pcard{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--fc);
+  .grid.roster{grid-template-columns:repeat(auto-fill,minmax(238px,1fr))}
+  @media(max-width:860px){.grid.roster{grid-template-columns:1fr}}
+  .pfoto{width:100%;height:auto;max-width:180px;aspect-ratio:1;object-fit:cover;object-position:center;
+    border-radius:6px;border:1px solid var(--line-2,#333);margin:0 auto 8px;display:block;background:#1c1a20}
+  .pcard{text-align:center;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--fc);
     padding:12px 14px}
   .pcard:hover{background:var(--panel-2);border-color:var(--line-hi)}
   .pcard strong{color:var(--ink);letter-spacing:1px;font-size:13px;display:block}

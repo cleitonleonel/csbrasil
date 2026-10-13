@@ -42,10 +42,10 @@ export const ARMAS: Arma[] = [
   { id: 'g3sg1', nome: 'G3SG1 "FRITZ"', curto: 'G3SG1', classe: 'Sniper semi-auto', dano: 55, pente: 20, reserva: 60, cadencia: 0.22, nota: 'Pente de 20 numa sniper semi-auto. A escolha de quem segura ângulo longo sozinho.' },
   { id: 'sks', nome: 'SKS "MILÍCIA"', curto: 'SKS', classe: 'Sniper semi-auto', dano: 48, pente: 10, reserva: 50, cadencia: 0.18, nota: 'A mais rápida das semi-autos. Recompensa quem acerta a segunda no susto.' },
   { id: 'ak', nome: 'AK-47 "BATE-ESTACA"', curto: 'AK', classe: 'Fuzil', dano: 36, pente: 30, reserva: 90, cadencia: 0.1, nota: 'Mata em 3 tiros no corpo. O padrão-ouro de fuzil: dano alto, coice honesto.' },
-  { id: 'akm', nome: 'AKM "KALASH DA VÉIA"', curto: 'AKM', classe: 'Fuzil', dano: 34, pente: 30, reserva: 90, cadencia: 0.105, nota: 'Prima pesada da AK: 4 tiros no corpo, um tico mais lenta.' },
+  { id: 'akm', nome: 'AKM "KALASH DA VÉIA"', curto: 'AKM', classe: 'Fuzil', dano: 34, pente: 30, reserva: 90, cadencia: 0.105, nota: 'Cadência um pouco mais lenta que a AK, com dano próximo por disparo.' },
   { id: 'm4', nome: 'M4A1 "REQUINTE"', curto: 'M4', classe: 'Fuzil', dano: 31, pente: 30, reserva: 90, cadencia: 0.09, nota: 'Mais rápida e mais estável que a AK, em troca de dano por tiro.' },
   { id: 'g3', nome: 'HK G3 "FRITZ"', curto: 'G3', classe: 'Fuzil de batalha', dano: 37, pente: 20, reserva: 80, cadencia: 0.11, nota: 'Pente curto, tiro que dói. Fuzil de quem conta os tiros.' },
-  { id: 'md97', nome: 'MD97 "FUZIL DA PÁTRIA"', curto: 'MD97', classe: 'Fuzil de batalha', dano: 38, pente: 20, reserva: 80, cadencia: 0.12, nota: 'O fuzil brasileiro do arsenal. O maior dano por tiro entre os automáticos.' },
+  { id: 'md97', nome: 'MD97 "FUZIL DA PÁTRIA"', curto: 'MD97', classe: 'Fuzil de batalha', dano: 38, pente: 20, reserva: 80, cadencia: 0.12, nota: 'O fuzil brasileiro do arsenal. Dano alto por disparo e pente curto.' },
   { id: 'm400', nome: 'M400 "MIRA FINA"', curto: 'M400', classe: 'Fuzil de batalha', dano: 40, pente: 20, reserva: 80, cadencia: 0.11, nota: 'Dano de fuzil de batalha com estabilidade de M4.' },
   { id: 'scar', nome: 'SCAR "PAGA-PAU"', curto: 'SCAR', classe: 'Fuzil de batalha', dano: 37, pente: 20, reserva: 80, cadencia: 0.11, nota: 'Equilibrada até demais - a que menos surpreende, pro bem e pro mal.' },
   { id: 'm92', nome: 'ZASTAVA M92 "IOGUSLAVO"', curto: 'M92', classe: 'Carabina', dano: 32, pente: 30, reserva: 90, cadencia: 0.1, nota: 'AK serrada. Curta, gorda na tela e boa de corredor.' },
@@ -189,6 +189,11 @@ export const MAPAS: Mapa[] = [
       'às duas travessias superiores, com caixas de água, muretas e varais. As quatro bandeiras ' +
       'ficam nas lajes: subir amplia a visão, mas exige disputar os acessos e a cobertura.',
   },
+  {"id": "amazonia", "nome": "Treta na Amazônia", "modo": "CTF · rounds opcional", "ctf": true, "resumo": "Uma arena na floresta amazônica, com construções e vegetação em torno das rotas de combate.", "detalhe": "Escolha a rota entre a vegetação e as construções. Abre em Capture the Flag; o modo pode ser alterado no menu."},
+  {"id": "escadao", "nome": "Escadão (Morro)", "modo": "CTF · rounds opcional", "ctf": true, "resumo": "Arena de morro com escadarias, casas e combate entre níveis.", "detalhe": "As escadarias ligam as áreas da comunidade. Abre em Capture the Flag; também aceita rounds."},
+  {"id": "corrego", "nome": "Córrego (Favela de SP)", "modo": "CTF · rounds opcional", "ctf": true, "resumo": "Favela de São Paulo organizada em torno de um córrego.", "detalhe": "O córrego faz parte da paisagem e das rotas de travessia. Escolha Capture the Flag ou rounds antes da partida."},
+  {"id": "posto_treta", "nome": "Posto da Treta", "modo": "CTF · rounds opcional", "ctf": true, "resumo": "Posto de gasolina de beira de estrada, com bombas, marquise e loja.", "detalhe": "Bombas, marquise e loja dividem as áreas de combate. Abre em Capture the Flag; também aceita rounds."},
+  {"id": "velho_oeste", "nome": "Sertão da Treta", "modo": "CTF · rounds opcional", "ctf": true, "resumo": "Arena no sertão, com construções e paisagem da caatinga.", "detalhe": "Explore as rotas da arena do sertão. Abre em Capture the Flag; escolha o modo no menu antes de jogar."},
 ];
 
 export interface Personagem { faccao: string; nome: string; blurb: string; }
@@ -207,10 +212,11 @@ export interface Personagem { faccao: string; nome: string; blurb: string; }
 export const FACCOES: { id: string; nome: string; lema: string; cor: string; nota: string }[] = [
   { id: 'E', nome: 'Esquerda', lema: 'A treta se faz na praça!', cor: '#ff5555', nota: 'O lado vermelho da arena. Oito arquétipos de esquerda caricata - nenhum deles é uma pessoa real.' },
   { id: 'B', nome: 'Direita', lema: 'A treta se faz na rodovia!', cor: '#3355ff', nota: 'O lado azul. Nove arquétipos de direita caricata, com a mesma dose de zoeira dos adversários.' },
-  { id: 'P', nome: 'Políticos', lema: 'A treta atravessa os dois lados!', cor: '#d6b55a', nota: 'Elenco satírico de figuras públicas. Cada personagem indica em quais lados pode jogar.' },
+  { id: 'P', nome: 'Políticos', lema: 'A treta atravessa os dois lados!', cor: '#d6b55a', nota: 'Arquivo de caricaturas satíricas de figuras públicas. Este grupo não está disponível no menu atual.' },
   { id: 'urbanas', nome: 'Tribos Urbanas', lema: 'A treta se faz na quebrada!', cor: '#c79bff', nota: 'Facção sem lado político: emo, punk, metaleiro, skatista, rapper e companhia. Entra na treta pelo estilo.' },
   { id: 'palhacos', nome: 'Palhaços', lema: 'A treta se faz no picadeiro!', cor: '#ff8ad1', nota: 'O picadeiro invadiu a arena. Nove palhaços, do clássico de cartola ao que dá medo de verdade.' },
-  { id: 'funkeiros', nome: 'Funkeiros', lema: 'A treta se faz no bailão!', cor: '#ffd23f', nota: 'A facção mais nova: mandrake, cria, trap, tamborzão. Ostenta antes, atira depois.' },
+  { id: 'mitico', nome: 'Mítico', lema: 'A treta atravessa os séculos!', cor: '#9d4edd', nota: 'Personagens inspirados no folclore e na história brasileira.' },
+  { id: 'funkeiros', nome: 'Funkeiros', lema: 'A treta se faz no bailão!', cor: '#ffd23f', nota: 'Mandrake, cria, trap e tamborzão. Ostenta antes, atira depois.' },
 ];
 
 /** 44 personagens (public/js/characters.js). `faccao` casa com FACCOES[].id */
@@ -274,6 +280,15 @@ export const PERSONAGENS: Personagem[] = [
   { id: 'trapfunk', faccao: 'funkeiros', nome: 'Trap Funk', blurb: 'Autotune no grito de guerra e 808 no peito. Trap em dose dupla.' },
   { id: 'fluxo', faccao: 'funkeiros', nome: 'Fluxo', blurb: 'Óculos espelhado e corte na régua. No fluxo, quem corre é a bala.' },
   { id: 'ostentacao', faccao: 'funkeiros', nome: 'Ostentação', blurb: 'Corrente, anel e relógio brilhando. Se é pra atirar, que seja com estilo.' },
+  { id: 'lobisomem', faccao: 'mitico', nome: 'Lobisomem', blurb: 'Criatura das noites de lua cheia e das histórias de encruzilhada.' },
+  { id: 'mariabonita', faccao: 'mitico', nome: 'Maria Bonita', blurb: 'Personagem inspirada na história do cangaço brasileiro.' },
+  { id: 'lampiao', faccao: 'mitico', nome: 'Lampião', blurb: 'Figura do cangaço, com chapéu de couro e silhueta característica.' },
+  { id: 'bandeirante', faccao: 'mitico', nome: 'Bandeirante', blurb: 'Uma interpretação satírica de uma figura da história brasileira.' },
+  { id: 'boto', faccao: 'mitico', nome: 'Boto Cor de Rosa', blurb: 'Personagem inspirado na lenda amazônica do boto.' },
+  { id: 'zumbi', faccao: 'mitico', nome: 'Zumbi dos Palmares', blurb: 'Personagem inspirado na história de Zumbi e do Quilombo dos Palmares.' },
+  { id: 'curupira', faccao: 'mitico', nome: 'Curupira', blurb: 'Guardião do folclore brasileiro, com cabelo de fogo e pés virados.' },
+  { id: 'saci', faccao: 'mitico', nome: 'Saci-Pererê', blurb: 'O menino de uma perna só e gorro vermelho das lendas brasileiras.' },
+  { id: 'caipora', faccao: 'mitico', nome: 'Caipora', blurb: 'Guardiã da mata nas histórias do folclore brasileiro.' },
 ];
 
 export interface Controle { tecla: string; acao: string; }

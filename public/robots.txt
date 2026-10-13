@@ -14,6 +14,8 @@ Allow: /
 # Rotas de máquina: não têm conteúdo pra indexar e cada rastreio delas custa
 # uma chamada ao Supabase ou um render de PNG.
 Disallow: /api/
+Allow: /api/og/
+Allow: /api/badge/
 # Páginas de laboratório do harness (existem no deploy, não são produto).
 Disallow: /eval.html
 Disallow: /mapeval.html
@@ -51,6 +53,8 @@ User-agent: Applebot-Extended
 User-agent: CCBot
 Allow: /
 Disallow: /api/
+Allow: /api/og/
+Allow: /api/badge/
 Disallow: /eval.html
 Disallow: /mapeval.html
 Disallow: /mapview.html

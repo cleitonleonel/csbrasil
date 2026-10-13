@@ -35,7 +35,7 @@
 //
 // Sai 1 se qualquer checagem falhar, então serve de gate no CI sem parser.
 // ============================================================================
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 
@@ -54,7 +54,7 @@ const JSON_OUT = args.includes('--json');
 const MUTANTE = (args.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || null;
 const PORTA = 4325;
 const EXTERNO = process.env.SITE_URL || null;
-const BASE = EXTERNO || `http://localhost:${PORTA}`;
+const BASE = EXTERNO || `http://127.0.0.1:${PORTA}`;
 
 // ---------------------------------------------------------------------------
 // O CONTRATO. Uma linha por rota. `checa` recebe { status, corpo, headers }.
@@ -186,12 +186,18 @@ function checaJsonLd(rota, corpo) {
 // servidor
 // ---------------------------------------------------------------------------
 let subiuAqui = false;
+let serverProcess = null;
+let serverReady = false;
+let serverOutput = '';
 let upstream = null;
 const PORTA_UPSTREAM = 4326;
 async function noAr(ms = 90_000) {
   const fim = Date.now() + ms;
   while (Date.now() < fim) {
-    try { const r = await fetch(BASE + '/robots.txt'); if (r.status) return true; } catch { /* ainda não */ }
+    if (serverProcess?.exitCode !== null || serverProcess?.signalCode) return false;
+    if (serverReady) {
+      try { const r = await fetch(BASE + '/robots.txt', { signal: AbortSignal.timeout(2_000) }); if (r.status) return true; } catch { /* ainda não */ }
+    }
     await new Promise((r) => setTimeout(r, 700));
   }
   return false;
@@ -213,18 +219,30 @@ async function sobeServidor() {
     upstream.once('error', reject);
     upstream.listen(PORTA_UPSTREAM, '127.0.0.1', resolve);
   });
-  // `astro dev` daemoniza e o processo lançador sai — não dá pra segurar o pid.
-  // Quem derruba é `astro dev stop`, no finally.
-  spawn('npx', ['astro', 'dev', '--port', String(PORTA)], {
-    stdio: 'ignore', detached: false,
+  // API sem daemon/lock; strictPort + handshake impedem medir outro checkout na mesma porta.
+  const startup = `import { dev } from 'astro'; await dev({ server: { host: '127.0.0.1', port: ${PORTA} }, vite: { server: { strictPort: true } } }); console.log('CSBRASIL_SMOKE_READY');`;
+  serverProcess = spawn(process.execPath, ['--input-type=module', '-e', startup], {
+    stdio: ['ignore', 'pipe', 'pipe'], detached: false,
     env: { ...process.env, PUBLIC_API_BASE: `http://127.0.0.1:${PORTA_UPSTREAM}` },
-  })
-    .on('error', () => {});
+  });
+  const record = chunk => {
+    serverOutput = (serverOutput + chunk.toString()).slice(-4_000);
+    if (serverOutput.includes('CSBRASIL_SMOKE_READY')) serverReady = true;
+  };
+  serverProcess.stdout.on('data', record);
+  serverProcess.stderr.on('data', record);
+  serverProcess.on('error', error => { serverOutput += String(error); });
   subiuAqui = true;
   return noAr();
 }
-function derrubaServidor() {
-  if (subiuAqui) spawnSync('npx', ['astro', 'dev', 'stop'], { stdio: 'ignore' });
+async function derrubaServidor() {
+  if (subiuAqui && serverProcess?.exitCode === null && !serverProcess.signalCode) {
+    const stopped = new Promise((resolve) => serverProcess.once('exit', resolve));
+    serverProcess.kill('SIGTERM');
+    const timer = setTimeout(() => serverProcess.kill('SIGKILL'), 2_000);
+    await stopped;
+    clearTimeout(timer);
+  }
   upstream?.close();
 }
 
@@ -232,8 +250,7 @@ function derrubaServidor() {
 const resultados = [];
 try {
   if (!(await sobeServidor())) {
-    console.error(`✗ SMOKE0  o site não subiu em ${BASE} (90 s de espera)`);
-    process.exit(1);
+    throw new Error(`SMOKE0: o servidor próprio não subiu em ${BASE} (até 90 s de espera). ${serverOutput.slice(-800)}`);
   }
 
   for (const c of CONTRATO) {
@@ -252,7 +269,7 @@ try {
     resultados.push({ rota: c.rota, esperado: c.esperado, jsonld: c.jsonld ?? null, ok: !falha, motivo: falha });
   }
 } finally {
-  derrubaServidor();
+  await derrubaServidor();
 }
 
 const falhas = resultados.filter((r) => !r.ok);
