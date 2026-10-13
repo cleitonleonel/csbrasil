@@ -1,4 +1,4 @@
-# Release automático a cada push na main (pedido do dono, 08/08): o BOT é o dono do
+# Release automático em TREM (2×/dia + workflow_dispatch; até 13/10 era a cada push na main): o BOT é o dono do
 # bump de versão — o portão `versao-bumpada` do pr-gates.yml virou só checagem de
 # consistência, nenhum PR precisa mais bumpa à mão.
 #
@@ -20,10 +20,21 @@
 # Deploy de produção NÃO passa por aqui: decisão do dono (08/08) é manter o auto-deploy
 # da Vercel na main. O deploy-prod.yml continua existindo como caminho manual por tag
 # (gh workflow run deploy-prod.yml -f tag=vX) caso o auto-deploy seja desligado de novo.
+#
+# TREM DE RELEASE (13/10/2026, autorizado pelo dono): era um release por push na main —
+# 126 releases para 130 merges em 30 dias. Cada um reescrevia README/AGENTS/ARCH/docs,
+# todo PR aberto conflitava e o autofix mergeava a base em cada um (49% dos commits da
+# main eram do bot). Agora o trem passa 2×/dia e por workflow_dispatch (hotfix:
+# `gh workflow run release.yml`). Só embarca se houver commit novo desde a última tag E o
+# pr-fast estiver VERDE na head da main. A Vercel só builda produção em commit
+# `chore(release):` (scripts/ci/vercel-ignore.sh) — então produção passa a esperar o CI.
 name: release
 on:
-  push:
-    branches: [main]
+  schedule:
+    # 11:41 e 19:41 UTC (12:41 e 20:41 em Lisboa no inverno; 08:41 e 16:41 em Brasília)
+    - cron: '41 11 * * *'
+    - cron: '41 19 * * *'
+  workflow_dispatch:
 
 # Dois merges quase juntos: o run MAIS NOVO cancela o velho no ar. Como a main é
 # fast-forward-only (ruleset), a head nova sempre contém a velha — o run velho
@@ -38,7 +49,43 @@ permissions:
   contents: write
 
 jobs:
+  # O trem só sai com a main VERDE. O pr-fast roda em todo push na main; se ainda estiver
+  # no ar, espera até 25 min. Vermelho, ausente ou lento = este trem não sai, o próximo
+  # tenta de novo. Job separado porque o teto de 30 min por job (WT2) vale para os dois.
+  embarque:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      sai: ${{ steps.verde.outputs.sai }}
+    steps:
+      - name: main verde e com commit novo?
+        id: verde
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          SHA=$(gh api "repos/$REPO/commits/main" --jq .sha)
+          MSG=$(gh api "repos/$REPO/commits/$SHA" --jq '.commit.message' | head -1)
+          case "$MSG" in "chore(release):"*) echo "head já é release — nada novo"; echo "sai=false" >> "$GITHUB_OUTPUT"; exit 0 ;; esac
+          for i in $(seq 1 25); do
+            LINHA=$(gh run list --repo "$REPO" --workflow ci.yml --branch main --commit "$SHA" --event push \
+                      --json status,conclusion --jq '.[0] | "\(.status) \(.conclusion)"' 2>/dev/null || true)
+            case "$LINHA" in
+              "completed success") echo "pr-fast verde em $SHA — embarca"; echo "sai=true" >> "$GITHUB_OUTPUT"; exit 0 ;;
+              completed*) echo "::warning::pr-fast NÃO está verde em $SHA ($LINHA) — trem não sai"; echo "sai=false" >> "$GITHUB_OUTPUT"; exit 0 ;;
+              ""|"null null") echo "::warning::nenhum pr-fast de push para $SHA — trem não sai"; echo "sai=false" >> "$GITHUB_OUTPUT"; exit 0 ;;
+            esac
+            sleep 60
+          done
+          echo "::warning::pr-fast de $SHA não terminou em 25 min — trem não sai"
+          echo "sai=false" >> "$GITHUB_OUTPUT"
+
   bump-tag-release:
+    needs: embarque
+    if: needs.embarque.outputs.sai == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
