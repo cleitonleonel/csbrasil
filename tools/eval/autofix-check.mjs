@@ -33,6 +33,11 @@
          releases em 20 horas e cada um reabre conflito em todo PR aberto; sem o
          gatilho de push o bot só conserta quem empurra commit — ou seja, nunca
          quem está parado esperando revisão, que é justamente quem precisa.
+   AF8 · a base só entra no PR quando há CONFLITO. Medido em 13/10: o bot trazia a
+         main para todo PR atrasado, mesmo sem conflito (58 merges num dia, 18% dos
+         minutos de CI), e cada merge reinicia o CI inteiro do PR. A varredura dispara
+         só para `CONFLICTING`, depois de esperar o GitHub calcular o `mergeable`; e o
+         merge do job é de teste (`--no-commit`): mesclou limpo, aborta sem commitar.
    AF5 · o resolvedor de conflito passa pela MESMA trava e ABORTA quando sobra
          conflito fora dela. Resolver conflito de arquivo gerado é mecânico (todo
          `chore(release)` reabre um em cada PR aberto); resolver conflito de código
@@ -61,6 +66,10 @@ const MUTANTES = {
   'workflow-fora-do-registro': 'AF7',
   'registro-orfao': 'AF7',
   'trava-do-pr': 'AF5',
+  'varredura-dispara-atrasado': 'AF8',
+  'varredura-sem-espera': 'AF8',
+  'merge-limpo-volta': 'AF8',
+  'merge-limpo-commita': 'AF8',
 };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
@@ -201,6 +210,36 @@ const filtraAtrasado = /"CONFLICTING"/.test(wf) && /gh workflow run autofix\.yml
 if (!temPush) falhas.push('AF6 autofix.yml não acorda quando a main anda — PR parado esperando revisão nunca é consertado');
 else if (!temVarredura) falhas.push('AF6 o gatilho de push existe mas não há job de varredura');
 else if (!filtraAtrasado) falhas.push('AF6 a varredura não seleciona os PRs em conflito nem dispara o autofix de cada um');
+
+/* ---- AF8: a base só entra quando há conflito ---- */
+if (MUT === 'varredura-dispara-atrasado') wf = wf.replace(`awk '$2 == "CONFLICTING"`, `awk '$2 != "MERGEABLE"`);
+if (MUT === 'varredura-sem-espera') wf = wf.replace(/\n\s*\[ "\$tentativa" = 4 \] \|\| sleep 30/, '');
+if (MUT === 'merge-limpo-volta') wf = wf.replace(/ \\\n\s*--no-commit --no-ff FETCH_HEAD; then/, ' FETCH_HEAD; then');
+if (MUT === 'merge-limpo-commita') wf = wf.replace('git merge --abort 2>/dev/null || true', 'echo "mesclou=1" >> "$GITHUB_OUTPUT"');
+{
+  const ini = wf.indexOf('\n  varredura:');
+  const varredura = ini < 0 ? '' : wf.slice(ini, wf.indexOf('\n  autofix:', ini));
+  /* Quem dispara é a linha ANTES do `gh workflow run`; o que vale é o filtro final,
+     não a listagem (a listagem tem de enxergar UNKNOWN para saber se espera). */
+  const filtro = varredura.slice(0, varredura.indexOf('gh workflow run'));
+  if (!/\$2 == "CONFLICTING"|\.mergeable == "CONFLICTING"/.test(filtro)) {
+    falhas.push('AF8 a varredura não filtra só `CONFLICTING` — PR só atrasado ganha merge da base e CI inteiro à toa');
+  }
+  if (/!= "MERGEABLE"|\$2 != /.test(filtro)) {
+    falhas.push('AF8 a varredura dispara para quem não está MERGEABLE (inclui UNKNOWN e atraso sem conflito)');
+  }
+  if (!/UNKNOWN/.test(filtro) || !/sleep \d+/.test(filtro)) {
+    falhas.push('AF8 a varredura não espera o GitHub calcular o `mergeable` antes de escolher quem dispara');
+  }
+  const ini2 = wf.indexOf('id: merge');
+  const merge = ini2 < 0 ? '' : wf.slice(ini2, wf.indexOf('diff-filter=U', ini2));
+  const tentativa = /if git merge[^\n]*(?:\\\n[^\n]*)*FETCH_HEAD; then\n([\s\S]*?)\n\s*fi\n/.exec(merge);
+  if (!tentativa || !/--no-commit/.test(tentativa[0])) {
+    falhas.push('AF8 o merge da base no autofix commita mesmo sem conflito — tem de ser de teste (`--no-commit`)');
+  } else if (!/git merge --abort/.test(tentativa[1]) || /mesclou=1/.test(tentativa[1])) {
+    falhas.push('AF8 o merge que deu limpo não é abortado — a base entraria no PR sem conflito nenhum');
+  }
+}
 
 /* ---- AF4: e nenhum outro workflow mergeia tampouco ---- */
 for (const nome of WORKFLOWS) {
