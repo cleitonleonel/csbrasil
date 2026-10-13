@@ -3,8 +3,8 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { SITE, BRAND_FULL, abs } from '../lib/site';
 import { LEGAL_CONTACT, LEGAL_OPERATOR, LEGAL_UPDATED } from '../lib/legal';
-interface Props { title: string; description: string; }
-const { title, description } = Astro.props;
+interface Props { title: string; description: string; noindex?: boolean; }
+const { title, description, noindex = false } = Astro.props;
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const canonical = new URL(path, Astro.site ?? SITE).toString();
 const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).digest('hex').slice(0, 8);
@@ -16,6 +16,7 @@ const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} | CORO SOLTO</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
     <link rel="canonical" href={canonical} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={`${title} | CORO SOLTO`} />
@@ -39,6 +40,7 @@ const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).
         <a href="/privacidade" aria-current={path === '/privacidade' ? 'page' : undefined}>Privacidade</a>
         <a href="/termos" aria-current={path === '/termos' ? 'page' : undefined}>Termos de uso</a>
         <a href="/excluir-dados" aria-current={path === '/excluir-dados' ? 'page' : undefined}>Excluir dados</a>
+        <a href="/regras-de-uso" aria-current={path === '/regras-de-uso' ? 'page' : undefined}>Regras de uso</a>
       </nav>
       <a class="legal-play hub-cta" href="/">VOLTAR AO JOGO ↗</a>
     </header>
