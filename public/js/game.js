@@ -1448,10 +1448,8 @@ export class Game {
       const pmrem = new THREE.PMREMGenerator(this.renderer); pmrem.compileEquirectangularShader();
       if (this._envRT) this._envRT.dispose();
       this._envRT = pmrem.fromEquirectangular(tex);
-      /* IBL SÓ NO VIEWMODEL (decisão do dono, 13/10/2026). Até o #832 o PMREM saía preto na
-         GPU, e a arte de todos os mapas foi aprovada assim. Com o ambiente certo na cena
-         inteira os pretos subiam e a cor lavava (A/B no #832); na arma ele dá o volume que
-         faltava. O mapa segue sem `environment`; a vmScene recebe a textura no construtor. */
+      // IBL só no viewmodel (dono, 13/10/2026, #832): os mapas foram aprovados com o IBL preto e
+      // lavavam com ele; a arma ganha volume. A vmScene recebe a textura no construtor.
       this.scene.environment = null;
       this._vmEnv = this._envRT.texture;
       tex.dispose(); pmrem.dispose();
