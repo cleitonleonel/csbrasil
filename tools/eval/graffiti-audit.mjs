@@ -274,8 +274,8 @@ if (ONLY) {
     saida = Object.assign(ant, relatorio);
   } catch { /* primeira execução */ }
 }
-writeFileSync('tools/eval/graffiti_audit.json', JSON.stringify(saida, null, 1));
-console.log(`GRAFFITI-AUDIT no ar ${totalNoAr} | sobrepostas ${totalSobre} -> tools/eval/graffiti_audit.json`);
+if (process.env.JSON === '1') writeFileSync('tools/eval/graffiti_audit.json', JSON.stringify(saida, null, 1));
+console.log(`GRAFFITI-AUDIT no ar ${totalNoAr} | sobrepostas ${totalSobre}${process.env.JSON === '1' ? ' -> tools/eval/graffiti_audit.json' : ''}`);
 
 /* Placar contra o teto declarado: piora reprova, melhoria manda baixar o teto. */
 let estourou = 0;
