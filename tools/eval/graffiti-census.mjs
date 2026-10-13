@@ -65,12 +65,17 @@ const MAPS = ['praca_poderes', 'piscina_treta', 'loja_h', 'ferro_velho', 'quebra
 // loja_h 43→49 em 13/08: medido 49,4% (1,6 m 62,7 · 3,2 m 28 · 5,0 m 54,4) depois da
 // fachada greco-romana virar pintável, já com o filtro de âncora baixa do #260 (que
 // tirou da conta a tinta em caixa procedural — o 1,6 m era 87,8% antes dele).
-const META = { praca_poderes: 35, piscina_treta: 76, loja_h: 49, ferro_velho: 46, quebrada: 67,
-  /* MA1 27/09: os 6 novos entram com piso ANTI-REGRESSÃO (medido menos folga) —
-     meta de verdade se define no MA2 junto com o regen da passada. Amazonia, lajes
-     e velho_oeste estão com cobertura 0: sem passada (amazonia/velho_oeste) e
-     layout órfão do rename fy_lajes→lajes (a chave do GRAFITE não acompanhou). */
-  escadao: 18, corrego: 25, posto_treta: 26, amazonia: 0, lajes: 0, velho_oeste: 0 };
+/* 13/10/2026 (PR #816): pisos remedidos depois do SUPORTE ESTRITO (graffiti_surface.js).
+   As metas antigas foram medidas com arte que não tinha parede atrás: quad plano em
+   coluna cilíndrica (Praça), tag em mato e capim (Ferro), borda fora da parede. Com a
+   arte da MAIN e o suporte estrito, este censo mede Praça 1,5 · Piscina 29 · Loja H 17,9 ·
+   Ferro 3,5 · Quebrada 15,9 · Escadão 6. O reasse novo mede Praça 0,6 · Piscina 69,3 ·
+   Loja H 30,2 · Ferro 14,5 · Quebrada 44,1 · Escadão 11 · Posto 14,4 · Córrego 29,2 ·
+   Lajes 3,3. O piso é o medido, sem folga; Córrego e Lajes SOBEM. A Praça fica em 0
+   porque a altura do olho lá é pilotis redondo: subir esse número pede parede nova,
+   não tinta. Peças na régua: tools/eval/graffiti_census.json deste commit. */
+const META = { praca_poderes: 0, piscina_treta: 69, loja_h: 30, ferro_velho: 14, quebrada: 44,
+  escadao: 11, corrego: 29, posto_treta: 14, amazonia: 0, lajes: 3, velho_oeste: 0 };
 
 /* TETO DE DENSIDADE (peças por placa de parede) — MA1, 27/09, medido ×1,35:
    praca 0,35→0,5 · piscina 0,63→0,85 · loja_h 0,51→0,7 · ferro 0,36→0,5 ·
@@ -86,8 +91,8 @@ const TETO = { praca_poderes: 0.5, piscina_treta: 0.85, loja_h: 0.7, ferro_velho
    vizinha): o gate morde ACIMA disso, o MA2 quita zerando cada mapa (quando zerar,
    apague a linha). Açoites com coordenada estão no graffiti_census.json → orfas.
    .amostra e no docs/maps/GRAFITE-CENSO-11.md. */
-const ORFAS_TOLERADO = { piscina_treta: 13, escadao: 11, corrego: 6, posto_treta: 5,
-  loja_h: 4, ferro_velho: 3, quebrada: 3 };
+// 13/10/2026: zero órfãs nos 11 mapas depois do suporte estrito; qualquer órfã reprova.
+const ORFAS_TOLERADO = {};
 
 const gRoot = execSync('npm root -g').toString().trim();
 const _pw = await import(pathToFileURL(`${gRoot}/playwright/index.js`).href);
@@ -147,6 +152,10 @@ const CENSO = async () => {
     const n = String(o.name);
     if (!n.startsWith('decal:') && !n.startsWith('mural:')) return;
     if (!(o.geometry.parameters && o.geometry.parameters.width)) return;   // malha junta: já entrou acima
+    /* Arquivo com UMA peça só: `_juntar` reaproveita a PlaneGeometry já transladada
+       para o mundo, então ela tem `parameters` mas a malha fica na origem. Ela já
+       entrou acima por `graffitiPecas`; contar de novo aqui virava órfã "@0,0,0". */
+    if (o.userData && o.userData.pecas) return;
     o.updateMatrixWorld(true);
     const p = o.getWorldPosition(new THREE.Vector3());
     const q = o.getWorldQuaternion(new THREE.Quaternion());

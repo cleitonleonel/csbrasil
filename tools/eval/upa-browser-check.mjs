@@ -71,25 +71,33 @@ try{
   const splash=page.locator('#boot-splash');
   if(await splash.isVisible().catch(()=>false)){await page.locator('#splash-enter:not(.hidden)').waitFor({state:'visible',timeout:30000});await splash.click({force:true});await splash.waitFor({state:'detached',timeout:10000});}
   await page.locator('#main-menu:not(.hidden)').waitFor({state:'visible',timeout:30000});await page.waitForTimeout(1100);
+  if(await page.locator('#hub-sp').isVisible()){
+   await page.locator('#hub-sp').click();await page.locator(`#hub-mode-${mode==='ctf'?'ctf':'rounds'}`).click();
+   await page.locator('#btn-jogar').click();await page.locator('#hub-quick-confirm').click();
+  }else{
   await page.locator('[data-act="single-player"]').click();
   await page.locator(`[data-act="${mode==='ctf'?'ctf':'sp'}"]`).click();
   await page.locator('#map-screen:not(.hidden)').waitFor({state:'visible'});await page.locator('#ms-continue').click();
   await page.locator('#team-select:not(.hidden)').waitFor({state:'visible'});await page.locator('#btn-team-e').click();
   await page.locator('#char-select:not(.hidden)').waitFor({state:'visible',timeout:60000});await page.locator('.char-row').first().click();await page.locator('#char-confirm').click();
   await page.locator('#team-select:not(.hidden)').waitFor({state:'visible'});await page.locator('#btn-team-b').click();
+  }
  }
  await page.waitForFunction(()=>window.__game?.state==='live',null,{timeout:120000});await page.waitForTimeout(4000);
  await page.evaluate(()=>{const g=window.__game;g.player.hp=1e9;g.timeLeft=1e6;g.ctfMatchLeft=1e6;g.renderer.info.autoReset=false;window.__upaPerf={active:true,frames:[],draw:{frames:0,maxCalls:0,maxTriangles:0}};let last=performance.now();const update=g.update;g.update=function(dt,render=true){if(render)g.renderer.info.reset();try{return update.call(this,dt,render);}finally{if(render){const d=window.__upaPerf.draw;d.frames++;d.maxCalls=Math.max(d.maxCalls,g.renderer.info.render.calls);d.maxTriangles=Math.max(d.maxTriangles,g.renderer.info.render.triangles);}}};requestAnimationFrame(function tick(t){const s=window.__upaPerf;if(!s.active)return;s.frames.push(t-last);last=t;requestAnimationFrame(tick);});});
  await page.waitForTimeout(seconds*1000);
  const rec=await page.evaluate(({teams,mode})=>{const g=window.__game,s=window.__upaPerf;s.active=false;const q=(a,p)=>a[Math.min(a.length-1,Math.floor(a.length*p))]??null,a=s.frames.slice(1).sort((x,y)=>x-y);return{map:g._mapId,state:g.state,mode:g.ctf?'ctf':'rounds',requestedMode:mode,requestedTeams:teams,actualBots:g.bots.length,api:g.renderer.__csWebgl?.api,pixelRatio:g.renderer.getPixelRatio(),viewport:[innerWidth,innerHeight],sectors:g.world.upaClinicalSectors,accesses:g.world.upaAccesses?.length,covers:g.world.upaClinicalCover?.length,frameMs:{p50:q(a,.5),p95:q(a,.95),p99:q(a,.99),max:a.at(-1)},over100:a.filter(v=>v>100).length,draw:s.draw};},{teams,mode});
  rec.source={label:sourceLabel,sha:sourceSha,mapFile,mapFileSha256:mapFileHash,runtimeDiffSha256:baseline?'clean':runtimeDiffHash,baseUrl:base,url,flow:baseline?'auto-baseline':'menu',generatedAt:new Date().toISOString()};
+ rec.clinical=await page.evaluate(()=>{const counts={},scales=[],g=window.__game;g.world.root.traverse(o=>{if(o.userData.upaProp){const id=o.userData.upaProp.id;counts[id]=(counts[id]||0)+1;scales.push(o.scale.toArray());}});return{counts,instances:scales.length,unitScale:scales.every(a=>a.every(v=>Math.abs(v-1)<1e-6))};});
  rec.browserDebt={pageErrors,consoleErrors,httpErrors,requestFailures,...classify({pageErrors,consoleErrors,httpErrors,requestFailures})};
  const label=`upa-${mode}-${teams}-${width}x${height}`;writeFileSync(`${out}/${label}.json`,JSON.stringify(rec,null,2)+'\n');
+ if(await page.locator('#crash-overlay').isVisible().catch(()=>false))await page.locator('#crash-overlay').click();
  const views=[['recepcao',[-20,0,-29],[-18,1.2,-17]],['farmacia',[18,0,-31],[17,1.2,-20]],['consultorios',[-18,0,-11],[-18,1.2,5]],['triagem',[18,0,-11],[17,1.2,7]],['observacao',[-18,0,17],[-18,1.2,29]],['emergencia',[18,0,17],[18,1.2,29]]];
  for(const [id,pos,look] of views){await page.evaluate(({pos,look})=>{const g=window.__game;g.paused=true;g.player.hp=100;g._updateHud();for(const b of g.bots)b.mesh.group.visible=false;g.player.pos.set(...pos);g.camera.position.set(pos[0],1.62,pos[2]);g.camera.fov=70;g.camera.updateProjectionMatrix();g.camera.lookAt(...look);g.scene.updateMatrixWorld(true);g.renderer.render(g.scene,g.camera);},{pos,look});await page.screenshot({path:`${out}/${label}-${id}.png`});}
  console.log(JSON.stringify({label,map:rec.map,mode:rec.mode,actualBots:rec.actualBots,api:rec.api,frameMs:rec.frameMs,over100:rec.over100,draw:rec.draw,unexpected:rec.browserDebt.unexpected.length,source:rec.source}));
  const structureOk=baseline||((rec.accesses??0)>=12&&(rec.covers??0)>=12&&Object.keys(rec.sectors??{}).length>=6);
  const perfOk=rec.frameMs.p95<=20&&rec.over100===0&&rec.draw.maxCalls<=800&&rec.draw.maxTriangles<=1100000;
- if(rec.browserDebt.unexpected.length||rec.map!=='upa_24h'||rec.state!=='live'||rec.mode!==mode||rec.actualBots!==teams*2-1||rec.api!=='webgl2'||!structureOk||!perfOk)process.exitCode=1;
+ const clinicalOk=baseline||(Object.keys(rec.clinical.counts).length===9&&rec.clinical.instances>0&&rec.clinical.unitScale);
+ if(rec.browserDebt.unexpected.length||rec.map!=='upa_24h'||rec.state!=='live'||rec.mode!==mode||rec.actualBots!==teams*2-1||rec.api!=='webgl2'||!structureOk||!perfOk||!clinicalOk)process.exitCode=1;
  await ctx.close();
 }finally{await browser.close();}
