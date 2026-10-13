@@ -147,6 +147,10 @@ const CENSO = async () => {
     const n = String(o.name);
     if (!n.startsWith('decal:') && !n.startsWith('mural:')) return;
     if (!(o.geometry.parameters && o.geometry.parameters.width)) return;   // malha junta: já entrou acima
+    /* Arquivo com UMA peça só: `_juntar` reaproveita a PlaneGeometry já transladada
+       para o mundo, então ela tem `parameters` mas a malha fica na origem. Ela já
+       entrou acima por `graffitiPecas`; contar de novo aqui virava órfã "@0,0,0". */
+    if (o.userData && o.userData.pecas) return;
     o.updateMatrixWorld(true);
     const p = o.getWorldPosition(new THREE.Vector3());
     const q = o.getWorldQuaternion(new THREE.Quaternion());
