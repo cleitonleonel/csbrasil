@@ -1,8 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { BRAND, BRAND_FULL, SUPPORT_EMAIL, abs } from '../lib/site';
+import { BRAND, BRAND_FULL, abs } from '../lib/site';
+import { LEGAL_CONTACT } from '../lib/legal';
 
-const requestUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Excluir dados do ${BRAND}`)}`;
+const requestUrl = `mailto:${LEGAL_CONTACT}?subject=${encodeURIComponent(`Excluir dados do ${BRAND}`)}`;
 const jsonld = [{ '@type': 'BreadcrumbList', itemListElement: [
   { '@type': 'ListItem', position: 1, name: 'Início', item: abs('/') },
   { '@type': 'ListItem', position: 2, name: 'Excluir dados', item: abs('/excluir-dados') },
@@ -12,7 +13,7 @@ const jsonld = [{ '@type': 'BreadcrumbList', itemListElement: [
   <Fragment slot="sub">Você pode fazer o pedido por email, mesmo sem o app instalado.</Fragment>
   <h2>Como pedir</h2>
   <ol>
-    <li>Envie um email para <a href={requestUrl}>{SUPPORT_EMAIL}</a> com o assunto “Excluir dados do {BRAND}”.</li>
+    <li>Envie um email para <a href={requestUrl}>{LEGAL_CONTACT}</a> com o assunto “Excluir dados do {BRAND}”.</li>
     <li>Informe o apelido usado no jogo e, se houver, o email que você vinculou ao login ou usou para enviar feedback. Diga se deseja excluir todo o perfil ou apenas dados específicos.</li>
     <li>A equipe confirma o recebimento e verifica a relação com o perfil antes de excluir. Um apelido público sozinho não prova que o perfil é seu. Informaremos o prazo e qualquer informação adicional necessária.</li>
   </ol>
