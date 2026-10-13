@@ -11,7 +11,7 @@
 // faixa vermelha no topo e verde embaixo. Assim perfil e páginas de conteúdo
 // parecem o mesmo produto quando aparecem lado a lado num feed.
 import { MAPAS, ARMAS, PERSONAGENS, FACCOES } from '../data/jogo';
-import { BRAND } from './site';
+import { BRAND, HOST } from './site';
 
 export interface Card {
   /** etiqueta do canto, ex. "5 ARENAS" - inteira, na caixa âmbar dimensionada por ela */
@@ -88,6 +88,6 @@ export function cardSvg(c: Card): string {
   <text x="70" y="238" font-size="22" fill="#b8d94a" font-family="DejaVu Sans">${esc(corta(c.sub, 70))}</text>
   <rect x="70" y="258" width="1060" height="1.5" fill="#3a3325"/>
   ${linhas}
-  <text x="70" y="600" font-size="19" fill="#8a8064" font-family="DejaVu Sans">csbrasil.online · FPS grátis de navegador</text>
+  <text x="70" y="600" font-size="19" fill="#8a8064" font-family="DejaVu Sans">${HOST} · FPS grátis de navegador</text>
 </svg>`;
 }

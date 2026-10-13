@@ -24,7 +24,7 @@ const mutant=process.argv.find(s=>s.startsWith('--mutant='))?.split('=')[1];
 const only=process.argv.find(s=>s.startsWith('--only='))?.split('=')[1];
 if(mutant) {
   assert(['advertise-disabled','stale-auth-dialog','quit-social-resume','portrait-no-guard','portrait-broad-guard','handle-action','share-opt-in','copy-origin'].includes(mutant),'unknown mutation');
-  if(['handle-action','share-opt-in','copy-origin'].includes(mutant)){const pairs={'handle-action':["action('handle',null","action('settings',null"],'share-opt-in':['share.checked=p.settings.share_character===true','share.checked=true'],'copy-origin':['https://www.corosolto.com.br${p.url}','${location.origin}${p.url}']};const [before,after]=pairs[mutant];const changed=community.replace(before,after);assert.notEqual(changed,community,'mutation did not apply');community=changed;}else if(mutant==='stale-auth-dialog') {
+  if(['handle-action','share-opt-in','copy-origin'].includes(mutant)){const pairs={'handle-action':["action('handle',null","action('settings',null"],'share-opt-in':['share.checked=p.settings.share_character===true','share.checked=true'],'copy-origin':['${root.dataset.site}${p.url}','${location.origin}${p.url}']};const [before,after]=pairs[mutant];const changed=community.replace(before,after);assert.notEqual(changed,community,'mutation did not apply');community=changed;}else if(mutant==='stale-auth-dialog') {
     const changed=entrySource.replace('loading=false;if(dialog.open)draw();maybePrompt();','loading=false;maybePrompt();');
     assert.notEqual(changed,entrySource,'mutation did not apply');entrySource=changed;
   }else if(mutant==='advertise-disabled'){
@@ -90,7 +90,7 @@ async function ui(authenticated=false,{nick='Guest',bootSplash=false,runCommunit
   const ids=Object.fromEntries(['community','social-status','social-account','social-content','social-unread','hub-social-unread','account-entry-dialog','account-entry-body','account-entry-close','hub-account-login','account-completion','account-completion-copy','main-menu'].map(id=>[id,new Element(id==='account-completion'?'details':'div')]));
   ids['main-menu'].classList={contains:()=>false};
   if(bootSplash)ids['boot-splash']=new Element('div');
-  ids.community.dataset.tab=tab;
+  ids.community.dataset.tab=tab;ids.community.dataset.site='https://www.corosolto.com.br';
   const storage=new Map([['cs_anon','11111111-1111-4111-8111-111111111111'],['awpbr_token','22222222-2222-4222-8222-222222222222'],['awpbr_nick','Guest'],['awpbr_stats','{"kills":3}']]);
   const before=Object.fromEntries(storage),navigation=[],calls=[],copied=[];
   if(!nick)storage.delete('awpbr_nick');else storage.set('awpbr_nick',nick);

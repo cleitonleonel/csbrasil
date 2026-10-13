@@ -95,6 +95,8 @@ jobs:
         run: npm run docs:check
       - name: ARCH.md gerado está em dia
         run: npm run arch:check
+      - name: hreflang dos docs resolve nas duas línguas
+        run: npm run eval:docs-hreflang
       # Precisa de rede, por isso NÃO entra no check:deploy (que roda dentro do
       # build da Vercel). Vulnerabilidade nova em dep de produção reprova aqui.
       - name: Dependência de produção sem vulnerabilidade nova
@@ -137,6 +139,8 @@ jobs:
         run: |
           node tools/eval/seo-check.mjs
           node tools/eval/seo-check.mjs --mutate
+          node tools/eval/canonical-host-check.mjs
+          node tools/eval/canonical-host-check.mjs --mutate
 
       # PORTÃO DO SITE. `astro build` verde não prova nada sobre as rotas:
       # /ranking pode dar 500, /sitemap.xml pode sair vazio e o build passa em
