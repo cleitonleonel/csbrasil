@@ -7,6 +7,7 @@
 // W no miolo do beco. ?beco=0 restaura o layout antigo. Props otimizados de /Users/ruben/glb
 // (tools/optimize-static.mjs).
 import * as THREE from 'three';
+import { soilSurface } from './map_surface_finish.js';
 import { aplicaSombraSol } from './mapquality.js';
 import { placeProp } from './mapprops.js';
 import { VAO_BANDS, aoBoxGeo, aoMatFactory, ContactSkirt, BASE_FLOATING, onGround } from './vao.js';
@@ -181,7 +182,7 @@ function blobTex(r, g, b, aMax, seed = 101) {
     x.fillStyle = gr; x.beginPath(); x.arc(px, py, rr, 0, 7); x.fill();
   }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return t;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; detailFor(t); return t;
 }
 
 /* ===================================================================================
@@ -397,7 +398,7 @@ function pixacaoTex(seed = 555) {
 /* ===== VEGETAÇÃO INVASORA — o contraste que DEFINE o mapa =====
    BAR §4.4: "o verde vivo e saturado do mato contra o laranja da ferrugem é o contraste
    cromático que define este mapa (complementares diretos). Um ferro velho sem mato lê
-   como cenário de estúdio." Por isso o verde aqui é MAIS saturado que o T.grass padrão. */
+   como cenário de estúdio." O acabamento oliva preserva esse contraste sem virar verde-lima. */
 function bladeTex(seed = 401, tall = false) {
   const S = 128, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -405,18 +406,18 @@ function bladeTex(seed = 401, tall = false) {
   const n = tall ? 30 : 24;
   for (let i = 0; i < n; i++) {
     const px = 6 + rnd() * (S - 12), h = (tall ? 0.62 : 0.42) * S + rnd() * S * 0.36;
-    // verde SATURADO (capim-colonião ao sol) com algumas folhas secas amareladas
+    // Verde oliva e palha seca preservam a massa dos tufos sem dominar a sucata.
     const dry = rnd() > 0.82;
     x.strokeStyle = dry
-      ? `rgba(${170 + rnd() * 40 | 0},${150 + rnd() * 40 | 0},${60 + rnd() * 30 | 0},0.95)`
-      : `rgba(${44 + rnd() * 54 | 0},${132 + rnd() * 74 | 0},${28 + rnd() * 34 | 0},0.96)`;
+      ? `rgba(${143 + rnd() * 32 | 0},${132 + rnd() * 32 | 0},${78 + rnd() * 24 | 0},0.95)`
+      : `rgba(${67 + rnd() * 27 | 0},${91 + rnd() * 37 | 0},${45 + rnd() * 23 | 0},0.96)`;
     x.lineWidth = 1.6 + rnd() * 2.4; x.lineCap = 'round';
     x.beginPath(); x.moveTo(px, S);
     x.quadraticCurveTo(px + (rnd() - 0.5) * 22, S - h * 0.55, px + (rnd() - 0.5) * 40, S - h);
     x.stroke();
   }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return t;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; detailFor(t); return t;
 }
 // trepadeira: manta de folhas que cobre a pilha inteira (alpha, bordas recortadas)
 function vineTex(seed = 733) {
@@ -473,7 +474,7 @@ function puddleTex(seed = 617) {
     x.beginPath(); x.ellipse(S / 2 + (rnd() - 0.5) * 28, S / 2 + (rnd() - 0.5) * 28, 10 + rnd() * 34, 8 + rnd() * 28, rnd() * 3, 0, 6.3); x.stroke();
   }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return t;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; detailFor(t); return t;
 }
 
 export function buildFerroVelho(scene, T) {
@@ -496,7 +497,7 @@ export function buildFerroVelho(scene, T) {
     const m = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, ...o });
     const det = m.map && detailFor(m.map);
     if (det) {
-      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(0.65, 0.65); }
+      if (det.normalMap && !m.normalMap) { m.normalMap = det.normalMap; m.normalScale.set(m.roughness >= .8 && m.metalness < .2 ? .4 : .65, m.roughness >= .8 && m.metalness < .2 ? .4 : .65); }
       if (det.roughnessMap && !m.roughnessMap) m.roughnessMap = det.roughnessMap;
     }
     return m;
@@ -516,7 +517,7 @@ export function buildFerroVelho(scene, T) {
        como terra batida brasileira é o hue, não a saturação. */
     dirt: lam({ map: FERRO_SAT_HOT
       ? noiseTex('#6b5a44', [['#584a38', 60, 8, 26, 0.5], ['#7a6a52', 50, 6, 20, 0.4], ['#3a3230', 14, 5, 14, 0.45], ['#8a4a2a', 26, 2, 6, 0.4], ['#4a3f30', 34, 2, 7, 0.4]], 46, 52, { pebbles: '#8a7a62', pebbleN: 620, seed: 11 })
-      : noiseTex('#786d5f', [['#585046', 60, 8, 26, 0.5], ['#7a7163', 50, 6, 20, 0.4], ['#3a3331', 14, 5, 14, 0.45], ['#946c59', 26, 2, 6, 0.4], ['#4a443b', 34, 2, 7, 0.4]], 46, 52, { pebbles: '#8a7d69', pebbleN: 620, seed: 11 }) }),
+      : soilSurface(46, 52) }),
     wall: lam({ map: noiseTex('#7d7468', [['#6a6258', 40, 10, 30, 0.5], ['#8d8478', 30, 8, 22, 0.4], ['#4a443c', 10, 6, 16, 0.4]], 6, 2, { cracks: '#55504a', seed: 23 }) }),
     /* ESPECULARES — R9. O BAR §4.4 pede nominalmente "o specular correndo pelas chapas
        onduladas" com o sol rasante, e o mapa entregava ZERO pixel acima de L* 97 em 24
@@ -534,7 +535,7 @@ export function buildFerroVelho(scene, T) {
     zincOld: lam({ map: zincTex(1, 1, 313, { rust: 1, hi: '#9aa39f', mid: '#77817e', lo: '#4e5654' }), metalness: 0.58, roughness: 0.32, envMapIntensity: 1.7 }),
     zincDark: lam({ map: zincTex(3, 1.4, 907, { rust: 0.6, hi: '#5d666a', mid: '#48504f', lo: '#31393a' }), metalness: 0.50, roughness: 0.38, envMapIntensity: 1.6 }),
     tire: lam({ color: 0x22252a }),
-    barrel: lam({ map: barrelTex(), metalness: 0.4, roughness: 0.7 }),
+    barrel: lam({ map: barrelTex(), metalness: 0.4, roughness: 0.76 }),
     // óleo BRILHA (crítico R6: "lê como buraco preto fosco") — specular do sol na poça
     // óleo é FILME DIELÉTRICO sobre asfalto: quem faz o brilho é o Fresnel na rasante
     // (F ~ 0,14 com o sol a 20°), então a roughness tem que ficar baixa pro pico passar
@@ -750,14 +751,14 @@ export function buildFerroVelho(scene, T) {
      tint por instância. O topo serrilhado dos painéis é o que quebra o horizonte reto. */
   const fenceP = [], fencePost = [];   // {x,z,ry,w,h,tint} / {x,z,ry,h}
   const zincFence = (cx, cz, ry, len) => {
-    const step = LOWQ ? 2.2 : 1.25;    // 'low': metade dos painéis, mesma silhueta
+    const step = 1.25;    // A parede de apoio do grafite permanece igual em todas as qualidades.
     const n = Math.max(1, Math.round(len / step)), w = len / n;
     const dx = Math.cos(ry), dz = -Math.sin(ry);
     for (let i = 0; i < n; i++) {
       const t = (i + 0.5) / n - 0.5, px = cx + dx * t * len, pz = cz + dz * t * len;
       const s = ((i * 2654435761 + (cx * 71 + cz * 13)) >>> 0) % 1000 / 1000;
       fenceP.push({ x: px, z: pz, ry: ry + (s - 0.5) * 0.09, w: w * 1.06, h: 2.9 + s * 1.25, tint: s });
-      if (i % (LOWQ ? 3 : 2) === 0) fencePost.push({ x: px - dx * w * 0.5, z: pz - dz * w * 0.5, ry, h: 3.4 + s * 0.9, lean: (s - 0.5) * 0.1 });
+      if (i % (LOWQ ? 4 : 2) === 0) fencePost.push({ x: px - dx * w * 0.5, z: pz - dz * w * 0.5, ry, h: 3.4 + s * 0.9, lean: (s - 0.5) * 0.1 });
     }
   };
   addBox(2 * HALF_X, 3.2, 1, MAT.zincDark, 0, 0, -HALF_Z);                 // fundo (norte)
@@ -1315,10 +1316,12 @@ export function buildFerroVelho(scene, T) {
       im.frustumCulled = false;
       const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
       let n = 0;
-      for (const [cx, cz] of spots) for (let k = 0; k < per; k++) {
+      // Consumir o mesmo sorteio mantém sucata e capim low nos lugares do med.
+      for (const [cx, cz] of spots) for (let k = 0; k < 9; k++) {
         e.set(-Math.PI / 2, 0, drnd() * 6.3); q.setFromEuler(e);
         m4.compose(new THREE.Vector3(cx + (drnd() - 0.5) * 3.4, 0.025, cz + (drnd() - 0.5) * 3.4), q,
           new THREE.Vector3(0.05 + drnd() * 0.09, 0.04 + drnd() * 0.08, 1));
+        if (LOWQ && k >= 4) continue;
         im.setMatrixAt(n++, m4);
       }
       im.instanceMatrix.needsUpdate = true; root.add(im);
@@ -1433,7 +1436,7 @@ export function buildFerroVelho(scene, T) {
       const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), col = new THREE.Color();
       let n = 0;
       for (const [cx, cz] of clumps) {
-        for (let k = 0; k < perClump; k++) {
+        for (let k = 0; k < 7; k++) {
           const a = drnd() * 6.283, d = drnd() * 1.7;
           const px = cx + Math.cos(a) * d, pz = cz + Math.sin(a) * d;
           const h = 1.35 + drnd() * 0.85, w = h * (0.72 + drnd() * 0.4);
@@ -1441,6 +1444,7 @@ export function buildFerroVelho(scene, T) {
           // tint por tufo: verde-vivo (a maioria) até um pouco de palha — nunca uniforme
           const v = drnd();
           col.setHSL(0.24 + v * 0.06, 0.45 + (1 - v) * 0.3, 0.36 + v * 0.16);
+          if (LOWQ && k >= 3) continue;
           for (const off of [0, Math.PI / 2]) {
             e.set(0, yaw + off, 0); q.setFromEuler(e);
             m4.compose(new THREE.Vector3(px, h / 2, pz), q, new THREE.Vector3(w, h, 1));
@@ -1566,7 +1570,8 @@ export function buildFerroVelho(scene, T) {
         [-16, 35.36, Math.PI, 1], [18, 35.36, Math.PI, 0]];   // sul: à FRENTE das chapas de zinco (z-fight)
       for (const [x, z, ry, gi] of gp) {
         const m = new THREE.Mesh(new THREE.PlaneGeometry(6.2, 2.7), lam({ map: T.graffiti[gi % T.graffiti.length] }));
-        m.position.set(x, 1.75, z); m.rotation.y = ry; m.receiveShadow = true; root.add(m);
+        m.position.set(x, 1.75, z); m.rotation.y = ry; m.receiveShadow = true;
+        m.name = 'mural:ferro-procedural-' + gi; root.add(m);
       }
     }
     /* PIXAÇÃO em preto/prata sobre o zinco (BAR §4.4) — é diferente do grafite colorido:
@@ -1578,7 +1583,8 @@ export function buildFerroVelho(scene, T) {
         [31.42, -4, -Math.PI / 2, 0], [-24, 35.34, Math.PI, 0], [26, 35.34, Math.PI, 1]]) {
         const m = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 1.7),
           new THREE.MeshBasicMaterial({ map: pix[pi], transparent: true, alphaTest: 0.15 }));
-        m.position.set(x, 2.65, z); m.rotation.y = ry; root.add(m);
+        m.position.set(x, 2.65, z); m.rotation.y = ry;
+        m.name = 'decal:ferro-pixacao-' + pi; root.add(m);
       }
     }
     /* ===== DECALQUE RECORTADO (public/img/decals) — 3ª camada de tinta =====

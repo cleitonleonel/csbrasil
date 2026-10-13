@@ -199,7 +199,7 @@ export function buildVelhoOeste(scene, T) {
     TX.pedra = realTexture('pedra-real-v1.webp', 'oeste-pedra-real', 1);
   }
   const mat = (color, map = TX.wood, roughness = .9, metalness = 0, bumpScale = .045) => new THREE.MeshStandardMaterial({ color, map, bumpMap: map, bumpScale, roughness, metalness });
-  const adobeDe = (color) => mat(color, TX.adobe || (TX.adobe = texturaAdobe()), .96, 0, .05);
+  const adobeDe = (color) => mat(color, TX.adobe || (TX.adobe = texturaAdobe()), .96, 0, .025);
   const paupiqueDe = (color) => { const m = mat(color, TX.paupique || (TX.paupique = texturaPaupique()), .97, 0, .035); if (TX.adobe) m.bumpMap = TX.adobe; return m; };
   const solo = texProcedural(256, (x, y) => {
     const grain = ((Math.imul(x ^ (y * 373), 1597334677) >>> 16) % 7) - 3;
@@ -214,7 +214,7 @@ export function buildVelhoOeste(scene, T) {
   const MAT = {
     sand: new THREE.MeshStandardMaterial({ color: GLB_ON ? 0xd1c8b0 : 0xffffff, map: soilMap, bumpMap: null, bumpScale: 0, roughness: 1, metalness: 0 }),
     wood: mat(0xffffff), pale: mat(0xd9b17a, TX.paleWood), dark: mat(0x3b2115),
-    roof: mat(0xe1a582, TX.roof, .94, 0, .1), trim: mat(0xd8ad6b, TX.paleWood), metal: mat(0x8c8174, TX.metal, .55, .35, .035),
+    roof: mat(0xe1a582, TX.roof, .94, 0, .055), trim: mat(0xd8ad6b, TX.paleWood), metal: mat(0x8c8174, TX.metal, .55, .35, .035),
     black: mat(0x191411, TX.metal, .6, .25), cactus: mat(0xffffff, TX.cactus, 1, 0, .075), cactusLight: mat(0xaed09a, TX.cactus, 1, 0, .075),
     hay: mat(0xffffff, TX.hay, 1, 0, .09), red: mat(0x7e271f, TX.wood), blue: mat(0x2d5361, TX.wood), glass: mat(0x87b2ba, TX.metal, .25, .05, .01),
     windowVoid: new THREE.MeshBasicMaterial({ color: 0x1b110b }),
