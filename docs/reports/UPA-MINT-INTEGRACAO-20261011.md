@@ -1,6 +1,6 @@
 # Integração clínica Mint na UPA
 
-Objetivo: integrar o lote completo da [ficha 27](../../plans/27-UPA-CLINICAL-MINT.md) com escala uniforme, cobertura e circulação reais. Esta frente é dona apenas de `map_upa.js` e gates UPA. Root entrega os nove GLBs aprovados, normalização, procedência e revisão visual; não haverá integração parcial dos pilotos.
+Objetivo: integrar o lote completo da ficha 27 (arquivada fora da árvore pública desde o #835) com escala uniforme, cobertura e circulação reais. Esta frente é dona apenas de `map_upa.js` e gates UPA. Root entrega os nove GLBs aprovados, normalização, procedência e revisão visual; não haverá integração parcial dos pilotos.
 
 Branch `codex/mapas-upa-tiros-grafites-20261011`, retomada em `7b8825d14`. Continuidade geral: `/Volumes/Zenith/Projects/game/corosolto/csbrasil/progress/docs/reports/MAPAS-UPA-TIROS-GRAFITES-20261011.md`. O relatório anterior [UPA-RETORNO](UPA-RETORNO-20261011.md) cobre o retorno procedural, sem comprovar esta substituição clínica.
 

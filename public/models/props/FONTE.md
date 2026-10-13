@@ -294,7 +294,7 @@ o GLB só substitui a imagem e é esticado para caber exatamente na caixa.
 Nove props gerados por prompts próprios na conta Mint do usuário, TRIPO_P1:
 maca, longarina, monitor, soro, oxigênio, biombo, cadeira de rodas, armário e
 balcão modular. Projeto, packs, prompts e fontes documentados em
-[UPA — procedência](../../../plans/upa-clinical-mint/FONTE.md); hashes dos originais
+UPA: procedência em `upa-mint-assets.json` (a ficha saiu da árvore pública no #835); hashes dos originais
 e derivados, dimensões e tratamento offline nas entradas `upa_*` de
 [mint-assets.json](../../../mint-assets.json). A coleção está em
 [upa-mint-assets.json](upa-mint-assets.json).
