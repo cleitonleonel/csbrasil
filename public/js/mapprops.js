@@ -17,6 +17,7 @@ const _base = new Map(); // id -> template scene
 const GRAFFITI_WALL_PROPS = new Set([
   'congresso', 'catedral', 'ministerio', 'palacio', 'container_escritorio',
   'casa_pedra', 'casa_geminada', 'casa_favela_azul', 'casa_favela_tijolo', 'fav_house',
+  'fav_brasileira', 'fav_modular', 'fachada_comercio',
   'escadao_casa_r3', 'guarita_muro', 'portao_penitenciaria',
   'lajes_casa_escada', 'lajes_casa_tijolo',
   ...Array.from({ length: 7 }, (_, i) => `lajes_casa_0${i + 1}`),

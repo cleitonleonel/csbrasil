@@ -11,7 +11,9 @@ const cases = [['bus', false], ['dumpster', false], ['pilha_pneus', false],
   ['piscina_banco', false], ['justica', false], ['casa_favela_tijolo', true],
   ['container_escritorio', true],
   // Malha única cujo título do GLB contém "Glass": a categoria decide, não o título.
-  ['ministerio', true]];
+  ['ministerio', true],
+  // Casas e fachadas que os mapas usam como "casas" (Quebrada, Posto, Atacadão, Obras).
+  ['fav_brasileira', true], ['fav_modular', true], ['fachada_comercio', true]];
 await preloadPropGeometry(cases.map(([id]) => id));
 const digest = root => {
   const hash = createHash('sha256');
