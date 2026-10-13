@@ -75,8 +75,22 @@ jobs:
           labels = data.get('labels_add', [])
           if labels:
               subprocess.run(['gh', 'issue', 'edit', os.environ['ISSUE_NUMBER'], '--add-label', ','.join(labels)], check=True)
-          body = data['comment']
-          subprocess.run(['gh', 'issue', 'comment', os.environ['ISSUE_NUMBER'], '--body', body], check=True)
+          # Comentário FIXO: `edited` dispara a triagem de novo, e cada edição da issue
+          # deixava um comentário novo do bot. Agora o bot reescreve o próprio, achado
+          # pelo marcador, e só cria um quando ainda não existe.
+          marca = '<!-- issues-bot:review -->'
+          body = data['comment'] + '\n\n' + marca
+          repo = os.environ['GITHUB_REPOSITORY']
+          num = os.environ['ISSUE_NUMBER']
+          comentarios = json.loads(subprocess.check_output([
+              'gh', 'api', f'repos/{repo}/issues/{num}/comments', '--paginate'
+          ], text=True) or '[]')
+          meu = next((c for c in comentarios if marca in (c.get('body') or '')), None)
+          if meu:
+              subprocess.run(['gh', 'api', '-X', 'PATCH', f"repos/{repo}/issues/comments/{meu['id']}",
+                              '-f', f'body={body}'], check=True, stdout=subprocess.DEVNULL)
+          else:
+              subprocess.run(['gh', 'issue', 'comment', num, '--body', body], check=True)
           PY
       - name: Suggest crash duplicate
         run: |
@@ -169,7 +183,8 @@ jobs:
           PY
 
   bot-token:
-    if: github.event_name == 'issue_comment' || github.event_name == 'workflow_dispatch'
+    # Só /bot-fix precisa do token: antes rodava em TODO comentário de issue e PR.
+    if: (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/bot-fix')) || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
     runs-on: ubuntu-latest

@@ -69,8 +69,11 @@ jobs:
         run: node tools/eval/runner.mjs eval:escadao-graph eval:escadao-home eval:escadao-structure eval:escadao-descent eval:escadao-details
       - name: Escadão — compatibilidade com pacote de áudio publicado
         run: node tools/eval/escadao-audio-pack-check.mjs
+      # eval:lajes-spawn-space e eval:lajes-raycast saíram daqui porque as invariantes
+      # rodam os MESMOS scripts (LSP1 e LRP1, críticas e fora do KNOWN-RED) e reprovam
+      # o PR com condição mais forte que o código de saída: saída 0 E a linha ✓.
       - name: Lajes — geometria, ambiência, integração e preview
-        run: node tools/eval/runner.mjs eval:lajes-cache eval:lajes-visual eval:lajes-ruas eval:lajes-game eval:lajes-ambiencia eval:lajes-santos eval:lajes-airspace eval:lajes-soundscape eval:lajes-spawn-space eval:lajes-raycast eval:mappreview
+        run: node tools/eval/runner.mjs eval:lajes-cache eval:lajes-visual eval:lajes-ruas eval:lajes-game eval:lajes-ambiencia eval:lajes-santos eval:lajes-airspace eval:lajes-soundscape eval:mappreview
       - name: Sertão (tema, rotas, criação e integração)
         run: |
           npm run eval:sertao
@@ -91,9 +94,18 @@ jobs:
       # mão ele desatualiza no primeiro commit, e uma tabela de conflito com
       # linha errada é pior que não ter tabela: dois agentes acham que estão em
       # regiões diferentes e não estão.
+      #
+      # NO PUSH DA MAIN estes dois só rodam no commit `chore(release):` (13/10, c2ca685).
+      # Com o trem de release (#854) quem regenera os blocos é o release, 2×/dia, e não
+      # mais cada merge. Dois PRs testados sobre bases diferentes mesclam limpo e deixam
+      # uma contagem velha na main: o DOCS1 reprovava o push, o embarque do release.yml
+      # exige pr-fast verde, e o trem, que é quem regeneraria, nunca saía. No PR eles
+      # continuam valendo sempre; no commit do release eles conferem a regeneração dele.
       - name: Documentação gerada está em dia
+        if: github.event_name == 'pull_request' || startsWith(github.event.head_commit.message, 'chore(release):')
         run: npm run docs:check
       - name: ARCH.md gerado está em dia
+        if: github.event_name == 'pull_request' || startsWith(github.event.head_commit.message, 'chore(release):')
         run: npm run arch:check
       - name: hreflang dos docs resolve nas duas línguas
         run: npm run eval:docs-hreflang
@@ -116,6 +128,9 @@ jobs:
       - name: Enquadramento do viewmodel por arma (26 armas, GLB real)
         run: node tools/eval/vm-mint-audit.mjs
       - name: Invariantes (portão — falha crítica reprova o PR)
+        env:
+          # Saída de cada sub-simulação, para o passo dos bots não rodar o botsim de novo.
+          INVARIANTES_SAIDAS: ${{ runner.temp }}/invariantes
         run: |
           node --test tests/fresh-report.test.mjs
           node tools/eval/invariants.mjs
@@ -129,8 +144,17 @@ jobs:
       # catálogo privado e navegador; aqui o CI cobra o RESULTADO assado delas.
       - name: Placar das réguas de imagem do viewmodel em dia
         run: npm run eval:vm-placar
+      # As invariantes já rodaram `botsim.mjs` sem argumento, que é `60 all` (o default
+      # do script), com o mesmo ambiente deste job. Este passo publica aquela execução e
+      # reprova com o código de saída dela, em vez de gastar ~1 min rodando de novo.
+      # Arquivo ausente (invariantes não rodaram o botsim) também reprova.
       - name: Navegação dos bots (60 s × 5 mapas, sementes fixas)
-        run: node tools/eval/botsim.mjs 60 all
+        env:
+          SAIDA: ${{ runner.temp }}/invariantes/botsim.mjs
+        run: |
+          cat "$SAIDA.out"
+          cat "$SAIDA.err" >&2
+          exit "$(cat "$SAIDA.code")"
 
       - name: Astro build
         run: npm run build
@@ -155,8 +179,13 @@ jobs:
   # O bloco de autoria sai do shortlog e o squash reescreve o autor: num PR ele não é
   # derivável (ver tools/eval/docs-autoria-check.mjs). Aqui, na main, é — e só aqui reprova.
   # fetch-depth: 0 é obrigatório: com clone raso o gerador PULA esse bloco e o portão fica cego.
+  # Só no commit `chore(release):`, pelo mesmo motivo dos passos de docs do job build:
+  # entre um trem e outro o bloco fica velho por construção, e reprovar ali trava o trem.
+  # Vale o push da main OU o da tag: os dois são o mesmo SHA e caem no mesmo grupo de
+  # concurrency, então um cancela o outro (medido: os runs de branch dos alpha.85-.87
+  # saíram `cancelled`). Exigir só a branch deixaria a autoria sem conferência nenhuma.
   autoria-na-main:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'chore(release):')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

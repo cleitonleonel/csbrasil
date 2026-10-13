@@ -29,7 +29,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  # O job NÃO se chama `build`: o ruleset da main exige o contexto `build` pelo nome,
+  # sem amarrar a workflow, e um segundo `build` aqui contava junto com o do pr-fast.
+  preview:
     if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 25
