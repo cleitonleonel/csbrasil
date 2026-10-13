@@ -1,4 +1,19 @@
-# Clãs v1 — continuidade
+# Clãs v1: continuidade
+
+## Limpeza da fila (13/10/2026)
+
+- Branch atualizada com a main alpha.76 (merge). Social da main preservado: a página
+  `/u` é a da main; a tag volta lendo `profile.clan`, que o backend#72 inclui na
+  resposta de `social?action=profile` (uma chamada, mesma privacidade social).
+- `/api/clans` vai pelo proxy do site com sessão (cookie + origin), como o social;
+  saiu da lista de geo. 404 do backend sem a rota vira 503 no rollout.
+- Página de clãs pede `me` sem exigir uid+token: conta Auth usa o cookie; convidado
+  continua por uid+token. Régua `eval:clans-sessao` (4 mutantes RED).
+- Aceite local no Chromium (Playwright, SwiftShader): duas contas Auth criaram clã,
+  convidaram, aceitaram, viram `[TAG]` no perfil e no placar de uma partida MP real
+  num nó `game/index.js` local. Capturas em
+  `private-assets/pr-cleanup-20261013/817/`. Não substitui partida humana em produção.
+- Backend pareado: backend#72 precisa de migration 057 e deploy antes deste PR.
 
 ## Objetivo e definição de pronto
 
