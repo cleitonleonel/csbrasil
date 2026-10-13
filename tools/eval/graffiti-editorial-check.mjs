@@ -41,9 +41,8 @@ import { GRAFITE } from '../../public/js/graffiti_layout.js';
 // (não está em MAPS nem em ALIAS_MAPA) e `fy_campomorro` é a duplicata do id
 // anterior do mesmo mapa — mesma impressão digital (`f58d49c10e717e30`) nos dois.
 // Medir os fossils reprovava por arte que ninguém vê e deixava de ver a que está na
-// parede. `fy_mansao` fica: o mapa `mansao` não tem layout assado (grafita ao vivo
-// pelo pool `D_PIXO_M`), e é o único onde os mutantes `pessoa`/`morte` podem morder.
-const NOVOS = ['escadao', 'campomorro', 'fy_lajes', 'corrego', 'fy_mansao'];
+// Mansão e Lajes também usam ids canônicos; a régua acompanha a arte realmente aplicada.
+const NOVOS = ['escadao', 'campomorro', 'lajes', 'corrego', 'mansao'];
 const MUT = (process.argv.find((arg) => arg.startsWith('--mutante=')) || '').split('=')[1];
 const layouts = JSON.parse(JSON.stringify(GRAFITE));
 // #722: o veto editorial de Lajes era conferido no `map_lajes.js` — arquivo que o #701
@@ -51,10 +50,10 @@ const layouts = JSON.parse(JSON.stringify(GRAFITE));
 // que o `grafitar` foi recuperado: sem esta correção a régua lia um morto e dava verde de graça.
 let lajesFonte = readFileSync('public/js/map_lajes_authored.js', 'utf8');
 const corregoFonte = readFileSync('public/js/map_corrego.js', 'utf8');
-/* Lajes NÃO tem tabela de substituição, e não deve ter: o layout assado `fy_lajes`
+/* Lajes NÃO tem tabela de substituição, e não deve ter: o layout assado `lajes`
   tem 4 arquivos (`tag-larga/fina/money/flop.png`) e 1 mural — nenhum dos decals
   vetados. A exigência da tabela era herança do `map_lajes.js` morto. Aplicá-la
-  hoje seria código morto que ainda obriga `npm run grafite fy_lajes` no browser
+  hoje seria código morto que ainda obriga `npm run grafite lajes` no browser
   (mexer no fonte quebra o F2 do `graffiti-layout-check`). A cobertura real dos
   três nomes é a cláusula `personagensProtegidos` mais os mutantes `rick`/`popeye`,
   que leem o layout como o jogo lê. */
@@ -72,10 +71,10 @@ if (substituiCorrego) layouts.corrego.arquivos = layouts.corrego.arquivos
   .map((nome) => substituicoesCorrego.get(nome) || nome);
 
 if (MUT === 'dollynho') layouts.campomorro.arquivos.push('poster:DOLLYNHO.png');
-if (MUT === 'pessoa') layouts.fy_mansao.murais.push(['homenagem-pessoa-real', 0, 2, 0, 0, 5.4, 2.8]);
-if (MUT === 'morte') layouts.fy_mansao.arquivos.push('folha-pixaca-01.png');
-if (MUT === 'rick') layouts.fy_lajes.arquivos.push('folha-person-01.png');
-if (MUT === 'popeye') layouts.fy_lajes.arquivos.push('personagens-graffiti-01.png');
+if (MUT === 'pessoa') layouts.mansao.murais.push(['homenagem-pessoa-real', 0, 2, 0, 0, 5.4, 2.8]);
+if (MUT === 'morte') layouts.mansao.arquivos.push('folha-pixaca-01.png');
+if (MUT === 'rick') layouts.lajes.arquivos.push('folha-person-01.png');
+if (MUT === 'popeye') layouts.lajes.arquivos.push('personagens-graffiti-01.png');
 if (MUT === 'religioso-vulgar') layouts.corrego.arquivos.push('poster:despisque-leao.jpg');
 if (MUT === 'putin') layouts.corrego.arquivos.push('poster:ashtar-meme.jpg');
 if (MUT === 'rostos-carecas') layouts.corrego.arquivos.push('personagens-graffiti-02.png');
@@ -99,9 +98,9 @@ for (const id of NOVOS) {
   /* O veto do MORTE na Mansão vale para o ASSADO também: a fonte foi limpa em
      12/08 mas o layout fóssil seguiu com 18 peças do pixo até 14/08, porque o
      gerador preservava entrada de mapa sem passada. */
-  const morteAssado = id === 'fy_mansao'
+  const morteAssado = id === 'mansao'
     ? (layout.arquivos || []).filter((nome) => nome === 'folha-pixaca-01.png') : [];
-  const personagensProtegidos = id === 'fy_lajes'
+  const personagensProtegidos = id === 'lajes'
     ? (layout.arquivos || []).filter((nome) => ['folha-person-01.png','personagens-graffiti-01.png','folha-person-02.png'].includes(nome)) : [];
   /* `corrego`, nunca `fy_corrego`: o id no estilo CS foi barrado pelo M1 do
      mapa-id-check, o layout foi regerado com o nome novo e a comparação ficou
