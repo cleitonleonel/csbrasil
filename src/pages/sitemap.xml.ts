@@ -23,9 +23,8 @@
 // jogador, criada em runtime. Um sitemap que lista 8 páginas fixas e ignora os
 // perfis deixa de fora exatamente o que faz o site crescer.
 //
-// Este endpoint lista as páginas fixas + todos os jogadores do ranking (a view
-// `leaderboard` já filtra `hidden`, então quem foi escondido pela moderação não
-// entra). Sem envs do Supabase, degrada pras páginas fixas e não quebra.
+// Fixas + perfis de `player_points`, que só tem público e não hidden: o conjunto que /u
+// serve a anônimo (backend migrations 048/049, test/ranking-cutover.mjs). Sem Supabase, só as fixas.
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../lib/supabase';
 import { SITE, RANKING_ON } from '../lib/site';
