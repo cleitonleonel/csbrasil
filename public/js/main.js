@@ -441,6 +441,8 @@ const wallUrl = (i) => `url('${wallPath(i)}')`;
 const wall3x2Url = (i) => `url('${wallPath(i).replace('/img/', '/img/walls-3x2/')}')`;
 let HOME_WALL = wallUrl(0), SETUP_WALL = wallUrl(1), TEAM_WALL = wallUrl(2), CHAR_WALL = wallUrl(3);
 let HOME_WALL_3X2 = wall3x2Url(0), SETUP_WALL_3X2 = wall3x2Url(1);
+// No hub o #menu-setup fica .open na home; o slot aplicado é quem diz qual arte está na tela.
+let _menuWallSlot = 0;
 // Splash e espera do mapa compartilham o lote loading-* do manifesto.
 const LOADING_WALLS = ['/img/loading-1.webp', '/img/loading-2.webp', '/img/loading-3.webp',
   '/img/loading-4.webp', '/img/loading-5.webp', '/img/loading-6.webp'];
@@ -465,15 +467,17 @@ fetch(`/img/walls.json?v=${VERSION}`)
 function refreshWallpapers() {
   HOME_WALL = wallUrl(0); SETUP_WALL = wallUrl(1); TEAM_WALL = wallUrl(2); CHAR_WALL = wallUrl(3);
   HOME_WALL_3X2 = wall3x2Url(0); SETUP_WALL_3X2 = wall3x2Url(1);
-  if ($('menu-setup')?.classList.contains('open')) applySetupWall(); else applyHomeWall();
+  if (_menuWallSlot) applySetupWall(); else applyHomeWall();
   $('team-select')?.style.setProperty('--wall', TEAM_WALL);
   $('char-select')?.style.setProperty('--wall', CHAR_WALL);
 }
 function applyHomeWall() {
+  _menuWallSlot = 0;
   const w = document.querySelector('#main-menu .cs-wallpaper');
   if (w) { w.style.setProperty('--menu-wall', HOME_WALL); w.style.setProperty('--menu-wall-3x2', HOME_WALL_3X2); }
 }
 function applySetupWall() {
+  _menuWallSlot = 1;
   const w = document.querySelector('#main-menu .cs-wallpaper');
   if (w) { w.style.setProperty('--menu-wall', SETUP_WALL); w.style.setProperty('--menu-wall-3x2', SETUP_WALL_3X2); }
 }
@@ -485,7 +489,7 @@ startVisibleRotation(async () => {
   const next = (_wallK + 1) % WALLS.length;
   const offset = !$('char-select').classList.contains('hidden') ? 3
     : !$('team-select').classList.contains('hidden') ? 2
-    : $('menu-setup')?.classList.contains('open') ? 1 : 0;
+    : _menuWallSlot;
   const preload = new Image();
   const selected = WALLS[(next + offset) % WALLS.length];
   preload.src = offset < 2 && matchMedia('(min-aspect-ratio:37/25) and (max-aspect-ratio:38/25)').matches
