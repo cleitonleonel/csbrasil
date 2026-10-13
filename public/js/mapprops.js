@@ -23,7 +23,13 @@ const GRAFFITI_WALL_PROPS = new Set([
 ]);
 function classificarParedeProp(object, id) {
   object.userData.mapPropId = id;
-  if (!GRAFFITI_WALL_PROPS.has(id)) object.userData.graffitiSupportExcluded = true;
+  if (!GRAFFITI_WALL_PROPS.has(id)) { object.userData.graffitiSupportExcluded = true; return; }
+  // Malha única é o próprio asset: o nome dela e dos nós acima (ex. "Pilotis_Glass_Ministry_1") é o
+  // título do GLB, não uma peça de vidro. A categoria decide, como no lote instanciado.
+  const meshes = [];
+  object.traverse((node) => { if (node.isMesh) meshes.push(node); });
+  if (meshes.length !== 1) return;
+  for (let node = meshes[0]; node && node !== object.parent; node = node.parent) node.userData.graffitiNomeDoAsset = true;
 }
 
 export const COMMON_MAP_PROPS = ['congresso', 'catedral', 'ministerio', 'palacio', 'justica', 'tires', 'stall', 'tent', 'bus', 'drinkstand', 'urna', 'towner',

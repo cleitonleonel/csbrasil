@@ -9,7 +9,9 @@ import { preloadPropGeometry } from './prop-geometry-fixture.mjs';
 // vidro/lataria e móveis não podem ganhar apoio só por serem opacos.
 const cases = [['bus', false], ['dumpster', false], ['pilha_pneus', false],
   ['piscina_banco', false], ['justica', false], ['casa_favela_tijolo', true],
-  ['container_escritorio', true]];
+  ['container_escritorio', true],
+  // Malha única cujo título do GLB contém "Glass": a categoria decide, não o título.
+  ['ministerio', true]];
 await preloadPropGeometry(cases.map(([id]) => id));
 const digest = root => {
   const hash = createHash('sha256');

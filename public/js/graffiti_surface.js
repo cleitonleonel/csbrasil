@@ -6,7 +6,8 @@ const EXCLUDED = /decal:|mural:|poster:|faixa:|vidro|glass|window|janela|agua|wa
 export function superficieGrafitavel(mesh) {
   if (!mesh?.isMesh || !mesh.geometry || !mesh.material) return false;
   for (let node = mesh; node; node = node.parent) {
-    if (!node.visible || node.userData.nonSolidSurface || node.userData.graffitiSupportExcluded || EXCLUDED.test(node.name)) return false;
+    if (!node.visible || node.userData.nonSolidSurface || node.userData.graffitiSupportExcluded
+      || (!node.userData.graffitiNomeDoAsset && EXCLUDED.test(node.name))) return false;
   }
   const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
   return materials.every((material) => material && material.visible !== false && material.colorWrite !== false
