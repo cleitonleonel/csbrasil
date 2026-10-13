@@ -1,0 +1,85 @@
+# gauntlet-captura — o OLHO do agente de gráficos. Fotografa UM mapa por hora, em rodízio.
+#
+# Divisão de trabalho (13/10/2026, pedido do dono: "um agente que analise os gráficos do
+# jogo toda hora e encontre soluções"):
+#   · AQUI, no CI, só o determinístico: sobe o jogo, joga a câmera nos 4 ângulos do
+#     gl-shots, nos DOIS aspectos (16:9 e 3:2 — o dono joga em 3:2), e guarda PNG +
+#     renderer.info + erros como artifact. Sem IA no CI (decisão do dono, 08/08).
+#   · FORA do CI, uma tarefa agendada do Claude baixa o artifact da hora, roda a crítica
+#     adversarial (skill gauntlet-fps: crítico de contexto limpo, número + arquivo:linha),
+#     compara com a captura anterior do MESMO mapa e abre issue — ou PR em rascunho
+#     quando o conserto for um knob conhecido. Merge de visual continua humano.
+#
+# Por que um mapa por hora: SwiftShader (o único renderer de runner sem GPU) roda a
+# ~0,3 FPS; um mapa nos dois aspectos leva ~10–15 min e o teto por job é 30 min (WT2).
+# O rodízio (tools/eval/gauntlet-rodizio.mjs) refotografa cada jogável a cada ~11 h.
+name: gauntlet-captura
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+    inputs:
+      mapa:
+        description: Mapa a fotografar (vazio = o da hora no rodízio)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gauntlet-captura
+  cancel-in-progress: false
+
+jobs:
+  captura:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Qual mapa nesta hora
+        id: mapa
+        env:
+          PEDIDO: ${{ inputs.mapa }}
+        run: |
+          if [ -n "$PEDIDO" ]; then M="$PEDIDO"; else M=$(node tools/eval/gauntlet-rodizio.mjs); fi
+          case "$M" in *[!a-z0-9_]*|'') echo "::error::mapa inválido: $M"; exit 1 ;; esac
+          echo "id=$M" >> "$GITHUB_OUTPUT"
+          echo "mapa da hora: $M"
+
+      - name: Dependências + Playwright global (gl-shots resolve pelo npm root -g)
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm i -g "playwright@$(node -pe "require('./package.json').devDependencies.playwright.replace(/^[^0-9]*/,'')")"
+          npx playwright install --with-deps chromium
+
+      - name: Sobe o jogo e fotografa
+        env:
+          ONLY: ${{ steps.mapa.outputs.id }}
+          GL_SWIFTSHADER: '1'
+        run: |
+          node tools/eval/serve.mjs 8123 > /tmp/serve.log 2>&1 &
+          for i in $(seq 1 90); do curl -fsS http://127.0.0.1:8123/ >/dev/null 2>&1 && break; sleep 2; done
+          OUT="artifacts/gauntlet/$ONLY"
+          mkdir -p "$OUT"
+          # 24 min de teto para a câmera: o resto do job é boot e upload.
+          timeout 1440 node tools/eval/gl-shots.mjs "$OUT" game || echo "::warning::gl-shots saiu com $? — o que foi capturado sobe mesmo assim"
+          {
+            echo "{\"mapa\":\"$ONLY\",\"sha\":\"$GITHUB_SHA\",\"run\":\"$GITHUB_RUN_ID\","
+            echo "\"quando\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"renderer\":\"swiftshader\"}"
+          } > "$OUT/_captura.json"
+          ls -la "$OUT"
+
+      - name: Guarda a captura (o agente crítico baixa daqui)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: gauntlet-${{ steps.mapa.outputs.id }}-${{ github.run_id }}
+          path: artifacts/gauntlet/
+          retention-days: 21
+          if-no-files-found: warn
