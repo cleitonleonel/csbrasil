@@ -96,6 +96,13 @@ export function prazoAcordado(ms, aoEstourar) {
   return () => clearInterval(id);
 }
 
+// Resource Timing mede a rede; o relógio do JS soma a thread ocupada no boot e mandava
+// Lisboa para os EUA (Madri 20 ms aparecia 212 ms, 13/10).
+function pingDaRede(url, t0) {
+  const e = globalThis.performance?.getEntriesByName?.(url)?.at(-1);
+  return e && e.startTime >= t0 - 1 && e.duration > 0 ? e.duration : performance.now() - t0;
+}
+
 export async function sondarNos(nos = NOS, timeoutMs = 2500, amostras = 2) {
   return Promise.all(nos.map(async (no) => {
     const { http } = mpUrls(no.url);
@@ -109,7 +116,7 @@ export async function sondarNos(nos = NOS, timeoutMs = 2500, amostras = 2) {
       for (let i = 0; i < n; i++) {
         const t0 = performance.now();
         const r = await j(`${http}/health`, { signal: ctrl.signal });
-        h = r; ping = performance.now() - t0;   // a última que chegou é a mais quente
+        h = r; ping = pingDaRede(`${http}/health`, t0);   // a última que chegou é a mais quente
       }
     } catch { /* a amostra que faltou não apaga a que veio */ }
     finally { cancelaPrazo(); }
