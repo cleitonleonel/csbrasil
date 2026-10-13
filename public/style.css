@@ -3214,6 +3214,10 @@ html[data-ui="legacy"] #load-map{font-family:var(--font);font-weight:700}
 #chat-sala[hidden],#chat-cabecalho[hidden],#chat-acoes[hidden],#chat-motivos[hidden],#chat-lista-bloqueados[hidden],
 #chat-nao-lidas[hidden],#chat-toque[hidden],#chat-bloquear-tambem[hidden],#hud-atalho-chat[hidden]{display:none}
 #chat-sala.aberto{pointer-events:auto}
+#chat-regras{display:none;font-size:12px;line-height:1.4;gap:8px;align-items:center;min-height:44px;background:rgba(12,14,14,.96);padding:8px}
+#chat-regras .chat-regras-copy,#chat-regras .chat-regras-link{color:#f0f0ed;background:rgba(12,14,14,.96)}
+#chat-sala.aberto #chat-regras{display:flex}
+#chat-regras-aceite{flex:none;width:20px;height:20px;accent-color:#e8b34b}
 #chat-cabecalho{display:none;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:4px 8px;background:rgba(10,10,12,.72);
   font-size:11px;letter-spacing:2px;color:var(--ink-200)}
 #chat-sala.aberto #chat-cabecalho{display:flex}
