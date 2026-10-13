@@ -15,3 +15,5 @@ Definição de pronto desta separação: PRs draft próprias de skins e itens, p
 Objetivo completo: ranking semanal Brasília/MP2×, cinco logins, newsletter/email, campanha e ordem de23PRs estão no ledger progress/growth. Quatro testes aguardam único remetente fale@corosolto.com.br; não enviados nem substituídos pelo subdomínio auth.
 
 Próximo: checkpoint runtime/assets, empilhar sobre corte skins, regenerar inventários/docs, build/hook e publicar drafts; atualizar ledger/ordem com links. Não fazer merge/deploy nem publicar itens reprovados.
+
+Marco13/10: empilhado sobre0a3f56786/client#824; conflitos em store/componente resolvidos mantendo o OFF revisado e filtro de skins aprovadas. Build final exit0 (items-build.log). Doc/ARCH regenerados; publicação ainda depende de hook e draft próprio. Corte backend de8053a/#75; itens38af14a, equivalência API/game/test/db com547fa724d comprovada, ownership/roster e WS reais PASS (welcome, peer existente, espectador, troca/reuso de corpo, disconnect, query/body forjado). Sem SQL/API de compra ou produção certificado.
