@@ -70,14 +70,14 @@ const config = {
         docs: {
           // docs-only: o site inteiro É a documentação, sem landing separada.
           routeBasePath: '/',
-          sidebarPath: require.resolve('./sidebars.js'),
+          sidebarPath: './sidebars.js',
           editUrl: 'https://github.com/corosolto/client/tree/main/docs/',
           showLastUpdateTime: false,
         },
         blog: false,
         pages: false,
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: './src/css/custom.css',
         },
       }),
     ],
