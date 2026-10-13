@@ -67,7 +67,7 @@
 // regressão, não correção.
 // ============================================================================
 
-import { execFileSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -84,15 +84,36 @@ const skip = (id, desc, why) => results.push({ id, desc, ok: null, evid: why, se
 
 const num = (v, d = 3) => (typeof v === 'number' && isFinite(v) ? +v.toFixed(d) : String(v));
 
-function runNode(script, env = {}, args = [], timeout = 600000) {
-  try {
-    return execFileSync(process.execPath, [join(HERE, script), ...args], {
-      cwd: ROOT, encoding: 'utf8', timeout, maxBuffer: 64 * 1024 * 1024,
+/* SUB-SIMULAÇÕES — cada uma tem o tempo medido.
+   O portão gastava 16,3 dos 20,8 min do pr-fast/build (medido em 13/10) e não dizia
+   onde. Agora toda sub-simulação passa por `simular`, que:
+   · mede o tempo de parede de cada uma e imprime a tabela no stderr no fim (o stdout
+     do --json continua só JSON);
+   O stderr do filho sai no stderr daqui quando ele termina, como no execFileSync. */
+const TEMPOS = [];
+const rotuloSim = (script, env, args) =>
+  [script, ...args, ...Object.entries(env).map(([k, v]) => `${k}=${v}`)].join(' ');
+function simular(script, env = {}, args = [], { timeout = 600000, cwd = ROOT, caminho = join(HERE, script) } = {}) {
+  const reg = { rotulo: rotuloSim(script, env, args), reusos: 0, ms: null, codigo: null };
+  TEMPOS.push(reg);
+  reg.promessa = new Promise((resolve) => {
+    const t0 = performance.now();
+    execFile(process.execPath, [caminho, ...args], {
+      cwd, encoding: 'utf8', timeout, maxBuffer: 64 * 1024 * 1024,
       env: { ...process.env, ...env },
+    }, (erro, stdout, stderr) => {
+      reg.ms = performance.now() - t0;
+      reg.codigo = erro ? (erro.killed ? 'morto' : erro.code ?? 'erro') : 0;
+      if (stderr) process.stderr.write(stderr);
+      resolve({ stdout: stdout || '', erro });
     });
-  } catch (e) {
-    return (e.stdout || '') + '\n__ERRO__ ' + (e.message || '');
-  }
+  });
+  return reg.promessa;
+}
+
+async function runNode(script, env = {}, args = [], timeout = 600000) {
+  const { stdout, erro } = await simular(script, env, args, { timeout });
+  return erro ? stdout + '\n__ERRO__ ' + (erro.message || '') : stdout;
 }
 
 // ── 1. SINTAXE ──────────────────────────────────────────────────────────────
@@ -854,7 +875,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
      pega régua desatualizada, que é exatamente o defeito que já foi commitado uma vez
      (o JSON do baseline foi medido com V0=62 quando a lente do jogo já era 80). */
   const p = join(ROOT, 'tools', 'eval', 'vm_kick_sim.json');
-  const gerou = runNode('vm-kick-sim.mjs', {}, ['--json']);
+  const gerou = await runNode('vm-kick-sim.mjs', {}, ['--json']);
   if (!existsSync(p)) {
     skip('VM8*', 'coice do viewmodel', 'vm-kick-sim.mjs não gerou o JSON: ' + (gerou.split('__ERRO__')[1] || '').slice(0, 120));
   } else {
@@ -1185,7 +1206,9 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
 {
   let audit;
   try {
-    audit = JSON.parse(execFileSync(process.execPath, [join(ROOT, 'tools/eval/authored-attach-check.mjs')], { encoding: 'utf8' }));
+    const r = await simular('authored-attach-check.mjs', {}, [], { timeout: 0, cwd: process.cwd(), caminho: join(ROOT, 'tools/eval/authored-attach-check.mjs') });
+    if (r.erro) throw Object.assign(r.erro, { stdout: r.stdout });
+    audit = JSON.parse(r.stdout);
   } catch (error) {
     try { audit = JSON.parse(String(error.stdout)); }
     catch { audit = { ok: false, checks: [{ name: 'execução do encaixe', error: String(error.message).slice(0, 160), ok: false }] }; }
@@ -1198,7 +1221,9 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
 {
   let audit;
   try {
-    audit = JSON.parse(execFileSync(process.execPath, [join(ROOT, 'tools/eval/authored-transition-check.mjs')], { encoding: 'utf8' }));
+    const r = await simular('authored-transition-check.mjs', {}, [], { timeout: 0, cwd: process.cwd(), caminho: join(ROOT, 'tools/eval/authored-transition-check.mjs') });
+    if (r.erro) throw Object.assign(r.erro, { stdout: r.stdout });
+    audit = JSON.parse(r.stdout);
   } catch (error) {
     try { audit = JSON.parse(String(error.stdout)); }
     catch { audit = { ok: false, checks: [{ name: 'execução das transições', ok: false }] }; }
@@ -1253,7 +1278,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
   if (!existsSync(join(HERE, 'vmrig-test.mjs'))) {
     skip('RIG', 'rig procedural do viewmodel', 'vmrig-test.mjs ausente');
   } else {
-    const out = runNode('vmrig-test.mjs');
+    const out = await runNode('vmrig-test.mjs');
     const pass = (out.match(/\bPASS\b/g) || []).length;
     const fail = (out.match(/\bFAIL\b/g) || []).length;
     put('RIG', 'rig de viewmodel: ADS/bob/recarga/troca/coice', fail === 0 && pass > 0,
@@ -1270,7 +1295,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
   if (!existsSync(join(HERE, 'tp-mount-probe.mjs'))) {
     skip('TPM', 'mount de arma na 3ª pessoa', 'tp-mount-probe.mjs ausente');
   } else {
-    const out = runNode('tp-mount-probe.mjs');
+    const out = await runNode('tp-mount-probe.mjs');
     const fail = (out.match(/\bFAIL\b/g) || []).length;
     const erro = out.includes('__ERRO__');
     // pitch do cano por personagem, lido da coluna "-> yaw X°/pitch Y°" da seção
@@ -1301,7 +1326,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
   if (!existsSync(join(HERE, 'botsim.mjs'))) {
     skip('BOT', 'simulação de bots', 'botsim.mjs ausente');
   } else {
-    const out = runNode('botsim.mjs');
+    const out = await runNode('botsim.mjs');
     const media = out.match(/MEDIA[^\n]*/)?.[0] || '';
     const val = (k) => {
       const m = media.match(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+([\\d.]+)'));
@@ -1323,7 +1348,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
     // BOT4 — justiça. Rodada em modo duelo: o jogador tem que ter tempo de
     // reagir entre o primeiro tiro que encosta e a morte. "Morri e entendi por
     // quê" em vez de "morri do nada".
-    const duel = runNode('botsim.mjs', { SIM_DUEL: '1' });
+    const duel = await runNode('botsim.mjs', { SIM_DUEL: '1' });
     const dmed = duel.match(/MEDIA[^\n]*/)?.[0] || '';
     const dval = (k) => {
       const m = dmed.match(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+([\\d.]+)'));
@@ -1381,7 +1406,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
   if (!existsSync(join(HERE, 'botdiag.mjs'))) {
     skip('BOT8', 'bot que vê o jogador e não atira', 'botdiag.mjs ausente');
   } else {
-    const out = runNode('botdiag.mjs', { SIM_SHOOTGATE: '1' }, ['180', 'all']);
+    const out = await runNode('botdiag.mjs', { SIM_SHOOTGATE: '1' }, ['180', 'all']);
     const linha = out.match(/^SHOOTGATE[^\n]*/m)?.[0] || '';
     const val = (k) => {
       const m = linha.match(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+(-?[\\d.]+)'));
@@ -1422,7 +1447,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
     skip('VM14', 'todo pickup é alcançável', 'pickup-check.mjs ausente');
   } else {
     const p = join(ROOT, 'tools', 'eval', 'pickup_check.json');
-    const { data: j, error } = freshReport(p, () => runNode('pickup-check.mjs'));
+    const { data: j, error } = await freshReport(p, () => runNode('pickup-check.mjs'));
     if (error) {
       skip('VM14', 'todo pickup é alcançável', 'pickup-check.mjs: ' + error);
     } else {
@@ -1539,7 +1564,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
    PX2 já usa para silhueta de arma. Nenhum deles é palpite novo. */
 {
   const arq = join(ROOT, 'tools', 'eval', 'char_probe.json');
-  const { data: j, error } = freshReport(arq, () => runNode('char-probe.mjs', {}, ['--sem-c4']));
+  const { data: j, error } = await freshReport(arq, () => runNode('char-probe.mjs', {}, ['--sem-c4']));
   if (error) {
     for (const id of ['CHR1', 'CHR2', 'CHR3', 'CHR5', 'CHR6']) {
       skip(id, 'régua de personagem', 'char-probe.mjs: ' + error);
@@ -1724,7 +1749,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
    Mutantes que a fazem ficar vermelha: `--mutante=bloco1` (região de 1 texel =
    degrau) e `--mutante=pisozero` (piso que não levanta). */
 {
-  const out = runNode('char-floor.mjs');
+  const out = await runNode('char-floor.mjs');
   const a = out.match(/C10a CONTRASTE[^\n]*: (✓|✗[^\n]*)/);
   const b = out.match(/C10b CLAREZA[^\n]*: (✓|✗[^\n]*)/);
   const med = out.match(/mediana da perda de contraste:\s*degrau ([\d.]+)%\s+regional ([\d.]+)%/);
@@ -1741,7 +1766,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
 
 // ── 8c. C4: mão na arma (a régua delega ao tp-mount-probe, e aqui também) ───
 {
-  const out = runNode('tp-mount-probe.mjs');
+  const out = await runNode('tp-mount-probe.mjs');
   const semModelo = (out.match(/^\w+: SEM MODELO$/gm) || []).length;
   const enterrados = (out.match(/ENTERRADA/g) || []).length;
   if (semModelo && !/palma-osso/.test(out.split('===')[3] || '')) {
@@ -1766,7 +1791,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
   if (!existsSync(join(HERE, 'mode-check.mjs'))) {
     skip('MOD2', 'o modo escolhido é o modo jogado', 'mode-check.mjs ausente');
   } else {
-    const out = runNode('mode-check.mjs');
+    const out = await runNode('mode-check.mjs');
     const m = out.match(/MODECHECK (\d+)\/(\d+) casos/);
     if (!m) {
       skip('MOD2', 'o modo escolhido é o modo jogado',
@@ -1815,7 +1840,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
   if (!existsSync(join(HERE, 'pause-check.mjs'))) {
     skip('PAUSA', 'a partida não volta pro menu sozinha', 'pause-check.mjs ausente');
   } else {
-    const out = runNode('pause-check.mjs');
+    const out = await runNode('pause-check.mjs');
     const m = out.match(/PAUSECHECK (\d+)\/(\d+) clausulas/);
     if (!m) {
       skip('PAUSA', 'a partida não volta pro menu sozinha',
@@ -1854,18 +1879,18 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
   if (!existsSync(join(HERE, 'map-check.mjs'))) {
     skip('MAP*', 'geometria de mapa (submerso/respawn/escada/bandeiras)', 'map-check.mjs ausente');
   } else {
-    const raycast = runNode('lajes-raycast-check.mjs');
+    const raycast = await runNode('lajes-raycast-check.mjs');
     put('LRP1', 'Lajes: raycast conserva impactos e elimina trabalho fora do raio',
       !raycast.includes('__ERRO__') && raycast.includes('✓ LRP1'),
       raycast.split('\n').find(line => line.includes('LRP1')) || raycast.slice(-400));
-    const beco = runNode('lajes-spawn-space-check.mjs');
+    const beco = await runNode('lajes-spawn-space-check.mjs');
     const respawnBecoValido = !beco.includes('__ERRO__') && beco.includes('✓ LSP1');
     put('LSP1', 'Lajes: slots térreos distintos, espaço para corpos e saída física até o campo',
       respawnBecoValido, beco.split('\n').find(linha => linha.includes('LSP1')) || beco.slice(-400));
     const pj = join(ROOT, 'tools', 'eval', 'map_check.json');
     // A medição completa de 18 mapas levou quase 10 min no runner do CI; mantenha
     // a falha explícita, mas dê tempo para o relatório fresco terminar.
-    const { data: j, error } = freshReport(pj, () => runNode('map-check.mjs', {}, [], 900000));
+    const { data: j, error } = await freshReport(pj, () => runNode('map-check.mjs', {}, [], 900000));
     if (error || !Array.isArray(j?.mapas) || j.mapas.length === 0) {
       put('MAPAUD', 'map-check.mjs gera relatório fresco e válido de geometria',
         false, error || 'map-check.mjs gerou JSON sem mapas');
@@ -2088,7 +2113,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
 // MAP6: o acesso água→madeira precisa funcionar com a física real, não apenas
 // coincidir no groundHeightAt. Os quatro trajetos cobrem os dois pontões do mercado.
 {
-  const out = runNode('amazonia-water-movement-check.mjs');
+  const out = await runNode('amazonia-water-movement-check.mjs');
   put('MAP6', 'jogador alcança os dois pontões baixos da Amazônia com e sem salto',
     out.includes('PASS AMW4') && !out.includes('__ERRO__'),
     (out.match(/(?:PASS|FAIL) AMW4[^\n]*/) || ['AMW4 sem resultado'])[0]);
@@ -2100,7 +2125,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
 // na sombra do colisor e trava antes do primeiro degrau. Conserto: tabuleiro de acesso
 // no idioma dos `pontoes`. O mutante `pe-na-agua` volta ao estado de antes.
 {
-  const out = runNode('amazonia-agua-estacoes-check.mjs');
+  const out = await runNode('amazonia-agua-estacoes-check.mjs');
   put('AME', 'as 11 estações da Amazônia são alcançáveis a partir da água',
     out.includes('PASS AME3') && !out.includes('__ERRO__'),
     (out.match(/(?:PASS|FAIL) AME3[^\n]*/) || ['AME3 sem resultado'])[0]);
@@ -2141,7 +2166,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
     skip('MAT*', 'material/luz/superfície', 'mat-check.mjs ausente');
   } else {
     const pj = join(ROOT, 'tools', 'eval', 'mat_check.json');
-    const { data: j, error } = freshReport(pj, () => runNode('mat-check.mjs'));
+    const { data: j, error } = await freshReport(pj, () => runNode('mat-check.mjs'));
     if (error) {
       skip('MAT*', 'material/luz/superfície', 'mat-check.mjs: ' + error);
     } else {
@@ -2269,7 +2294,7 @@ function runNode(script, env = {}, args = [], timeout = 600000) {
 // BUG-43: o protótipo do menu de armas existia apenas em dev.html, podado da
 // produção. A régua executa o método real com e sem ?vmlab=1.
 {
-  const out = runNode('vmlab-hud-check.mjs', {}, ['--json']);
+  const out = await runNode('vmlab-hud-check.mjs', {}, ['--json']);
   let audit = null;
   try { audit = JSON.parse(out); } catch {}
   const itens = audit?.resultados || [];
@@ -2396,6 +2421,15 @@ if (JSON_OUT) {
   console.log(`AVISOS:   ${avisos.length ? avisos.map((r) => r.id).join(', ') + ' fora do alvo' : 'nenhum'}`);
   console.log(`PULADAS:  ${results.filter((r) => r.sev === 'skip').length} (exigem browser ou arnês ausente)`);
   console.log('--------------------------------------------------------\n');
+}
+
+{
+  const total = TEMPOS.reduce((a, t) => a + (t.ms || 0), 0);
+  const linhas = [...TEMPOS].sort((a, b) => (b.ms || 0) - (a.ms || 0)).map((t) =>
+    `  ${((t.ms || 0) / 1000).toFixed(1).padStart(7)} s  ${t.rotulo}`
+    + (t.codigo ? `  [saída ${t.codigo}]` : '') + (t.reusos ? `  [reaproveitada ${t.reusos}×]` : ''));
+  console.error(`\nTEMPO DAS SUB-SIMULAÇÕES (${TEMPOS.length} execuções, soma ${(total / 1000).toFixed(1)} s, `
+    + `parede do portão ${(performance.now() / 1000).toFixed(1)} s)\n${linhas.join('\n')}\n`);
 }
 
 process.exit(falhas.length ? 1 : 0);
