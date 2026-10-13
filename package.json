@@ -109,6 +109,7 @@
     "eval:shaderbudget": "node tools/eval/shader-budget-check.mjs",
     "eval:og": "node --experimental-strip-types --import ./tools/eval/ts-resolve.mjs tools/eval/og-check.mjs",
     "eval:sitemap": "node --experimental-strip-types tools/eval/sitemap-check.mjs",
+    "eval:sitemap-higiene": "node --experimental-strip-types tools/eval/sitemap-higiene-check.mjs",
     "eval:sitemap-paginacao": "node --experimental-strip-types tools/eval/sitemap-paginacao-check.mjs",
     "eval:ctfhud": "node tools/eval/ctfhud-check.mjs",
     "eval:ratchet": "node tools/eval/ratchet-check.mjs",
