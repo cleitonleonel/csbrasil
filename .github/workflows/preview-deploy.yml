@@ -73,10 +73,20 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
         run: |
           mkdir -p .vercel/output
           cp -R /tmp/artefato/preview-*/. .vercel/output/ 2>/dev/null || true
           rm -f .vercel/output/pr-numero.txt .vercel/output/pr-sha.txt
+          # PRV6 — PR de FORK publica só o estático. O `--prebuilt` não executa nada AQUI,
+          # mas as funções serverless dentro de `.vercel/output/functions` foram compiladas
+          # do código do fork e RODAM na Vercel com as variáveis de ambiente de Preview
+          # (inclusive o segredo do proxy da API). Sem as funções o jogo abre igual — a
+          # telemetria e as rotas /api falham fechadas, como já falham sem rede.
+          if [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            rm -rf .vercel/output/functions
+            echo "::notice::preview de fork ($HEAD_REPO): funções serverless removidas, só estático."
+          fi
           URL=$(vercel deploy --prebuilt --token "$VERCEL_TOKEN")
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 

@@ -59,9 +59,18 @@ jobs:
             echo "::warning::CSBRASIL_BOT_TOKEN ausente — varredura não roda, e não reprova ninguém."
             exit 0
           fi
-          gh pr list --repo "$REPO" --state open --base main \
-            --json number,mergeable,isDraft \
-            --jq '.[] | select(.isDraft | not) | select(.mergeable != "MERGEABLE") | .number' > /tmp/atrasados.txt
+          # Logo depois de um push na main o GitHub devolve `UNKNOWN` para quase todo PR:
+          # ele ainda está recalculando. Tratar UNKNOWN como conflito disparava o autofix em
+          # massa à toa — cada disparo vira merge da base + CI inteiro de novo. Espera o
+          # cálculo (até 3 × 30 s) e só segue para quem está CONFLICTING ou ficou UNKNOWN.
+          for tentativa in 1 2 3 4; do
+            gh pr list --repo "$REPO" --state open --base main \
+              --json number,mergeable,isDraft \
+              --jq '.[] | select(.isDraft | not) | select(.mergeable != "MERGEABLE") | "\(.number) \(.mergeable)"' > /tmp/estado.txt
+            grep -q ' UNKNOWN$' /tmp/estado.txt || break
+            [ "$tentativa" = 4 ] || sleep 30
+          done
+          cut -d' ' -f1 /tmp/estado.txt > /tmp/atrasados.txt
           echo "PRs desatualizados: $(wc -l < /tmp/atrasados.txt)"
           while read -r pr; do
             [ -n "$pr" ] || continue
