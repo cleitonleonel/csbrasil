@@ -41,7 +41,7 @@ o fallback legado E/B em vez de apresentar zero como dado completo.
 npm run docs:check
 npm run check:fast
 npm run eval:site
-npm run eval:telemetry
+npm run eval:telemetrytransport
 ```
 
 O quality gate completo continua em `node tools/eval/invariants.mjs`; ele é mais caro e

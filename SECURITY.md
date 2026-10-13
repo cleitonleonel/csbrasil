@@ -22,7 +22,7 @@ testemunha as kills. Até lá, as camadas abaixo.
    `submit_log`) — contra floods e nick-hopping.
 3. **Tetos absolutos** — 150 kills/deaths, streak 30, 1500s por partida.
 4. **Consistência física (anti-trainer)**:
-   - kills ≤ 45 por round (respawn de 2,5s torna mais impossível);
+   - kills ≤ 45 por round (respawn de 2,2s torna mais impossível);
    - ≥ 80s por round (speed hack não produz partida instantânea).
 5. **Flags automáticas** — tentativa implausível = +1 flag; **3 flags = sai
    do ranking sozinho** (`players.hidden`).

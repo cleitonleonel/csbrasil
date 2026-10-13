@@ -362,8 +362,11 @@ export function aberturaCone(estado, W) {
   const moveMul = GUNFEEL ? (1 + 1.8 * Math.min(1, (estado.sp || 0) / 6.6) + (estado.grounded ? 0 : 2.5)) : 1;
   const adsF = Math.min(1, Math.max(0, estado.adsF || 0));
   const spScoped = W.spreadScope ?? W.spreadHip * 0.35;
+  /* Luneta ENGATADA (scoped em arma com scope) = cone da luneta JÁ, sem esperar a rampa
+     do FOV: o descope pós-tiro da AWP deixava o re-scope com aimF parcial e a bala caía
+     metros do alvo mirado (relato do dono: "vejo no escopo, miro, e o tiro não chega"). */
   const base = (GUNFEEL
-    ? (W.spreadHip + (spScoped - W.spreadHip) * adsF)
+    ? (estado.scoped && W.scope ? spScoped : W.spreadHip + (spScoped - W.spreadHip) * adsF)
     : (estado.scoped && W.spreadScope !== undefined ? W.spreadScope : W.spreadHip)) * crouchMul * moveMul;
   const comBloom = base * (1 + (estado.bloom || 0));
   return GUNFEEL && !estado.grounded ? Math.max(comBloom, W.spreadHip + SPREAD_AR) : comBloom;
@@ -3804,14 +3807,24 @@ export class Game {
     }
     this.world.ambience?.onShot(from, end);
     if (byPlayer && tracer) {
-      // BUG-187: nasce no raio câmera→boca (onde o cano aparece na tela). A boca autorada
-      // (bbox de malha skinned) caía 10,9 m atrás da câmera em produção: aí vale a da pose.
-      const cam = this.camera.getWorldPosition(new THREE.Vector3());
-      const rel = this._muzzleWorld(STATIC_CLASS[this.player.weapon] || 'rifle').clone().sub(cam);
-      if (rel.length() > 2 || rel.dot(this.camera.getWorldDirection(new THREE.Vector3())) < 0.2) {
-        rel.copy(this.camera.localToWorld(new THREE.Vector3(0.1, -0.06, -0.75))).sub(cam);
+      /* 3ª pessoa: o rastro nasce da ARMA DO CORPO (arma-glb/caixa do playerTP) e não da
+         câmera, que está atrás do personagem — sem corpo montado, cai na receita dos bots. */
+      if (this.camView !== 'first' && this.playerTP?.group) {
+        const gun = this.playerTP.group.getObjectByName('arma-glb') || this.playerTP.group.getObjectByName('arma-caixa')
+          || this.playerTP.parts?.gun || null;
+        const a = (gun ? gun.getWorldPosition(new THREE.Vector3()) : from.clone())
+          .addScaledVector(dir, gun ? 0.55 : 0.7);
+        this._tracer(a, end);
+      } else {
+        // BUG-187: nasce no raio câmera→boca (onde o cano aparece na tela). A boca autorada
+        // (bbox de malha skinned) caía 10,9 m atrás da câmera em produção: aí vale a da pose.
+        const cam = this.camera.getWorldPosition(new THREE.Vector3());
+        const rel = this._muzzleWorld(STATIC_CLASS[this.player.weapon] || 'rifle').clone().sub(cam);
+        if (rel.length() > 2 || rel.dot(this.camera.getWorldDirection(new THREE.Vector3())) < 0.2) {
+          rel.copy(this.camera.localToWorld(new THREE.Vector3(0.1, -0.06, -0.75))).sub(cam);
+        }
+        this._tracer(cam.addScaledVector(rel.normalize(), 1.5), end);
       }
-      this._tracer(cam.addScaledVector(rel.normalize(), 1.5), end);
     }
     return end;
   }
