@@ -92,7 +92,10 @@ jobs:
           (steps.cls.outputs.classe == 'codigo' ||
           (steps.cls.outputs.classe == 'cache-split' && steps.reprobe.outcome == 'failure'))
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Token do bot, não o GITHUB_TOKEN: evento criado pelo GITHUB_TOKEN não dispara
+          # workflow nenhum, então a issue nascia e o issues-bot (triagem + dedupe de
+          # crash) NUNCA rodava nela. O fallback mantém a issue nascendo sem o secret.
+          GH_TOKEN: ${{ secrets.CSBRASIL_BOT_TOKEN || secrets.GITHUB_TOKEN }}
           FP: ${{ github.event.client_payload.fingerprint }}
           MSG: ${{ github.event.client_payload.message }}
           SRC: ${{ github.event.client_payload.source }}
@@ -129,6 +132,13 @@ jobs:
           EOF
           )
           if [ -n "$EXISTENTE" ]; then
+            # No máximo um comentário a cada 6 h por issue: o prod-watch reprova a cada
+            # 15 min durante um incidente e virava ~96 comentários/dia na mesma issue.
+            ULTIMO=$(gh api "repos/$GITHUB_REPOSITORY/issues/$EXISTENTE/comments" --jq '[.[] | select(.body | startswith("Nova ocorrência"))] | last | .created_at // empty')
+            if [ -n "$ULTIMO" ] && [ $(( $(date +%s) - $(date -d "$ULTIMO" +%s) )) -lt 21600 ]; then
+              echo "issue #$EXISTENTE já comentada há menos de 6 h — silêncio."
+              exit 0
+            fi
             gh issue comment "$EXISTENTE" --body "Nova ocorrência escalada (versão $VER). $MSG"
             echo "issue #$EXISTENTE já existia — comentada, não duplicada."
           else
