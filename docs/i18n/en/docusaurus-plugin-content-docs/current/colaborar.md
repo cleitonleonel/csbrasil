@@ -3,7 +3,6 @@ id: colaborar
 title: How to contribute
 sidebar_label: How to contribute
 sidebar_position: 6
-slug: /contributing
 description: Setup, how to run the gate, what a PR needs, how to add a weapon / character / map, and the good first tasks.
 ---
 
@@ -147,7 +146,7 @@ silently destroyed an aesthetic decision that no invariant encoded. Full case in
 Paste the output of `node tools/eval/invariants.mjs` before and after. If any critical one went
 red, the PR does not go in. If you **fixed** a red one, say which and show it.
 
-The gate is red today ([see which ones](./status), and the living list with root causes is
+The gate is red today ([see which ones](./estado), and the living list with root causes is
 in `KNOWN-BUGS.md`). That is not a license to make it worse: the commitment is *"your change
 adds no red"*.
 
@@ -251,22 +250,22 @@ The registry, generated from the `MAPS` of `public/js/maps.js`:
 
 | Id | Menu name | Opens in | File in `public/js/` | Lines |
 |---|---|---|---|---:|
-| `campomorro` | Campinho do Morro | **capture** | `map_campomorro.js` | 815 |
-| `mansao` | Mansão do Joá | **capture** | `map_mansao.js` | 1,395 |
-| `amazonia` | Treta na Amazônia | **capture** | `map_amazonia.js` | 1,265 |
-| `escadao` | Escadão (Morro) | **capture** | `map_escadao.js` | 1,408 |
-| `praca_poderes` | Praça dos Três Poderes | rounds | `map_brasilia.js` | 1,978 |
-| `piscina_treta` | Piscina da Treta | rounds | `map_piscina.js` | 1,193 |
-| `loja_h` | Loja H (Estacionamento) | **capture** | `map_havan.js` | 2,064 |
-| `ferro_velho` | Ferro Velho do Zé | **capture** | `map_ferrovelho.js` | 2,026 |
+| `campomorro` | Campinho do Morro | **capture** | `map_campomorro.js` | 816 |
+| `mansao` | Mansão do Joá | **capture** | `map_mansao.js` | 1,398 |
+| `amazonia` | Treta na Amazônia | **capture** | `map_amazonia.js` | 1,271 |
+| `escadao` | Escadão (Morro) | **capture** | `map_escadao.js` | 1,411 |
+| `praca_poderes` | Praça dos Três Poderes | rounds | `map_brasilia.js` | 1,989 |
+| `piscina_treta` | Piscina da Treta | rounds | `map_piscina.js` | 1,201 |
+| `loja_h` | Loja H (Estacionamento) | **capture** | `map_havan.js` | 2,062 |
+| `ferro_velho` | Ferro Velho do Zé | **capture** | `map_ferrovelho.js` | 2,032 |
 | `quebrada` | Quebrada (Rua do Baile) | **capture** | `map_quebrada.js` | 1,709 |
-| `corrego` | Córrego (Favela de SP) | **capture** | `map_corrego.js` | 1,796 |
-| `lajes` | Lajes (Comunidade) | **capture** | `map_lajes_authored.js` | 419 |
-| `posto_treta` | Posto da Treta | **capture** | `map_posto.js` | 757 |
-| `upa_24h` | UPA 24h da Treta | **capture** | `map_upa.js` | 338 |
-| `obras_prefeitura` | Obras da Prefeitura | **capture** | `map_obras.js` | 485 |
-| `atacadao_treta` | Atacadão da Treta | **capture** | `map_atacadao.js` | 792 |
-| `parque_treta` | Parque da Treta | **capture** | `map_parque.js` | 981 |
+| `corrego` | Córrego (Favela de SP) | **capture** | `map_corrego.js` | 1,813 |
+| `lajes` | Lajes (Comunidade) | **capture** | `map_lajes_authored.js` | 420 |
+| `posto_treta` | Posto da Treta | **capture** | `map_posto.js` | 758 |
+| `upa_24h` | UPA 24h da Treta | **capture** | `map_upa.js` | 383 |
+| `obras_prefeitura` | Obras da Prefeitura | **capture** | `map_obras.js` | 491 |
+| `atacadao_treta` | Atacadão da Treta | **capture** | `map_atacadao.js` | 797 |
+| `parque_treta` | Parque da Treta | **capture** | `map_parque.js` | 991 |
 | `velho_oeste` | Sertão da Treta | **capture** | `map_velho_oeste.js` | 1,071 |
 | `penitenciaria` | CARANDIRU | **capture** | `map_penitenciaria.js` | 1,009 |
 
@@ -281,7 +280,7 @@ Two warnings that cost time if you do not know them:
 - **`praca_old` ("Praça (clássico)") NO longer exists.** It left the registry and
   `public/js/map.js` was deleted along with it (the owner's literal request: *"let's delete
   classic praça"*). If you find `praca_old` in a ruler output, that output predates the
-  removal — it is the case of the table pasted in [Current state](./status).
+  removal — it is the case of the table pasted in [Current state](./estado).
 - **`map_piscinao_ramos.js` exists on disk and is NOT in the registry** (it is the "Piscinão"
   version, out of the menu). A map file in `public/js/` does not imply a playable map; what decides is
   the `MAPS` object.

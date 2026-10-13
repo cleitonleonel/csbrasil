@@ -57,6 +57,8 @@ jobs:
         run: npm run eval:uuid
       - name: Acúmulo de armas no chão tem teto
         run: npm run eval:drop
+      - name: Proxy de captura grava só dentro da pasta de saída
+        run: npm run eval:capturecodex
       # Pendurar a régua só no `check:fast` a faria rodar na máquina de quem lembra
       # de rodar, e NÃO no portão: este job lista cada `npm run eval:*` explicitamente.
       - name: Todo mapa devolve o que o game.js consome
@@ -93,12 +95,16 @@ jobs:
         run: npm run docs:check
       - name: ARCH.md gerado está em dia
         run: npm run arch:check
+      - name: hreflang dos docs resolve nas duas línguas
+        run: npm run eval:docs-hreflang
       # Precisa de rede, por isso NÃO entra no check:deploy (que roda dentro do
       # build da Vercel). Vulnerabilidade nova em dep de produção reprova aqui.
       - name: Dependência de produção sem vulnerabilidade nova
         run: npm run eval:deps
       - name: Manifesto de wallpapers está em dia
         run: npm run media:check
+      - name: Brasão servido com ?v= do conteúdo atual
+        run: npm run eval:brasao-versao
       - name: Texto público sem travessão
         run: npm run travessao:check
       # Hash das skills de terceiros confere com o skills-lock.json (issue #42):
@@ -133,6 +139,8 @@ jobs:
         run: |
           node tools/eval/seo-check.mjs
           node tools/eval/seo-check.mjs --mutate
+          node tools/eval/canonical-host-check.mjs
+          node tools/eval/canonical-host-check.mjs --mutate
 
       # PORTÃO DO SITE. `astro build` verde não prova nada sobre as rotas:
       # /ranking pode dar 500, /sitemap.xml pode sair vazio e o build passa em

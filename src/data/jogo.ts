@@ -148,6 +148,14 @@ export const MAPAS: Mapa[] = [
       'É onde a escopeta e as SMGs finalmente ganham da AWP.',
   },
   {
+    id: 'upa_24h', nome: 'UPA 24h da Treta', modo: 'CTF · rounds opcional', ctf: true,
+    resumo: 'Pronto-socorro fechado, com seis setores clínicos ligados por corredores e doze passagens internas.',
+    detalhe: 'Recepção, triagem, consultórios, observação, emergência e farmácia dividem a arena. ' +
+      'Macas, biombos e balcões dão cobertura; as faixas no piso mostram o caminho de cada setor. ' +
+      'Três bandeiras disputam recepção, corredor e emergência. Abre em Capture the Flag, ' +
+      'com rounds também disponíveis no menu.',
+  },
+  {
     id: 'loja_h', nome: 'Loja H (Estacionamento)', modo: 'CTF · rounds opcional', ctf: true,
     resumo: 'Estacionamento de megaloja com estátua, carrinhos e carros sorteados por partida.',
     detalhe: 'Mapa de asfalto e concreto, com fileiras de carros que MUDAM a cada partida ' +

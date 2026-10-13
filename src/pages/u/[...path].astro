@@ -1,6 +1,7 @@
 ---
 export const prerender=false;
-import {publicProfile,PROFILE_SITE} from '../../lib/public-profile';
+import {publicProfile} from '../../lib/public-profile';
+import {SITE} from '../../lib/site';
 import {PROFILE_CHARACTERS} from '../../../public/js/profile-character-catalog.js';
 import CareerRank from '../../components/CareerRank.astro';
 import {careerRankTitle} from '../../../public/js/career-rank.js';
@@ -8,8 +9,8 @@ Astro.response.headers.set('cache-control','no-store');
 const key=(Astro.params.path || '').split('/')[0];
 const {profile:p,status}=await publicProfile(key,Astro.request,Astro.clientAddress);
 Astro.response.status=status;
-const canonical=p?PROFILE_SITE+p.url:PROFILE_SITE+'/';
-const image=p?`${PROFILE_SITE}/api/profile-card/${encodeURIComponent(p.handle || p.id)}.png`:null;
+const canonical=p?SITE+p.url:SITE+'/';
+const image=p?`${SITE}/api/profile-card/${encodeURIComponent(p.handle || p.id)}.png`:null;
 const title=p?`${p.nick} · CORO SOLTO`:'Perfil indisponível · CORO SOLTO';
 const description=p?`${p.points} pontos · ${p.kills} abates · K/D ${p.kd}. Bora pra treta?`:'Este perfil está privado ou indisponível.';
 const valid=/^(?:[a-z][a-z0-9_]{2,23}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(key);
@@ -23,7 +24,7 @@ const clan=p?.clan && /^[A-Z0-9]{2,5}$/.test(p.clan.tag) && /^[0-9a-f-]{36}$/i.t
 const avatar=p?.avatar_url===`/api/social-avatar?id=${p?.id}`?p.avatar_url:https(p?.avatar_url);
 ---
 <!doctype html><html lang="pt-BR" data-home-ui="hub" class="public-profile"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>{title}</title><meta name="description" content={description}/><link rel="canonical" href={canonical}/><link rel="icon" href="/favicon.ico"/><link rel="stylesheet" href="/style.css"/>
+<title>{title}</title><meta name="description" content={description}/><link rel="canonical" href={canonical}/>{p && <><link rel="alternate" hreflang="pt-BR" href={canonical}/><link rel="alternate" hreflang="x-default" href={canonical}/></>}<link rel="icon" href="/favicon.ico"/><link rel="stylesheet" href="/style.css"/>
 <meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:url" content={canonical}/><meta property="og:type" content="profile"/>
 {image && <><meta property="og:image" content={image}/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content={`Perfil e placar de ${p.nick}`}/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:image" content={image}/></>}
 {!p && <meta name="robots" content="noindex"/>}
