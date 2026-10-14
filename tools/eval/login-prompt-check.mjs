@@ -4,7 +4,7 @@
  * simulada e mede o popup de verdade (deslogado, logado, embed, partida, consentimento, intervalo, foco,
  * Esc, telemetria) e grava as capturas em SHOTS se definido.
  * Mutantes (cada um tem de ficar VERMELHO): --mutante=sem-login | sem-embed | sem-partida | sem-conta |
- * sem-sessao | sem-intervalo | sem-contagem | empilha | telemetria-sem-consentimento */
+ * sem-sessao | sem-intervalo | sem-perfil | sem-contagem | empilha | telemetria-sem-consentimento */
 import assert from 'node:assert/strict';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
@@ -24,6 +24,7 @@ const MUTANTES = {
   'sem-sessao': ['login-prompt', '  if(seen)return false;\n', ''],
   'sem-intervalo': ['login-prompt', '  if(record && record.matches<LOGIN_PROMPT_MATCHES && now-record.dismissedAt<LOGIN_PROMPT_COOLDOWN_MS)return false;\n', ''],
   'empilha': ['login-prompt', "    if(document.querySelector('dialog[open]'))return;", ''],
+  'sem-perfil': ['main', "onReady:ready=>initLoginPrompt({...ready,skip:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil'))", "onReady:ready=>initLoginPrompt({...ready,skip:Boolean(inspectionScreen || testMode || params.get('sala'))"],
   'sem-contagem': ['main', '  if (!continuaPartida) noteLoginPromptMatch();', ''],
   'telemetria-sem-consentimento': ['login-prompt', '  if(!analyticsAllowed())return;\n  try{track(step,data);}', '  try{track(step,data);}'],
 };
@@ -118,10 +119,15 @@ await caso('LP8', 'telemetria só com consentimento de analytics', () => {
   }
   for (const nome of ['login_prompt_shown', 'login_prompt_dismissed', 'login_prompt_provider_click']) assert(fontePrompt.includes(`'${nome}'`), nome);
 });
+await caso('LP10', 'perfil compartilhado (/u/<perfil> abre o jogo em iframe com ?perfil=) pula o convite', () => {
+  const skip = fonteMain.match(/onReady:ready=>initLoginPrompt\(\{\.\.\.ready,skip:Boolean\((.*?)\),track:/)?.[1] || '';
+  assert(skip.includes("params.get('perfil')"), `skip do convite: ${skip || 'não achado'}`);
+  assert(skip.includes("params.get('sala')"), 'convite de sala');
+});
 await caso('LP9', 'fiação: partida conta, conta vem antes, mesmo pipeline do funil', () => {
   const ini = fonteMain.indexOf('async function _startGame('), fim = fonteMain.indexOf('\n}\n', ini);
   assert(/if \(!continuaPartida\) noteLoginPromptMatch\(\);/.test(fonteMain.slice(ini, fim)), '_startGame não conta a partida');
-  assert(/onReady:ready=>initLoginPrompt\(\{\.\.\.ready,skip:Boolean\(inspectionScreen \|\| testMode \|\| params\.get\('sala'\)\)/.test(fonteMain), 'convite não pendurado no onReady da conta');
+  assert(/onReady:ready=>initLoginPrompt\(\{\.\.\.ready,skip:Boolean\(inspectionScreen \|\| testMode \|\| params\.get\('sala'\)(?: \|\| params\.get\('perfil'\))?\)/.test(fonteMain), 'convite não pendurado no onReady da conta');
   assert(/sendJsonKeepalive\('\/api\/funnel', \{ step, sessionId: getSessionId\(\), \.\.\.data \}\)/.test(fonteMain), 'transporte fora do funil');
   const h = fonteConta.indexOf('  await hydrate();\n'), r = fonteConta.indexOf('onReady({auth,config,accountBusy:()=>dialog.open || dismissed || wantsPrompt()});');
   assert(h > 0 && r > h, 'onReady tem de vir depois do hydrate (e do maybePrompt dele)');
@@ -166,6 +172,9 @@ if (BROWSER) {
     });
     await ctx.route('**/api/social?action=profile', (r) => r.fulfill({ json: { profile: { avatar_url: 'x', socials: ['x'] } } }));
     await ctx.route('**/api/funnel', (r) => { try { funil.push(JSON.parse(r.request().postData() || '{}')); } catch {} return r.fulfill({ json: { ok: true, stored: false } }); });
+    if (MUT && MUTANTES[MUT][0] === 'main') {
+      await ctx.route('**/js/main.js*', (rota) => rota.fulfill({ status: 200, body: fonteMain, contentType: 'text/javascript' }));
+    }
     if (MUT && MUTANTES[MUT][0] === 'login-prompt') {
       await ctx.route('**/js/login-prompt.js*', (rota) => rota.fulfill({ status: 200, body: fontePrompt, contentType: 'text/javascript' }));
     }
@@ -273,6 +282,15 @@ if (BROWSER) {
       assert.equal(await aberto(page), false, 'empilhou sobre outro diálogo');
       await page.evaluate(() => { document.getElementById('lp-outro').close(); document.body.append(document.createElement('div')); });
       await esperaAberto(page, 'não abriu depois');
+    } finally { await ctx.close(); }
+  });
+  await caso('LB10', 'browser: perfil compartilhado (?perfil=, o iframe de /u/<perfil>) não vê', async () => {
+    const { ctx, page } = await abre({ query: '?secao=comunidade&social=profile&perfil=fulano' });
+    try {
+      await page.evaluate(() => document.body.append(document.createElement('div')));
+      await page.waitForTimeout(500);
+      assert.equal(await aberto(page), false, 'convite abriu sobre o perfil compartilhado');
+      assert.equal(await page.evaluate(() => document.getElementById('login-prompt').dataset.ready ?? null), null, 'convite não foi pulado');
     } finally { await ctx.close(); }
   });
   await caso('LB8', 'browser: mobile 390x844 cabe sem rolagem lateral', async () => {
