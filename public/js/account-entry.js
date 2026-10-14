@@ -11,6 +11,9 @@ const node=(tag,text='',cls='')=>{const e=document.createElement(tag);e.textCont
 const quiet=(text,fn)=>{const b=node('button',text,'account-link');b.type='button';b.onclick=fn;return b;};
 // O cabeçalho do modal acompanha o estado: convite para quem chega, saudação para quem já entrou.
 const dialogHead=(container,kicker,title)=>{const dialog=container.closest?.('dialog');const k=dialog?.querySelector('header small'),t=dialog?.querySelector('header h2');if(k)k.textContent=kicker;if(t)t.textContent=title;return t;};
+/* /u/<perfil> roda o jogo num iframe da mesma origem. Provedor de login recusa iframe,
+   então a ida ao provedor sai do quadro. Em portal de outra origem nada muda. */
+const leaveTo=url=>{let target=location;try{if(top!==self && top.location.origin===location.origin)target=top.location;}catch{ /* topo de outra origem */ }target.assign(url);};
 let accountRequest=null,configRequest=null,accountActive=false;
 let newsletterDraft=false;
 export async function socialApi(path,body) {
@@ -92,7 +95,7 @@ export function mountAccountEntry(container,{auth=null,config={providers:[]},ret
   const providers=node('div','','account-providers');
   for(const provider of providerChoices(config))if(PROVIDER_NAMES[provider]) {
     const enabled=(config.providers || []).includes(provider);
-    const b=button(`Continuar com ${PROVIDER_NAMES[provider]}${enabled?'':' · em configuração'}`,()=>perform(async()=>{if(!enabled)return;const out=await socialApi('/api/social-auth',{action:'start',provider,...payload()});location.assign(out.url);}),'account-provider');b.disabled=!enabled;b.dataset.provider=provider;providers.append(withIcon(b,provider));
+    const b=button(`Continuar com ${PROVIDER_NAMES[provider]}${enabled?'':' · em configuração'}`,()=>perform(async()=>{if(!enabled)return;const out=await socialApi('/api/social-auth',{action:'start',provider,...payload()});leaveTo(out.url);}),'account-provider');b.disabled=!enabled;b.dataset.provider=provider;providers.append(withIcon(b,provider));
   }
   entryColumn.append(providers);
   if(!config.providers?.length)entryColumn.append(node('p','Os logins sociais estão em configuração. Você já pode usar e-mail quando habilitado.','social-muted'));
@@ -118,7 +121,7 @@ export function mountAccountIntegrations(container,auth,config,message=()=>{}) {
     row.dataset.provider=provider;row.append(withIcon(node('span',name,'account-login-name'),provider));
     if(linked){row.dataset.linked='true';row.append(node('span','✓ Vinculado','account-login-state'));}
     else if(enabled && config.linking) {
-      const b=quiet('Vincular',async()=>{b.disabled=true;try{const out=await socialApi('/api/social-auth',{action:'link',provider});location.assign(out.url);}catch(e){message(e.message==='linking_unavailable'?'Vinculação em configuração. Tente novamente mais tarde.':e.message==='identity_already_linked'?'Esta rede já está vinculada. Atualize a página.':e.message==='identity_link_failed'?'Não foi possível vincular. Esta rede pode pertencer a outra conta.':accountError(e));b.disabled=false;}});
+      const b=quiet('Vincular',async()=>{b.disabled=true;try{const out=await socialApi('/api/social-auth',{action:'link',provider});leaveTo(out.url);}catch(e){message(e.message==='linking_unavailable'?'Vinculação em configuração. Tente novamente mais tarde.':e.message==='identity_already_linked'?'Esta rede já está vinculada. Atualize a página.':e.message==='identity_link_failed'?'Não foi possível vincular. Esta rede pode pertencer a outra conta.':accountError(e));b.disabled=false;}});
       b.setAttribute('aria-label',`Vincular ${name}`);row.append(b);
     }else row.append(node('span','Em breve','account-login-state account-login-off'));
     list.append(row);

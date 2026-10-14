@@ -96,7 +96,7 @@ jobs:
       # regiões diferentes e não estão.
       #
       # NO PUSH DA MAIN estes dois só rodam no commit `chore(release):` (13/10, c2ca685).
-      # Com o trem de release (#854) quem regenera os blocos é o release, 2×/dia, e não
+      # Com o trem de release (#854) quem regenera os blocos é o release, a cada lote, e não
       # mais cada merge. Dois PRs testados sobre bases diferentes mesclam limpo e deixam
       # uma contagem velha na main: o DOCS1 reprovava o push, o embarque do release.yml
       # exige pr-fast verde, e o trem, que é quem regeneraria, nunca saía. No PR eles
@@ -165,6 +165,12 @@ jobs:
           node tools/eval/seo-check.mjs --mutate
           node tools/eval/canonical-host-check.mjs
           node tools/eval/canonical-host-check.mjs --mutate
+          node tools/eval/profile-in-game-check.mjs
+          node tools/eval/profile-in-game-check.mjs --mutate
+          node tools/eval/profile-socials-check.mjs
+          node tools/eval/profile-socials-check.mjs --mutate
+          node tools/eval/profile-views-display-check.mjs
+          node tools/eval/profile-views-display-check.mjs --mutate
 
       # PORTÃO DO SITE. `astro build` verde não prova nada sobre as rotas:
       # /ranking pode dar 500, /sitemap.xml pode sair vazio e o build passa em

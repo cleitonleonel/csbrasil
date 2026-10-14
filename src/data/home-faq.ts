@@ -1,7 +1,10 @@
 import { DESC_LONG, RANKING_DESCRIPTION_PT, RANKING_DESCRIPTION_EN } from '../lib/site';
-import { FACCOES, PERSONAGENS } from './jogo';
+import { FACCOES, MAPAS, PERSONAGENS } from './jogo';
 
 const GRUPOS = FACCOES.map((f) => f.nome).join(', ');
+// Mesma vitrine de /mapas, que o game-pages-check amarra ao registro jogável.
+const lista = (nomes: string[], e: string) => `${nomes.slice(0, -1).join(', ')} ${e} ${nomes.at(-1)}`;
+const NOMES_MAPAS = MAPAS.map((m) => m.nome);
 
 export const HOME_FAQ: [string, string][] = [
   [
@@ -22,7 +25,7 @@ export const HOME_FAQ: [string, string][] = [
   ],
   [
     "Quais mapas o jogo tem?",
-    `Os mapas jogáveis incluem Praça dos Três Poderes, Piscina da Treta, Loja H e Ferro Velho do Zé. O menu mostra os mapas disponíveis e permite escolher rounds ou Capture the Flag.`
+    `São ${MAPAS.length} mapas jogáveis: ${lista(NOMES_MAPAS, 'e')}. O menu mostra os mapas disponíveis e permite escolher rounds ou Capture the Flag.`
   ],
   [
     "Como funciona o ranking global?",
@@ -46,7 +49,7 @@ export const HOME_FAQ_EN: [string, string][] = [
   ['Do I need to install or pay for anything?', 'No. The game is free and runs in your browser, with no download or account required. On mobile, you can add the web beta to your home screen when your browser offers that option.'],
   ['What are the controls?', 'WASD moves, mouse aims, left click fires, right click scopes, Ctrl (or C) crouches, Shift sprints, Space jumps, R reloads, 1/2/3 or the mouse wheel switches weapons, Z/X/V opens voice commands, M switches teams and Tab shows the scoreboard.'],
   ['Which factions and characters are available?', `${PERSONAGENS.length} characters in ${FACCOES.length} groups. The catalogue includes satirical factions, Brazilian archetypes, folklore characters and caricatures of public political figures.`],
-  ['Which maps does the game have?', `Playable maps include Praça dos Três Poderes, Piscina da Treta, Loja H and Ferro Velho do Zé. The menu shows the available maps and lets you choose rounds or Capture the Flag.`],
+  ['Which maps does the game have?', `There are ${MAPAS.length} playable maps: ${lista(NOMES_MAPAS, 'and')}. The menu shows the available maps and lets you choose rounds or Capture the Flag.`],
   ['How does the global ranking work?', RANKING_DESCRIPTION_EN],
   ['Is this an official Valve or Counter-Strike game?', 'No. This is an independent fan parody with no affiliation with Valve. Counter-Strike is a trademark of Valve Corporation.'],
   ['Does it work on mobile?', 'Yes. The web beta has touch controls; hold your phone horizontally to play. Performance depends on your device and browser.'],
