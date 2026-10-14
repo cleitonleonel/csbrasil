@@ -1,10 +1,11 @@
-/* LP0 a LP12 e LB1 a LB8: nenhum modal antes da 1ª partida; convite de login depois dela (dono, 14/10/2026).
+/* LP0 a LP14 e LB1 a LB8: nenhum modal antes da 1ª partida; convite de login depois dela, com os T$ que a conta rende (dono, 14/10/2026).
  * Ver public/js/login-prompt.js. Parte rápida (padrão, entra no check:fast): roda o login-prompt.js REAL num vm,
  * avalia o gatilho do passo de entrada (account-entry.js) e o da apresentação da loja (treta-store.js).
  * Parte de browser (`--browser`, exige BASE): visitante novo abre o site, joga uma partida SP de verdade
  * (a partida termina por __game._endMatch, o mesmo fim da tela de resultado), volta ao menu e só então vê o
  * convite; logado nunca vê. Grava capturas em SHOTS se definido.
  * Mutantes (cada um tem de ficar VERMELHO): --mutante=na-abertura | menu-antes | conta-sem-nick | loja-na-abertura |
+ * sem-treta | treta-sem-janela | treta-fixa | intro-dobrada |
  * sem-login | sem-embed | sem-partida | sem-conta | sem-sessao | sem-intervalo | sem-perfil | sem-contagem | empilha |
  * telemetria-sem-consentimento */
 import assert from 'node:assert/strict';
@@ -12,6 +13,7 @@ import { readFileSync, mkdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
+import { TRETA_DEFAULT_REWARDS, TRETA_COIN_ART } from '../../public/js/treta-catalog.js';
 
 const read = (p) => readFileSync(new URL(`../../${p}`, import.meta.url), 'utf8');
 const arg = (k) => (process.argv.find((a) => a.startsWith(`--${k}=`)) || '').split('=').slice(1).join('=');
@@ -23,7 +25,11 @@ const MUTANTES = {
   'na-abertura': ['login-prompt', '  if(!ended)return false;\n', ''],
   'menu-antes': ['login-prompt', '    if(!ended || inMatch())return;   // espera a volta ao menu depois da tela de resultado\n', ''],
   'conta-sem-nick': ['conta', "const wantsPrompt=()=>failedReturn || (auth?.authenticated && !auth.profile);", "const wantsPrompt=()=>failedReturn || (auth?.authenticated?!auth.profile:!localStorage.getItem('awpbr_nick')?.trim());"],
-  'loja-na-abertura': ['loja', "  document.addEventListener('cs-pos-partida',()=>{\n", INTRO_ANTIGA + "  document.addEventListener('cs-pos-partida',()=>{\n"],
+  'loja-na-abertura': ['loja', "  document.addEventListener('cs-pos-partida',event=>{\n", INTRO_ANTIGA + "  document.addEventListener('cs-pos-partida',event=>{\n"],
+  'sem-treta': ['login-prompt', 'markSeen();draw();drawTreta();', 'markSeen();draw();'],
+  'treta-sem-janela': ['login-prompt', '  if(!(now>=Date.parse(c.starts_at) && now<Date.parse(c.ends_at)))return null;\n', ''],
+  'treta-fixa': ['login-prompt', '  const c={...TRETA_DEFAULT_REWARDS,...campaign};', '  const c={...campaign,...TRETA_DEFAULT_REWARDS,starts_at:campaign.starts_at,ends_at:campaign.ends_at};'],
+  'intro-dobrada': ['loja', "    if(event.detail?.treta){stored('cs_treta_intro','v1');return;}   // o convite já mostrou os T$\n", ''],
   'sem-login': ['login-prompt', '  if(auth?.authenticated)return false;\n', ''],
   'sem-embed': ['login-prompt', '  if(embedded)return false;\n', ''],
   'sem-partida': ['login-prompt', '  if(playing)return false;\n', ''],
@@ -69,9 +75,9 @@ function carrega({ consent = null, search = '', embedded = false, menuHidden = f
     sessionStorage: { getItem: (k) => session.get(k) ?? null, setItem: (k, v) => session.set(k, String(v)) },
     location: { search },
     document: { documentElement: { dataset: embedded ? { embedded: 'true' } : {} }, getElementById: (id) => (id === 'main-menu' ? { classList: { contains: (c) => c === 'hidden' && menuHidden } } : null) },
-    URLSearchParams, JSON, Number, Date,
+    URLSearchParams, JSON, Number, Date, Intl, TRETA_DEFAULT_REWARDS, TRETA_COIN_ART,
   };
-  vm.runInNewContext(`${corpo}\n;globalThis.__api={loginPromptDue,noteLoginPromptMatch,isEmbedded,inMatch,emit,readRecord,seenThisVisit,markSeen,LOGIN_PROMPT_KEY,LOGIN_PROMPT_SESSION_KEY,LOGIN_PROMPT_MATCHES,LOGIN_PROMPT_COOLDOWN_MS};`, ctx);
+  vm.runInNewContext(`${corpo}\n;globalThis.__api={tretaPitch,loginPromptDue,noteLoginPromptMatch,isEmbedded,inMatch,emit,readRecord,seenThisVisit,markSeen,LOGIN_PROMPT_KEY,LOGIN_PROMPT_SESSION_KEY,LOGIN_PROMPT_MATCHES,LOGIN_PROMPT_COOLDOWN_MS};`, ctx);
   return { api: ctx.__api, store, session };
 }
 const CONFIG = { providers: ['google', 'discord', 'x', 'linkedin_oidc'], email: true };
@@ -145,8 +151,8 @@ await caso('LP9', 'fiação: partida começada conta, partida terminada arma o c
   const ini = fonteMain.indexOf('async function _startGame('), fim = fonteMain.indexOf('\n}\n', ini);
   assert(/if \(!continuaPartida\) noteLoginPromptMatch\(\);/.test(fonteMain.slice(ini, fim)), '_startGame não conta a partida');
   const rec = fonteMain.indexOf('async function recordMatchStats(');
-  assert(rec > 0 && fonteMain.slice(rec, rec + 200).includes("document.dispatchEvent(new CustomEvent('cs-match-end'))"), 'fim de partida não avisa');
-  assert(fontePrompt.includes("document.addEventListener('cs-match-end',()=>{ended=true;});"), 'convite não escuta o fim da partida');
+  assert(rec > 0 && /document\.dispatchEvent\(new CustomEvent\('cs-match-end', \{ detail: \{ mode: mpSessao \? 'multiplayer' : 'singleplayer' \} \}\)\)/.test(fonteMain.slice(rec, rec + 200)), 'fim de partida não avisa');
+  assert(/document\.addEventListener\('cs-match-end',e=>\{\n\s+ended=true;/.test(fontePrompt), 'convite não escuta o fim da partida');
   assert(/onReady:ready=>initLoginPrompt\(\{\.\.\.ready,skip:Boolean\(inspectionScreen \|\| testMode \|\| params\.get\('sala'\)(?: \|\| (?:params\.get\('perfil'\)|perfilCompartilhado))?\)/.test(fonteMain), 'convite não pendurado no onReady da conta');
   assert(/sendJsonKeepalive\('\/api\/funnel', \{ step, sessionId: getSessionId\(\), \.\.\.data \}\)/.test(fonteMain), 'transporte fora do funil');
 });
@@ -168,9 +174,35 @@ await caso('LP12', 'apresentação da loja só abre sozinha depois da decisão p
   assert(!/account-entry-dialog/.test(corpo), 'apresentação pendurada no passo de entrada');
   const sozinhos = [...corpo.matchAll(/(.{0,24})\bexplain\(\)/g)].filter((m) => !/void $/.test(m[1]));
   assert.equal(sozinhos.length, 1, `chamadas automáticas: ${sozinhos.length}`);
-  const pos = corpo.indexOf("document.addEventListener('cs-pos-partida',()=>{");
+  const pos = corpo.indexOf("document.addEventListener('cs-pos-partida',");
   assert(pos > 0 && sozinhos[0].index > pos && sozinhos[0].index - pos < 300, 'a chamada automática não está no cs-pos-partida');
-  assert(fontePrompt.includes("document.dispatchEvent(new CustomEvent('cs-pos-partida'))"), 'convite não avisa a loja');
+  assert(fontePrompt.includes("document.dispatchEvent(new CustomEvent('cs-pos-partida',{detail:{treta:pitched}}))"), 'convite não avisa a loja');
+});
+const CAMPANHA = { starts_at: '2026-10-12T00:00:00+00:00', ends_at: '2026-11-01T00:00:00+00:00', email_reward: 200, referral_reward: 100, sp_reward: 10, mp_reward: 25, daily_match_cap: 250 };
+await caso('LP13', 'T$ do convite vêm da campanha do servidor e só dentro da janela de quests', () => {
+  const { api } = carrega();
+  const dentro = Date.parse('2026-10-14T12:00:00Z');
+  const plano = (p) => (p ? JSON.parse(JSON.stringify(p).replace(/\u00a0/g, ' ')) : p);   // T$ e valor ficam juntos por espaço fixo
+  const sp = plano(api.tretaPitch(CAMPANHA, 'singleplayer', dentro)), mp = plano(api.tretaPitch(CAMPANHA, 'multiplayer', dentro));
+  assert.match(sp.headline, /treino.*solo premiada rende T\$ 10\./, sp.headline);
+  assert.match(mp.headline, /partida multiplayer podia render T\$ 25\./, mp.headline);
+  assert.deepEqual(JSON.parse(JSON.stringify(sp.items.map((i) => i[0]))), ['T$ 25', 'T$ 10', 'T$ 200']);
+  assert.match(sp.cap, /T\$ 250 por dia/);
+  const outra = plano(api.tretaPitch({ ...CAMPANHA, mp_reward: 30, sp_reward: 12, email_reward: 150, daily_match_cap: 300 }, 'multiplayer', dentro));
+  assert.deepEqual(JSON.parse(JSON.stringify(outra.items.map((i) => i[0]))), ['T$ 30', 'T$ 12', 'T$ 150'], 'número fixo no cliente em vez do servidor');
+  assert.match(outra.cap, /T\$ 300/);
+  assert.equal(api.tretaPitch(CAMPANHA, 'singleplayer', Date.parse('2026-11-02T00:00:00Z')), null, 'campanha encerrada promete T$');
+  assert.equal(api.tretaPitch(CAMPANHA, 'singleplayer', Date.parse('2026-10-01T00:00:00Z')), null, 'campanha futura promete T$');
+  assert.equal(api.tretaPitch(null, 'singleplayer', dentro), null, 'sem resposta do servidor promete T$');
+  assert.equal(api.tretaPitch({ ...CAMPANHA, mp_reward: 0 }, 'singleplayer', dentro), null, 'valor inválido');
+  const texto = [sp, mp].flatMap((p) => [p.headline, p.cap, ...p.items.flat()]).join(' ');
+  assert(!/[\u2013\u2014]/.test(texto), 'travessão na cópia');
+  assert.equal(TRETA_DEFAULT_REWARDS.sp_reward, CAMPANHA.sp_reward, 'catálogo e campanha divergem');
+});
+await caso('LP14', 'convite com T$ absorve a apresentação da loja', () => {
+  const pos = fonteLoja.indexOf("document.addEventListener('cs-pos-partida',event=>{");
+  assert(pos > 0, 'handler cs-pos-partida sem evento');
+  assert(fonteLoja.slice(pos, pos + 200).includes("if(event.detail?.treta){stored('cs_treta_intro','v1');return;}"), 'apresentação repete o que o convite mostrou');
 });
 
 /* ---------- parte de browser ---------- */
@@ -188,7 +220,9 @@ if (BROWSER) {
   });
   const GUEST = { authenticated: false };
   const LOGADO = { authenticated: true, profile: { nick: 'Logado' }, identities: ['google'] };
-  async function abre({ auth = GUEST, nick = null, consent = null, query = '', seed = null, intro = false, viewport = { width: 1440, height: 900 } } = {}) {
+  const AGORA = Date.now();
+  const CAMPANHA_ATIVA = { ...CAMPANHA, starts_at: new Date(AGORA - 2 * 864e5).toISOString(), ends_at: new Date(AGORA + 14 * 864e5).toISOString() };
+  async function abre({ auth = GUEST, nick = null, consent = null, query = '', seed = null, intro = false, treta = CAMPANHA_ATIVA, viewport = { width: 1440, height: 900 } } = {}) {
     const ctx = await browser.newContext({ viewport, deviceScaleFactor: viewport.width < 500 ? 2 : 1 });
     await ctx.addInitScript(({ nick, consent, seed, intro }) => {
       try {
@@ -208,6 +242,7 @@ if (BROWSER) {
       if (rota.request().method() === 'POST') return rota.fulfill({ status: 400, json: { error: 'provider_unavailable' } });
       return rota.fulfill({ json: auth });
     });
+    await ctx.route('**/api/treta*', (r) => (treta ? r.fulfill({ json: { currency: 'TRETA$', symbol: 'T$', acquisition: 'quests', topUpsEnabled: false, accountId: null, catalog: [], campaign: treta, wallet: null, inventory: [], ledger: [], quests: null, authenticated: false } }) : r.fulfill({ status: 503, json: { error: 'treta_unavailable' } })));
     await ctx.route('**/api/social?action=profile', (r) => r.fulfill({ json: { profile: { avatar_url: 'x', socials: ['x'] } } }));
     await ctx.route('**/api/funnel', (r) => { try { funil.push(JSON.parse(r.request().postData() || '{}')); } catch {} return r.fulfill({ json: { ok: true, stored: false } }); });
     if (MUT) {
@@ -244,7 +279,7 @@ if (BROWSER) {
     await page.waitForTimeout(1200);
   }
 
-  await caso('LB1', 'browser: visitante novo não vê modal na abertura; depois da 1a partida vê o convite; "jogar sem conta" e a próxima partida segue sem convite', async () => {
+  await caso('LB1', 'browser: visitante novo não vê modal na abertura; depois da 1a partida vê o convite com T$; "agora não" e a próxima partida segue sem convite nem loja', async () => {
     const { ctx, page } = await abre();
     try {
       assert.deepEqual(await abertos(page), [], 'modal na abertura');
@@ -254,13 +289,22 @@ if (BROWSER) {
       assert.equal(await page.evaluate(() => document.activeElement?.dataset.provider), 'google', 'foco inicial');
       const nomes = await page.$$eval('#login-prompt-providers button', (bs) => bs.map((b) => b.textContent.trim()));
       assert.deepEqual(nomes, ['Continuar com Google', 'Continuar com Discord', 'Continuar com X', 'Continuar com LinkedIn', 'Continuar com e-mail']);
+      await page.waitForFunction(() => !document.getElementById('login-prompt-treta').hidden, null, { timeout: 10000 }).catch(() => {});
+      const t = JSON.parse((await page.evaluate(() => JSON.stringify({ visivel: !document.getElementById('login-prompt-treta').hidden, titulo: document.getElementById('login-prompt-title').textContent, frase: document.getElementById('login-prompt-treta-headline').textContent, itens: [...document.querySelectorAll('#login-prompt-treta-list li')].map((li) => li.textContent), teto: document.getElementById('login-prompt-treta-cap').textContent, moeda: document.querySelector('#login-prompt-treta img')?.naturalWidth || 0, agoraNao: document.getElementById('login-prompt-guest').textContent.trim() }))).replace(/\u00a0/g, ' '));
+      assert(t.visivel, 'convite sem os T$');
+      assert.equal(t.titulo, 'Jogar logado rende T$');
+      assert.match(t.frase, /treino.*T\$ 10/, t.frase);
+      assert.deepEqual(t.itens, ['T$ 25 por partida multiplayer', 'T$ 10 por partida solo premiada', 'T$ 200 ao confirmar o e-mail, uma vez só']);
+      assert.match(t.teto, /T\$ 250 por dia/);
+      assert(t.moeda > 0, 'moeda não carregou');
+      assert.equal(t.agoraNao, 'Agora não');
       await shot(page, 'desktop-3-convite');
       await page.click('#login-prompt-guest');
-      await page.waitForTimeout(400);
-      assert.equal(await convite(page), false, '"jogar sem conta" não fechou');
+      await page.waitForTimeout(600);
+      assert.equal(await convite(page), false, '"agora não" não fechou');
+      assert.deepEqual(await abertos(page), [], 'apresentação da loja repetiu os T$ logo depois do convite');
       const rec = await page.evaluate(() => JSON.parse(localStorage.getItem('cs_login_prompt')));
       assert(rec && rec.matches === 0 && Date.now() - rec.dismissedAt < 120000, 'recusa não gravada');
-      for (const id of await abertos(page)) await page.evaluate((id) => document.getElementById(id).close(), id);   // a apresentação da loja, se veio, não é assunto deste caso
       await jogaPartida(page, { nick: 'VISITA' });
       assert.equal(await convite(page), false, 'convite voltou na mesma visita');
       await shot(page, 'desktop-4-segunda-partida');
@@ -274,8 +318,8 @@ if (BROWSER) {
       assert.equal(await convite(page), false, 'logado viu o convite');
     } finally { await ctx.close(); }
   });
-  await caso('LB3', 'browser: apresentação da loja não abre na abertura; abre depois do convite pós-partida', async () => {
-    const { ctx, page } = await abre({ nick: 'Visitante', consent: true });
+  await caso('LB3', 'browser: sem campanha no ar, o convite não promete T$ e a apresentação da loja vem depois dele', async () => {
+    const { ctx, page } = await abre({ nick: 'Visitante', consent: true, treta: null });
     try {
       assert.deepEqual(await abertos(page), [], 'modal na abertura');
       await page.evaluate(() => document.body.append(document.createElement('div')));
@@ -283,6 +327,8 @@ if (BROWSER) {
       assert.deepEqual(await abertos(page), [], 'modal depois de mexer no DOM');
       await jogaPartida(page);
       assert.deepEqual(await abertos(page), ['login-prompt'], 'só o convite, sem empilhar');
+      assert.equal(await page.evaluate(() => document.getElementById('login-prompt-treta').hidden), true, 'prometeu T$ sem campanha');
+      assert.equal(await page.evaluate(() => document.getElementById('login-prompt-title').textContent), 'Entre na sua conta');
       await page.keyboard.press('Escape');
       await page.waitForFunction(() => document.getElementById('treta-info')?.open === true, null, { timeout: 10000 });
     } finally { await ctx.close(); }
@@ -336,6 +382,7 @@ if (BROWSER) {
       await shot(page, 'mobile-1-abertura');
       await jogaPartida(page, { resultado: (p) => shot(p, 'mobile-2-resultado') });
       assert.equal(await convite(page), true, 'convite não abriu');
+      await page.waitForFunction(() => !document.getElementById('login-prompt-treta').hidden, null, { timeout: 10000 });
       const r = await page.evaluate(() => { const d = document.getElementById('login-prompt'), b = d.getBoundingClientRect(); return { l: b.left, r: b.right, t: b.top, bt: b.bottom, sw: d.scrollWidth, cw: d.clientWidth }; });
       assert(r.l >= 0 && r.r <= 390 && r.t >= 0 && r.bt <= 844, `fora da tela ${JSON.stringify(r)}`);
       assert(r.sw <= r.cw, 'rolagem lateral');

@@ -312,7 +312,8 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   document.addEventListener('cs-shop-open',()=>void refresh());
   document.addEventListener('cs-account-change',event=>{accountEpoch++;account=event.detail;state=null;selected=null;updateTretaRewards(null);for(const id of ['treta-detail','treta-purchase'])if($(id).open)$(id).close();draw();updateBuy();notifyEquipment();void refresh();});
   // Apresentação só depois da 1ª partida, quando o convite pós-partida (login-prompt.js) já decidiu.
-  document.addEventListener('cs-pos-partida',()=>{
+  document.addEventListener('cs-pos-partida',event=>{
+    if(event.detail?.treta){stored('cs_treta_intro','v1');return;}   // o convite já mostrou os T$
     if(skipPrompt || stored('cs_treta_intro') || $('main-menu')?.classList.contains('hidden') || document.querySelector('dialog[open]'))return;
     explain();
   });
