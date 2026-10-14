@@ -29,6 +29,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  merge_group:
+    types: [checks_requested]
   workflow_dispatch:
 
 permissions:
@@ -40,7 +42,7 @@ permissions:
 # 45 min de render por software jogados fora e nenhum veredito). Por commit na
 # main, por PR no pull_request.
 concurrency:
-  group: portao-browser-${{ github.event.pull_request.number || github.sha }}
+  group: portao-browser-${{ github.event.pull_request.number || github.event.merge_group.head_ref || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -65,13 +67,17 @@ jobs:
         id: filtro
         env:
           EVENTO: ${{ github.event_name }}
-          BASE: ${{ github.event.pull_request.base.sha }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.merge_group.head_sha || github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          if [ "$EVENTO" != "pull_request" ]; then
+          if [ "$EVENTO" != "pull_request" ] && [ "$EVENTO" != "merge_group" ]; then
             echo "rodar=true" >> "$GITHUB_OUTPUT"
             echo "$EVENTO: roda sempre"; exit 0
+          fi
+          if [ -z "$BASE" ] || [ -z "$HEAD" ]; then
+            echo "rodar=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::$EVENTO sem base ou head: sem saber o que mudou, roda"; exit 0
           fi
           # -z e quotePath=false: nome com acento sai cru, não entre aspas em octal (que
           # não casaria com nada e pularia o job). A lista vai separada por NUL.
