@@ -93,6 +93,8 @@ frame?.addEventListener('load', () => {
     const link = event.target.closest?.('a[href]');
     if (!link || link.target === '_blank' || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const url = new URL(link.href);
+    // mailto:, tel: e afins ficam com o navegador; origin "null" não é outro site.
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
     const current = new URL(frame.contentWindow.location.href);
     if (url.hash && url.pathname === current.pathname && url.origin === current.origin) {
       const target = doc.getElementById(decodeURIComponent(url.hash.slice(1)));
