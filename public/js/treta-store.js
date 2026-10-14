@@ -294,17 +294,15 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   document.addEventListener('cs-match-end',()=>{for(const delay of [2000,12000,30000])setTimeout(()=>{if(account?.authenticated)void refresh();},delay);});
   document.addEventListener('cs-shop-open',()=>void refresh());
   document.addEventListener('cs-account-change',event=>{accountEpoch++;account=event.detail;state=null;selected=null;updateTretaRewards(null);for(const id of ['treta-detail','treta-purchase'])if($(id).open)$(id).close();draw();updateBuy();notifyEquipment();void refresh();});
-  $('account-entry-dialog')?.addEventListener('close',()=>{if(!skipPrompt && !stored('cs_treta_intro'))explain();});
-  let accountReady=false;
-  const introObserver=new MutationObserver(()=>{
-    if(skipPrompt || !accountReady || stored('cs_treta_intro') || $('boot-splash') || $('main-menu')?.classList.contains('hidden') || document.querySelector('dialog[open]'))return;
-    explain();introObserver.disconnect();
+  // Apresentação só depois da 1ª partida, quando o convite pós-partida (login-prompt.js) já decidiu.
+  document.addEventListener('cs-pos-partida',()=>{
+    if(skipPrompt || stored('cs_treta_intro') || $('main-menu')?.classList.contains('hidden') || document.querySelector('dialog[open]'))return;
+    explain();
   });
-  introObserver.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});
   draw();
   const manifestsReady=()=>{draw();notifyEquipment();if(selected && $('treta-detail').open)void detail(selected);};
   void fetch('/models/skins/manifest.json').then(r=>{if(!r.ok)throw new Error('manifest_unavailable');return r.json();}).then(data=>{manifest=data;manifestsReady();}).catch(()=>{});
   if(TRETA_ITEMS_ENABLED)void fetch('/models/items/eyewear-manifest.json').then(r=>{if(!r.ok)throw new Error('manifest_unavailable');return r.json();}).then(data=>{eyeManifest=data;manifestsReady();}).catch(()=>{});
-  void loadAccount().then(auth=>{account=auth;}).catch(()=>{}).finally(()=>{accountReady=true;});
+  void loadAccount().then(auth=>{account=auth;}).catch(()=>{});
   void refresh();
 }
