@@ -32,6 +32,316 @@
       "source": "/docs/en/ai-instrumentation{/}?",
       "destination": "/docs/en/instrumentacao-ai",
       "permanent": true
+    },
+    {
+      "source": "/jogar{/}?",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "janela",
+          "value": "configuracoes"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/configuracoes",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "partida",
+          "value": "multiplayer"
+        },
+        {
+          "type": "query",
+          "key": "servidor",
+          "value": "privado"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/jogar/multiplayer/privado",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "partida",
+          "value": "multiplayer"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/jogar/multiplayer",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "janela",
+          "value": "(?<janela>perfil|mapas|personagens|confirmar)"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/jogar/:janela",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "loja"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/loja",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "comunidade"
+        },
+        {
+          "type": "query",
+          "key": "social",
+          "value": "friends"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/comunidade/amigos",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "comunidade"
+        },
+        {
+          "type": "query",
+          "key": "social",
+          "value": "ranking"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/comunidade/ranking",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "comunidade"
+        },
+        {
+          "type": "query",
+          "key": "social",
+          "value": "notifications"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/comunidade/notificacoes",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "comunidade"
+        },
+        {
+          "type": "query",
+          "key": "social",
+          "value": "feed"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/comunidade/feed",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "comunidade"
+        },
+        {
+          "type": "query",
+          "key": "social",
+          "value": "settings"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/comunidade/configuracoes",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "comunidade"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/comunidade",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "sobre"
+        },
+        {
+          "type": "query",
+          "key": "guia",
+          "value": "(?<guia>sobre|como-jogar|personagens|armas|mapas|mapa|changelog|apoie|privacidade|termos|excluir-dados|regras-de-uso|clans)"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/guia/:guia",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "sobre"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/guia",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "feedback"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/feedback",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "apoie"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/apoiar",
+      "statusCode": 301
     }
   ],
   "headers": [
