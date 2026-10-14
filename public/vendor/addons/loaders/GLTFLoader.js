@@ -66,10 +66,8 @@ import {
 	InstancedBufferAttribute
 } from 'three';
 import { toTrianglesDrawMode } from '../utils/BufferGeometryUtils.js';
-/* Teto de textura do perfil mobile (lane glm/peso): o jogo define
-   globalThis.__CS_TEXTURA_MAX__ = min(1024, MAX_TEXTURE_SIZE) em aparelho de
-   toque; GLB com imagem maior é reduzido em canvas ANTES do primeiro upload
-   (VRAM de celular). Sem a flag (desktop, arnês em node) nada muda. */
+/* Teto de textura do perfil mobile: o jogo define __CS_TEXTURA_MAX__; GLB acima
+   do teto é reduzido em canvas antes do primeiro upload. Sem a flag, nada muda. */
 export function clampTexturasGL( gltf ) {
 
 	const teto = globalThis.__CS_TEXTURA_MAX__ || 0;

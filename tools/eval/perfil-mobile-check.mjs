@@ -53,7 +53,7 @@ try {
   qualidade = await import(`file://${origemQualidade}?m=${mutante ? 'mut' : 'base'}`);
   ({ clampTexturasGL } = await import(`file://${join(ROOT, 'public/vendor/addons/loaders/GLTFLoader.js')}?m=${mutante ? 'mut' : 'base'}`));
 
-  const falhas = [];
+  let falhas = [];
   const { PERFIL_MOBILE, DEGRAUS, tetoTextura, perfilInicial } = qualidade;
 
   const d = DEGRAUS[PERFIL_MOBILE.degrauInicial];
