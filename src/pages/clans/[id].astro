@@ -1,0 +1,9 @@
+---
+import ClanPage from '../../components/ClanPage.astro';
+export const prerender = false;
+const clanId = Astro.params.id || '';
+if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clanId))
+  return Astro.redirect('/clans', 302);
+Astro.response.headers.set('cache-control', 'no-store');
+---
+<ClanPage clanId={clanId} />

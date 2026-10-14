@@ -34,9 +34,9 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 
 | O que | Quanto | Onde confere |
 |---|---:|---|
-| Código do jogo | 60.549 linhas em 133 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
-| `game.js` | **8.488** linhas | `wc -l public/js/game.js` |
-| `main.js` | 4.707 linhas | `wc -l public/js/main.js` |
+| Código do jogo | 60.724 linhas em 135 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| `game.js` | **8.489** linhas | `wc -l public/js/game.js` |
+| `main.js` | 4.713 linhas | `wc -l public/js/main.js` |
 | Armas com GLB | 27 | `git ls-files 'public/models/weapons/*.glb' \| wc -l` |
 | GLBs de personagem | 74 | `git ls-files 'public/models/characters/*.glb' \| wc -l` |
 | Props em GLB | 217 | `git ls-files 'public/models/props/*.glb' \| wc -l` |
@@ -44,7 +44,7 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 | Personagens jogáveis | 63, em 7 facções | array `CHARACTERS` de `characters.js` |
 | Mapas no registro | 18 | objeto `MAPS` de `maps.js` |
 | Arnêses visuais em HTML | 22 | `git ls-files 'public/*.html' \| wc -l` |
-| Scripts do arnês | 722 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
+| Scripts do arnês | 723 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
 | Scripts de pipeline | 106 | `git ls-files 'tools/*.mjs' \| wc -l` |
 | Tarefas de entrada escritas | 26 | `git ls-files 'docs/issues/[0-9]*.md' \| wc -l` |
 | Versão | `2.1.0-alpha.90` | `public/js/version.js` e `package.json` (batem) |
@@ -92,7 +92,7 @@ arquitetura): `cd docs && npm install && npm start` → <http://localhost:3000/d
 | Camada | Ferramenta | Versão |
 |---|---|---|
 | Motor 3D (WebGL) | **Three.js**, vendorizado | `r160` |
-| Jogo | ES modules vanilla, **zero build** | 133 arquivos |
+| Jogo | ES modules vanilla, **zero build** | 135 arquivos |
 | Site | **Astro** com SSR | `^7.1.1` |
 | Hospedagem | adapter **Vercel** | `^11.0.6` |
 | Banco | **Postgres gerenciado** (RLS; schema privado, fora do repo) | `^2.110.7` |
