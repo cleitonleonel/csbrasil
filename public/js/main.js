@@ -35,6 +35,7 @@ import { createMapPreview, VIDEO_MAPS } from './map_preview.js';
    (`new Game({ mpFactory, net })`), e sem sessão de rede nenhuma linha dele executa. */
 import { NOS, NO_RE, ordenarNos, melhorNoParaJogar, mpUrls, sondarNos, listRooms, listMaps, createRoom, NetClient, parseConvite, linkDeConvite, salaPorConvite, httpDoNo, resolvePlayerSide, ladoOnline, transitionSlot, decidirPersonagemMp } from './net.js';
 import { montarChatSala } from './chat-painel.js';
+import { planoPreload, segundosAteVirada, textoProximo } from './mp-proximo.js';
 import { makeNetcode } from './netgame.js';
 
 /* ---------------- settings & nickname ---------------- */
@@ -4518,10 +4519,13 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
       ...net.meta, yourEnt: net.yourEnt, yourTeam: net.yourTeam, espectador: net.espectador,
     });
   };
+  // Próximo mapa anunciado no início do placar: pré-carrega enquanto o placar está na tela.
+  net.onProximo = (m) => { if (mpSessao?.net === net) mpPreCarregarProximo(m); };
   // Nova partida no servidor (mapa girou): mesmo conteúdo do welcome, remonta por cima.
   // Sem isto o cliente ficava no mapa velho com ids mortos — BUG-112 (KNOWN-BUGS.md).
   net.onPartida = async (m) => {
     if (mpSessao?.net !== net) return;
+    mpPararContagemProximo();
     mpSessao.chat?.aoMudarMeta(net.meta);
     if (noServeMapaParado(m.map, net)) return;
     mpGuardarEscolhaSp();
@@ -4531,6 +4535,32 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
     try { await mpMontarPartida(net, m); } finally { if (mpSessao?.net === net) net.avisarPronto(m.partida); }
   };
   await mpMontarPartida(net, welcome);
+}
+
+/* PRÓXIMO MAPA NO PLACAR: os mesmos carregadores do _startGame, em segundo plano, com os
+   ids que o nó anunciou; o _startGame da virada encontra tudo em cache. A tela de fim troca
+   "PRÓXIMO MAPA CARREGANDO…" pelo nome e pela contagem; VOLTAR AO MENU segue ao lado. */
+let mpContagemProximo = null;
+function mpPararContagemProximo() { clearInterval(mpContagemProximo); mpContagemProximo = null; }
+function mpPreCarregarProximo(m) {
+  const plano = planoPreload(m, { maps: MAPS, glbChars: GLB_CHARS, weaponIds: WEAPON_IDS });
+  if (!plano) return;
+  const nome = tr(m.mapNome || MAPS[plano.mapId].name || plano.mapId);
+  const rotulo = $('match-next');
+  const pinta = () => { if (rotulo) rotulo.textContent = textoProximo(nome, segundosAteVirada(m), LANG); };
+  mpPararContagemProximo();
+  pinta();
+  mpContagemProximo = setInterval(pinta, 250);
+  const armas = [...new Set([charWeapon(currentChar), ...plano.weapons])].filter(Boolean);
+  if (plano.seed != null) setHavanCarSeed(plano.seed);
+  Promise.all([
+    plano.chars.length ? preloadCharacterAssets(plano.chars, { weapons: armas }) : null,
+    sfx.preloadWeaponSamples(armas),
+    preloadMapProps([...MAP_PROPS, ...plano.props]),
+    preloadAmbientLife(plano.ambience),
+    MAPS[plano.mapId]?.preload?.(),
+    preloadAuthoredFamilies(authoredBootFamilies(armas)),
+  ]).catch((e) => console.warn('[mp] pré-carga do próximo mapa falhou (a virada carrega):', e && e.message));
 }
 
 /* Monta (ou remonta) a partida a partir de um welcome/partida: lado, facções e personagem
@@ -4593,6 +4623,7 @@ function mpAvisoPersonagem(texto, oferta = null) {
    o jogador precisa SABER, porque o corpo dele já voltou a ser bot no servidor. */
 function mpDesconectou() {
   if (!mpSessao) return;
+  mpPararContagemProximo();
   mpLimparIdentidade();
   try { if (game) { sendTelemetry(); sendMatchEvent('quit'); } } catch { /* diagnóstico não bloqueia a saída */ }
   mpSessao.chat?.destruir();

@@ -13,7 +13,7 @@
 import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MAPS } from './harness.mjs';
-import { planoPreload, segundosAteVirada } from '../../public/js/mp-proximo.js';
+import { planoPreload, segundosAteVirada, textoProximo } from '../../public/js/mp-proximo.js';
 
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
 /* `proximo-vira-meta`: o anúncio sobrescreve a meta da partida no placar (ids e mapa errados
@@ -88,6 +88,8 @@ console.log('· preload e contagem');
   const anuncio = { trocaEmMs: 8000, recebidoEm: 1_000 };
   cobra(segundosAteVirada(anuncio, 1_000) === 8 && segundosAteVirada(anuncio, 8_200) === 1 && segundosAteVirada(anuncio, 20_000) === 0,
     'a contagem do placar sai do prazo anunciado e para no zero');
+  cobra(textoProximo('Lajes', 7) === 'PRÓXIMO MAPA: Lajes · 7s' && textoProximo('Lajes', 0) === 'PRÓXIMO MAPA: Lajes · CARREGANDO…'
+      && textoProximo('Lajes', 3, 'en') === 'NEXT MAP: Lajes · 3s', 'o aviso diz o mapa e a contagem, e vira CARREGANDO no zero');
 }
 
 console.log('· main.js');
