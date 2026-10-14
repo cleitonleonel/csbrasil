@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.97`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.98`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,29 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.98] — 2026-10-14
+
+### Mudado
+- Agent: Claude (#948)
+- Agent: Claude (#949)
+- Agent: Claude (#950)
+- Lote perfil: /u no hub, adicionar amigo e saldo T$ (#956)
+- Regenera as contagens da documentação
+- Regenera docs
+- Abas de conta e do perfil só para o dono
+- ADICIONAR AMIGO com o estado da amizade
+- Conserta a sintaxe do eval:rotas
+- ADR 0008: /u/perfil é o hub
+- Regenera docs e ARCH
+- Tira o ABRIR PERFIL PÚBLICO do perfil no hub
+- Serve /u/perfil como o hub do jogo
+- Regenera docs
+- Régua do saldo TRETA$ no perfil
+- Mostra o saldo TRETA$ no perfil
+- Hub aceita head próprio de rota
+- Guarda a aba do perfil na rota do hub
+- Calcula a revisão do CSS do hub no build
 
 ## [2.1.0-alpha.97] — 2026-10-14
 
