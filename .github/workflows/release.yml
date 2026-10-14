@@ -229,7 +229,7 @@ jobs:
             # que não toca a simulação mantém o hash e não tira ninguém do MP.
             node scripts/sim-hash.mjs --write
             node scripts/sync-changelog.mjs
-            node tools/gen-docs.mjs
+            node tools/gen-docs.mjs --release
             # O npm ci do site de docs só repete se o lock dele mudou na main nova.
             LOCK_DOCS_AGORA=$(git hash-object docs/package-lock.json)
             if [ "${LOCK_DOCS:-}" != "$LOCK_DOCS_AGORA" ]; then (cd docs && npm ci); LOCK_DOCS=$LOCK_DOCS_AGORA; fi
@@ -238,7 +238,7 @@ jobs:
             # regenerá-lo aqui o arch:check reprova o PR SEGUINTE (caso real 08/08: o bump
             # do alpha.38 deixou o ARCH.md em alpha.37 e o PR #94 nasceu vermelho). Os dois
             # geradores são node puro, não precisam de npm ci.
-            node tools/gen-arch.mjs
+            node tools/gen-arch.mjs --release
             if git ls-remote --exit-code --tags origin "$NEW" > /dev/null 2>&1; then
               echo "::error::tag $NEW já existe no remoto — bump manual necessário."
               exit 1
