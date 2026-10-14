@@ -4691,7 +4691,8 @@ if (HUB_ENABLED) {
 }
 window.__CS_MAIN_READY__ = true;
 window.__gameLaunch?.ready('boot');
-void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}renderPlayerPlate();}});
+// Convite de sala e perfil compartilhado (/u/<perfil>) chegam com destino: o convite de conta não cobre esse destino.
+void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}renderPlayerPlate();}});
 if (inspectionScreen) {
   openInspectionScreen(inspectionScreen).catch((error) => window.__gameLaunch?.fail(error, 'screen-query'));
 } else if (testMode && params.get('auto')) {
