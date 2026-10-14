@@ -93,6 +93,11 @@ jobs:
             [ -n "$PRS" ] && break
             sleep 10
           done
+          # Sem PR associado: push direto, ou lote entrado por squash/rebase (o commit da head
+          # não é o merge do lote). Avisa alto em vez de parecer "PR comum".
+          if [ -z "$PRS" ]; then
+            echo "::warning::push $SHA na main sem PR mergeado associado — release não sai. PR de lote entra por merge commit; para soltar agora: gh workflow run release.yml"
+          fi
           while IFS=$'\t' read -r NUM ROTULO REF; do
             [ -n "$NUM" ] || continue
             if e_lote "$ROTULO" "$REF"; then

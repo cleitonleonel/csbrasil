@@ -29,12 +29,12 @@
  *       branch `lote-*`, `claude/lote-*` ou `<qualquer>/lote-*`) ou por workflow_dispatch. O passo que
  *       decide roda DE VERDADE aqui, com um `gh` falso que devolve PRs de mentira pelo jq.
  *       RLS11 sem cron · RLS12 workflow_dispatch · RLS13 dispara no merge de lote ·
- *       RLS14 não dispara em PR comum (nem PR aberto, nem label parecida) · RLS8 concurrency
+ *       RLS14 não dispara em PR comum (nem PR aberto, nem label parecida; push sem PR avisa) · RLS8 concurrency
  *       nos jobs que embarcam, com grupo que só é `release-main` quando o lote sai, nunca no
  *       topo; o bump em grupo próprio (`release-bump`) e nunca cancelável · RLS15 anti-loop do commit do bot ·
  *       RLS16 head.ref do PR é dado, não código (sem `${{ }}` no shell, permissão de leitura).
  *
- * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch | cron-de-volta | sem-dispatch | lote-ignorado | sem-rotulo | sem-filtro-lote | qualquer-merge | pr-aberto | concurrency-no-topo | sem-concurrency | grupo-sem-portao | bump-cancelavel | bump-mesmo-grupo | loop | injecao.
+ * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch | cron-de-volta | sem-dispatch | lote-ignorado | sem-rotulo | sem-filtro-lote | qualquer-merge | pr-aberto | concurrency-no-topo | sem-concurrency | grupo-sem-portao | bump-cancelavel | bump-mesmo-grupo | sem-aviso | loop | injecao.
  */
 import { readFileSync, readdirSync, mkdtempSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -173,7 +173,7 @@ const simulaLote = (evento, prs) => {
         GH_TOKEN: 'x', REPO: 'corosolto/client', EVENTO: evento, SHA: 'f'.repeat(40) },
     });
     const sai = /^sai=(\w+)$/m.exec(readFileSync(saida, 'utf8'))?.[1];
-    return { sai, executou: existsSync(path.join(dir, 'PWNED')), status: r.status };
+    return { sai, executou: existsSync(path.join(dir, 'PWNED')), status: r.status, stdout: r.stdout };
   } finally { rmSync(dir, { recursive: true, force: true }); }
 };
 const LOTES = [
@@ -200,19 +200,21 @@ const validaLote = () => {
   const falhasComum = roda ? COMUNS.filter(([, prs]) => simulaLote('push', prs).sai !== 'false').map(([n]) => n) : motivo;
   const dispatchSai = roda && simulaLote('workflow_dispatch', []).sai === 'true';
   const injecao = roda ? simulaLote('push', pr('lote-$(touch PWNED)')) : { executou: true };
+  const semPr = roda ? simulaLote('push', []) : {};
+  const avisaSemPr = semPr.sai === 'false' && /^::warning::push \S+ na main sem PR/m.test(semPr.stdout || '');
   const job = blocoJob('lote');
   return {
     semCron: !eventos.includes('schedule') && !/^\s*-\s*cron:/m.test(workflowRelease),
     dispatch: eventos.includes('workflow_dispatch') && dispatchSai,
     disparaLote: push && embarqueEspera && falhasLote.length === 0,
-    naoDisparaComum: push && embarqueEspera && falhasComum.length === 0
+    naoDisparaComum: push && embarqueEspera && falhasComum.length === 0 && avisaSemPr
       && eventos.every((e) => ['push', 'workflow_dispatch'].includes(e)),
     antiLoop: job.split('\n')[0].trim() === ANTI_LOOP
       && /git log -1 --format=%s \| grep -q '\^chore\(release\):'/.test(workflowRelease),
     seguro: roda && !injecao.executou && injecao.sai === 'true'
       && !/\$\{\{/.test(scriptLote())
       && /\n    permissions:\n      contents: read\n      pull-requests: read\n    outputs:/.test(job),
-    falhasLote, falhasComum,
+    falhasLote, falhasComum: avisaSemPr || !roda ? falhasComum : [...falhasComum, 'push sem PR não avisou'],
   };
 };
 let lote = validaLote();
@@ -257,6 +259,7 @@ if (mutante) {
   else if (mutante === 'bump-cancelavel') mutaRelease(/(group: \$\{\{ needs\.embarque[^\n]*\n      cancel-in-progress:) false/, '$1 true');
   else if (mutante === 'bump-mesmo-grupo') mutaRelease("'release-bump'", "'release-main'");
   else if (mutante === 'grupo-sem-portao') mutaRelease(/group: \$\{\{ needs\.lote\.outputs[^\n]*/, 'group: release-main');
+  else if (mutante === 'sem-aviso') mutaRelease(/echo "::warning::push \$SHA na main sem PR[^\n]*/, ':');
   else if (mutante === 'loop') mutaRelease(ANTI_LOOP, 'if: always()');
   else if (mutante === 'injecao') mutaRelease('case "$2" in', 'eval "X=$2"; case "$2" in');
   else if (mutante === 'ignora-sem-filtro') {
