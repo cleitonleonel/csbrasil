@@ -6,7 +6,7 @@
 //   W2  boot leve: o módulo da vitrine só baixa depois da resposta da loja; nenhum vídeo,
 //       nenhum <video> e nenhum GLB de skin antes de interação.
 //   W3  JOGAR no lugar: mesmo retângulo com e sem vitrine, inteiro na tela, vitrine abaixo dele
-//       e acima do rodapé (1536×1024 e 390×844).
+//       e acima do rodapé (1536×1024 e 390×844); no celular o título aparece inteiro sem rolar.
 //   W4  hover no desktop toca o vídeo da skin certa; ao sair, pausa.
 //   W5  clique leva a /loja?skin=<id> com o detalhe da skin aberto; fechar tira o ?skin=.
 //   W6  EQUIPAR usa o fluxo da loja (POST action=equip) e o card vira EQUIPADA.
@@ -37,8 +37,10 @@ const MUTANTS={
   video:[['treta-vitrine.js',"img.loading='lazy';","img.loading='lazy';{const v=document.createElement('video');v.src=`/video/skins/${s.id}.webm`;v.preload='auto';abrir.append(v);}"]],
   nome:[['treta-vitrine.js',"node('strong',s.name)","node('strong',s.id.replace(/-/g,' '))"]],
   lazy:[['treta-vitrine.js',"img.loading='lazy';",'']],
+  /* título do celular mais alto: fica cortado pela DICA sem rolar */
+  titulo:[['treta.css','.treta-vitrine{padding-top:4px}','.treta-vitrine{padding-top:14px}']],
 };
-const EXPECT={flag:'W7',video:'W2',nome:'W1',lazy:'W1'};
+const EXPECT={flag:'W7',video:'W2',nome:'W1',lazy:'W1',titulo:'W3m'};
 if(process.argv.includes('--mutations')){
   for(const [id,expect] of Object.entries(EXPECT)){
     const r=spawnSync(process.execPath,[new URL(import.meta.url).pathname,`--mutante=${id}`],{encoding:'utf8',env:{...process.env,OUT:`${process.env.OUT || '/tmp/treta-vitrine'}-mut-${id}`}});
@@ -74,10 +76,10 @@ async function abrir(name,{viewport,touch=false,loja='on',caminho='/'}) {
   /* /.astro/eval-vite/deps/* é módulo da barra de dev do Astro, que o serve.mjs não repassa. */
   page.on('pageerror',e=>{if(!/\/\.astro\/eval-vite\//.test(e.message))report.checks.push({id:'pageerror',ok:false,detail:`${name}: ${e.message.slice(0,160)}`});});
   await page.addInitScript(()=>{localStorage.setItem('awpbr_settings',JSON.stringify({menuMusic:false,vol:0,speech:false}));localStorage.setItem('cs_lang','pt');localStorage.setItem('awpbr_nick','TESTE UI');localStorage.setItem('cs_treta_intro','v1');});
-  if(mutant)for(const arquivo of new Set(MUTANTS[mutant].map(m=>m[0])))await page.route(`**/js/${arquivo}*`,async r=>{
-    let source=readFileSync(`public/js/${arquivo}`,'utf8');
+  if(mutant)for(const arquivo of new Set(MUTANTS[mutant].map(m=>m[0])))await page.route(arquivo.endsWith('.css')?`**/${arquivo}*`:`**/js/${arquivo}*`,async r=>{
+    let source=readFileSync(arquivo.endsWith('.css')?`public/${arquivo}`:`public/js/${arquivo}`,'utf8');
     for(const [f,from,to] of MUTANTS[mutant])if(f===arquivo){const antes=source;source=source.replace(from,to);if(source===antes)throw new Error(`MUTANTE NÃO APLICOU em ${arquivo}`);}
-    await r.fulfill({contentType:'text/javascript',body:source});
+    await r.fulfill({contentType:arquivo.endsWith('.css')?'text/css':'text/javascript',body:source});
   });
   let atual=estado({available:loja!=='itens-off'});
   await page.route('**/api/**',async route=>{
@@ -168,8 +170,9 @@ try {
   }
   {
     const {context,page,requests}=await abrir('mobile',{viewport:{width:390,height:844},touch:true});
-    const j=await rect(page,'#btn-jogar'),v=await rect(page,'#treta-vitrine'),f=await rect(page,'.hub-footer');
-    check('W3m',jogarNaTela(j,f,844) && Math.abs(j.top-jogarSem.mobile.top)<=1 && v.top>=j.bottom,`390×844: JOGAR ${JSON.stringify(j)} (sem vitrine top=${jogarSem.mobile.top}), vitrine começa em ${v.top}, rodapé ${f.top}`);
+    const j=await rect(page,'#btn-jogar'),v=await rect(page,'#treta-vitrine'),f=await rect(page,'.hub-footer'),t=await rect(page,'#treta-vitrine>header'),m=await rect(page,'#menu-setup');
+    /* Sem rolar, só o título cabe abaixo do JOGAR: ele tem de aparecer inteiro, não cortado pela DICA. */
+    check('W3m',jogarNaTela(j,f,844) && Math.abs(j.top-jogarSem.mobile.top)<=1 && v.top>=j.bottom && t.bottom<=Math.min(f.top,m.bottom),`390×844: JOGAR ${JSON.stringify(j)} (sem vitrine top=${jogarSem.mobile.top}), título da vitrine ${t.top}-${t.bottom}, área visível até ${Math.min(f.top,m.bottom)}`);
     check('W2m',media(requests).length===0 && glbSkin(requests).length===0,`boot mobile: vídeos=${media(requests).length}, GLB de skin=${glbSkin(requests).length}`);
     await shot(page,'mobile-vitrine');
     await page.locator('#treta-vitrine').scrollIntoViewIfNeeded();await page.waitForTimeout(600);
