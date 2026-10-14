@@ -116,8 +116,8 @@ async function ui(authenticated=false,{nick='Guest',bootSplash=false,runCommunit
   vm.runInContext(privacySource,context,{timeout:vmTimeout});
   if(entrySource){const names=[...entrySource.matchAll(/export\s+(?:async\s+)?(?:function|const)\s+(\w+)/g)].map(m=>m[1]);entry=vm.runInContext('(function(){'+entrySource.replace(/^import .*;\n/gm,'').replace(/export\s+/g,'')+`;return {${names.join(',')}}})()`,context,{timeout:vmTimeout});context.__entry=entry;}
   const rankingSource=read(path.join(root,'public/js/ranking-player.js')).replace(/^import .*;\n/gm,'').replace(/export\s+/g,'');
-  context.__ranking=vm.runInContext('(function(){'+rankingSource+';return {rankingTable};})()',context,{timeout:vmTimeout});
-  if(runCommunity)vm.runInContext(community.replace(/^import .*(?:account-verified|community-inbox|profile-character)\.js.*\n/gm,'').replace(/import\s+\{rankingTable\}\s+from\s+['"]\.\/ranking-player\.js['"];?/g,'const {rankingTable}=__ranking;').replace(/import\s+\{([^}]+)\}\s+from\s+['"]\.\/account-entry\.js['"];?/g,'const {$1}=__entry;'),context,{timeout:vmTimeout});
+  context.__ranking=vm.runInContext('(function(){'+rankingSource+';return {rankingTable,profileSocialLinks,profileSocialLink};})()',context,{timeout:vmTimeout});
+  if(runCommunity)vm.runInContext(community.replace(/^import .*(?:account-verified|community-inbox|profile-character)\.js.*\n/gm,'').replace(/import\s+\{([^}]+)\}\s+from\s+['"]\.\/ranking-player\.js['"];?/g,'const {$1}=__ranking;').replace(/import\s+\{([^}]+)\}\s+from\s+['"]\.\/account-entry\.js['"];?/g,'const {$1}=__entry;'),context,{timeout:vmTimeout});
   for(let n=0;n<8;n++)await new Promise(resolve=>setImmediate(resolve));
   return {ids,storage,before,navigation,calls,copied,profile,entry,observers};
 }

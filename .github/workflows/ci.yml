@@ -167,6 +167,8 @@ jobs:
           node tools/eval/canonical-host-check.mjs --mutate
           node tools/eval/profile-in-game-check.mjs
           node tools/eval/profile-in-game-check.mjs --mutate
+          node tools/eval/profile-socials-check.mjs
+          node tools/eval/profile-socials-check.mjs --mutate
 
       # PORTÃO DO SITE. `astro build` verde não prova nada sobre as rotas:
       # /ranking pode dar 500, /sitemap.xml pode sair vazio e o build passa em

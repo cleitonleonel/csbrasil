@@ -1,5 +1,5 @@
 import {mountAccountEntry,mountProfilePreferences,mountAccountIntegrations,loadAccount,loadAuthOptions,acceptAccount,logoutAccount} from './account-entry.js';
-import {rankingTable} from './ranking-player.js';
+import {rankingTable,profileSocialLinks,profileSocialLink} from './ranking-player.js';
 import {careerRankBadge,careerRankTitle} from './career-rank.js';
 import {questList} from './community-inbox.js';
 import {accountVerifiedBadge} from './account-verified.js';
@@ -81,7 +81,7 @@ if(root) {
       buttons.append(button('BLOQUEAR',async()=>{await action('block',p.id);profileId='';await render();},'social-danger'),button('DENUNCIAR',()=>showReport(p)));
     }
     c.append(buttons);
-    if(p.socials?.length){const row=el('p');for(const s of p.socials.filter(s=>/^https:\/\//.test(s.url || ''))){const a=link(`${s.net} ↗ `,s.url);a.target='_blank';a.rel='noopener noreferrer nofollow';row.append(a);}c.append(row);}
+    if(p.socials?.length || p.social_link){const socials=profileSocialLinks(p);if(socials.length){const row=el('nav','','profile-socials');row.setAttribute('aria-label','Redes públicas');for(const s of socials)row.append(profileSocialLink(s));c.append(row);}}
     c.append(el('h3','Conquistas'));
     const achievements=el('ul','','social-list');for(const a of p.achievements)achievements.append(el('li',`${names[a.key] || a.key} · ${date(a.at)}`));c.append(p.achievements.length?achievements:empty('A primeira conquista vem da primeira treta confirmada.'));
     c.append(el('h3','Preferências na arena'));
