@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.98`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.99`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,38 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.99] — 2026-10-14
+
+### Mudado
+- Agent: Claude (#955)
+- Agent: Claude (#953)
+- Agent: Claude (#957)
+- Lote: vitrine de skins no menu e convite de login pós-partida (#962)
+- Regenera as contagens da documentação
+- Caber o título da vitrine acima da DICA
+- Exigir o título da vitrine inteiro no celular
+- Deixar claro o estado e a rolagem da vitrine
+- Cobrir a vitrine na régua de nomes reais
+- Regenera as contagens da documentação
+- Convite com T$ absorve a apresentação da loja
+- Convite mostra os T$ que a conta rende
+- Recusa do convite vira "Agora não"
+- Bloco de T$ no convite pós-partida
+- Fim de partida diz se foi solo ou multiplayer
+- Régua: convite pós-partida mostra os T$ da campanha
+- Regenerar contagens da documentação
+- Mostrar as skins da loja na aba JOGAR
+- Exportar da loja o que a vitrine reaproveita
+- Rodar a régua da vitrine no portão de navegador
+- Medir a vitrine de skins do menu no navegador
+- Regenera as contagens da documentação
+- Contrato E02 segue a abertura sem modal
+- B7 mede modal na abertura em vez de fechá-lo
+- Apresentação da loja abre depois do convite
+- Convite de login só abre depois da 1ª partida
+- Passo de entrada não abre sozinho para visitante
+- Régua: nenhum modal antes da 1ª partida
 
 ## [2.1.0-alpha.98] — 2026-10-14
 
