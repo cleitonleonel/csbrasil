@@ -3,6 +3,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const root=new URL('../../',import.meta.url);
 import {spawnSync} from 'node:child_process';
+import * as COMPARTILHAR from '../../public/js/compartilhar.js';
 import {TRETA_SKINS} from '../../public/js/treta-catalog.js';
 const mutant=process.argv.find(x=>x.startsWith('--mutant='))?.split('=')[1];
 if(process.argv.includes('--mutations')){
@@ -46,7 +47,7 @@ tabs[2].hidden=true;
 get('treta-accessories-view').hidden=true;
 let requests=[];
 const fixture={authenticated:true,accountId:'review-fixture',wallet:{balance:1000},inventory:[{skin_id:'metal-de-rua',equipped:true}],catalog:[{id:'metal-de-rua',slot:'eyewear',available:true,model_path:'/models/items/test.glb'}]};
-const context=vm.createContext({console,Intl,Date,URLSearchParams,URL,location:{search:'',origin:'http://fixture.invalid'},localStorage:{getItem(){return null;},setItem(){}},navigator:{},CustomEvent:class{constructor(type){this.type=type;}},MutationObserver:class{observe(){}},setInterval(){},setTimeout(){},fetch:async url=>{requests.push(url);return {ok:true,json:async()=>JSON.parse(read('public/models/skins/manifest.json'))};},loadAccount:async()=>({authenticated:false}),socialApi:async(url,body)=>{requests.push({url,body});return fixture;},initTretaRewards(){},updateTretaRewards(){},byId:id=>({id}),eyewearProfile:eye.eyewearProfile,TRETA_SKINS,TRETA_EYEWEAR:[{id:'metal-de-rua',slot:'eyewear'}],TRETA_COINS:[],TRETA_ACCESSORY_PROPOSALS:[{name:'BONÉ'}],TRETA_DEFAULT_REWARDS:{},TRETA_COIN_ART:{poster:'/img/coin.webp'},document:{getElementById:get,createElement:()=>new Element(),querySelectorAll:selector=>selector==='[data-treta-view]'?tabs:[],querySelector(){return null;},addEventListener(){},dispatchEvent(){},body:new Element()}});
+const context=vm.createContext({...COMPARTILHAR,console,Intl,Date,URLSearchParams,URL,location:{search:'',origin:'http://fixture.invalid'},localStorage:{getItem(){return null;},setItem(){}},navigator:{},CustomEvent:class{constructor(type){this.type=type;}},MutationObserver:class{observe(){}},setInterval(){},setTimeout(){},fetch:async url=>{requests.push(url);return {ok:true,json:async()=>JSON.parse(read('public/models/skins/manifest.json'))};},loadAccount:async()=>({authenticated:false}),socialApi:async(url,body)=>{requests.push({url,body});return fixture;},initTretaRewards(){},updateTretaRewards(){},byId:id=>({id}),eyewearProfile:eye.eyewearProfile,TRETA_SKINS,TRETA_EYEWEAR:[{id:'metal-de-rua',slot:'eyewear'}],TRETA_COINS:[],TRETA_ACCESSORY_PROPOSALS:[{name:'BONÉ'}],TRETA_DEFAULT_REWARDS:{},TRETA_COIN_ART:{poster:'/img/coin.webp'},document:{getElementById:get,createElement:()=>new Element(),querySelectorAll:selector=>selector==='[data-treta-view]'?tabs:[],querySelector(){return null;},addEventListener(){},dispatchEvent(){},body:new Element()}});
 vm.runInContext(strip(feature)+'\n'+strip(storeSource),context);
 context.initTretaStore({skipPrompt:true});
 await new Promise(r=>setImmediate(r));
