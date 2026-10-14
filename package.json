@@ -565,6 +565,7 @@
     "eval:perfil-abas": "node tools/eval/perfil-abas-check.mjs && node tools/eval/perfil-abas-check.mjs --mutate",
     "//eval:rotas-browser": "Deep-link, link antigo e voltar do navegador no hub de verdade. Precisa de BASE com tools/eval/serve.mjs numa porta própria.",
     "eval:rotas-browser": "node tools/eval/rotas-browser.mjs && ! node tools/eval/rotas-browser.mjs --mutante=query && ! node tools/eval/rotas-browser.mjs --mutante=loja-fixa",
+    "eval:hub-loja": "node tools/eval/hub-loja-rotulo-check.mjs && node tools/eval/hub-loja-rotulo-check.mjs --mutations",
     "eval:treta-rewards": "node tools/eval/treta-rewards-check.mjs && node tools/eval/treta-rewards-check.mjs --mutations",
     "eval:treta-skins": "node tools/eval/treta-skins-check.mjs && node tools/eval/treta-skins-check.mjs --mutations",
     "eval:treta-video": "node tools/eval/treta-skin-video-check.mjs && node tools/eval/treta-skin-video-check.mjs --mutations",
