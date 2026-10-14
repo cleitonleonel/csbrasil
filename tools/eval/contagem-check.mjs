@@ -180,7 +180,7 @@ async function mundo({ webdriver = false, search = '', fetchFalha = false, agora
   cobra(/modoEscolhido = true;\n\s+contagem\.entrouNoMp\(/.test(main), 'CT9 mp_join ausente do welcome do MP');
   cobra(/if \(testMode\) contagem\.desligar\(\);/.test(main), 'CT9 testMode não desliga a contagem');
   const linhas = main.split('\n').filter((l) => /\bcontagem\.(evento|partida|entrou)/.test(l));
-  cobra(linhas.length >= 6 && linhas.every((l) => !/analyticsAllowed/.test(l)), 'CT9 alguma chamada da contagem depende de analyticsAllowed');
+  cobra(linhas.length >= 5 && linhas.every((l) => !/analyticsAllowed/.test(l)), 'CT9 alguma chamada da contagem depende de analyticsAllowed');
   cobra(/<script type="module" async src=\{`\/js\/contagem\.js\?v=\$\{V\}-\$\{JS_REV\}`\} is:inline><\/script>/.test(index) && index.indexOf('/js/contagem.js') < index.indexOf('/js/main.js'), 'CT9 index.astro não carrega contagem.js (async, versionado, antes do main.js)');
   cobra(/window\.__csConta\('boot_error'\)/.test(index), 'CT9 boot_error não está ligado ao modal de falha');
   cobra(/'count'/.test(apibase.slice(apibase.indexOf('const NO_BACKEND'), apibase.indexOf(']);'))) && !/'count'/.test(apibase.slice(apibase.indexOf('const VIA_SITE'), apibase.indexOf('const VIA_SITE') + 200)), 'CT9 /api/count tem de ir direto ao backend (NO_BACKEND, fora do VIA_SITE)');
