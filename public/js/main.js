@@ -126,7 +126,7 @@ const AUTO_PROFILE = new URLSearchParams(location.search).get('perfilauto') !== 
 const HUB_ENABLED = new URLSearchParams(location.search).get('home') !== 'legacy';
 /* A tela mora no CAMINHO (public/js/rotas.js, ADR 0008): /jogar/multiplayer, /loja,
    /comunidade/amigos... Parâmetro que não é tela (map, personagem, sala) segue na query. */
-const TELA = new Set([...CHAVES_DE_TELA, 'origem', 'perfil']);
+const TELA = new Set([...CHAVES_DE_TELA, 'origem', 'perfil', 'aba']);
 // Perfil vira /u/<perfil> só na janela de cima: no iframe de /u um reload cairia na página SSR.
 const ROTA_OPCOES = { perfilNoCaminho: window.top === window.self };
 function hubNavigate(changes, replace = false) {
@@ -2296,7 +2296,7 @@ if (HUB_ENABLED) {
     const tab = profile ? 'profile' : destino.social || 'profile';
     const paused = $('main-menu').dataset.socialPaused === 'true';
     setHubTab('comunidade', false);
-    if (!paused) hubNavigate({ secao: 'comunidade', social: tab, perfil: perfil || null, janela: null, origem: null });
+    if (!paused) hubNavigate({ secao: 'comunidade', social: tab, perfil: perfil || null, aba: null, janela: null, origem: null });
     document.dispatchEvent(new CustomEvent('cs-community-open', { detail: { tab, perfil } }));
   });
   const setHubNet = (net, updateRoute = true) => {
