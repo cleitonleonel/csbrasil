@@ -24,7 +24,7 @@
 # TREM DE RELEASE (13/10/2026, autorizado pelo dono): era um release por push na main —
 # 126 releases para 130 merges em 30 dias. Cada um reescrevia README/AGENTS/ARCH/docs,
 # todo PR aberto conflitava e o autofix mergeava a base em cada um (49% dos commits da
-# main eram do bot). Agora o trem passa 2×/dia e por workflow_dispatch (hotfix:
+# main eram do bot). O trem passou a sair 2×/dia e por workflow_dispatch (hotfix:
 # `gh workflow run release.yml`). Só embarca se houver commit novo desde a última tag E o
 # pr-fast estiver VERDE na head da main. A Vercel só builda produção em commit
 # `chore(release):` (scripts/ci/vercel-ignore.sh) — então produção passa a esperar o CI.
