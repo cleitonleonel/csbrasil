@@ -4,6 +4,7 @@ import {TRETA_SKINS,TRETA_COINS,TRETA_DEFAULT_REWARDS,TRETA_COIN_ART,TRETA_EYEWE
 import {TRETA_ACCESSORY_PROPOSALS} from './treta-proposals.js';
 import {loadAccount,socialApi} from './account-entry.js';
 import {byId} from './characters.js';
+import {ligarCompartilhar,linkCompartilhavel} from './compartilhar.js';
 import {eyewearProfile} from './eyewear.js';
 
 const node=(tag,text='',cls='')=>{const e=document.createElement(tag);e.textContent=text;e.className=cls;return e;};
@@ -237,6 +238,7 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   const code=new URLSearchParams(location.search).get('treta');
   if(code && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(code))stored('cs_treta_referral',code);
   $('treta-buy').onclick=()=>void buy();
+  ligarCompartilhar($('treta-share'),()=>({titulo:'Loja do CORO SOLTO',texto:`Olha a skin ${$('treta-detail-name').textContent} na loja do CORO SOLTO.`,url:linkCompartilhavel('/loja','skin')}));
   $('treta-preview-retry').onclick=()=>{if(selected)void detail(selected);};
   for(const button of document.querySelectorAll('[data-treta-close]'))button.onclick=()=>button.closest('dialog').close();
   for(const dialog of [$('treta-detail'),$('treta-purchase')])dialog.addEventListener('close',()=>{if(dialog.id==='treta-detail'){detailVersion++;stage?.dispose();stage=null;}else{purchaseStage?.dispose();purchaseStage=null;}});
