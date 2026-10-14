@@ -4711,10 +4711,9 @@ export class Game {
          devolver `null` para uma facção que ainda não tem brasão: nos dois casos cai no pano
          procedural de sempre, e o CTF continua funcionando exatamente como hoje. */
       let tex = null;
-      /* `fac` É LETRA DE FACÇÃO, não lado da partida — vem sempre de `_factionOf(side)`
-         (ver `_updateCTF`). A diferença morde no 'B': como LADO quer dizer "time B", como
-         FACÇÃO quer dizer Time Bs, e os dois só coincidem por acidente. Passar o lado
-         cru aqui entrega a bandeira do time errado SEM erro nenhum no console. */
+      /* `fac` é a letra do LADO dono (E/B), que também é a letra do brasão do time. Não
+         passe `_factionOf(side)`: online ela é a categoria do corpo do jogador (C/F/U/M/P)
+         e o pano sairia com o brasão do palhaço no lugar do time. */
       if (fac && this._bandeiraTextura) { try { tex = this._bandeiraTextura(fac); } catch { tex = null; } }
       if (!tex) this._legadoSimbolo(fac);
       this._flagTexCache[k] = tex || this._makeCtfFlagTex(fac);
@@ -5215,7 +5214,7 @@ export class Game {
         ? 0.55 + 0.4 * Math.abs(Math.sin(this.time * 7))
         : 0.5 + 0.45 * (pt.prog || (pt.owner ? 1 : 0));
       if (pt.flag) {   // emblema da facção dona no pano; troca a textura só quando o dono muda
-        const fac = pt.owner ? this._factionOf(pt.owner) : null;
+        const fac = pt.owner || null;   // pano do LADO dono (E/B), como o brasão do placar
         if (pt._flagFac !== fac) { pt._flagFac = fac; pt.flag.material.map = this._flagTexFor(fac); pt.flag.material.needsUpdate = true; }
         pt.flag.material.color.set(pt.owner ? 0xe6e6e6 : 0xaaaaaa);   // dono: quase branco p/ o emblema mostrar cor real
       }

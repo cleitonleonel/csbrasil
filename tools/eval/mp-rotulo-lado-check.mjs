@@ -31,13 +31,16 @@
      ML4  chip versus da tela de carregamento = ESQUERDA/DIREITA
      ML5  subtítulo do cartão "SEU PERSONAGEM NO MULTIPLAYER" = ESQUERDA/DIREITA
      ML6  viewmodel: `playerFaction` (luva e braços) continua a categoria do personagem
+     ML7  CTF online: o pano da bandeira do dono (netgame.js applyCtfState -> _flagTexFor) é
+          o do LADO, não o brasão do corpo do jogador
      SP1  SP com cada categoria em cada lado: facção = lado e rótulo/sigla/brasão/chip do lado,
           exatamente como antes do conserto
 
    MUTANTES (em memória; o disco não é tocado, salvo a cópia temporária do game.js)
      --mutante=rotulo-categoria   devolve rótulo/sigla/brasão/chip/cartão à categoria -> ML1-ML5 vermelhas
      --mutante=maos-lado          aplica `faction = side` também online (mão vira o lado) -> ML6 vermelha
-   Nos dois, SP1 continua verde.
+     --mutante=bandeira-categoria devolve o pano do CTF online a `_factionOf(dono)`  -> ML7 vermelha
+   Em todos, SP1 continua verde.
 
    uso: node tools/eval/mp-rotulo-lado-check.mjs [--mutante=<nome>]
    ═══════════════════════════════════════════════════════════════════════════════════ */
@@ -48,7 +51,7 @@ import * as H from './harness.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-if (MUT && !['rotulo-categoria', 'maos-lado'].includes(MUT)) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
+if (MUT && !['rotulo-categoria', 'maos-lado', 'bandeira-categoria'].includes(MUT)) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
 const NOME = { E: 'ESQUERDA', B: 'DIREITA' };
 const SIGLA = { E: 'ESQ', B: 'DIR' };
@@ -75,6 +78,8 @@ if (MUT === 'rotulo-categoria') {
   mainSrc = troca(mainSrc, ": def ? tr(FACTION_NAME[corpo.team] || corpo.team) :", ": def ? tr(FACTION_NAME[def.team] || def.team) :", 'main.js');
 }
 if (MUT === 'maos-lado') mainSrc = troca(mainSrc, 'if (!online) faction = side;', 'faction = side;', 'main.js');
+let netSrc = fs.readFileSync(path.join(RAIZ, 'public/js/netgame.js'), 'utf8');
+if (MUT === 'bandeira-categoria') netSrc = troca(netSrc, 'const fac = pt.owner || null;', 'const fac = pt.owner ? game._factionOf(pt.owner) : null;', 'netgame.js');
 
 /* O Game mutado mora numa cópia IRMÃ do game.js (mesma pasta, então os imports relativos
    resolvem) que some no fim. Sem mutante de game.js, o Game é o do harness. */
@@ -84,6 +89,12 @@ if (gameSrc !== fs.readFileSync(path.join(RAIZ, 'public/js/game.js'), 'utf8')) {
   fs.writeFileSync(copia, gameSrc);
   try { ({ Game } = await import(pathToFileURL(copia).href)); } finally { fs.rmSync(copia, { force: true }); }
 }
+let makeNetcode;
+if (netSrc !== fs.readFileSync(path.join(RAIZ, 'public/js/netgame.js'), 'utf8')) {
+  const c = path.join(RAIZ, 'public/js', `.mut-rotulo-net-${process.pid}.js`);
+  fs.writeFileSync(c, netSrc);
+  try { ({ makeNetcode } = await import(pathToFileURL(c).href)); } finally { fs.rmSync(c, { force: true }); }
+} else ({ makeNetcode } = await import(pathToFileURL(path.join(RAIZ, 'public/js/netgame.js')).href));
 
 /* ── pedaços do main.js, executados como estão ─────────────────────────────────── */
 const pega = (re, nome) => {
@@ -104,16 +115,17 @@ const PALETA = new Proxy({}, { get: () => ({ base: '#000' }) });
 
 /* ── uma partida, do jeito que o main.js monta ─────────────────────────────────── */
 const textures = H.initTextures();
-function partida({ def, team, online }) {
-  // online: o servidor mandou o lado `team` e o inimigo é a faccao do outro lado ("E"/"B")
-  const enemyFaction = online ? outro(team) : undefined;
+function partida({ def, team, online, inimigoDoServidor = null, ctf = false }) {
+  // online: o servidor mandou o lado `team` e o inimigo é a faccao do outro lado ("E"/"B"),
+  // ou a letra que um servidor futuro mandar (`inimigoDoServidor`)
+  const enemyFaction = online ? (inimigoDoServidor || outro(team)) : undefined;
   const id = identidade(CHARACTERS, def.id, team, online, enemyFaction, null, podeNoLado, ladosDe, resolvePlayerSide);
   H.seedRandom(12345);
   globalThis.__els = {};
   const g = new Game({
     renderer: H.renderer, textures, sfx: H.sfx, settings: { bots: 4, quality: 'low', difficulty: 'normal', sens: 1 },
     playerCharId: def.id, playerTeam: id.side, playerFaction: id.faction, enemyFaction: id.enemyFac,
-    nickname: 'SIM', mapId: 'praca_poderes', ctf: false, testMode: true, onQuit() {}, onMatchEnd() {},
+    nickname: 'SIM', mapId: 'praca_poderes', ctf, testMode: true, onQuit() {}, onMatchEnd() {},
   });
   g._ensureDolly = () => {};
   g.start ? g.start() : g._startRound();
@@ -127,6 +139,18 @@ function partida({ def, team, online }) {
   const corpo = { id: 1, char: def.id, team: id.side };
   const sub = cartao(false, def, corpo, tr, FACTION_NAME);
   const lado = id.side, slot = (s) => (s === 'E' ? 'P' : 'B');
+  // CTF online: o estado autoritativo dá a 1ª bandeira ao lado do jogador e a 2ª ao outro
+  let panos = null;
+  if (ctf) {
+    const pedidos = [];
+    const orig = g._flagTexFor.bind(g);
+    g._flagTexFor = (fac) => { pedidos.push(fac); return orig(fac); };
+    const nc = makeNetcode(g, { meta: {}, startPing() {}, stopPing() {}, onSlot: null, onPersonagem: null });
+    clearInterval(nc._nsTimer);
+    const pts = g.ctfPts.map((_, i) => ({ owner: i === 0 ? lado : i === 1 ? outro(lado) : null, capTeam: null, contested: false, prog: 1 }));
+    nc.applyCtfState({ points: pts, capsE: 0, capsB: 0, roundCapsE: 0, roundCapsB: 0 });
+    panos = { n: g.ctfPts.length, meu: g.ctfPts[0]?._flagFac, dele: g.ctfPts[1]?._flagFac, pedidos };
+  }
   return {
     id, lado,
     nome: [g._teamName(lado), g._teamName(outro(lado))],
@@ -135,7 +159,7 @@ function partida({ def, team, online }) {
     crestHud: [g.el['crest' + slot(lado)]?.dataset?.f, g.el['crest' + slot(outro(lado))]?.dataset?.f],
     brasoesPlacar, nomesPlacar,
     chip: [a.textContent, b.textContent], cartao: sub,
-    maos: g.playerFaction,
+    maos: g.playerFaction, panos,
   };
 }
 
@@ -160,6 +184,9 @@ for (const cat of CATS) for (const team of ['E', 'B']) {
   marca('ML4', r.chip[0] === NOME[L] && r.chip[1] === NOME[O], `${caso}: chip ${r.chip.join(' × ')}`);
   marca('ML5', r.cartao === NOME[L], `${caso}: cartão "${r.cartao}"`);
   marca('ML6', r.maos === def.team, `${caso}: viewmodel com ${r.maos} (personagem é ${def.team})`);
+  const c = partida({ def, team, online: true, ctf: true });
+  marca('ML7', c.panos && c.panos.n >= 2 && c.panos.meu === L && c.panos.dele === O,
+    `${caso} CTF: ${c.panos ? `${c.panos.n} bandeiras, pano meu ${c.panos.meu} dele ${c.panos.dele}` : 'sem bandeiras'}`);
   linhas.push(`${caso.padEnd(34)} nome ${r.nome[0]} · sigla ${r.sigla[0]} · brasão ${r.crestHud[0]} · chip ${r.chip[0]} · cartão ${r.cartao} · mãos ${r.maos}`);
 }
 for (const cat of [...CATS, 'E', 'B']) for (const team of ['E', 'B']) {
@@ -183,6 +210,7 @@ const TIT = {
   ML4: 'MP: chip versus da carga diz ESQUERDA/DIREITA',
   ML5: 'MP: cartão SEU PERSONAGEM diz o lado',
   ML6: 'MP: viewmodel (luva/braços) segue a categoria do personagem',
+  ML7: 'MP CTF: pano da bandeira é o do lado dono',
   SP1: 'SP: lado, facção, rótulo, sigla, brasão e chip iguais aos de antes',
 };
 console.log(`\n${linhas.join('\n')}\n`);
