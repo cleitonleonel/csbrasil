@@ -23,7 +23,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      # Leve (CL1): o passo lê dois arquivos, não a árvore com 536 MB de modelos.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            package.json
+            public/js/version.js
+          sparse-checkout-cone-mode: false
       - name: package.json e version.js têm que concordar
         run: |
           HEAD=$(node -pe 'require("./package.json").version')
@@ -38,9 +45,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      # Leve (CL1): a régua lê o KNOWN-RED.json da base com `git show`, que busca o blob sob demanda.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
+          filter: blob:none
       - name: KNOWN-RED só cresce com justificativa
         env:
           PR_BODY: ${{ github.event.pull_request.body }}

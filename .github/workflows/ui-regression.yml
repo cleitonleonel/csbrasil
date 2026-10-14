@@ -19,6 +19,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+          # Leve (CL1): o decide só lê nomes do diff; quando há tela, o worktree da base
+          # busca os blobs dele sob demanda.
+          filter: blob:none
       # Só compara tela quando o PR mexe no que vira tela. PR de docs, CI, régua ou backend
       # passava 35 min subindo dois `astro dev` para descobrir que nada mudou. O job continua
       # existindo e sai VERDE no pulo — não vira check pendente caso seja obrigatório.
