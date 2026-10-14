@@ -1705,9 +1705,9 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
     mpFactory: sessao ? makeNetcode : null,
     net: sessao ? sessao.net : null,
     dedicated: !!(sessao && sessao.net.espectador),
-    /* online: o Room do servidor cria o Game sem roundsMax (padrão 5 / 3) e manda o fim;
-       o teto local (1–15) só vale offline, senão o HUD conta "RODADA n / 15" à toa. */
-    roundsMax: sessao ? undefined : matchRounds(),
+    /* online: o teto é o da sala (meta.roundsMax do servidor; nó antigo sem o campo = padrão
+       5 / 3) e o fim vem do servidor; o teto local (1–15) só vale offline. */
+    roundsMax: sessao ? (sanitizeRounds(sessao.net.meta.roundsMax) || undefined) : matchRounds(),
     onMatchEnd: recordMatchStats,
     recordTraining: trainingEnabled(),
     onTrainingFrames: sendTrainingFrames,
