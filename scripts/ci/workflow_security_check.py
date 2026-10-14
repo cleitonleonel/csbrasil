@@ -136,20 +136,46 @@ def supply_failures(workflows: dict[Path, str]) -> list[str]:
     return errors
 
 
+def _chave_topo(codigo: str, chave: str) -> tuple[str, list[str]] | None:
+    """Valor inline e linhas indentadas de uma chave de coluna 0, lidos linha a linha."""
+    linhas = codigo.splitlines()
+    for i, linha in enumerate(linhas):
+        nome, sep, resto = linha.partition(':')
+        if not sep or nome.strip('\'"') != chave or linha[:1].isspace():
+            continue
+        bloco = []
+        for seguinte in linhas[i + 1:]:
+            if seguinte.strip() and not seguinte[:1].isspace():
+                break
+            bloco.append(seguinte)
+        return resto.strip(), bloco
+    return None
+
+
+def escuta_merge_group(codigo: str) -> bool:
+    on = _chave_topo(codigo, 'on')
+    if not on:
+        return False
+    inline, bloco = on
+    if re.search(r'\bmerge_group\b', inline):
+        return True
+    return any(re.match(r'\s+(?:-\s*)?merge_group\b', l) for l in bloco)
+
+
 def merge_group_failures(workflows: dict[Path, str]) -> list[str]:
     """MGQ1 o lote da fila roda código de PR (de fork também) no contexto do repo: sem
     segredo além do GITHUB_TOKEN, token só de leitura no topo e nada de pull_request_target."""
     errors = []
     for path, source in workflows.items():
         codigo = '\n'.join(l for l in source.splitlines() if not l.lstrip().startswith('#'))
-        if not re.search(r'^on:\n(?:(?:\s[^\n]*)?\n)*?  merge_group:', codigo, re.M):
+        if not escuta_merge_group(codigo):
             continue
         if 'pull_request_target' in codigo:
             errors.append(f'MGQ1 {path}: escuta merge_group e pull_request_target no mesmo arquivo')
         for nome in sorted(set(re.findall(r'secrets\.(\w+)', codigo)) - {'GITHUB_TOKEN'}):
             errors.append(f'MGQ1 {path}: escuta merge_group e lê secrets.{nome} — o lote roda código de PR')
-        topo = re.search(r'^permissions:[^\n]*\n((?:  [^\n]*\n)*)', codigo, re.M)
-        if not topo or 'write' in topo.group(0):
+        topo = _chave_topo(codigo, 'permissions')
+        if not topo or 'write' in topo[0] + '\n'.join(topo[1]):
             errors.append(f'MGQ1 {path}: escuta merge_group sem `permissions:` só de leitura no topo')
     return errors
 
@@ -215,6 +241,9 @@ def selftest(source: str) -> list[str]:
         'fila-com-segredo': ci.read_text(encoding='utf-8') + '\n        env:\n          X: ${{ secrets.VERCEL_TOKEN }}\n',
         'fila-com-target': ci.read_text(encoding='utf-8').replace('  pull_request:\n', '  pull_request_target:\n', 1),
         'fila-escreve': ci.read_text(encoding='utf-8').replace('permissions:\n  contents: read', 'permissions:\n  contents: write', 1),
+        'fila-inline': re.sub(r'(?m)^on:$', 'on: [push, pull_request, merge_group]\nantes_on:', ci.read_text(encoding='utf-8'), count=1)
+        + '\n        env:\n          X: ${{ secrets.VERCEL_TOKEN }}\n',
+        'fila-escreve-inline': ci.read_text(encoding='utf-8').replace('permissions:\n  contents: read', 'permissions: write-all', 1),
     }
     missed += [n for n, mutado in fila.items() if not merge_group_failures({ci: mutado})]
     with tempfile.TemporaryDirectory() as tmp:
