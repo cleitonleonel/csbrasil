@@ -55,7 +55,7 @@ const text = html => html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace
 function faq(html) {
   const schema = nodes(html).find(n => n['@type'] === 'FAQPage');
   assert.ok(schema?.mainEntity?.length, 'FAQ JSON-LD ausente');
-  const details = [...html.matchAll(/<details[^>]*>[\s\S]*?<summary[^>]*>([\s\S]*?)<\/summary>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>[\s\S]*?<\/details>/g)].map(m => [text(m[1]), text(m[2])]);
+  const details = [...html.matchAll(/<details[^>]*>([\s\S]*?)<\/details>/g)].map(m => [m[1].match(/<summary[^>]*>([\s\S]*?)<\/summary>/), m[1].match(/<p[^>]*>([\s\S]*?)<\/p>/)]).filter(([q, a]) => q && a).map(([q, a]) => [text(q[1]), text(a[1])]);
   for (const q of schema.mainEntity) assert.ok(details.some(([name, answer]) => name === text(q.name) && answer === text(q.acceptedAnswer.text)), `FAQ invisível ou divergente: ${q.name}`);
 }
 function home(html) {
