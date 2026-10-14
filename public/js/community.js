@@ -44,18 +44,20 @@ if(root) {
   function clearConversation(){conversation=null;conversationBefore=null;messageDraft='';messageClientId=null;pendingSend=null;}
   async function openConversation(p){clearConversation();conversation={id:p.id,nick:p.nick};inboxSection='messages';tab='notifications';await render();}
   async function action(name,target,data={}) {const out=await api('/api/social',{action:name,...(target?{target}:{}),...data});await refresh();await render();return out;}
+  // Saudação no topo da Comunidade; com perfil, o painel de conta some e sobra só o "Sair da conta".
+  function renderGreeting() {
+    const hello=document.getElementById('social-hello'),logout=document.getElementById('social-logout'),panel=account.closest?.('details'),p=auth?.profile;
+    const handle=p && state?.profile?.id===p.id?state.profile.handle:null;
+    if(hello)hello.textContent=p?`Olá, ${handle?'@'+handle:p.nick}`:'Olá';
+    if(panel)panel.hidden=!!p;
+    if(logout){logout.hidden=!p;logout.onclick=async()=>{logout.disabled=true;try{await logoutAccount(auth);auth=null;state=null;profileId='';clearConversation();await boot();}catch(e){message(errors[e.message] || 'Não deu certo agora. Tente de novo.');}finally{logout.disabled=false;}};}
+  }
   function renderAccount() {
-    account.replaceChildren();
+    account.replaceChildren();renderGreeting();
+    if(auth?.profile)return;
     if(auth?.authenticated) {
-      account.append(el('h2',auth.profile?`Salve, ${auth.profile.nick}.`:'Sua conta entrou. Falta o nome na camisa.'));
-      if(!auth.profile) {
-        mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onAuthenticated:boot,message});
-      } else {
-        account.append(empty('Sua conta e seu progresso ficam salvos no servidor. O modo offline continua disponível.'));
-        const buttons=el('div','','social-actions');
-        buttons.append(link('SEU PERFIL',state?.profile?.url || `/u/${auth.profile.id}/${encodeURIComponent(auth.profile.nick)}`));
-        buttons.append(button('SAIR DA CONTA',async()=>{await logoutAccount(auth);auth=null;state=null;profileId='';clearConversation();await boot();}));account.append(buttons);
-      }
+      account.append(el('h2','Sua conta entrou. Falta o nome na camisa.'));
+      mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onAuthenticated:boot,message});
       return;
     }
     mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onGuest:()=>document.querySelector('[data-hub-tab=jogar]')?.click(),onAuthenticated:boot,message});
@@ -209,9 +211,11 @@ if(root) {
     mountAccountIntegrations(c,auth,loginConfig,message);void mountProfilePreferences(c,{auth,message});
     c.append(el('h3','Jogadores bloqueados'));for(const b of state.blocks)c.append(empty(b.nick),button('DESBLOQUEAR',()=>action('unblock',b.id)));if(!state.blocks.length)c.append(empty('Nenhum jogador bloqueado.'));content.append(c);
   }
-  async function render(){const version=++loadVersion;root.dataset.view=tab;content.replaceChildren();content.setAttribute('aria-busy','true');for(const b of document.querySelectorAll('.social-tabs button'))b.setAttribute('aria-current',String(b.dataset.tab===tab));try{if(tab==='profile'){if(profileId || auth?.profile)await showProfile(profileId || auth.profile.id,version);else content.append(empty('Entre na conta para criar seu perfil.'));}else if(tab==='friends')showFriends();else if(tab==='ranking')await showRanking(version);else if(tab==='notifications')await showCentral(version);else if(tab==='feed')showFeed();else if(tab==='settings')showSettings();}catch(e){message(errors[e.message] || 'Perfil privado ou indisponível.');content.append(empty('Não foi possível carregar esta tela.'),button('TENTAR DE NOVO',render));}finally{if(version===loadVersion)content.setAttribute('aria-busy','false');}}
+  async function render(){const version=++loadVersion;root.dataset.view=tab;content.replaceChildren();content.setAttribute('aria-busy','true');for(const b of document.querySelectorAll('.social-tabs button')){const on=b.dataset.tab===tab;b.setAttribute('aria-selected',String(on));b.setAttribute('tabindex',on?'0':'-1');if(on)content.setAttribute('aria-labelledby',b.id);}try{if(tab==='profile'){if(profileId || auth?.profile)await showProfile(profileId || auth.profile.id,version);else content.append(empty('Entre na conta para criar seu perfil.'));}else if(tab==='friends')showFriends();else if(tab==='ranking')await showRanking(version);else if(tab==='notifications')await showCentral(version);else if(tab==='feed')showFeed();else if(tab==='settings')showSettings();}catch(e){message(errors[e.message] || 'Perfil privado ou indisponível.');content.append(empty('Não foi possível carregar esta tela.'),button('TENTAR DE NOVO',render));}finally{if(version===loadVersion)content.setAttribute('aria-busy','false');}}
   async function boot(){message('Carregando a turma…');try{[auth,loginConfig]=await Promise.all([loadAccount(),loadAuthOptions()]);if(auth?.profile){acceptAccount(auth);await api('/api/social',{action:'presence'});}await refresh();renderAccount();await render();message('');}catch(e){message(errors[e.message] || 'A comunidade não respondeu.');renderAccount();content.replaceChildren(button('TENTAR DE NOVO',boot));}}
   for(const b of document.querySelectorAll('.social-tabs button'))b.onclick=()=>{tab=b.dataset.tab;if(tab==='profile')profileId=root.dataset.profile || '';const url=new URL(location.href);if(url.searchParams.has('perfil')){url.searchParams.delete('perfil');if(url.searchParams.has('social'))url.searchParams.set('social',tab);history.replaceState(history.state,'',url);}message('');void render();};
+  // Teclado de abas (WAI-ARIA tabs): setas e Home/End movem o foco e ativam a aba.
+  for(const b of document.querySelectorAll('.social-tabs button'))b.onkeydown=event=>{const list=[...document.querySelectorAll('.social-tabs button')],i=list.indexOf(b);const next={ArrowRight:i+1,ArrowLeft:i-1,Home:0,End:list.length-1}[event.key];if(next===undefined)return;event.preventDefault();const t=list[(next+list.length)%list.length];t.focus();t.click();};
   setInterval(async()=>{if(document.hidden || !auth?.profile)return;try{await api('/api/social',{action:'presence'});await refresh();if(['notifications','feed'].includes(tab) && !document.activeElement?.closest('form'))await render();}catch(e){message(errors[e.message] || 'A atualização da comunidade falhou.');}},30000);
   const query=new URLSearchParams(location.search);if(['profile','friends','ranking','notifications','feed','settings'].includes(query.get('social')))tab=query.get('social');
   root.addEventListener('click',event=>{const a=event.target.closest('a');if(!a || a.dataset.publicProfile==='true')return;const url=new URL(a.href,location.href),match=url.pathname.match(/^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f-]{36})(?:\/|$)/i);if(url.origin!==location.origin || !match)return;event.preventDefault();profileId=match[1];tab='profile';void render();});

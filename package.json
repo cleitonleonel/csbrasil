@@ -135,6 +135,7 @@
     "eval:posters": "node tools/eval/poster-aspect-check.mjs",
     "eval:ui": "node tools/eval/ui-check.mjs all",
     "eval:ui-chat": "node tools/eval/ui-check.mjs ui1c",
+    "eval:community-header": "node tools/eval/community-header-check.mjs",
     "eval:mappreview": "node tools/eval/map-preview-check.mjs",
     "eval:mappreview:browser": "node tools/eval/map-preview-browser-check.mjs",
     "capture:mansaopreview": "node tools/eval/mansao-preview-capture.mjs",
