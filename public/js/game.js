@@ -5831,7 +5831,7 @@ export class Game {
       for (const old of Array.from(this.el.respawn.querySelectorAll?.('.death-info') || [])) old.remove();
       const d = document.createElement('div');
       d.className = 'death-info';
-      d.style.cssText = 'margin-top:10px;font:600 13px/1.55 system-ui,sans-serif;letter-spacing:.05em;color:#ffd9a0;text-shadow:0 2px 8px #000;text-align:center';
+      d.style.cssText = 'margin-top:10px;font:600 13px/1.55 system-ui,sans-serif;letter-spacing:.05em;color:#ffd9a0;text-shadow:0 2px 8px #000;text-align:center;max-width:100%;overflow-wrap:anywhere';
       this.el.respawn.appendChild(d);
       this._deathPanel = d;
     }
