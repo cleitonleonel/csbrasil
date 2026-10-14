@@ -903,7 +903,10 @@ const marcador = (nome) => new RegExp(
 const VERIFICA_AUTORIA = !process.argv.includes('--check') || process.argv.includes('--autoria');
 const CONFERE = process.argv.includes('--check');
 
+const MARCADOR_CONFLITO = /^(<{7}|>{7})( |$)|^={7}$/m;
+
 function aplicar(fatos) {
+  const comConflito = [];           // marcador de merge dentro de bloco, de qualquer classe
   const mudancas = [];              // { arquivo, novo }
   const achados = new Map();        // bloco -> Set(arquivos em que foi encontrado)
 
@@ -920,6 +923,7 @@ function aplicar(fatos) {
         if (!achados.has(chave)) achados.set(chave, new Set());
         achados.get(chave).add(arq);
         const classe = CLASSE[nome];
+        if (MARCADOR_CONFLITO.test(re.exec(novo)[2])) comConflito.push(`${local.prefixo}${nome} → ${arq}`);
         if (classe === 'autoria' && (fatos.raso || !VERIFICA_AUTORIA || !(RELEASE || CONFERE))) continue;
         if (classe === 'volatil' && !RELEASE && re.exec(novo)[2].trim()) continue;
         novo = novo.replace(re, (_, abre, corpo, fecha) => {
@@ -946,7 +950,7 @@ function aplicar(fatos) {
     }
   }
 
-  return { mudancas, achados, semLugar, faltando, semBloco, semClasse };
+  return { mudancas, achados, semLugar, faltando, semBloco, semClasse, comConflito };
 }
 
 /* ═══════════════════════════════════════════════════════════ SAÍDA */
@@ -958,7 +962,7 @@ if (process.argv.includes('--json')) {
   process.exit(0);
 }
 
-const { mudancas, achados, semLugar, faltando, semBloco, semClasse } = aplicar(fatos);
+const { mudancas, achados, semLugar, faltando, semBloco, semClasse, comConflito } = aplicar(fatos);
 
 /* Consistências que NÃO são bloco de doc, mas que a doc depende para não mentir. */
 const inconsistencias = [];
@@ -1020,6 +1024,7 @@ if (process.argv.includes('--check')) {
   if (faltando.length) erros.push(`${faltando.length} marcador(es) DECLARADO(S) e AUSENTE(S): ${faltando.join(' · ')}`);
   if (semLugar.length) erros.push(`${semLugar.length} bloco(s) sem colocação declarada em COLOCACAO: ${semLugar.join(', ')}`);
   if (semBloco.length) erros.push(`${semBloco.length} colocação(ões) apontando para bloco inexistente: ${semBloco.join(', ')}`);
+  if (comConflito.length) erros.push(`${comConflito.length} bloco(s) com marcador de conflito de merge: ${comConflito.join(' · ')}`);
   if (semClasse.length) erros.push(`${semClasse.length} bloco(s) sem classe em CLASSE: ${semClasse.join(', ')}`);
   for (const i of inconsistencias) erros.push(i);
   if (erros.length) {
@@ -1046,4 +1051,5 @@ if (faltando.length) {
 for (const x of semLugar) console.log(`\n  ⚠ bloco '${x}' existe no gerador e não tem colocação declarada — ninguém o consome`);
 for (const x of semBloco) console.log(`\n  ⚠ COLOCACAO declara '${x}', que não existe em BLOCOS`);
 for (const x of semClasse) console.log(`\n  ⚠ bloco '${x}' sem classe em CLASSE`);
+for (const x of comConflito) console.log(`\n  ⚠ marcador de conflito de merge no bloco ${x}: resolva à mão`);
 for (const i of inconsistencias) console.log(`\n  ⚠ ${i}`);
