@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { stripTypeScriptTypes } from 'node:module';
 import vm from 'node:vm';
+import { rotaDoCaminho } from '../../public/js/rotas.js';
 import {execFileSync} from 'node:child_process';
 const vmTimeout=Number(process.env.SOCIAL_VM_TIMEOUT || 1000);
 
@@ -125,7 +126,9 @@ async function ui(authenticated=false,{nick='Guest',bootSplash=false,runCommunit
 await check('E01','community rendered in game root',()=> {
   const markup=menuMarkup(path.join(root,'src/pages/index.astro'));
   assert.match(markup,/id=["']community["']/,'game root never renders social UI');
-  assert.doesNotMatch(index,/<a\b[^>]*href=["']\/comunidade(?:["'?/])/,'game menu still navigates outside game');
+  // /comunidade e /comunidade/<aba> são rotas do próprio hub (ADR 0008); fora delas, o menu não sai do jogo.
+  const fora=[...index.matchAll(/<a\b[^>]*href=["'](\/comunidade[^"']*)["']/g)].map(m=>m[1]).filter(href=>!rotaDoCaminho(href.split('?')[0]));
+  assert.deepEqual(fora,[],'game menu still navigates outside game');
 });
 await check('E02','no-nick account prompt opens after boot inside game',async()=> {
   assert(entrySource,'shared account entry is absent');const main=read(path.join(root,'public/js/main.js'));assert.match(main,/initAccountEntry\(/,'game boot never calls account entry');
@@ -171,7 +174,7 @@ await check('P01','pause community and resume preserve the same game',()=> {
   const tabs=Object.keys(panes).map(name=>{const node=get('tab-'+name);node.dataset.hubTab=name;return node;});
   get('main-menu').dataset.hubNet='mp';get('hub-social-resume').hidden=true;
   const setTabBody=body(/const\s+setHubTab\s*=\s*\(tab,\s*updateRoute\s*=\s*true\)\s*=>\s*\{/,'setHubTab');
-  const setHubTab=(section,updateRoute)=>new Function('tab','updateRoute','$','document','updateHubTip','menuSetup','setSetupStep','tabs','panes','mpPanel','renderHubRanking','syncHomeCharacter','abrirMultiplayer','hubNavigate','CustomEvent',setTabBody)(section,updateRoute,get,document,()=>{}, {dataset:{step:'match'}},()=>{},tabs,panes,{classList:{toggle(){}}},()=>{},()=>{},()=>{},()=>navigation.push('hub-route'),CustomEvent);
+  const setHubTab=(section,updateRoute)=>new Function('tab','updateRoute','$','document','updateHubTip','menuSetup','setSetupStep','tabs','panes','mpPanel','renderHubRanking','syncHomeCharacter','abrirMultiplayer','hubNavigate','CustomEvent','estadoDaUrl','location',setTabBody)(section,updateRoute,get,document,()=>{}, {dataset:{step:'match'}},()=>{},tabs,panes,{classList:{toggle(){}}},()=>{},()=>{},()=>{},()=>navigation.push('hub-route'),CustomEvent,()=>null,{href:'http://localhost/'});
   game.onPauseChange=()=>new Function('game','show','$','resetConfirms',body(/game\.onPauseChange\s*=\s*\(\)\s*=>\s*\{/,'onPauseChange'))(game,show,get,()=>{});
   const execute=id=>{
     let action=body(new RegExp(`\\$\\(['"]${id}['"]\\)\\.onclick\\s*=\\s*\\(\\)\\s*=>\\s*\\{`),id);

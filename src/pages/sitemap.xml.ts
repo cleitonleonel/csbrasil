@@ -30,6 +30,7 @@ import { supabaseAdmin } from '../lib/supabase';
 import { SITE, RANKING_ON } from '../lib/site';
 import { PT_EN_PAIRS } from '../lib/i18n-pairs';
 import { FACCOES } from '../data/jogo';
+import { ROTAS_HUB } from '../../public/js/rotas.js';
 import {
   POR_PAGINA, numeroDePaginas, offsetDaPagina, xmlUrlset, xmlIndex,
   type Entrada,
@@ -57,6 +58,9 @@ export const STATIC: [string, string, string][] = [
   ['/privacidade', '0.3', 'monthly'],
   ['/excluir-dados', '0.3', 'monthly'],
   ['/mapa',        '0.6', 'daily'],
+  /* Rotas fixas do hub marcadas indexáveis em public/js/rotas.js (/loja, /comunidade).
+     As outras telas do hub são estado do app e ficam fora (noindex). ADR 0008. */
+  ...ROTAS_HUB.filter((r) => r.indexavel).map((r) => [r.caminho, '0.6', 'daily'] as [string, string, string]),
   ['/changelog',   '0.5', 'weekly'],
   ...PT_EN_PAIRS.map(([, en]) => [en, '0.5', 'weekly'] as [string, string, string]),
 ];
