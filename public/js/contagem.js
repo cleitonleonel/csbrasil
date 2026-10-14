@@ -1,20 +1,5 @@
-/* CONTAGEM AGREGADA SEM IDENTIFICADOR (backend POST /api/count, migration 066).
-
-   Conta TODO mundo, inclusive quem não aceitou analytics, e por isso não identifica
-   ninguém: o corpo leva só o nome do evento, a versão do jogo e, quando cabe, mapa, modo,
-   tipo de partida e as FAIXAS de duração e de partidas da sessão. Nenhum id, nenhum
-   horário, nenhum número exato. Nada de cookie (credentials: 'omit'), nada de
-   localStorage/sessionStorage: o que a sessão precisa lembrar mora nesta aba, em memória.
-   O backend recusa qualquer campo fora da lista, então um id adicionado aqui por engano
-   perde o evento inteiro em vez de ser gravado.
-
-   O funil com detalhe por navegador (/api/funnel, /api/match, /api/telemetry) continua só
-   com consentimento, em main.js. Este arquivo não toca nesse gate.
-
-   Carrega sozinho no <head> (index.astro, `async`), antes do grafo grande do main.js: o
-   page_view sai mesmo para quem desiste antes de o jogo baixar. O main.js importa o mesmo
-   módulo pela mesma URL do import map, então é a mesma instância e a mesma memória.
-   Régua: tools/eval/contagem-check.mjs. */
+/* Contagem agregada sem identificador (backend /api/count): só enums e faixas, sem cookie nem storage,
+   independente do consentimento. Carrega antes do main.js (index.astro). Régua: tools/eval/contagem-check.mjs. */
 import { apiUrl } from './apibase.js';
 import { VERSION } from './version.js';
 
