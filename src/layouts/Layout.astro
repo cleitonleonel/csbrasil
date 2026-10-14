@@ -120,6 +120,7 @@ const jsonldLang = (jsonld as { '@type'?: string | string[]; inLanguage?: string
 // continua respondendo - só deixa de ser oferecida, pra ninguém clicar num aviso.
 const NAV: [string, string][] = [
   ['/comunidade','COMUNIDADE'] as [string,string],
+  ['/clans', 'CLÃS'],
   ...(RANKING_ON ? [['/ranking', 'RANKING'] as [string, string]] : []),
   ['/personagens', 'PERSONAGENS'],
   ['/mapas', 'MAPAS'],
@@ -187,7 +188,7 @@ const currentLabel = h1 ?? title.split(' | ')[0];
 <link rel="alternate" type="text/plain" href={abs('/llms.txt')} title="Resumo do site em texto (llms.txt)">
 <link rel="alternate" type="text/plain" href={abs('/llms-full.txt')} title="Conteúdo completo em texto">
 <link rel="alternate" type="application/json" href={abs('/ai-index.json')} title="Índice do site para IA">
-<script type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', '@graph': [...baseGraph, ...pageGraph, ...jsonldLang] })} />
+<script type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', '@graph': [...baseGraph, ...pageGraph, ...jsonldLang] }).replace(/</g, '\\u003c')} />
 <script is:inline>
   if (window.self !== window.top && new URLSearchParams(location.search).get('embed') === '1') document.documentElement.dataset.embedded = 'true';
 </script>
