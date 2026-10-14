@@ -157,6 +157,8 @@ async function jornada(nome, cenario, url, marcos, tetoS) {
   cdp.off('Network.requestWillBeSent', onReq);
   cdp.off('Network.loadingFinished', onFim);
   await ctx.close();
+  relatorio.jornadas.push(resultado);   // persiste JORNADA A JORNADA
+  if (JSON_OUT) writeFileSync(JSON_OUT, JSON.stringify(relatorio, null, 2));
   return resultado;
 }
 
@@ -166,17 +168,17 @@ const listaMapas = MAPA === 'ambos' ? ['leve', 'pesado'] : [MAPA];
 
 for (const cenario of listaCenarios) {
   console.log(`\n===== ${cenario} =====`);
-  relatorio.jornadas.push(await jornada('menu', cenario, `${BASE}/?debug=1`, {
+  await jornada('menu', cenario, `${BASE}/?debug=1`, {
     menu: () => window.__CS_MAIN_READY__ === true,
     splash: () => !!document.getElementById('splash-enter') && !document.getElementById('splash-enter').classList.contains('hidden'),
-  }, cenario === '4g' ? 300 : 90));
+  }, cenario === '4g' ? 300 : 90);
   if (JSON_OUT) writeFileSync(JSON_OUT, JSON.stringify(relatorio, null, 2));
   for (const chave of listaMapas) {
-    relatorio.jornadas.push(await jornada(`partida-${chave}`, cenario,
+    await jornada(`partida-${chave}`, cenario,
       `${BASE}/?debug=1&auto=P,mst&map=${MAPAS[chave]}`, {
         menu: () => window.__CS_MAIN_READY__ === true,
         partida: () => window.__game && window.__game.state === 'live',
-      }, cenario === '4g' ? 900 : 300));
+      }, cenario === '4g' ? 900 : 300);
   }
   if (JSON_OUT) writeFileSync(JSON_OUT, JSON.stringify(relatorio, null, 2));
 }
