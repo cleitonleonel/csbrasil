@@ -65,6 +65,8 @@ jobs:
         run: npm run eval:error-console
       - name: UUID compatível com navegadores antigos
         run: npm run eval:uuid
+      - name: Loja sem fila de próximas skins
+        run: npm run eval:treta-fila
       - name: Acúmulo de armas no chão tem teto
         run: npm run eval:drop
       - name: Proxy de captura grava só dentro da pasta de saída
@@ -93,6 +95,8 @@ jobs:
           npm run eval:sertao-sky-lifecycle
       - name: Veículos do estacionamento em escala de fábrica
         run: npm run eval:escala
+      - name: Loja, vídeos de hover das skins (VP9 + H.264 + poster, até 400 KB)
+        run: npm run eval:treta-video
       - name: Orçamento de shader WebGL1
         run: npm run eval:shaderbudget
       - name: Sitemap pagina além do max-rows do PostgREST
@@ -143,14 +147,22 @@ jobs:
           node tools/eval/seo-check.mjs --mutate
           node tools/eval/canonical-host-check.mjs
           node tools/eval/canonical-host-check.mjs --mutate
+          node tools/eval/profile-weapons-display-check.mjs
+          node tools/eval/profile-weapons-display-check.mjs --mutate
           node tools/eval/profile-in-game-check.mjs
           node tools/eval/profile-in-game-check.mjs --mutate
+          node tools/eval/profile-friend-request-check.mjs
+          node tools/eval/profile-friend-request-check.mjs --mutate
           node tools/eval/profile-socials-check.mjs
           node tools/eval/profile-socials-check.mjs --mutate
+          node tools/eval/profile-achievements-check.mjs
+          node tools/eval/profile-achievements-check.mjs --mutate
           node tools/eval/profile-views-display-check.mjs
           node tools/eval/profile-views-display-check.mjs --mutate
           node tools/eval/rotas-check.mjs --dist
           ! node tools/eval/rotas-check.mjs --dist --mutante=robots
+          node tools/eval/profile-character-empty-check.mjs
+          node tools/eval/profile-character-empty-check.mjs --mutate
 
       # PORTÃO DO SITE. `astro build` verde não prova nada sobre as rotas:
       # /ranking pode dar 500, /sitemap.xml pode sair vazio e o build passa em
