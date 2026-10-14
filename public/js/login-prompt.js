@@ -1,8 +1,5 @@
-/* Convite de login na abertura do jogo (pedido do dono, 14/10/2026). Não bloqueia: "Jogar sem conta"
- * fecha e o jogo segue igual. Aparece no máximo uma vez por visita e, depois de recusado, só volta
- * após LOGIN_PROMPT_MATCHES partidas ou LOGIN_PROMPT_COOLDOWN_MS. O passo de entrada com a escolha de
- * cookies (account-entry.js) tem prioridade: enquanto ele está aberto, pendente ou foi visto nesta
- * visita, este convite não aparece. Régua: tools/eval/login-prompt-check.mjs. */
+/* Convite de login na abertura (dono, 14/10/2026): não bloqueia, 1x por visita, cede ao passo de entrada.
+ * Recusado volta após 3 partidas ou 24 h. Régua: tools/eval/login-prompt-check.mjs. */
 import {analyticsAllowed,privacyChoice} from './privacy-preferences.js';
 import {PROVIDER_ICONS,socialApi,guestProof,accountError} from './account-entry.js';
 
