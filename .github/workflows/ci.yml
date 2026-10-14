@@ -47,8 +47,11 @@ jobs:
       # (scripts/ci/gatilho.mjs). Node puro, < 1 s.
       - name: Gatilho do portão e do smoke cobre o que eles medem
         run: npm run eval:portaogatilho
-      - name: Contrato do release (nome, créditos e DCO do bot)
-        run: npm run eval:release
+      # Réguas de workflow e as de contrato em node puro (< 2 s, sem npm ci). Ficavam só no
+      # check:fast, que roda na máquina de quem lembra: PR que quebrasse workflow passava
+      # aqui verde. O runner roda todas e só reprova no fim (PI3 cobra esta lista).
+      - name: Réguas de workflow, release, privacidade e escolha (node puro)
+        run: node tools/eval/runner.mjs eval:wfsecret eval:wflocal eval:wftimeout eval:wfconcurrency eval:deploygate eval:autofix eval:mutcega eval:portaointeiro eval:release eval:privacy eval:noescolha
       - name: Syntax check do jogo (public/js)
         run: npm run syntax
       - name: Grafo de módulos da árvore fecha (import nomeado tem export, #524)
