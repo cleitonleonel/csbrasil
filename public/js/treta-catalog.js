@@ -5,7 +5,7 @@ export const TRETA_COINS = [
   {value:5,character:'curupira',name:'Curupira'},
   {value:10,character:'caipora',name:'Caipora'},
   {value:50,character:'lobisomem',name:'Lobisomem'},
-  {value:100,character:'gotinha',name:'Zé Gotinha'},
+  {value:100,character:'gotinha',name:'Zé da Gotinha'},
   {value:200,character:'canarinho',name:'Canarinho Pistola'},
   {value:1000,character:'zumbi',name:'Zumbi dos Palmares'},
 ];
