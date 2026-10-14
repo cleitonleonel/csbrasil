@@ -1,5 +1,7 @@
 // Boot, menus, settings, logo, main loop.
 import * as THREE from 'three';
+import { estadoDaUrl, urlDoEstado, CHAVES_DE_TELA } from './rotas.js';
+import { ligarCompartilhar, linkCompartilhavel, textoDaPartida, origemPublica } from './compartilhar.js';
 import {initAccountEntry,mountProfilePreferences} from './account-entry.js';
 import {initLoginPrompt,noteLoginPromptMatch} from './login-prompt.js';
 import {analyticsAllowed} from './privacy-preferences.js';
@@ -122,10 +124,24 @@ if (COMPAT_MODE) { preferredQuality = settings.quality; settings.quality = 'low'
    qualidade à mão (a escolha manual sempre vence). ?perfilauto=0 desliga a heurística. */
 const AUTO_PROFILE = new URLSearchParams(location.search).get('perfilauto') !== '0';
 const HUB_ENABLED = new URLSearchParams(location.search).get('home') !== 'legacy';
+/* A tela mora no CAMINHO (public/js/rotas.js, ADR 0008): /jogar/multiplayer, /loja,
+   /comunidade/amigos... Parâmetro que não é tela (map, personagem, sala) segue na query. */
+const TELA = new Set([...CHAVES_DE_TELA, 'origem', 'perfil']);
+// Perfil vira /u/<perfil> só na janela de cima: no iframe de /u um reload cairia na página SSR.
+const ROTA_OPCOES = { perfilNoCaminho: window.top === window.self };
 function hubNavigate(changes, replace = false) {
   if (!HUB_ENABLED) return;
-  const url = new URL(location.href);
+  const estado = { ...(estadoDaUrl(location.href) || {}) };
+  // /configuracoes não guarda a seção de baixo: ao fechar, ela vem do hub na tela.
+  if (estado.janela === 'configuracoes' && changes.janela !== 'configuracoes') {
+    const menu = document.getElementById('main-menu')?.dataset || {};
+    if (menu.hubTab) estado.secao = menu.hubTab;
+    if (menu.hubTab === 'jogar' && menu.hubNet === 'mp') { estado.partida = 'multiplayer'; estado.servidor = menu.hubMpTab === 'private' ? 'privado' : 'publico'; }
+  }
+  for (const [key, value] of Object.entries(changes)) if (TELA.has(key)) { if (value == null) delete estado[key]; else estado[key] = value; }
+  const url = urlDoEstado(estado, location.href, ROTA_OPCOES);
   for (const [key, value] of Object.entries(changes)) {
+    if (TELA.has(key)) continue;
     if (value == null) url.searchParams.delete(key);
     else url.searchParams.set(key, value);
   }
@@ -2232,13 +2248,18 @@ if (HUB_ENABLED) {
     for (const [name, pane] of Object.entries(panes)) pane.hidden = name !== tab;
     mpPanel.classList.toggle('hidden', tab !== 'jogar' || $('main-menu').dataset.hubNet !== 'mp');
     if (tab === 'ranking') void renderHubRanking();
-    if (tab === 'comunidade') document.dispatchEvent(new CustomEvent('cs-community-open'));
+    if (tab === 'comunidade') {
+      // Voltar do navegador para /comunidade/amigos reabre a aba certa, não a última vista.
+      const naUrl = estadoDaUrl(location.href);
+      document.dispatchEvent(new CustomEvent('cs-community-open', naUrl?.secao === 'comunidade' ? { detail: { tab: naUrl.social || 'profile', perfil: naUrl.perfil } } : undefined));
+    }
     if (tab === 'loja') document.dispatchEvent(new CustomEvent('cs-shop-open'));
     if (tab === 'jogar') {
       syncHomeCharacter();
       if ($('main-menu').dataset.hubNet === 'mp') void abrirMultiplayer();
     }
-    if (updateRoute) hubNavigate({ secao: tab, janela: null, origem: null });
+    const mp = tab === 'jogar' && $('main-menu').dataset.hubNet === 'mp';
+    if (updateRoute) hubNavigate({ secao: tab, janela: null, origem: null, partida: mp ? 'multiplayer' : null, servidor: mp ? ($('main-menu').dataset.hubMpTab === 'private' ? 'privado' : 'publico') : null });
   };
   tabs.forEach((button, index) => {
     button.onclick = () => { ui.click(); setHubTab(button.dataset.hubTab); };
@@ -2268,10 +2289,11 @@ if (HUB_ENABLED) {
     const url = new URL(anchor.href, location.href);
     if (url.origin !== location.origin) return;
     const profile = url.pathname.match(/^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f-]{36})(?:\/|$)/i)?.[1];
-    if (profile ? !anchor.closest('#main-menu') : url.pathname !== '/' || url.searchParams.get('secao') !== 'comunidade') return;
+    const destino = profile ? null : estadoDaUrl(url.href);
+    if (profile ? !anchor.closest('#main-menu') : destino?.secao !== 'comunidade') return;
     event.preventDefault();
-    const perfil = profile || url.searchParams.get('perfil');
-    const tab = profile ? 'profile' : url.searchParams.get('social') || 'profile';
+    const perfil = profile || destino.perfil;
+    const tab = profile ? 'profile' : destino.social || 'profile';
     const paused = $('main-menu').dataset.socialPaused === 'true';
     setHubTab('comunidade', false);
     if (!paused) hubNavigate({ secao: 'comunidade', social: tab, perfil: perfil || null, janela: null, origem: null });
@@ -2366,11 +2388,16 @@ if (HUB_ENABLED) {
   $('hub-fb-send').onclick = () => submitFeedbackFor('hub-fb');
   restoreHubRoute = () => {
     const query = new URLSearchParams(location.search);
-    const section = query.get('secao');
+    const lida = estadoDaUrl(location.href);
+    const rota = lida || {};
+    // Link antigo (/?secao=loja) vira o caminho novo (/loja) sem recarregar.
+    const nova = lida && urlDoEstado(lida, location.href, ROTA_OPCOES);
+    if (nova && nova.href !== location.href) history.replaceState(history.state, '', nova);
+    const section = rota.secao;
     const tab = Object.prototype.hasOwnProperty.call(panes, section) ? section : 'jogar';
-    const net = query.get('partida') === 'multiplayer' ? 'mp' : 'sp';
-    const server = query.get('servidor') === 'privado' ? 'private' : 'public';
-    const modal = query.get('janela');
+    const net = rota.partida === 'multiplayer' ? 'mp' : 'sp';
+    const server = rota.servidor === 'privado' ? 'private' : 'public';
+    const modal = rota.janela;
     $('hub-quick').hidden = true;
     $('hub-map-modal').hidden = true;
     $('hub-roster-modal').hidden = true;
@@ -2387,7 +2414,7 @@ if (HUB_ENABLED) {
     if (modal === 'configuracoes') { settingsReturn = 'main-menu'; show('settings-panel'); return; }
     if (tab !== 'jogar') return;
     if (net === 'sp' && modal === 'perfil') setSetupStep('profile');
-    else if (net === 'sp' && modal === 'mapas') openHubMap(query.get('origem') === 'confirmar', false);
+    else if (net === 'sp' && modal === 'mapas') openHubMap(rota.origem === 'confirmar', false);
     else if (net === 'sp' && modal === 'personagens') openHubRoster(false);
     else if (net === 'sp' && modal === 'confirmar') openHubQuick(false);
     else if (menuSetup.dataset.step === 'profile') setSetupStep('match');
@@ -2419,6 +2446,9 @@ function openHubQuick(updateRoute = true) {
   if (updateRoute) hubNavigate({ secao: 'jogar', partida: 'singleplayer', janela: 'confirmar', origem: null });
 }
 $('btn-ranking').onclick = () => { sfx.uiClick(); showRanking(); };
+// Pontos de compartilhar do hub (ADR 0008): fim de partida e ranking. Sala e skin ligam onde nascem.
+ligarCompartilhar($('btn-share-match'), () => ({ titulo: 'CORO SOLTO', texto: textoDaPartida({ venceu: $('match-end').classList.contains('win'), mapa: MAPS[currentMap]?.name || 'CORO SOLTO' }), url: linkCompartilhavel(`/?map=${encodeURIComponent(currentMap)}`, 'fim-de-partida') }));
+ligarCompartilhar($('hub-rank-share'), () => ({ titulo: 'Ranking do CORO SOLTO', texto: 'Quem manda na treta essa semana? Olha o ranking do CORO SOLTO.', url: linkCompartilhavel('/comunidade/ranking', 'ranking') }));
 $('ranking-back').onclick = () => { ui.back(); markCurrent(null); show('main-menu'); };
 /* FEEDBACK: email + consentimento obrigatórios ANTES de enviar — a tabela é a
    semente da newsletter (migration 013), então não entra linha sem os dois. */
@@ -4316,6 +4346,7 @@ function mpModalSalaCriada(sala, senha = '') {
   };
   /* WhatsApp: `wa.me/?text=` abre o app no celular e o WhatsApp Web no computador, com a
      mensagem pronta e o link dentro — sem pedir número, a pessoa escolhe o grupo lá. */
+  ligarCompartilhar(mpEl('mp-modal-compartilhar'), () => ({ titulo: 'Sala no CORO SOLTO', texto: `Entra na minha sala ${sala.convite} no CORO SOLTO.`, url: linkDeConvite(sala.convite, origemPublica()) }));
   const zap = mpEl('mp-modal-zap');
   if (zap) {
     zap.href = `https://wa.me/?text=${encodeURIComponent(frase('conviteZap', linkDeConvite(sala.convite)))}`;

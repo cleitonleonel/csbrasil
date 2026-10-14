@@ -1,0 +1,60 @@
+---
+// Uma página por arena (ADR 0008): endereço próprio para buscar e compartilhar ("piscina da treta").
+// Sai do mesmo MAPAS de /mapas; o botão abre o jogo já nesta arena.
+import Layout from '../../layouts/Layout.astro';
+import { MAPAS } from '../../data/jogo';
+import { BRAND_FULL, GAME_ID, abs } from '../../lib/site';
+
+export function getStaticPaths() {
+  return MAPAS.map((mapa) => ({ params: { id: mapa.id }, props: { mapa } }));
+}
+const { mapa } = Astro.props;
+const preview = `/img/map-previews/${mapa.id}.jpg`;
+const outros = MAPAS.filter((m) => m.id !== mapa.id);
+const jsonld = [
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Início', item: abs('/') },
+      { '@type': 'ListItem', position: 2, name: 'Mapas', item: abs('/mapas') },
+      { '@type': 'ListItem', position: 3, name: mapa.nome, item: abs(`/mapas/${mapa.id}`) },
+    ],
+  },
+  { '@id': GAME_ID },
+];
+---
+<Layout
+  title={`${mapa.nome} - mapa | ${BRAND_FULL}`}
+  description={`${mapa.resumo} Arena de ${mapa.ctf ? 'Capture the Flag' : 'rounds'} do ${BRAND_FULL}, grátis no navegador.`}
+  ogImage={abs(preview)}
+  ogImageAlt={`Vista aérea da arena ${mapa.nome}`}
+  ogImageWidth={640}
+  ogImageHeight={640}
+  jsonld={jsonld}
+  h1={mapa.nome}
+  kicker={`Arena · ${mapa.ctf ? 'CTF' : 'Rounds'}`}
+  heroImg={preview}
+  heroPos="62%">
+  <Fragment slot="sub">{mapa.resumo}</Fragment>
+
+  <article class="card wide" id={mapa.id}>
+    <div class="fig">
+      <img src={preview} width="640" height="640" alt={`Vista aérea da arena ${mapa.nome}`} loading="eager" decoding="async">
+    </div>
+    <div class="card-body">
+      <p class="meta">
+        <b>4v4</b><i>·</i>{mapa.ctf ? 'CTF' : 'Rounds'}<i>·</i>
+        {mapa.ctf ? 'captura de bandeiras' : '1:39 por round'}<i>·</i><code>{mapa.id}</code>
+      </p>
+      <p class="lead">{mapa.modo}</p>
+      <p>{mapa.detalhe}</p>
+      <p><a class="btn-play" style="margin-left:0;display:inline-block" href={`/?map=${mapa.id}`}>▶ Jogar em {mapa.nome}</a></p>
+    </div>
+  </article>
+
+  <h2>Outras arenas</h2>
+  <ul class="outros-mapas">
+    {outros.map((m) => <li><a href={`/mapas/${m.id}`}>{m.nome}</a> · {m.resumo}</li>)}
+  </ul>
+  <p><a href="/mapas">Todas as arenas</a></p>
+</Layout>

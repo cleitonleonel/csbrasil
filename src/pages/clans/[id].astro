@@ -1,9 +1,15 @@
 ---
 import ClanPage from '../../components/ClanPage.astro';
+import { publicClan } from '../../lib/public-clan';
 export const prerender = false;
 const clanId = Astro.params.id || '';
 if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clanId))
   return Astro.redirect('/clans', 302);
 Astro.response.headers.set('cache-control', 'no-store');
+// Head com tag, nome e descrição do clã (ADR 0008): o link compartilhado mostra o clã, não "Clãs".
+// clientAddress lança fora da Vercel (régua SSR, preview local): sem ele o head cai no genérico, nunca no 500.
+let ip = '';
+try { ip = Astro.clientAddress; } catch { /* sem endereço: segue sem ele */ }
+const { clan } = await publicClan(clanId, Astro.request, ip);
 ---
-<ClanPage clanId={clanId} />
+<ClanPage clanId={clanId} clan={clan} />

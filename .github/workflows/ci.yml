@@ -162,6 +162,12 @@ jobs:
           node tools/eval/profile-achievements-check.mjs --mutate
           node tools/eval/profile-views-display-check.mjs
           node tools/eval/profile-views-display-check.mjs --mutate
+          node tools/eval/cla-ssr-check.mjs
+          node tools/eval/cla-ssr-check.mjs --mutate
+          node tools/eval/rotas-check.mjs --dist
+          ! node tools/eval/rotas-check.mjs --dist --mutante=robots
+          node tools/eval/perfil-abas-check.mjs
+          node tools/eval/perfil-abas-check.mjs --mutate
           node tools/eval/profile-character-empty-check.mjs
           node tools/eval/profile-character-empty-check.mjs --mutate
 

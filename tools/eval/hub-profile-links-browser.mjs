@@ -4,7 +4,7 @@
 // jogo. O link de fora (/u/<nick> compartilhado) continua sendo a página pública; o
 // botão dela leva a /?secao=comunidade&social=profile&perfil=<id>, que também é medido.
 // As APIs são simuladas: a régua mede o roteamento do cliente, não o backend.
-// Uso: BASE=http://127.0.0.1:4563 node tools/eval/hub-profile-links-browser.mjs [--mutante=ranking-fora]
+// Uso: BASE=http://127.0.0.1:4563 node tools/eval/hub-profile-links-browser.mjs [--mutante=ranking-fora|perfil-na-query]
 import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
@@ -14,6 +14,8 @@ const chromium = playwright.chromium || playwright.default?.chromium;
 const base = process.env.BASE || 'http://127.0.0.1:4339';
 // Mutante: o clique no nick do ranking volta a seguir a navegação do navegador.
 const mutant = process.argv.includes('--mutante=ranking-fora');
+// Mutante: o perfil volta a morar só na query (/?perfil=), sem a rota fixa /u/<perfil>.
+const mutantQuery = process.argv.includes('--mutante=perfil-na-query');
 const ID = '11111111-2222-4333-8444-555555555555';
 const player = { id: ID, nick: 'RUBENMARCUS', public_handle: 'rubenmarcus', points: 120, kills: 100, deaths: 50, kd: 2, position: 1 };
 const profile = { ...player, handle: 'rubenmarcus', url: '/u/rubenmarcus', visibility: 'public', bio: 'Perfil da régua.', level: 3, next_level_points: 10, settings: {}, socials: [], achievements: [], favorites: [], history: [], matches: 10, round_wins: 5, round_losses: 5, play_seconds: 3600, presence: null };
@@ -25,14 +27,23 @@ const failures = [];
 try {
   const context = await browser.newContext({ viewport: { width: 1536, height: 1024 } });
   await context.addInitScript((mutate) => {
-    localStorage.setItem('awpbr_nick', 'RUBAO');
+    localStorage.setItem('awpbr_nick', 'RUBAO'); localStorage.setItem('cs_treta_intro', '1');
     localStorage.setItem('cs_lang', 'pt');
     if (mutate) document.addEventListener('click', (event) => {
       if (event.target.closest?.('#hub-rank-global a[href^="/u/"]')) event.stopImmediatePropagation();
     }, true);
   }, mutant);
+  if (mutantQuery) await context.route(/\/js\/main\.js/, async (route) => {
+    const response = await route.fetch();
+    const body = await response.text();
+    const changed = body.replace('perfilNoCaminho: window.top === window.self', 'perfilNoCaminho: false');
+    if (changed === body) throw new Error('MUTANTE perfil-na-query NÃO APLICOU');
+    await route.fulfill({ response, body: changed });
+  });
   const profileRequests = [];
   await context.route('**/api/leaderboard*', (route) => route.fulfill({ json: { players: [player] } }));
+  // Convidado: sem a resposta de conta a comunidade mostra "fora do ar" e nunca desenha o perfil.
+  await context.route(/\/api\/social-auth/, (route) => route.fulfill({ json: { authenticated: false, providers: [] } }));
   await context.route(/\/api\/social(?:\?|$)/, (route) => {
     const url = new URL(route.request().url());
     if (url.searchParams.get('action') === 'profile') {
@@ -52,17 +63,21 @@ try {
       await page.evaluate(() => document.getElementById('boot-splash')?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
       await page.waitForTimeout(500);
     }
+    // Marca o documento do hub: se um clique sair do jogo, a marca some (rota fixa /u/<perfil> não é saída).
+    await page.waitForTimeout(1500);
+    await page.evaluate(() => { for (const d of document.querySelectorAll('dialog[open]')) d.close(); window.__hubVivo = true; });
   };
-  const profileInHub = async (label, wanted) => {
+  const profileInHub = async (label, wanted, caminho = `/u/${wanted}`) => {
     const state = await page.waitForFunction((nick) => {
-      if (location.pathname !== '/') return { left: location.pathname };
+      if (!window.__hubVivo) return { left: location.pathname };
       const pane = document.getElementById('hub-community');
       const shown = pane && !pane.hidden && pane.textContent.includes(nick);
       return shown ? { ok: true } : null;
-    }, player.nick, { timeout: 20000 }).then((h) => h.jsonValue()).catch(() => ({ left: new URL(page.url()).pathname === '/' ? null : new URL(page.url()).pathname }));
+    }, player.nick, { timeout: 20000 }).then((h) => h.jsonValue()).catch(async () => ({ left: await page.evaluate(() => window.__hubVivo ? null : location.pathname).catch(() => new URL(page.url()).pathname) }));
     if (state.left) failures.push(`${label}: saiu do jogo para ${state.left}`);
     else if (!state.ok) failures.push(`${label}: ficou no lobby, mas a comunidade não mostrou o perfil`);
     else if (!profileRequests.includes(wanted)) failures.push(`${label}: comunidade pediu o perfil [${profileRequests}] e não ${wanted}`);
+    else if (new URL(page.url()).pathname !== caminho) failures.push(`${label}: URL ${new URL(page.url()).pathname}, esperado a rota fixa ${caminho} (ADR 0008)`);
     else console.log(`  ok ${label}: perfil de ${player.nick} na comunidade do hub`);
   };
 
@@ -91,12 +106,15 @@ try {
   // 4. Trocar de aba social limpa o perfil=, senão recarregar volta ao perfil alheio.
   await page.click('.social-tabs button[data-tab="friends"]');
   await page.waitForTimeout(300);
-  const after = new URL(page.url()).searchParams;
-  if (after.has('perfil')) failures.push(`aba AMIGOS manteve perfil=${after.get('perfil')} na URL`);
-  else console.log('  ok aba AMIGOS limpou perfil= da URL');
+  const after = new URL(page.url());
+  if (after.searchParams.has('perfil') || after.pathname !== '/comunidade/amigos') failures.push(`aba AMIGOS deixou a URL em ${after.pathname}${after.search}, esperado /comunidade/amigos`);
+  else console.log('  ok aba AMIGOS foi para /comunidade/amigos sem perfil=');
+  // 5. Voltar do navegador reabre o perfil pela rota fixa.
+  await page.goBack(); await page.waitForTimeout(400);
+  await profileInHub('voltar para /u/<perfil>', ID);
 } finally {
   await browser.close();
 }
 for (const failure of failures) console.error(`✗ ${failure}`);
-console.log(`Perfis abrem no hub: ${failures.length ? 'FAIL' : 'PASS'}${mutant ? ' (mutante ranking-fora)' : ''}`);
+console.log(`Perfis abrem no hub: ${failures.length ? 'FAIL' : 'PASS'}${mutant ? ' (mutante ranking-fora)' : mutantQuery ? ' (mutante perfil-na-query)' : ''}`);
 process.exitCode = failures.length ? 1 : 0;
