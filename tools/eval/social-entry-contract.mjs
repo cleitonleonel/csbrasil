@@ -242,8 +242,8 @@ await check('C04','disabled providers remain visible without a login action',asy
   assert.equal(buttons.length,4);for(const provider of ['Google','Discord','X','LinkedIn'])assert(buttons.some(b=>words(b).includes(provider) && b.disabled));
   assert(!u.calls.some(c=>c.action==='start'),'Unavailable providers started OAuth');
 });
-await check('R01','missing avatar/socials reminder is collapsible',async()=> {
-  assert(entrySource,'shared account entry is absent');const markup=menuMarkup(path.join(root,'src/pages/index.astro'));assert.match(markup,/<details\b[^>]*id=["']account-completion["']/,'game has no collapsible completion reminder');const u=await ui(true,{runCommunity:false});await u.entry.initAccountEntry();const reminder=u.ids['account-completion'];assert.equal(reminder.hidden,false,'missing profile has no reminder');assert.equal(reminder.open,false,'reminder forced open');assert(/foto|avatar/i.test(u.ids['account-completion-copy'].textContent) && /redes|links/i.test(u.ids['account-completion-copy'].textContent),'reminder does not name missing photo and socials');
+await check('R01','lobby identity replaces the completion reminder (owner 2026-10-14)',async()=> {
+  assert(entrySource,'shared account entry is absent');const markup=menuMarkup(path.join(root,'src/pages/index.astro'));assert.doesNotMatch(markup,/id=["']account-completion["']|COMPLETE SEU PERFIL/,'completion reminder still competes with the header identity');assert.match(markup,/id=["']hub-view-profile["']/,'header has no Ver perfil link');
 });
 await check('C02','portrait rotate guard exempts only visible community menu',()=> {
   assert.match(index,/\/social\.css/,'social stylesheet not linked from game');

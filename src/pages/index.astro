@@ -736,9 +736,12 @@ window.__GEO_LANG__ = (function () {
       <div class="hub-online" aria-live="polite"><i aria-hidden="true"></i><span id="hub-online-n">-</span> ONLINE</div>
       <button id="hub-treta-wallet" class="hub-header-action treta-header-wallet" type="button" aria-label="Ver saldo TRETA$"><span aria-hidden="true">T$</span><b id="hub-treta-total">T$ · ENTRAR</b></button>
       <button id="hub-music-toggle" class="hub-header-action hub-music-toggle" type="button" aria-pressed="true" aria-label="Desligar música do menu" title="Desligar música do menu"><span aria-hidden="true">♫</span><b>MÚSICA LIGADA</b></button>
-      <button id="hub-account-login" class="hub-header-action" type="button">ENTRAR</button>
       <button id="hub-social-resume" class="hub-header-action" type="button" hidden>VOLTAR À PARTIDA ▶</button>
-      <button id="hub-profile" class="hub-header-action" type="button" aria-label="Criar ou editar perfil" title="Criar ou editar perfil"><span id="hub-avatar">CS</span><b id="hub-nick">SEM NICK</b><span class="hub-profile-edit" aria-hidden="true">EDITAR ▸</span></button>
+      <div class="hub-identity-wrap">
+        <button id="hub-account-login" class="hub-identity" type="button" data-state="guest" aria-label="Reivindique seu perfil: entrar ou criar conta"><span id="hub-avatar" class="hub-identity-avatar" aria-hidden="true"></span><b id="hub-identity-name">Reivindique seu perfil</b><span id="hub-identity-cta" class="hub-identity-cta">ENTRAR</span></button>
+        <a id="hub-view-profile" class="hub-view-profile" href="/?secao=comunidade" hidden>Ver perfil</a>
+      </div>
+      <button id="hub-profile" type="button" hidden><b id="hub-nick">SEM NICK</b></button>
       <button id="hub-settings" class="hub-header-action hub-settings" type="button" aria-label="Configurações">⚙</button>
     </header>
 
@@ -763,7 +766,6 @@ window.__GEO_LANG__ = (function () {
 
     <TretaStore />
     <section id="hub-community" class="hub-pane hub-info" role="tabpanel" aria-label="Comunidade" hidden><Community /></section>
-    <details id="account-completion" class="hub-account-nudge" hidden><summary>COMPLETE SEU PERFIL ▾</summary><p id="account-completion-copy"></p><a href="/?secao=comunidade&amp;social=settings">ADICIONAR FOTO E REDES ▸</a></details>
 
     <section id="hub-ranking" class="hub-pane hub-info" role="tabpanel" aria-label="Ranking" hidden>
       <div class="hub-kicker">02 · ARQUIVO</div><h2>PLACAR DA RUA</h2>

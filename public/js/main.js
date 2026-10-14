@@ -2125,7 +2125,7 @@ addEventListener('keydown', (e) => {
   if ($('main-menu').classList.contains('hidden')) return;
   if (HUB_ENABLED) {
     if (menuSetup.dataset.step === 'profile') {
-      e.preventDefault(); ui.back(); setSetupStep('match'); hubNavigate({ janela: null }); $('hub-profile').focus();
+      e.preventDefault(); ui.back(); setSetupStep('match'); hubNavigate({ janela: null }); $('hub-account-login').focus();
     }
     return;
   }
@@ -2139,7 +2139,7 @@ addEventListener('keydown', (e) => {
 // qualquer painel docado; sem isso o jogador tenta e não acontece nada.
 $('main-menu').addEventListener('pointerdown', (e) => {
   if (HUB_ENABLED && e.target === menuSetup && menuSetup.dataset.step === 'profile') {
-    ui.back(); setSetupStep('match'); hubNavigate({ janela: null }); $('hub-profile').focus(); return;
+    ui.back(); setSetupStep('match'); hubNavigate({ janela: null }); $('hub-account-login').focus(); return;
   }
   if (e.target.closest('.cs-setup') || e.target.closest('.cs-left')) return;
   closeSetup(true);

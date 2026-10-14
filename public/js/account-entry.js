@@ -163,20 +163,34 @@ export async function initAccountEntry({onSession=()=>{},skipPrompt=false}={}) {
   close.onclick=hide;dialog.addEventListener('cancel',()=>{dismissed=true;});
   const draw=()=>{
     if(loading || loadError){const p=node('p',loading?'Carregando as opções de entrada…':accountError(loadError),'account-entry-status');p.setAttribute('role','status');const guest=node('button','CONTINUAR COMO CONVIDADO','account-button account-guest');guest.type='button';guest.onclick=hide;body.replaceChildren(p,guest);if(loadError){const retry=node('button','TENTAR DE NOVO','account-button');retry.type='button';retry.onclick=()=>void hydrate();body.append(retry);}return;}
-    mountAccountEntry(body,{auth,config,onGuest:hide,onAuthenticated:async session=>{auth=session;acceptAccount(auth);onSession(auth);if(auth.profile){hide();await completion();}else draw();}});
+    mountAccountEntry(body,{auth,config,onGuest:hide,onAuthenticated:async session=>{auth=session;acceptAccount(auth);onSession(auth);if(auth.profile){hide();await identity();}else draw();}});
   };
   const show=()=>{previousFocus=document.activeElement;draw();if(!dialog.open)dialog.showModal();};
   open.onclick=show;
-  const nudge=document.getElementById('account-completion');
-  async function completion() {
-    nudge.hidden=true;
+  let card=null;
+  // Um elemento só no topo: @handle de quem entrou ou o convite para reivindicar o perfil.
+  const paintIdentity=()=>{
+    const name=document.getElementById('hub-identity-name'),cta=document.getElementById('hub-identity-cta'),view=document.getElementById('hub-view-profile'),avatar=document.getElementById('hub-avatar');
+    const signed=!!auth?.authenticated,profile=signed?auth.profile:null,mine=card && card.id===profile?.id?card:null;
+    const label=profile?(mine?.handle?'@'+mine.handle:profile.nick):signed?'Falta seu nick':'Reivindique seu perfil';
+    open.dataset.state=profile?'account':'guest';
+    if(name)name.textContent=label;else open.textContent=label;
+    if(cta){cta.hidden=!!profile;cta.textContent=signed?'CONTINUAR':'ENTRAR';}
+    if(view)view.hidden=!profile;
+    if(avatar && mine?.avatar_url)avatar.style.backgroundImage=`url("${encodeURI(mine.avatar_url)}")`;
+    open.setAttribute('aria-label',profile?`Sua conta: ${label}`:signed?'Escolha seu nick para terminar a entrada':'Reivindique seu perfil: entrar ou criar conta');
+  };
+  async function identity() {
+    paintIdentity();
     if(!auth?.profile)return;
-    try{const {profile}=await socialApi('/api/social?action=profile');if(!profile.avatar_url || !profile.socials?.length){nudge.hidden=false;document.getElementById('account-completion-copy').textContent=!profile.avatar_url && !profile.socials?.length?'Dê uma cara ao seu coro: adicione foto e redes.':!profile.avatar_url?'Sua foto ainda está no aquecimento.':'Adicione suas redes ao perfil, se quiser.';}}catch{ /* lembrete não bloqueia a entrada */ }
+    try{const {profile}=await socialApi('/api/social?action=profile');card=profile;paintIdentity();}catch{ /* sem o cartão, o nick segura o lugar do @handle */ }
   }
+  const view=document.getElementById('hub-view-profile');
+  if(view)view.onclick=event=>{event.preventDefault();document.querySelector('[data-hub-tab=comunidade]')?.click();document.dispatchEvent(new CustomEvent('cs-community-open',{detail:{tab:'profile'}}));};
   const failedReturn=new URLSearchParams(location.search).has('auth_error');
   const maybePrompt=()=>{if(loading || skipPrompt || dismissed || dialog.open || document.getElementById('boot-splash') || document.getElementById('main-menu')?.classList.contains('hidden'))return;if(failedReturn || (auth?.authenticated?!auth.profile:true)){show();if(failedReturn)body.append(node('p','Esse link de entrada expirou ou foi aberto em outro navegador. Peça um novo link.','account-entry-status'));}};
   const observer=new MutationObserver(maybePrompt);observer.observe(document.body,{childList:true});
-  async function hydrate(){loading=true;loadError=null;if(dialog.open)draw();try{[auth,config]=await Promise.all([loadAccount(),loadAuthOptions()]);acceptAccount(auth);onSession(auth);open.textContent=auth?.authenticated?'MINHA CONTA':'ENTRAR';await completion();}catch(e){loadError=e;}finally{loading=false;if(dialog.open)draw();maybePrompt();}}
+  async function hydrate(){loading=true;loadError=null;if(dialog.open)draw();try{[auth,config]=await Promise.all([loadAccount(),loadAuthOptions()]);acceptAccount(auth);onSession(auth);await identity();}catch(e){loadError=e;}finally{loading=false;if(dialog.open)draw();maybePrompt();}}
   await hydrate();
-  document.addEventListener('cs-account-change',event=>{auth=event.detail;onSession(auth);open.textContent=auth?.authenticated?'MINHA CONTA':'ENTRAR';void completion();});
+  document.addEventListener('cs-account-change',event=>{auth=event.detail;onSession(auth);void identity();});
 }
