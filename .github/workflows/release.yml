@@ -176,8 +176,8 @@ jobs:
       contents: write
     # Grupo PRÓPRIO e NUNCA cancelável: o embarque de um lote novo dividindo grupo com este
     # job cancelaria o bump velho no meio do push/tag/Release, deixando tag sem Release e o
-    # backend sem aviso. Bump em andamento termina; o próximo espera na fila, refaz o
-    # `pull --rebase` e calcula a versão sobre a main que o anterior deixou.
+    # backend sem aviso. Bump em andamento termina; o próximo espera na fila e refaz o
+    # bump sobre a main que o anterior deixou (o laço de tentativas do passo abaixo).
     concurrency:
       group: ${{ needs.embarque.outputs.sai == 'true' && 'release-bump' || format('release-fora-{0}', github.run_id) }}
       cancel-in-progress: false
@@ -260,8 +260,8 @@ jobs:
           # --atomic: OS DOIS REFS SOBEM OU NENHUM SOBE.
           #
           # Sem ele, um `git push` com dois refspecs sobe cada um por conta própria. Foi
-          # exatamente assim que a esteira travou em 12/08: entre o `pull --rebase` acima e
-          # este push, outro merge entrou na main; o ref `main` foi REJEITADO por
+          # exatamente assim que a esteira travou em 12/08: entre o rebase (era um
+          # `git pull --rebase`, hoje é o reset do laço abaixo) e este push, outro merge entrou na main; o ref `main` foi REJEITADO por
           # não-fast-forward e o ref da TAG subiu do mesmo jeito. Resultado medido:
           # v2.0.0-alpha.92 e v2.0.0-alpha.93 existiam no remoto e NENHUMA das duas estava
           # na história da main, com o package.json parado no .92.
@@ -282,7 +282,7 @@ jobs:
           # anterior sai) e REFAZ o bump: versão, CHANGELOG, docs, ARCH e commit são todos
           # gerados, então regenerar sobre a main nova é o rebase sem conflito possível. Teto
           # de tentativas, backoff curto, nunca --force; a última falha sai com erro (RLS17).
-          # A primeira volta do laço faz o que o `git pull --rebase` fazia antes do bump.
+          # A primeira volta do laço substitui o `git pull --rebase` que vinha antes do bump.
           # SÓ PUBLICA SHA COM PR-FAST VERDE. O embarque aprovou $APROVADO. Se a main andou
           # (antes da primeira volta ou entre duas), a cabeça nova só serve depois de o
           # pr-fast DELA terminar verde; senão nada é publicado e o erro diz por quê.
