@@ -9,18 +9,22 @@
    `fixo` descarta a escolha antes de construir o jogo; `maioria` restaura o encerramento
    antecipado em 3 × 0 quando o jogador escolheu 5. Ambos precisam deixar a régua vermelha.
 
-   MULTIPLAYER: o servidor (Room do backend) cria o Game SEM roundsMax, então a sala online
-   joga o padrão 5 / 3 e o fim chega pelo estado `matchEnd` dele. O cliente não pode passar
-   o teto LOCAL (1–15) na sessão online, senão o HUD mostra "RODADA 1 / 15" numa partida que
-   acaba na 5ª. Cláusula de fonte; o mutante `mp-local` restaura o teto local no online.
+   MULTIPLAYER: o servidor (Room do backend) anuncia o teto da sala em `meta.roundsMax`
+   (oficiais de rodadas jogam 9) e o fim chega pelo estado `matchEnd` dele. O cliente usa esse
+   teto, nunca o LOCAL (senão o HUD mostra "RODADA 1 / 15" numa partida que acaba na 9ª), e
+   sem o campo (nó antigo) cai no padrão do Game. Mutantes: `mp-local`, `mp-ignora-servidor`
+   (o estado anterior: HUD 1/5 numa sala de 9) e `mp-sem-sanitizar`.
 
    Uso: npm run eval:matchoptions
         node tools/eval/match-options-check.mjs --mutante=fixo
         node tools/eval/match-options-check.mjs --mutante=maioria
         node tools/eval/match-options-check.mjs --mutante=mp-local
+        node tools/eval/match-options-check.mjs --mutante=mp-ignora-servidor
+        node tools/eval/match-options-check.mjs --mutante=mp-sem-sanitizar
 */
 import { readFileSync } from 'node:fs';
 import { bootGame, initTextures } from './harness.mjs';
+import { sanitizeRounds } from '../../public/js/game.js';
 
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
 const textures = initTextures();
@@ -68,15 +72,36 @@ for (const [ctf, expected] of [[false, 5], [true, 3]]) {
   g.dispose?.();
 }
 
-/* MP: o `roundsMax` passado ao Game do lançamento tem que ceder ao servidor na sessão online. */
+/* MP: no online o teto vem da META do servidor (welcome/partida, backend roundsMax) e nunca do
+   ajuste local; sala/nó sem o campo cai no padrão do Game. A expressão real do main.js é
+   avaliada com sessões fabricadas, em vez de comparada como texto. */
 {
   let main = readFileSync(new URL('../../public/js/main.js', import.meta.url), 'utf8');
-  if (MUT === 'mp-local') main = main.replace(/roundsMax:\s*sessao\s*\?\s*undefined\s*:\s*matchRounds\(\)/, 'roundsMax: matchRounds()');
+  const atual = /roundsMax:\s*sessao\s*\?\s*\(sanitizeRounds\(sessao\.net\.meta\.roundsMax\)\s*\|\|\s*undefined\)\s*:\s*matchRounds\(\)/;
+  if (MUT === 'mp-local') main = main.replace(atual, 'roundsMax: matchRounds()');
+  if (MUT === 'mp-ignora-servidor') main = main.replace(atual, 'roundsMax: sessao ? undefined : matchRounds()');
+  if (MUT === 'mp-sem-sanitizar') main = main.replace(atual, 'roundsMax: sessao ? sessao.net.meta.roundsMax : matchRounds()');
   const linhas = main.match(/^\s*roundsMax:.*$/gm) || [];
   expect(linhas.length === 1, `main.js: esperado 1 roundsMax no new Game, achei ${linhas.length}`);
-  expect(linhas.every((l) => /roundsMax:\s*sessao\s*\?\s*undefined\s*:\s*matchRounds\(\)/.test(l)),
-    `main.js: no online o teto de rounds é do servidor, mas o Game recebe o local (${(linhas[0] || '').trim()})`);
-  rows.push(`multiplayer       roundsMax ${linhas.length === 1 && /sessao/.test(linhas[0]) ? 'cede ao servidor' : 'LOCAL'}`);
+  const expr = (linhas[0] || '').trim().replace(/^roundsMax:\s*/, '').replace(/,\s*$/, '');
+  let avaliar = () => NaN;
+  try { avaliar = new Function('sessao', 'matchRounds', 'sanitizeRounds', `return (${expr});`); }
+  catch (e) { expect(false, `main.js: expressão do roundsMax não avalia (${expr})`); }
+  const local = () => 13;
+  const sessao = (meta) => ({ net: { meta } });
+  const casos = [
+    [sessao({ roundsMax: 9 }), 9, 'sala oficial de 9 rodadas'],
+    [sessao({ roundsMax: 3 }), 3, 'captura de 3 rodadas'],
+    [sessao({}), undefined, 'nó antigo sem roundsMax (padrão do Game)'],
+    [sessao({ roundsMax: 99 }), undefined, 'teto fora de 1–15 vindo da rede'],
+    [null, 13, 'offline usa o ajuste local'],
+  ];
+  for (const [s, esperado, nome] of casos) {
+    let veio;
+    try { veio = avaliar(s, local, sanitizeRounds); } catch (e) { veio = `erro: ${e.message}`; }
+    expect(veio === esperado, `main.js: ${nome} → roundsMax ${veio}, esperado ${esperado} (${expr})`);
+  }
+  rows.push(`multiplayer       roundsMax = ${expr}`);
 }
 
 console.log('┌─ MATCH-OPTIONS-CHECK');
