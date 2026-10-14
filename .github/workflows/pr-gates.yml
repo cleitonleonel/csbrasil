@@ -72,7 +72,8 @@ jobs:
           if [ "$EVENTO" = merge_group ]; then
             [ -n "$FILA_BASE" ] && [ -n "$FILA_HEAD" ] || { echo "::error::lote sem base ou head"; exit 1; }
             BASE="$FILA_BASE"
-            PRS=$( { git log --merges --format=%s "$FILA_BASE..$FILA_HEAD" | sed -n 's/^Merge pull request #\([0-9]*\).*/\1/p'; echo "$FILA_REF" | sed -n 's/.*\/pr-\([0-9]*\)-.*/\1/p'; } | sort -u)
+            MERGES=$(git log --merges --format=%s "$FILA_BASE..$FILA_HEAD")
+            PRS=$( { echo "$MERGES" | sed -n 's/^Merge pull request #\([0-9]*\).*/\1/p'; echo "$FILA_REF" | sed -n 's/.*\/pr-\([0-9]*\)-.*/\1/p'; } | sort -u)
             PR_BODY=""
             for n in $PRS; do PR_BODY+="$(gh api "repos/$REPO/pulls/$n" --jq '.body // ""')"$'\n'; done
             export PR_BODY
