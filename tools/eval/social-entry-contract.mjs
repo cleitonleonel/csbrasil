@@ -227,8 +227,8 @@ await check('N01','account newsletter consent is separate and initially unchecke
 await check('A06','existing accounts link identities without signing in again',async()=> {
   const u=await ui(true,{runCommunity:false});const c=new Element('div');
   u.entry.mountAccountIntegrations(c,{authenticated:true,identities:['google']},{providers:['google','discord','x','linkedin_oidc'],linking:true});
-  const linked=all(c).find(n=>n.tagName==='BUTTON' && /Google VINCULADO/.test(n.textContent));assert(linked?.disabled);
-  const b=all(c).find(n=>n.tagName==='BUTTON' && n.textContent==='VINCULAR Discord');assert(b && !b.disabled);await b.onclick();
+  const google=all(c).find(n=>n.dataset?.provider==='google');assert.equal(google?.dataset.linked,'true','linked login is not shown as state');assert(!all(google).some(n=>n.tagName==='BUTTON'),'linked login still rendered as a button');
+  const b=all(c).find(n=>n.tagName==='BUTTON' && n.getAttribute('aria-label')==='Vincular Discord');assert(b && !b.disabled);await b.onclick();
   const call=u.calls.find(c=>c.action==='link');assert.equal(call.body.provider,'discord');assert(!('authUser' in call.body));assert(!u.calls.some(c=>c.action==='start'));
 });
 await check('C03','new users have independent optional cookies and newsletter choices',async()=> {

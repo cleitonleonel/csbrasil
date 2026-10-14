@@ -8,6 +8,7 @@ const PROVIDER_ICONS={"google":"<svg viewBox=\"0 0 120 120\" aria-hidden=\"true\
 const withIcon=(b,provider)=>{if(PROVIDER_ICONS[provider]){const i=node('span','','account-provider-icon');i.innerHTML=PROVIDER_ICONS[provider];const label=b.textContent;b.textContent='';b.append(i,label);}return b;};
 const ERRORS={email_invalid:'Revise seu e-mail.',email_unavailable:'A entrada por e-mail está indisponível agora.',email_unverified:'Sua conta precisa de um e-mail confirmado.',rate_limited:'Muitos pedidos. Aguarde antes de tentar de novo.',guest_invalid:'Não foi possível vincular este convidado. Seu progresso local continua salvo.',account_conflict:'Esse nick já tem dono. Escolha outro.',session_expired:'Sua sessão expirou. Entre novamente.',account_hidden:'Conta indisponível pela moderação.'};
 const node=(tag,text='',cls='')=>{const e=document.createElement(tag);e.textContent=text;e.className=cls;return e;};
+const quiet=(text,fn)=>{const b=node('button',text,'account-link');b.type='button';b.onclick=fn;return b;};
 let accountRequest=null,configRequest=null,accountActive=false;
 let newsletterDraft=false;
 export async function socialApi(path,body) {
@@ -99,17 +100,24 @@ export function mountAccountEntry(container,{auth=null,config={providers:[]},ret
   container.append(status,button('CONTINUAR COMO CONVIDADO',()=>{setPrivacyChoice(analytics.checked);newsletterDraft=consent.checked;onGuest();},'account-guest'));
 }
 export function mountAccountIntegrations(container,auth,config,message=()=>{}) {
-  const section=node('section','','account-integrations');section.append(node('h3','Logins vinculados'),node('p','Vincule uma rede para entrar depois na mesma conta. Links públicos do perfil são configurados separadamente.','social-muted'));
-  const identities=new Set(auth.identities || []),list=node('div','','account-providers');
+  const section=node('section','','account-integrations');section.append(node('h3','Logins vinculados'),node('p','Entre com qualquer rede vinculada e caia na mesma conta.','social-muted'));
+  const identities=new Set(auth.identities || []),list=node('ul','','account-logins');
   for(const provider of providerChoices(config)) {
-    const linked=identities.has(provider),enabled=(config.providers || []).includes(provider),b=node('button',`${linked?'✓ '+PROVIDER_NAMES[provider]+' VINCULADO':'VINCULAR '+PROVIDER_NAMES[provider]}`,'account-button');b.type='button';b.disabled=linked || !enabled || !config.linking;
-    b.onclick=async()=>{b.disabled=true;try{const out=await socialApi('/api/social-auth',{action:'link',provider});location.assign(out.url);}catch(e){message(e.message==='linking_unavailable'?'Vinculação em configuração. Tente novamente mais tarde.':e.message==='identity_already_linked'?'Esta rede já está vinculada. Atualize a página.':e.message==='identity_link_failed'?'Não foi possível vincular. Esta rede pode pertencer a outra conta.':accountError(e));b.disabled=false;}};list.append(b);
+    const name=PROVIDER_NAMES[provider] || provider,linked=identities.has(provider),enabled=(config.providers || []).includes(provider),row=node('li','','account-login');
+    row.dataset.provider=provider;row.append(withIcon(node('span',name,'account-login-name'),provider));
+    if(linked){row.dataset.linked='true';row.append(node('span','✓ Vinculado','account-login-state'));}
+    else if(enabled && config.linking) {
+      const b=quiet('Vincular',async()=>{b.disabled=true;try{const out=await socialApi('/api/social-auth',{action:'link',provider});location.assign(out.url);}catch(e){message(e.message==='linking_unavailable'?'Vinculação em configuração. Tente novamente mais tarde.':e.message==='identity_already_linked'?'Esta rede já está vinculada. Atualize a página.':e.message==='identity_link_failed'?'Não foi possível vincular. Esta rede pode pertencer a outra conta.':accountError(e));b.disabled=false;}});
+      b.setAttribute('aria-label',`Vincular ${name}`);row.append(b);
+    }else row.append(node('span','Em breve','account-login-state account-login-off'));
+    list.append(row);
   }
-  section.append(list);if(auth.emailVerified)section.append(node('p','✓ E-mail confirmado','social-muted'));
-  const badge=accountVerifiedBadge(auth.account_verified);section.append(node('h3','Selo da conta'));
-  if(badge)section.append(badge,node('p','Seu e-mail está confirmado e uma rede social está vinculada. O selo indica essas verificações da conta.','social-muted'));
-  else section.append(node('p','Para receber o selo de verificado, confirme seu e-mail e vincule pelo menos uma rede social.','social-muted'));
-  if(!list.childElementCount)section.append(node('p','Os logins sociais ainda não estão habilitados neste ambiente.','social-muted'));if(!config.linking)section.append(node('p','A vinculação de novas redes aguarda habilitação neste ambiente.','social-muted'));container.append(section);
+  section.append(list);
+  if(!list.childElementCount)section.append(node('p','Os logins sociais ainda não estão habilitados neste ambiente.','social-muted'));
+  const verify=node('div','','account-verify'),badge=accountVerifiedBadge(auth.account_verified);
+  if(badge)verify.append(badge,node('span','E-mail confirmado e rede social vinculada.','social-muted'));
+  else verify.append(node('span',auth.emailVerified?'✓ E-mail confirmado. Vincule uma rede social para ganhar o selo de verificado.':'Para ganhar o selo de verificado, confirme seu e-mail e vincule uma rede social.','social-muted'));
+  section.append(verify);container.append(section);
 }
 const preferenceMounts=new WeakMap();
 export async function mountProfilePreferences(container,{auth=null,message=()=>{}}={}) {
