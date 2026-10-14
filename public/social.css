@@ -40,3 +40,4 @@ body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{displa
 .community:is([data-view=profile],[data-view=settings]) .social-workspace{grid-template-columns:minmax(0,1fr)}
 .community:is([data-view=profile],[data-view=settings]) .social-account-panel{position:static}
 .community:is([data-view=profile],[data-view=settings]) .social-account-panel .social-actions{flex-direction:row;flex-wrap:wrap}
+.social-profile-views{margin:-6px 0 18px;color:#c3ccbb;font:600 13px/1.4 system-ui,sans-serif;letter-spacing:.2px}
