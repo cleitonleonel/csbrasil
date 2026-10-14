@@ -8,6 +8,7 @@
     "// ranking": "Relato de Ruben: fotos, perfis e times no placar; renderers reais e mutantes.",
     "eval:ranking-presentation": "node tools/eval/ranking-presentation.mjs",
     "eval:social-profile": "node tools/eval/profile-card-contract.mjs",
+    "eval:social-profile-route": "node tools/eval/profile-card-route.mjs",
     "//eval:profile-character": "perfil público fica legível sem arena; personagem vem da projeção autorizada e catálogo real, sem fallback inventado",
     "eval:profile-character": "node scripts/profile-character-catalog.mjs --check && node tools/eval/profile-character-check.mjs",
     "eval:social-serve": "node tools/eval/social-serve-check.mjs",
