@@ -70,6 +70,8 @@ jobs:
         run: npm run eval:uuid
       - name: Loja sem fila de próximas skins
         run: npm run eval:treta-fila
+      - name: Sete moedas da loja com arte própria
+        run: npm run eval:treta-coins
       - name: Acúmulo de armas no chão tem teto
         run: npm run eval:drop
       - name: Proxy de captura grava só dentro da pasta de saída

@@ -1,13 +1,13 @@
 export const TRETA_SYMBOL = 'T$';
 export const TRETA_COIN_ART = {model:'/models/treta/coin-classic-saci-82ad26210cf8.glb',poster:'/img/treta/coin-classic-saci.webp'};
 export const TRETA_COINS = [
-  {value:1,character:'saci',name:'Saci'},
-  {value:5,character:'curupira',name:'Curupira'},
-  {value:10,character:'caipora',name:'Caipora'},
-  {value:50,character:'lobisomem',name:'Lobisomem'},
-  {value:100,character:'gotinha',name:'Zé Gotinha'},
-  {value:200,character:'canarinho',name:'Canarinho Pistola'},
-  {value:1000,character:'zumbi',name:'Zumbi dos Palmares'},
+  {value:1,character:'saci',poster:'/img/treta/coin-classic-saci.webp',name:'Saci'},
+  {value:5,character:'curupira',poster:'/img/treta/coin-classic-curupira.webp',name:'Curupira'},
+  {value:10,character:'caipora',poster:'/img/treta/coin-classic-caipora.webp',name:'Caipora'},
+  {value:50,character:'lobisomem',poster:'/img/treta/coin-classic-lobisomem.webp',name:'Lobisomem'},
+  {value:100,character:'gotinha',poster:'/img/treta/coin-classic-gotinha.webp',name:'Zé da Gotinha'},
+  {value:200,character:'canarinho',poster:'/img/treta/coin-classic-canarinho.webp',name:'Canarinho Pistola'},
+  {value:1000,character:'zumbi',poster:'/img/treta/coin-classic-zumbi.webp',name:'Zumbi dos Palmares'},
 ];
 export const TRETA_SKINS = [
   {id:'lula-drip',name:'Lula do Drip',character:'barbudo',color:'#e44465',series:'DRIP DO PLANALTO',description:'Streetwear vinho, tranças, grillz e anéis de ouro. O drip chegou ao Planalto.',price:800,ready:false},
