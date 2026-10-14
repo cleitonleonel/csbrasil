@@ -38,6 +38,13 @@ function card(parent, clan, members = null) {
   element('p', `${clan.member_count} membro${clan.member_count === 1 ? '' : 's'}`, parent);
   const link = element('a', 'Página do clã ↗', parent);
   link.href = `/clans/${encodeURIComponent(clan.id)}`;
+  const share = element('button', 'COMPARTILHAR CLÃ', parent);
+  share.type = 'button';
+  share.onclick = async () => {
+    const { compartilhar, linkCompartilhavel } = await import('./compartilhar.js');
+    const r = await compartilhar({ titulo: `[${clan.tag}] ${clan.name}`, texto: `Cola no clã [${clan.tag}] ${clan.name} no CORO SOLTO.`, url: linkCompartilhavel(`/clans/${encodeURIComponent(clan.id)}`, 'cla') });
+    if (r === 'copiado') status('Link do clã copiado.');
+  };
   if (members) {
     const list = element('ul', '', parent);
     for (const member of members) {
