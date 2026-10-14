@@ -40,6 +40,9 @@ jobs:
         run: bash -n scripts/*.sh
       - name: Fronteira de confiança dos workflows
         run: python3 scripts/ci/workflow_security_check.py --selftest
+      # Job que só lê histórico ou poucos arquivos faz checkout leve (CL1). Node puro.
+      - name: Checkout leve nos jobs que só leem histórico
+        run: npm run eval:wfcheckout
       - name: Contrato do release (nome, créditos e DCO do bot)
         run: npm run eval:release
       - name: Syntax check do jogo (public/js)
