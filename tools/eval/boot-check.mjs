@@ -309,18 +309,8 @@ try {
     await jornada.locator('#boot-splash').dispatchEvent('pointerdown');
     await jornada.waitForTimeout(3100);
     const entradaOk = await jornada.locator('#launch-error').evaluate((el) => el.classList.contains('hidden'));
-    if (await jornada.locator('#account-entry-dialog').count()) {
-      await jornada.waitForFunction(() => !!document.getElementById('hub-account-login')?.onclick);
-      await jornada.locator('#hub-account-login').dispatchEvent('click');
-      await jornada.locator('#account-entry-dialog .account-guest').click();
-      await jornada.locator('#account-entry-dialog').waitFor({ state: 'hidden' });
-    }
-    // The first guest visit explains the quest currency before returning to play.
-    if (await jornada.locator('#treta-info').count()) {
-      await jornada.locator('#treta-info').waitFor({ state: 'visible' });
-      await jornada.getByRole('button', { name: 'ENTENDI. BORA JOGAR.', exact: true }).click();
-      await jornada.locator('#treta-info').waitFor({ state: 'hidden' });
-    }
+    // Nenhum modal antes da 1ª partida (dono, 14/10/2026): conta e loja só depois dela.
+    const modaisAbertura = await jornada.locator('dialog[open]').count();
     // SINGLE PLAYER abre os modos contra bots; Mata-mata inicia a jornada padrão.
     await jornada.locator('.cs-item[data-act="single-player"]').click();
     await jornada.locator('.cs-item[data-act="sp"]:visible').click();
@@ -335,9 +325,9 @@ try {
     await jornada.waitForTimeout(3100);
     const menuOk = await jornada.locator('#launch-error').evaluate((el) => el.classList.contains('hidden'));
     const watchdogsDepois = relatorios.filter((r) => r.source === 'launch-watchdog').length;
-    b7 = entradaOk && menuOk && watchdogsDepois === watchdogsAntes;
-    console.log('B7 · avançar rápido pela entrada e pelo menu não dispara falso timeout');
-    console.log(`   entrada ${entradaOk}   menu ${menuOk}   novos watchdogs ${watchdogsDepois - watchdogsAntes}`);
+    b7 = entradaOk && menuOk && watchdogsDepois === watchdogsAntes && modaisAbertura === 0;
+    console.log('B7 · avançar rápido pela entrada e pelo menu não dispara falso timeout nem abre modal');
+    console.log(`   entrada ${entradaOk}   menu ${menuOk}   novos watchdogs ${watchdogsDepois - watchdogsAntes}   modais na abertura ${modaisAbertura}`);
     console.log(`   ${b7 ? 'PASSA' : 'FALHA'}\n`);
     await jornada.close();
   } else {
