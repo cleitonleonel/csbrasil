@@ -28,15 +28,20 @@
    PG4 · a decisão em si: lista vazia roda, docs não acordam, net.js acorda, script
          novo no package.json não acorda, dependência nova acorda, JSON quebrado roda.
 
-   Mutantes: tira-caminho (PG1), passo-novo (PG2), diff-aberto (PG3).
+         O diff sai com `-c core.quotePath=false -z`: com o padrão, nome com acento vem
+         entre aspas em octal, nada casa e o job é pulado. A CLI é provada com nome
+         acentuado cru (NUL) e na forma entre aspas.
+
+   Mutantes: tira-caminho (PG1), passo-novo (PG2), diff-aberto e quotepath-volta (PG3).
    Uso: node tools/eval/portao-gatilho-check.mjs [--mutante=<nome>]
    ============================================================================ */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { dirname, join, normalize } from 'node:path';
 import { GATILHOS, casa, decidir, scriptsUsados } from '../../scripts/ci/gatilho.mjs';
 
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-const MUTANTES = { 'tira-caminho': 'PG1', 'passo-novo': 'PG2', 'diff-aberto': 'PG3' };
+const MUTANTES = { 'tira-caminho': 'PG1', 'passo-novo': 'PG2', 'diff-aberto': 'PG3', 'quotepath-volta': 'PG3' };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
 if (MUT === 'tira-caminho') {
@@ -131,7 +136,8 @@ for (const [alvo, g] of Object.entries(GATILHOS)) {
   let wf = ler(g.workflow);
   if (!wf) { falhas.push(`PG0 ${g.workflow} não existe — a régua perdeu o alvo`); continue; }
   if (MUT === 'passo-novo' && alvo === 'portao') wf += '\n      - name: passo novo\n        if: ${{ !cancelled() }}\n        run: npm run eval:passo-novo\n';
-  if (MUT === 'diff-aberto' && alvo === 'portao') wf = wf.replace(/(if ! git diff[^\n]*\n(?:[^\n]*\n){0,2}?[^\n]*)rodar=true/, '$1rodar=false');
+  if (MUT === 'diff-aberto' && alvo === 'portao') wf = wf.replace(/(if ! git [^\n]*diff[^\n]*\n(?:[^\n]*\n){0,2}?[^\n]*)rodar=true/, '$1rodar=false');
+  if (MUT === 'quotepath-volta' && alvo === 'smoke') wf = wf.replace('git -c core.quotePath=false diff', 'git diff');
   const cmd = comandos(wf);
 
   /* ---- PG2: o que o workflow roda é conhecido ---- */
@@ -185,8 +191,8 @@ for (const [alvo, g] of Object.entries(GATILHOS)) {
   else {
     if (!/set -euo pipefail/.test(decide)) falhas.push(`PG3 ${g.workflow}: o decide não tem \`set -euo pipefail\` — erro no meio do filtro vira pulo calado`);
     if (!/filter: blob:none/.test(decide)) falhas.push(`PG3 ${g.workflow}: o checkout do decide não é leve (\`filter: blob:none\`)`);
-    if (!/git diff --no-renames --name-only "\$BASE\.\.\.\$HEAD"/.test(decide)) falhas.push(`PG3 ${g.workflow}: o decide não lista o diff com \`git diff --no-renames --name-only "$BASE...$HEAD"\``);
-    if (!/if ! git diff[^\n]*\n(?:[^\n]*\n){0,2}?[^\n]*rodar=true[^\n]*\n[^\n]*exit 0/.test(decide)) falhas.push(`PG3 ${g.workflow}: erro do \`git diff\` não manda rodar — diff que falha vira pulo`);
+    if (!/git -c core\.quotePath=false diff --no-renames --name-only -z "\$BASE\.\.\.\$HEAD"/.test(decide)) falhas.push(`PG3 ${g.workflow}: o decide não lista o diff com \`git -c core.quotePath=false diff --no-renames --name-only -z "$BASE...$HEAD"\` — nome com acento sai entre aspas, não casa e o job é pulado`);
+    if (!/if ! git [^\n]*diff[^\n]*\n(?:[^\n]*\n){0,2}?[^\n]*rodar=true[^\n]*\n[^\n]*exit 0/.test(decide)) falhas.push(`PG3 ${g.workflow}: erro do \`git diff\` não manda rodar — diff que falha vira pulo`);
     if (!/"\$EVENTO" != "pull_request"[^\n]*\n[^\n]*rodar=true/.test(decide)) falhas.push(`PG3 ${g.workflow}: evento que não é PR (push na main, dispatch) não roda sempre`);
     if (!new RegExp(`node scripts/ci/gatilho\\.mjs ${alvo}\\b`).test(decide)) falhas.push(`PG3 ${g.workflow}: o decide não chama \`scripts/ci/gatilho.mjs ${alvo}\` — fonte única quebrada`);
     if (!/grep -qx 'rodar=false'/.test(decide)) falhas.push(`PG3 ${g.workflow}: o pulo não exige \`rodar=false\` exato — saída vazia ou quebrada do gatilho pularia`);
@@ -197,6 +203,14 @@ for (const [alvo, g] of Object.entries(GATILHOS)) {
     if (!/^ {4}needs:\s*(?:decide|\[[^\]]*\bdecide\b[^\]]*\])\s*$/m.test(corpo)) falhas.push(`PG3 ${g.workflow}: o job \`${nome}\` não tem \`needs: decide\``);
     if (!/^ {4}if:[^\n]*needs\.decide\.outputs\.rodar == 'true'/m.test(corpo)) falhas.push(`PG3 ${g.workflow}: o job \`${nome}\` não obedece \`needs.decide.outputs.rodar == 'true'\``);
   }
+}
+
+/* ---- PG3: a CLI lê nome com acento cru (NUL) e na forma entre aspas do git ---- */
+{
+  const roda = (entrada) => spawnSync(process.execPath, ['scripts/ci/gatilho.mjs', 'portao'], { input: entrada, encoding: 'utf8' }).stdout.trim();
+  if (roda('public/img/ação.png\0docs/x.md\0') !== 'rodar=true') falhas.push('PG3 a CLI não acorda o portão com `public/img/ação.png` separado por NUL');
+  if (roda('"public/img/a\\303\\247\\303\\243o.png"\n') !== 'rodar=true') falhas.push('PG3 a CLI não desfaz o nome entre aspas do git (`"public/img/a\\303\\247…"`) — com quotePath ligado o portão seria pulado');
+  if (roda('"docs/a\\303\\247\\303\\243o.md"\0') !== 'rodar=false') falhas.push('PG3 a CLI acorda o portão com doc acentuado — o desaspa casou demais');
 }
 
 /* ---- PG4: a decisão ---- */

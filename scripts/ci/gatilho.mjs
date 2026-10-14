@@ -26,7 +26,13 @@
    o job usa: os passos declarados abaixo, os `npm run` aninhados neles, os pre/post
    de cada um e os de ciclo de vida do `npm ci`.
 
-   Uso (CI):  git diff --name-only BASE...HEAD | BASE=<sha> HEAD=<sha> node scripts/ci/gatilho.mjs <portao|smoke>
+   NOME COM ACENTO: o `git diff --name-only` padrão (core.quotePath=true) devolve
+   `"public/img/a\303\247\303\243o.png"`, entre aspas e em octal. Nada casa com isso e o
+   portão seria PULADO, falha aberta. O decide lista com `-c core.quotePath=false -z`
+   (separado por NUL, nome cru) e, por defesa, esta CLI ainda desfaz a forma com aspas.
+
+   Uso (CI):  git -c core.quotePath=false diff --no-renames --name-only -z BASE...HEAD \
+                | BASE=<sha> HEAD=<sha> node scripts/ci/gatilho.mjs <portao|smoke>
    ============================================================================ */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -113,6 +119,29 @@ export function pacoteRelevante(alvo, antesTxt, depoisTxt) {
   return '';
 }
 
+/* Nome na forma C do git (`"a\303\247.png"`) volta a ser o nome cru, em UTF-8. */
+export function desaspa(nome) {
+  if (!/^".*"$/.test(nome)) return nome;
+  const bytes = [];
+  const corpo = nome.slice(1, -1);
+  const SIMPLES = { n: 10, t: 9, r: 13, a: 7, b: 8, f: 12, v: 11, '"': 34, '\\': 92 };
+  for (let i = 0; i < corpo.length; i++) {
+    const c = corpo[i];
+    if (c !== '\\') { bytes.push(...Buffer.from(c, 'utf8')); continue; }
+    const oct = /^[0-7]{3}/.exec(corpo.slice(i + 1));
+    if (oct) { bytes.push(parseInt(oct[0], 8)); i += 3; continue; }
+    const s = SIMPLES[corpo[i + 1]];
+    if (s === undefined) throw new Error(`escape desconhecido em ${nome}`);
+    bytes.push(s); i += 1;
+  }
+  return Buffer.from(bytes).toString('utf8');
+}
+
+/* Lista do stdin: separada por NUL (`-z`) ou por linha, com a forma entre aspas desfeita. */
+export function lerLista(texto) {
+  return texto.split(/[\0\n]/).map((a) => a.replace(/\r$/, '')).filter((a) => a.trim()).map(desaspa);
+}
+
 /* Decide a partir da lista de arquivos. `lerPacote(ref)` devolve o texto do
    package.json naquela revisão. Devolve { rodar, motivo }. */
 export function decidir(alvo, arquivos, lerPacote) {
@@ -132,7 +161,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   let veredito;
   try {
     if (!GATILHOS[alvo]) throw new Error(`alvo desconhecido: ${alvo || '(nenhum)'}`);
-    const arquivos = readFileSync(0, 'utf8').split('\n');
+    const arquivos = lerLista(readFileSync(0, 'utf8'));
     const lerPacote = (lado) => {
       const sha = process.env[lado];
       if (!sha) throw new Error(`${lado} ausente para comparar o package.json`);
