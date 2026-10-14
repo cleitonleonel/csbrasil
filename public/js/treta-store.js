@@ -4,6 +4,7 @@ import {TRETA_SKINS,TRETA_COINS,TRETA_DEFAULT_REWARDS,TRETA_COIN_ART,TRETA_EYEWE
 import {TRETA_ACCESSORY_PROPOSALS} from './treta-proposals.js';
 import {loadAccount,socialApi} from './account-entry.js';
 import {byId} from './characters.js';
+import {estadoDaUrl,urlDoEstado,ABAS_LOJA} from './rotas.js';
 import {eyewearProfile} from './eyewear.js';
 
 const node=(tag,text='',cls='')=>{const e=document.createElement(tag);e.textContent=text;e.className=cls;return e;};
@@ -247,10 +248,15 @@ function initProposals() {
   const allTabs=[...document.querySelectorAll('[data-treta-view]')];
   for(const tab of allTabs)if(tab.dataset.tretaView==='accessories')tab.hidden=!TRETA_ITEMS_ENABLED;
   const tabs=allTabs.filter(tab=>TRETA_ITEMS_ENABLED || tab.dataset.tretaView!=='accessories');
-  const select=button=>{
+  // Aba da loja no caminho (/loja/quests, ADR 0008): clique empilha; abrir a loja segue a URL.
+  const slugDaView=Object.fromEntries(Object.entries(ABAS_LOJA).map(([slug,v])=>[v,slug]));
+  const select=(button,push=true)=>{
     view=button.dataset.tretaView;
+    if(push && $('main-menu')?.dataset.hubTab==='loja'){const url=urlDoEstado({secao:'loja',loja:slugDaView[view]},location.href);if(url.href!==location.href)history.pushState(null,'',url);}
     for(const tab of tabs){const active=tab===button;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(tab.getAttribute('aria-controls')).hidden=!active;}draw();$('hub-shop').scrollTop=0;
   };
+  const seguirUrl=()=>{const rota=estadoDaUrl(location.href);const alvo=tabs.find(tab=>tab.dataset.tretaView===(rota?.secao==='loja' && ABAS_LOJA[rota.loja] || 'skins')) || tabs[0];if(alvo && alvo.dataset.tretaView!==view)select(alvo,false);};
+  document.addEventListener('cs-shop-open',seguirUrl);seguirUrl();
   for(const tab of tabs){tab.tabIndex=tab.dataset.tretaView==='skins'?0:-1;tab.onclick=()=>select(tab);tab.onkeydown=e=>{
     const i=tabs.indexOf(tab),next=e.key==='ArrowRight'?(i+1)%tabs.length:e.key==='ArrowLeft'?(i+tabs.length-1)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:null;
     if(next===null)return;e.preventDefault();select(tabs[next]);tabs[next].focus();

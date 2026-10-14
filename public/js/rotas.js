@@ -9,7 +9,9 @@ const MODAIS_JOGAR = ['perfil', 'mapas', 'personagens', 'confirmar'];
 export const ABAS_PERFIL = { conquistas: 'Conquistas', partidas: 'Partidas', privacidade: 'Privacidade' };
 const PERFIL = /^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/[^/]*)?\/?$/i;
 /* Chaves de tela na query antiga. Saem da URL quando a tela vira caminho. */
-export const CHAVES_DE_TELA = ['secao', 'partida', 'servidor', 'janela', 'social', 'guia'];
+export const CHAVES_DE_TELA = ['secao', 'partida', 'servidor', 'janela', 'social', 'guia', 'loja'];
+/* Abas da loja: valor do estado → data-treta-view do TretaStore. */
+export const ABAS_LOJA = { quests: 'quests', acessorios: 'accessories' };
 
 const DESC_APP = 'Jogo de tiro grátis no navegador, com facções brasileiras. Sem download.';
 
@@ -26,6 +28,8 @@ export const ROTAS_HUB = [
   { caminho: '/configuracoes', estado: { janela: 'configuracoes' }, titulo: 'Configurações' },
   { caminho: '/loja', estado: { secao: 'loja' }, titulo: 'Loja de skins', indexavel: true,
     descricao: 'Skins de personagem da CORO SOLTO. Ganhe TRETA$ jogando e vista sua próxima treta. Skin não dá vantagem na partida.' },
+  { caminho: '/loja/quests', estado: { secao: 'loja', loja: 'quests' }, titulo: 'Quests: ganhe TRETA$' },
+  { caminho: '/loja/acessorios', estado: { secao: 'loja', loja: 'acessorios' }, titulo: 'Acessórios da loja' },
   ...Object.entries(ABAS_SOCIAIS).map(([social, slug]) => ({
     caminho: slug ? `/comunidade/${slug}` : '/comunidade',
     estado: { secao: 'comunidade', social },
@@ -50,13 +54,13 @@ export function rotaDoCaminho(caminho) {
 
 /** Caminho de uma tela. null quando a tela ainda mora na query (ranking; perfil dentro do iframe de /u). */
 export function caminhoDoEstado(estado = {}, { perfilNoCaminho = false } = {}) {
-  const { secao, partida, servidor, janela, social, guia, perfil } = estado;
+  const { secao, partida, servidor, janela, social, guia, perfil, loja } = estado;
   if (janela === 'configuracoes') return '/configuracoes';
   if (!secao || secao === 'jogar') {
     if (partida === 'multiplayer') return servidor === 'privado' ? '/jogar/multiplayer/privado' : '/jogar/multiplayer';
     return MODAIS_JOGAR.includes(janela) ? `/jogar/${janela}` : '/';
   }
-  if (secao === 'loja') return '/loja';
+  if (secao === 'loja') return Object.hasOwn(ABAS_LOJA, loja) ? `/loja/${loja}` : '/loja';
   if (secao === 'comunidade') {
     if (perfil) return perfilNoCaminho ? `/u/${encodeURIComponent(perfil)}` : null;
     const slug = ABAS_SOCIAIS[social || 'profile'];
