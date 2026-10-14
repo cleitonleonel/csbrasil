@@ -1,5 +1,6 @@
 // Guias no lobby; as mesmas URLs continuam navegáveis sem JavaScript.
 import { LANG, resolveGeoLang } from './i18n.js';
+import { estadoDaUrl } from './rotas.js';
 await resolveGeoLang();
 const pairs = { '/personagens': '/characters', '/como-jogar': '/how-to-play', '/armas': '/weapons', '/mapas': '/maps', '/sobre': '/about', '/changelog': '/whats-new' };
 if (LANG === 'en') {
@@ -35,11 +36,22 @@ function openFrame(href, title) {
   currentUrl = url.href;
   frame.src = url.href;
 }
+/* Guia aberto mora no caminho: /guia/mapas (public/js/rotas.js, ADR 0008). Clique empilha,
+   para o voltar do navegador refazer o guia anterior. */
+function guideUrl(guide) {
+  const pageUrl = new URL(location.href);
+  pageUrl.pathname = guide && guide !== 'overview' ? `/guia/${guide}` : '/guia';
+  for (const key of ['secao', 'guia', 'janela', 'origem']) pageUrl.searchParams.delete(key);
+  return pageUrl;
+}
+function syncGuide(guide) {
+  const pageUrl = guideUrl(guide);
+  if (pageUrl.href !== location.href) history.pushState(history.state, '', pageUrl);
+}
+const guideFromUrl = () => estadoDaUrl(location.href)?.guia || null;
 function select(tab, syncUrl = true) {
   const general = tab.dataset.guide === 'overview';
-  const pageUrl = new URL(location.href);
-  pageUrl.searchParams.set('guia', tab.dataset.guide);
-  if (syncUrl) history.replaceState(history.state, '', pageUrl);
+  if (syncUrl) syncGuide(tab.dataset.guide);
   for (const item of tabs) {
     item.setAttribute('aria-selected', String(item === tab));
     item.tabIndex = item === tab ? 0 : -1;
@@ -52,9 +64,7 @@ function select(tab, syncUrl = true) {
   openFrame(tab.href, tab.textContent.trim());
 }
 function selectDocument(pathname, syncUrl = true) {
-  const pageUrl = new URL(location.href);
-  pageUrl.searchParams.set('guia', documentGuide(pathname));
-  if (syncUrl) history.replaceState(history.state, '', pageUrl);
+  if (syncUrl) syncGuide(documentGuide(pathname));
   for (const item of tabs) {
     item.setAttribute('aria-selected', 'false');
     item.tabIndex = item === tabs[0] ? 0 : -1;
@@ -112,10 +122,11 @@ frame?.addEventListener('load', () => {
       link.rel = 'noopener noreferrer';
       return;
     }
-    if (url.pathname === '/') {
-      // /?secao=... vai para a seção pedida; o roteador do hub (main.js) cuida da comunidade.
+    const hubState = url.pathname === '/' || !contentPaths.has(url.pathname) ? estadoDaUrl(url.href) : null;
+    if (hubState) {
+      // /?secao=... ou /comunidade, /loja...: vai para a seção pedida; o roteador do hub (main.js) cuida da comunidade.
       event.preventDefault();
-      const section = url.searchParams.get('secao');
+      const section = hubState.secao;
       if (section === 'comunidade') {
         const proxy = Object.assign(document.createElement('a'), { href: url.href, hidden: true });
         document.getElementById('hub-ui').append(proxy);
@@ -148,12 +159,12 @@ for (const link of document.querySelectorAll('.hub-link-grid a, a.hub-changelog,
   });
 }
 
-const requested = new URLSearchParams(location.search).get('guia');
+const requested = guideFromUrl();
 const initialTab = tabs.find(tab => tab.dataset.guide === requested);
-if (initialTab) select(initialTab);
+if (initialTab) select(initialTab, false);
 else if (documents[`/${requested}`]) selectDocument(`/${requested}`, false);
 window.addEventListener('popstate', () => {
-  const guide = new URLSearchParams(location.search).get('guia');
+  const guide = guideFromUrl();
   if (documents[`/${guide}`]) return selectDocument(`/${guide}`, false);
   select(tabs.find(tab => tab.dataset.guide === guide) ?? tabs[0], false);
 });
