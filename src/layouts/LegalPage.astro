@@ -31,6 +31,9 @@ const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href={`/style.css?v=${cssRevision}`} />
+    <script is:inline>
+      if (window.self !== window.top && new URLSearchParams(location.search).get('embed') === '1') document.documentElement.dataset.embedded = 'true';
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#documento">Ir para o documento</a>
@@ -65,6 +68,9 @@ const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).
 <style>
   :global(html.legal-document), :global(.legal-document body) { height: auto; min-height: 100%; overflow: auto; background: var(--bg-900); }
   :global(.legal-document *) { user-select: text; }
+  :global(html.legal-document[data-embedded="true"]), :global(html.legal-document[data-embedded="true"] body) { min-height: 0; background: transparent; }
+  :global(html[data-embedded="true"]) .legal-header, :global(html[data-embedded="true"]) .legal-footer, :global(html[data-embedded="true"]) .skip-link { display: none; }
+  :global(html[data-embedded="true"]) main { max-width: none; padding: 0 0 24px; }
   :global(.legal-document body) { --legal-accent: #b4d92e; --font: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; font-family: var(--font); font-weight: 400; color: var(--ink-200); }
   a { color: var(--sys); text-underline-offset: 4px; }
   a:focus-visible { outline: var(--focus-ring); outline-offset: 4px; }
