@@ -545,6 +545,8 @@
     "eval:green-cover-pattern": "node tools/eval/green-cover-pattern-check.mjs --self-test",
     "eval:treta-eyewear": "node tools/eval/treta-eyewear-adversarial-check.mjs && node tools/eval/treta-eyewear-loader-check.mjs && node tools/eval/treta-eyewear-assets-check.mjs && node tools/eval/treta-items-off-check.mjs && node tools/eval/treta-items-off-check.mjs --mutations",
     "eval:treta-equip-route": "node tools/eval/treta-equip-route-check.mjs && node tools/eval/treta-equip-route-check.mjs --mutations",
+    "//eval:mapas-paginas": "ADR 0008: uma página por arena em /mapas/<id> com head, og:image da arena, botão que abre o jogo nela e entrada no sitemap. Precisa de npm run build antes.",
+    "eval:mapas-paginas": "node --experimental-strip-types tools/eval/mapas-paginas-check.mjs && for m in sem-pagina sem-jogar sem-sitemap; do ! node --experimental-strip-types tools/eval/mapas-paginas-check.mjs --mutante=$m >/dev/null 2>&1 || exit 1; done",
     "eval:treta-rewards": "node tools/eval/treta-rewards-check.mjs && node tools/eval/treta-rewards-check.mjs --mutations",
     "eval:treta-skins": "node tools/eval/treta-skins-check.mjs && node tools/eval/treta-skins-check.mjs --mutations",
     "eval:treta-classic": "node tools/eval/treta-classic-coin-check.mjs && node tools/eval/treta-classic-coin-check.mjs --mutations",
