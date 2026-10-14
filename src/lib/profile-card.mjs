@@ -4,7 +4,7 @@ export function profileCardSvg(p,character,portrait,site){
  if(!['server_verified','historical_plus_server_verified'].includes(p?.source) || p.visibility!=='public')throw Error('Public ranking profile required');
  const cells=[['PONTOS',number(p.points)],['POSIÇÃO',p.position?'#'+number(p.position):'—'],['ABATES',number(p.kills)],['MORTES',number(p.deaths)],['K/D',number(p.kd)],['HORAS ATIVAS',number(Math.round(Number(p.verified_play_seconds ?? p.play_seconds)/36)/100)]];
  const image=character&&portrait&&/^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(portrait)?`<image href="${portrait}" x="650" y="8" width="550" height="614" preserveAspectRatio="xMidYMid meet"/>`:'';
- const nick=String(p.nick).slice(0,24),nickSize=Math.min(58,540/Math.max(1,nick.length));
+ const nick=String(p.nick).slice(0,32),nickSize=Math.min(58,540/Math.max(1,nick.length));
  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
  <rect width="1200" height="630" fill="#0c0e11"/>
  <path d="M820 0H1200V630H650Z" fill="#ffd23f" opacity=".06"/>
