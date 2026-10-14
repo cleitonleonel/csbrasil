@@ -5,7 +5,7 @@
      PA1 · canonical e og:url: aba indexável aponta para si; privacidade e o nick antigo apontam para /u/<handle>
      PA2 · robots: partidas e privacidade fora do índice; perfil e conquistas dentro
      PA3 · abas: um link por aba e aria-current na aba aberta
-     PA4 · conteúdo: conquistas listadas; privacidade leva às configurações e não sobe o jogo por cima
+     PA4 · conteúdo: conquistas listadas; privacidade leva às configurações; toda aba é o hub do jogo
      PA5 · JSON-LD ProfilePage nas páginas indexáveis
 
    Uso: npm run build && node tools/eval/perfil-abas-check.mjs [--mutate] */
@@ -76,8 +76,11 @@ const CASOS = [
   ['PA4 · conteúdo da aba', (b) => {
     if (!/Primeiro abate[\s\S]*Dez abates na conta/.test(b.conquistas.html)) return 'conquistas não listadas';
     if (!b.privacidade.html.includes('href="/comunidade/configuracoes"')) return 'privacidade sem caminho para as configurações';
-    if (b.privacidade.html.includes("frame.className='profile-game'")) return 'privacidade sobe o jogo por cima e esconde a página';
-    if (!b.conquistas.html.includes("frame.className='profile-game'")) return 'conquistas perdeu o jogo por cima (o perfil abre no jogo)';
+    // /u/<perfil> é o hub (profile-in-game-check): cada aba serve o mesmo jogo, sem iframe por cima.
+    for (const [nome, pagina] of Object.entries(b)) {
+      if (!pagina.html.includes('id="main-menu"') || !pagina.html.includes('id="perfil-ssr"')) return `${nome}: não é o hub com o perfil`;
+      if (pagina.html.includes("frame.className='profile-game'")) return `${nome}: sobe o jogo num iframe por cima`;
+    }
     return null;
   }],
   ['PA5 · JSON-LD ProfilePage', (b) => {
@@ -99,9 +102,10 @@ if (MUTATE) {
   const troca = (pagina, antes, depois) => (b) => ({ ...b, [pagina]: { ...b[pagina], html: b[pagina].html.replace(antes, depois) } });
   const MUTANTES = [
     ['PA1', 'aba aponta para o perfil', troca('conquistas', `${SITE}/u/${HANDLE}/conquistas"`, `${SITE}/u/${HANDLE}"`)],
-    ['PA2', 'privacidade indexável', troca('privacidade', '<meta name="robots" content="noindex"', '<meta name="robots" content="index"')],
+    ['PA2', 'privacidade indexável', troca('privacidade', '<meta name="robots" content="noindex, follow"', '<meta name="robots" content="index"')],
     ['PA3', 'aba errada marcada', troca('partidas', ` aria-current="page"`, '')],
     ['PA4', 'jogo cobre a privacidade', troca('privacidade', '</body>', "<script>frame.className='profile-game'</script></body>")],
+    ['PA4', 'aba vira página à parte', troca('conquistas', 'id="main-menu"', 'id="pagina-aba"')],
     ['PA5', 'JSON-LD some', troca('perfil', 'application/ld+json', 'application/json')],
   ];
   let cegas = 0;

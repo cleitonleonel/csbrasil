@@ -31,7 +31,7 @@ const MUTANTES = {
   'sem-sessao': ['login-prompt', '  if(seen)return false;\n', ''],
   'sem-intervalo': ['login-prompt', '  if(record && record.matches<LOGIN_PROMPT_MATCHES && now-record.dismissedAt<LOGIN_PROMPT_COOLDOWN_MS)return false;\n', ''],
   'empilha': ['login-prompt', "    if(document.querySelector('dialog[open]'))return;", ''],
-  'sem-perfil': ['main', "onReady:ready=>initLoginPrompt({...ready,skip:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil'))", "onReady:ready=>initLoginPrompt({...ready,skip:Boolean(inspectionScreen || testMode || params.get('sala'))"],
+  'sem-perfil': ['main', "onReady:ready=>initLoginPrompt({...ready,skip:Boolean(inspectionScreen || testMode || params.get('sala') || perfilCompartilhado)", "onReady:ready=>initLoginPrompt({...ready,skip:Boolean(inspectionScreen || testMode || params.get('sala'))"],
   'sem-contagem': ['main', '  if (!continuaPartida) noteLoginPromptMatch();', ''],
   'telemetria-sem-consentimento': ['login-prompt', '  if(!analyticsAllowed())return;\n  try{track(step,data);}', '  try{track(step,data);}'],
 };
@@ -134,9 +134,11 @@ await caso('LP8', 'telemetria só com consentimento de analytics', () => {
   }
   for (const nome of ['login_prompt_shown', 'login_prompt_dismissed', 'login_prompt_provider_click']) assert(fontePrompt.includes(`'${nome}'`), nome);
 });
-await caso('LP10', 'perfil compartilhado (/u/<perfil> abre o jogo em iframe com ?perfil=) pula o convite', () => {
+await caso('LP10', 'perfil compartilhado (/u/<perfil>, que é o hub, e o link antigo ?perfil=) pula o convite', () => {
   const skip = fonteMain.match(/onReady:ready=>initLoginPrompt\(\{\.\.\.ready,skip:Boolean\((.*?)\),track:/)?.[1] || '';
-  assert(skip.includes("params.get('perfil')"), `skip do convite: ${skip || 'não achado'}`);
+  assert(skip.includes('perfilCompartilhado'), `skip do convite: ${skip || 'não achado'}`);
+  const decl = fonteMain.match(/^const perfilCompartilhado = ([^\n]*);$/m)?.[1] || '';
+  assert(decl.includes("params.get('perfil')") && decl.includes('estadoDaUrl(location.href)?.perfil'), `perfilCompartilhado: ${decl || 'não achado'}`);
   assert(skip.includes("params.get('sala')"), 'convite de sala');
 });
 await caso('LP9', 'fiação: partida começada conta, partida terminada arma o convite, mesmo pipeline do funil', () => {
@@ -145,7 +147,7 @@ await caso('LP9', 'fiação: partida começada conta, partida terminada arma o c
   const rec = fonteMain.indexOf('async function recordMatchStats(');
   assert(rec > 0 && fonteMain.slice(rec, rec + 200).includes("document.dispatchEvent(new CustomEvent('cs-match-end'))"), 'fim de partida não avisa');
   assert(fontePrompt.includes("document.addEventListener('cs-match-end',()=>{ended=true;});"), 'convite não escuta o fim da partida');
-  assert(/onReady:ready=>initLoginPrompt\(\{\.\.\.ready,skip:Boolean\(inspectionScreen \|\| testMode \|\| params\.get\('sala'\)(?: \|\| params\.get\('perfil'\))?\)/.test(fonteMain), 'convite não pendurado no onReady da conta');
+  assert(/onReady:ready=>initLoginPrompt\(\{\.\.\.ready,skip:Boolean\(inspectionScreen \|\| testMode \|\| params\.get\('sala'\)(?: \|\| (?:params\.get\('perfil'\)|perfilCompartilhado))?\)/.test(fonteMain), 'convite não pendurado no onReady da conta');
   assert(/sendJsonKeepalive\('\/api\/funnel', \{ step, sessionId: getSessionId\(\), \.\.\.data \}\)/.test(fonteMain), 'transporte fora do funil');
 });
 await caso('LP11', 'passo de entrada não abre sozinho para visitante (com ou sem nick); abre para link expirado e conta sem nick', () => {

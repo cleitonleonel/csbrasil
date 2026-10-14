@@ -196,6 +196,17 @@ uma rota nova junto com a régua do backend, em PR pareado. Até lá ele
 fica como está. O mesmo vale para o 302 de `/ranking.astro`: trocar
 por rota do hub exige o PR pareado no backend.
 
+Atualização (14/10, pedido do dono): `/u/<perfil>` passa a ser o próprio
+hub, não uma página à parte com o jogo num iframe por cima. O SSR de
+`src/pages/u/[...path].astro` renderiza `index.astro` com o head do perfil
+(título, canonical, `og:image` do `/api/profile-card`, `og:type=profile`,
+JSON-LD `ProfilePage`) e o perfil legível dentro do pane da comunidade. O
+hub segue estático nas outras rotas. No SSR ele não lê disco: a revisão
+dos CSS vem do build (`__CSS_REV__` em `astro.config.mjs`), como o
+manifesto de módulos. Réguas: `tools/eval/profile-in-game-check.mjs` e
+`tools/eval/ssr-render-check.mjs`. O `game` do frontmatter e o link
+`href={game}` ficam, porque a régua do backend os exige.
+
 Antes de cada PR que toca `src/pages/u/` ou `src/pages/ranking.astro`:
 rodar `npm run portao` do backend com `CLIENT_DIR` apontando para o
 worktree do PR (montagem do sync-nodes).

@@ -11,8 +11,10 @@ if(root) {
   let loginConfig={providers:[]};
   let inboxSection='quests',conversation=null,conversationBefore=null,messageDraft='',messageClientId=null,pendingSend=null;
   let auth=null,state=null,tab=root.dataset.tab || 'profile',profileId=root.dataset.profile || new URLSearchParams(location.search).get('perfil') || '',rankingScope='global',rankingQuery='',rankingOffset=0,rankingPeriod='all',rankingMode='all',rankingGameType='all',loadVersion=0;
-  // Perfil compartilhado (/u/<perfil>) chega com o perfil como destino: o painel da conta começa recolhido para o perfil ficar no topo.
-  if(new URLSearchParams(location.search).get('perfil'))account.closest?.('details')?.removeAttribute('open');
+  // Perfil compartilhado (/u/<perfil>, ou o link antigo com ?perfil=) chega com o perfil como destino: o painel da conta começa recolhido para o perfil ficar no topo.
+  if(new URLSearchParams(location.search).get('perfil') || /^\/u\/[^/]/.test(location.pathname || ''))account.closest?.('details')?.removeAttribute('open');
+  // O SSR de /u/<perfil> manda o perfil legível ao lado da comunidade (crawler e sem JS). Com a comunidade no ar, ela desenha o perfil.
+  document.getElementById?.('perfil-ssr')?.remove();
   const errors={handle_invalid:'Use de 3 a 24 letras, números ou _. Comece com letra.',handle_taken:'Esse ID já tem dono. Escolha outro.',handle_locked:'Seu ID já foi escolhido e fica fixo para preservar os links.',nick_invalid:'Use de 2 a 14 letras, números, _ . ou -.',nick_taken:'Esse nick já está em uso. Escolha outro.',account_hidden:'Esta conta está indisponível pela moderação.',session_expired:'Sua sessão expirou. Entre de novo para continuar.',social_unavailable:'A resenha está fora do ar. Tente de novo.',social_not_configured:'A comunidade aguarda configuração do servidor.',rate_limited:'Calma, fiscal da resenha. Tente de novo em um minuto.',blocked:'Esse jogador não pode interagir com você.',room_solo:'Essa sala é solo. Entre no multiplayer para chamar amigos.',room_full:'A sala lotou. Peça outro convite.',room_closed:'Essa sala já encerrou.',room_unavailable:'O servidor da sala não respondeu.',invite_expired:'O convite venceu. Peça outro.',invite_closed:'Esse convite já foi respondido.',join_room_first:'Entre numa sala do jogo antes de convidar.',provider_unavailable:'Esse login ainda não está habilitado.',account_conflict:'Esse nick ou progresso já pertence a outra conta.',guest_invalid:'Não foi possível comprovar o convidado. Seu progresso local continua salvo.',links_invalid:'Use links HTTPS das redes indicadas.',settings_invalid:'Revise a bio e as opções de privacidade.'};
   const el=(tag,text='',cls='')=>{const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n;};
   const message=(text)=>{status.textContent=text;};
@@ -29,6 +31,31 @@ if(root) {
     const b=el('button',text,cls);b.type='button';b.onclick=async()=>{b.disabled=true;say('Só um instante…');try{await fn();say('Tá anotado.');}catch(e){say(errors[e.message] || 'Não deu certo agora. Tente de novo.');}finally{b.disabled=false;}};return b;
   }
   function link(text,href) {const a=el('a',text);a.href=href;return a;}
+  const chip=(text)=>el('span',text,'social-chip');
+  /* Abas da comunidade que são da conta de quem está logado (turma, central, resenha, configurações).
+     No perfil de OUTRA pessoa elas saem: o visitante vê o perfil público, não a própria conta. */
+  const PRIVATE_TABS=['friends','notifications','feed','settings'];let viewingOther=false;
+  function syncPrivateTabs(){for(const b of document.querySelectorAll('.social-tabs button'))b.hidden=viewingOther && PRIVATE_TABS.includes(b.dataset.tab);}
+  const ABAS_DO_PERFIL={'':'PERFIL',conquistas:'CONQUISTAS',partidas:'PARTIDAS',privacidade:'PRIVACIDADE'};
+  const abaDaUrl=()=>(typeof location==='undefined'?'':location.pathname || '').match(/^\/u\/[^/]+\/(conquistas|partidas|privacidade)\/?$/)?.[1] || '';
+  let profileAba=abaDaUrl();
+  /* ADICIONAR AMIGO sem conta: guarda o pedido (1 h), abre o login da comunidade (volta para cá) e manda depois. */
+  const PENDING_FRIEND='cs_amizade_pendente';
+  function askLoginForFriend(p){
+    try{localStorage.setItem(PENDING_FRIEND,JSON.stringify({id:p.id,url:p.url || '',at:Date.now()}));}catch{}
+    profileNotice={id:p.id,text:auth?.authenticated?'Escolha seu nick em SUA CONTA. O pedido de amizade sai logo depois.':'Entre na conta em SUA CONTA. Depois do login o pedido de amizade sai sozinho.'};
+    const panel=account.closest?.('details');if(panel){panel.hidden=false;panel.open=true;panel.scrollIntoView?.({block:'center',behavior:'smooth'});}
+    return render();
+  }
+  async function completePendingFriend(){
+    let pending=null;try{pending=JSON.parse(localStorage.getItem(PENDING_FRIEND) || 'null');localStorage.removeItem(PENDING_FRIEND);}catch{return;}
+    if(!pending?.id || !auth?.profile || pending.id===auth.profile.id || !(Date.now()-Number(pending.at)<3600000))return;
+    profileId=pending.id;tab='profile';profileAba='';
+    const menu=document.getElementById('main-menu');
+    if(menu?.dataset.hubTab==='comunidade' && /^\/u\/[a-z0-9_-]+$/i.test(pending.url)){try{history.replaceState(history.state,'',pending.url);}catch{}}
+    try{const out=await api('/api/social',{action:'request',target:pending.id});profileNotice={id:pending.id,text:out?.state==='accepted'?'Pedido aceito: agora vocês são amigos.':'Pedido de amizade enviado. Ele aparece na CENTRAL de quem recebe.'};await refresh();}
+    catch(e){if(e.message==='not_found')noAccountTargets.add(pending.id);profileNotice={id:pending.id,text:e.message==='not_found'?'Este jogador ainda não tem conta na resenha, então não recebe pedido de amizade.':errors[e.message] || 'Não deu certo agora. Tente de novo.'};}
+  }
   const empty=(text)=>el('p',text,'social-muted');
   const card=(title)=>{const c=el('section','','social-card');c.append(el('h2',title));return c;};
   function field(title,input) {const label=el('label',title,'social-field');label.append(input);return label;}
@@ -97,6 +124,8 @@ if(root) {
     const bio=el('div');bio.append(el('p',p.bio || 'A bio ainda está no aquecimento.'),empty(`Nível ${p.level} · faltam ${p.next_level_points} pontos para o próximo.`));const rank=careerRankBadge(p.points);if(rank)bio.append(rank,empty(careerRankTitle(p.points)));identity.append(bio);c.append(identity);if(p.handle)c.append(empty('@'+p.handle));
     const ranking=el('div','','social-profile-ranking');ranking.append(el('span','RANKING GERAL'),el('strong',p.position?`#${p.position}`:'Privada'));c.append(ranking);
     const views=Number.isSafeInteger(p.views) && p.views>=0?el('p',viewsText(p.views),'social-profile-views'):null;if(views)c.append(views);countProfileView(p,views);
+    // Saldo TRETA$ (backend #114, treta_balance): só quando a API manda o campo. Backend sem o campo não mostra nada.
+    if(Number.isSafeInteger(p.treta_balance) && p.treta_balance>=0){const treta=el('div','','social-profile-treta');treta.setAttribute('aria-label',`Saldo TRETA$ de ${p.nick}`);treta.append(el('span','SALDO TRETA$'),el('strong',`T$ ${p.treta_balance.toLocaleString('pt-BR')}`));c.append(treta);}
     /* last_character só chega aberto quando a pessoa marcou "Mostrar meu último personagem" (share_character, padrão desligado,
        migration 048), para ela mesma e para amigos. Vazio para os outros quase sempre é escolha de privacidade, não falta de dado. */
     const own=auth?.profile?.id===p.id,character=profileCharacterCard(p.last_character);
@@ -112,28 +141,49 @@ if(root) {
     }
     const notice=el('p',profileNotice?.id===p.id?profileNotice.text:'','social-inline-status');notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
     const buttons=el('div','','social-actions');buttons.append(button('COPIAR LINK',async()=>navigator.clipboard.writeText(`${root.dataset.site}${p.url}`)));
-    if(p.visibility==='public'){const publicLink=link('ABRIR PERFIL PÚBLICO ↗',p.url);publicLink.dataset.publicProfile='true';buttons.append(publicLink);
+    // /u/<perfil> já é o hub: o perfil público é esta tela, sem botão para "abrir o perfil público".
+    if(p.visibility==='public'){
       // Import na hora do clique: a régua do backend roda este arquivo num vm sem módulos.
       const share=button('COMPARTILHAR PERFIL',async()=>{const {compartilhar,linkCompartilhavel}=await import('./compartilhar.js');const r=await compartilhar({titulo:`${p.nick} no CORO SOLTO`,texto:`Olha o perfil de ${p.nick} no CORO SOLTO.`,url:linkCompartilhavel(p.url,'perfil')});if(r==='copiado')message('Link do perfil copiado.');});share.dataset.share='perfil';buttons.append(share);}
     if(auth?.profile && auth.profile.id!==p.id) {
-      if(p.relationship==='friend'){if(state?.messages_enabled)buttons.append(button('MANDAR MENSAGEM',()=>openConversation(p),'',notice));buttons.append(button('CHAMAR PARA A SALA',()=>action('invite',p.id),'',notice),button('REMOVER AMIGO',()=>action('remove',p.id),'',notice));}
+      if(p.relationship==='friend'){buttons.append(chip('AMIGOS ✓'));if(state?.messages_enabled)buttons.append(button('MANDAR MENSAGEM',()=>openConversation(p),'',notice));buttons.append(button('CHAMAR PARA A SALA',()=>action('invite',p.id),'',notice),button('REMOVER AMIGO',()=>action('remove',p.id),'',notice));}
       else if(p.relationship==='incoming')buttons.append(button('ACEITAR AMIZADE',()=>action('accept',p.id),'',notice),button('RECUSAR',()=>action('decline',p.id),'',notice));
-      else if(p.relationship==='outgoing')buttons.append(button('CANCELAR PEDIDO',()=>action('cancel',p.id),'',notice));
-      else if(!noAccountTargets.has(p.id))buttons.append(button('PEDIR AMIZADE',()=>requestFriend(p),'',notice));
+      else if(p.relationship==='outgoing')buttons.append(chip('PEDIDO ENVIADO'),button('CANCELAR PEDIDO',()=>action('cancel',p.id),'',notice));
+      else if(!noAccountTargets.has(p.id))buttons.append(button('ADICIONAR AMIGO',()=>requestFriend(p),'social-primary',notice));
       buttons.append(button('BLOQUEAR',async()=>{await action('block',p.id);profileId='';await render();},'social-danger',notice),button('DENUNCIAR',()=>showReport(p),'',notice));
     }
+    // Sem conta (ou sem nick): o pedido fica guardado, o login abre aqui e o pedido sai sozinho depois (completePendingFriend).
+    else if(!own && !noAccountTargets.has(p.id))buttons.append(button('ADICIONAR AMIGO',()=>askLoginForFriend(p),'social-primary',notice));
     c.append(buttons,notice);
     if(p.socials?.length || p.social_link){const socials=profileSocialLinks(p);if(socials.length){const row=el('nav','','profile-socials');row.setAttribute('aria-label','Redes públicas');for(const s of socials)row.append(profileSocialLink(s));c.append(row);}}
-    c.append(el('h3','Conquistas'));
-    const earned=profileAchievements(p),achievements=el('ul','','social-list');for(const a of earned)achievements.append(el('li',achievementText(a)));c.append(earned.length?achievements:empty('A primeira conquista vem do primeiro abate.'));
+    const secConquistas=el('section','','social-profile-section');secConquistas.append(el('h3','Conquistas'));
+    const earned=profileAchievements(p),achievements=el('ul','','social-list');for(const a of earned)achievements.append(el('li',achievementText(a)));secConquistas.append(earned.length?achievements:empty('A primeira conquista vem do primeiro abate.'));c.append(secConquistas);
     // Rodadas e preferências: o servidor só manda para a própria pessoa e para amigos (activity_visibility). Vazio para os outros não quer dizer "sem rodada".
     const sees=auth?.profile?.id===p.id || p.relationship==='friend',noActivity=sees?(p.source==='historical_plus_server_verified'?'O histórico antigo guarda só os totais. As rodadas aparecem aqui a partir da primeira partida confirmada pelo servidor.':'Nenhuma rodada confirmada ainda.'):'As rodadas deste jogador aparecem só para os amigos dele.';
-    c.append(el('h3','Preferências na arena'));
-    const favorites=el('ul','','social-list');for(const f of p.favorites)favorites.append(el('li',`${f.map} · ${f.mode} · ${f.character || 'Personagem não registrado'} · ${f.faction || 'Facção não registrada'} (${f.rounds} rodadas)`));c.append(p.favorites.length?favorites:empty(noActivity));
-    c.append(el('h3','Rodadas recentes'));
-    for(const h of p.history)c.append(empty(`${date(h.started_at)} · ${h.map} · ${h.mode} · ${h.kills} abates / ${h.deaths} mortes${h.complete?'':' · encerrada antes do placar'}`));
-    if(!p.history.length)c.append(empty(noActivity));
-    content.append(c);
+    const secPartidas=el('section','','social-profile-section');secPartidas.append(el('h3','Preferências na arena'));
+    const favorites=el('ul','','social-list');for(const f of p.favorites)favorites.append(el('li',`${f.map} · ${f.mode} · ${f.character || 'Personagem não registrado'} · ${f.faction || 'Facção não registrada'} (${f.rounds} rodadas)`));secPartidas.append(p.favorites.length?favorites:empty(noActivity));
+    secPartidas.append(el('h3','Rodadas recentes'));
+    for(const h of p.history)secPartidas.append(empty(`${date(h.started_at)} · ${h.map} · ${h.mode} · ${h.kills} abates / ${h.deaths} mortes${h.complete?'':' · encerrada antes do placar'}`));
+    if(!p.history.length)secPartidas.append(empty(noActivity));
+    // Rodadas e preferências são da pessoa e dos amigos: o visitante vê só uma linha dizendo isso.
+    if(sees)c.append(secPartidas);else c.append(empty(noActivity));
+    // Abas do perfil (/u/<perfil>/<aba>) só para o dono logado. Visitante vê o perfil público inteiro, sem abas.
+    viewingOther=!own;syncPrivateTabs();
+    if(!own){content.append(c);return;}
+    const nav=profileTabs(p);
+    if(profileAba==='privacidade'){content.append(nav);showSettings();return;}
+    if(profileAba==='conquistas' || profileAba==='partidas'){const only=card(p.nick);only.append(profileAba==='conquistas'?secConquistas:secPartidas);content.append(nav,only);return;}
+    content.append(nav,c);
+  }
+  /* Abas do perfil do dono. Trocar de aba grava /u/<perfil>/<aba> (rotas.js guarda a aba) sem recarregar. */
+  function profileTabs(p){
+    const nav=el('nav','','profile-tabs social-profile-tabs');nav.setAttribute('aria-label','Abas do seu perfil');
+    for(const [slug,label] of Object.entries(ABAS_DO_PERFIL)){
+      const b=el('button',label);b.type='button';b.dataset.aba=slug;b.setAttribute('aria-pressed',String(profileAba===slug));
+      b.onclick=()=>{profileAba=slug;const menu=document.getElementById('main-menu');if(menu?.dataset.socialPaused!=='true' && menu?.dataset.hubTab==='comunidade' && p.url){const alvo=new URL(location.href);alvo.pathname=p.url+(slug?`/${slug}`:'');for(const k of ['secao','social','perfil'])alvo.searchParams.delete(k);if(alvo.href!==location.href)history.pushState(null,'',alvo);}void render();};
+      nav.append(b);
+    }
+    return nav;
   }
   function showReport(p) {
     content.replaceChildren();const c=card(`Denunciar ${p.nick}`),reason=el('select'),detail=el('textarea');detail.maxLength=1000;detail.minLength=5;detail.required=true;
@@ -246,20 +296,20 @@ if(root) {
     mountAccountIntegrations(c,auth,loginConfig,message);void mountProfilePreferences(c,{auth,message});
     c.append(el('h3','Jogadores bloqueados'));for(const b of state.blocks)c.append(empty(b.nick),button('DESBLOQUEAR',()=>action('unblock',b.id)));if(!state.blocks.length)c.append(empty('Nenhum jogador bloqueado.'));content.append(c);
   }
-  async function render(){const version=++loadVersion;root.dataset.view=tab;content.replaceChildren();content.setAttribute('aria-busy','true');for(const b of document.querySelectorAll('.social-tabs button')){const on=b.dataset.tab===tab;b.setAttribute('aria-selected',String(on));b.setAttribute('tabindex',on?'0':'-1');if(on)content.setAttribute('aria-labelledby',b.id);}try{if(tab==='profile'){if(profileId || auth?.profile)await showProfile(profileId || auth.profile.id,version);else content.append(empty('Entre na conta para criar seu perfil.'));}else if(tab==='friends')showFriends();else if(tab==='ranking')await showRanking(version);else if(tab==='notifications')await showCentral(version);else if(tab==='feed')showFeed();else if(tab==='settings')showSettings();}catch(e){message(errors[e.message] || 'Perfil privado ou indisponível.');content.append(empty('Não foi possível carregar esta tela.'),button('TENTAR DE NOVO',render));}finally{if(version===loadVersion)content.setAttribute('aria-busy','false');}}
-  async function boot(){message('Carregando a turma…');try{[auth,loginConfig]=await Promise.all([loadAccount(),loadAuthOptions()]);if(auth?.profile){acceptAccount(auth);await api('/api/social',{action:'presence'});}await refresh();renderAccount();await render();message('');}catch(e){message(errors[e.message] || 'A comunidade não respondeu.');renderAccount();content.replaceChildren(button('TENTAR DE NOVO',boot));}}
+  async function render(){const version=++loadVersion;root.dataset.view=tab;if(tab!=='profile' || !profileId){viewingOther=false;syncPrivateTabs();}content.replaceChildren();content.setAttribute('aria-busy','true');for(const b of document.querySelectorAll('.social-tabs button')){const on=b.dataset.tab===tab;b.setAttribute('aria-selected',String(on));b.setAttribute('tabindex',on?'0':'-1');if(on)content.setAttribute('aria-labelledby',b.id);}try{if(tab==='profile'){if(profileId || auth?.profile)await showProfile(profileId || auth.profile.id,version);else content.append(empty('Entre na conta para criar seu perfil.'));}else if(tab==='friends')showFriends();else if(tab==='ranking')await showRanking(version);else if(tab==='notifications')await showCentral(version);else if(tab==='feed')showFeed();else if(tab==='settings')showSettings();}catch(e){message(errors[e.message] || 'Perfil privado ou indisponível.');content.append(empty('Não foi possível carregar esta tela.'),button('TENTAR DE NOVO',render));}finally{if(version===loadVersion)content.setAttribute('aria-busy','false');}}
+  async function boot(){message('Carregando a turma…');try{[auth,loginConfig]=await Promise.all([loadAccount(),loadAuthOptions()]);if(auth?.profile){acceptAccount(auth);await api('/api/social',{action:'presence'});}await refresh();await completePendingFriend();renderAccount();await render();message('');}catch(e){message(errors[e.message] || 'A comunidade não respondeu.');renderAccount();content.replaceChildren(button('TENTAR DE NOVO',boot));}}
   /* Aba da comunidade no CAMINHO (/comunidade/amigos), mesma tabela de public/js/rotas.js
      (tools/eval/rotas-check.mjs confere). Sem import: a régua do backend roda este arquivo num vm. */
   const SLUG_DA_ABA={profile:'',friends:'amigos',ranking:'ranking',notifications:'notificacoes',feed:'feed',settings:'configuracoes'};
   const abaDoCaminho=()=>{const slug=(location.pathname || '').match(/^\/comunidade(?:\/([a-z]+))?\/?$/);return slug?Object.keys(SLUG_DA_ABA).find(k=>SLUG_DA_ABA[k]===(slug[1] || '')) || null:null;};
   const caminhoDaAba=aba=>{const menu=document.getElementById('main-menu');if(menu?.dataset.socialPaused==='true' || menu?.dataset.hubTab!=='comunidade' || !(aba in SLUG_DA_ABA))return;const alvo=new URL(location.href);alvo.pathname=SLUG_DA_ABA[aba]?`/comunidade/${SLUG_DA_ABA[aba]}`:'/comunidade';for(const k of ['secao','social','perfil'])alvo.searchParams.delete(k);if(alvo.href!==location.href)history.pushState(null,'',alvo);};
-  for(const b of document.querySelectorAll('.social-tabs button'))b.onclick=()=>{tab=b.dataset.tab;if(tab==='profile')profileId=root.dataset.profile || '';const url=new URL(location.href);if(url.searchParams.has('perfil')){url.searchParams.delete('perfil');if(url.searchParams.has('social'))url.searchParams.set('social',tab);history.replaceState(history.state,'',url);}caminhoDaAba(tab);message('');void render();};
+  for(const b of document.querySelectorAll('.social-tabs button'))b.onclick=()=>{tab=b.dataset.tab;if(tab==='profile'){profileId=root.dataset.profile || '';profileAba='';}const url=new URL(location.href);if(url.searchParams.has('perfil')){url.searchParams.delete('perfil');if(url.searchParams.has('social'))url.searchParams.set('social',tab);history.replaceState(history.state,'',url);}caminhoDaAba(tab);message('');void render();};
   // Teclado de abas (WAI-ARIA tabs): setas e Home/End movem o foco e ativam a aba.
   for(const b of document.querySelectorAll('.social-tabs button'))b.onkeydown=event=>{const list=[...document.querySelectorAll('.social-tabs button')],i=list.indexOf(b);const next={ArrowRight:i+1,ArrowLeft:i-1,Home:0,End:list.length-1}[event.key];if(next===undefined)return;event.preventDefault();const t=list[(next+list.length)%list.length];t.focus();t.click();};
   setInterval(async()=>{if(document.hidden || !auth?.profile)return;try{await api('/api/social',{action:'presence'});await refresh();if(['notifications','feed'].includes(tab) && !document.activeElement?.closest('form'))await render();}catch(e){message(errors[e.message] || 'A atualização da comunidade falhou.');}},30000);
   const query=new URLSearchParams(location.search);if(['profile','friends','ranking','notifications','feed','settings'].includes(query.get('social')))tab=query.get('social');if(abaDoCaminho())tab=abaDoCaminho();
-  root.addEventListener('click',event=>{const a=event.target.closest('a');if(!a || a.dataset.publicProfile==='true')return;const url=new URL(a.href,location.href),match=url.pathname.match(/^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f-]{36})(?:\/|$)/i);if(url.origin!==location.origin || !match)return;event.preventDefault();profileId=match[1];tab='profile';void render();});
+  root.addEventListener('click',event=>{const a=event.target.closest('a');if(!a || a.dataset.publicProfile==='true')return;const url=new URL(a.href,location.href),match=url.pathname.match(/^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f-]{36})(?:\/|$)/i);if(url.origin!==location.origin || !match)return;event.preventDefault();profileId=match[1];tab='profile';profileAba='';void render();});
   document.addEventListener('cs-account-change',event=>{const changed=auth?.profile?.id!==event.detail?.profile?.id;auth=event.detail;if(changed){clearConversation();state=null;loadVersion++;content.replaceChildren();for(const id of ['social-unread','hub-social-unread'])document.getElementById(id).textContent='';renderAccount();}void refresh().then(()=>{renderAccount();return render();}).catch(e=>message(errors[e.message] || 'Sua sessão está indisponível.'));});
-  document.addEventListener('cs-community-open',event=>{if(event.detail?.tab)tab=event.detail.tab;if(event.detail?.perfil)profileId=event.detail.perfil;void boot();});
+  document.addEventListener('cs-community-open',event=>{if(event.detail?.tab)tab=event.detail.tab;if(event.detail?.perfil)profileId=event.detail.perfil;profileAba=abaDaUrl();void boot();});
   void boot();
 }
