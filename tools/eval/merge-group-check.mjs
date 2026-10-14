@@ -15,7 +15,7 @@ if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); proc
 
 /* Espelho do ruleset 19116007 (Settings → Rules): contexto → workflow que o produz. */
 const OBRIGATORIOS = { build: 'ci.yml', dco: 'ci.yml', 'versao-bumpada': 'pr-gates.yml', ratchet: 'pr-gates.yml' };
-const DO_LOTE = ['ci.yml', 'pr-gates.yml', 'portao-browser.yml', 'smoke-web.yml'];
+const DO_LOTE = ['ci.yml', 'pr-gates.yml'];
 
 const ler = (arq) => { try { return readFileSync(`.github/workflows/${arq}`, 'utf8'); } catch { return ''; } };
 const fontes = Object.fromEntries(DO_LOTE.map((a) => [a, ler(a)]));

@@ -32,11 +32,11 @@
          entre aspas em octal, nada casa e o job é pulado. A CLI é provada com nome
          acentuado cru (NUL) e na forma entre aspas.
 
-   PG5 · o lote da fila de merge também passa pelo filtro: `merge_group` no `on:`, o
-         decide lista `merge_group.base_sha...head_sha` e roda tudo sem base ou head.
+   PG5 · portão e smoke NÃO escutam `merge_group`: não são obrigatórios, já rodaram no
+         PR e, no lote, só disputariam runner com os checks obrigatórios.
 
    Mutantes: tira-caminho (PG1), passo-novo (PG2), diff-aberto e quotepath-volta (PG3),
-   portao-sem-fila, lote-sem-base e lote-vazio-pula (PG5).
+   portao-na-fila (PG5).
    Uso: node tools/eval/portao-gatilho-check.mjs [--mutante=<nome>]
    ============================================================================ */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
@@ -47,7 +47,7 @@ import { GATILHOS, casa, decidir, scriptsUsados } from '../../scripts/ci/gatilho
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
 const MUTANTES = {
   'tira-caminho': 'PG1', 'passo-novo': 'PG2', 'diff-aberto': 'PG3', 'quotepath-volta': 'PG3',
-  'portao-sem-fila': 'PG5', 'lote-sem-base': 'PG5', 'lote-vazio-pula': 'PG5',
+  'portao-na-fila': 'PG5',
 };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
@@ -145,9 +145,7 @@ for (const [alvo, g] of Object.entries(GATILHOS)) {
   if (MUT === 'passo-novo' && alvo === 'portao') wf += '\n      - name: passo novo\n        if: ${{ !cancelled() }}\n        run: npm run eval:passo-novo\n';
   if (MUT === 'diff-aberto' && alvo === 'portao') wf = wf.replace(/(if ! git [^\n]*diff[^\n]*\n(?:[^\n]*\n){0,2}?[^\n]*)rodar=true/, '$1rodar=false');
   if (MUT === 'quotepath-volta' && alvo === 'smoke') wf = wf.replace('git -c core.quotePath=false diff', 'git diff');
-  if (MUT === 'portao-sem-fila' && alvo === 'portao') wf = wf.replace(/^ {2}merge_group:\n(?: {4}[^\n]*\n)*/m, '');
-  if (MUT === 'lote-sem-base' && alvo === 'smoke') wf = wf.replace('github.event.merge_group.base_sha || ', '');
-  if (MUT === 'lote-vazio-pula' && alvo === 'portao') wf = wf.replace(/(if \[ -z "\$BASE" \] \|\| \[ -z "\$HEAD" \]; then\n[^\n]*)rodar=true/, '$1rodar=false');
+  if (MUT === 'portao-na-fila' && alvo === 'portao') wf = wf.replace('  pull_request:\n', '  pull_request:\n  merge_group:\n    types: [checks_requested]\n');
   const cmd = comandos(wf);
 
   /* ---- PG2: o que o workflow roda é conhecido ---- */
@@ -207,14 +205,8 @@ for (const [alvo, g] of Object.entries(GATILHOS)) {
     if (!new RegExp(`node scripts/ci/gatilho\\.mjs ${alvo}\\b`).test(decide)) falhas.push(`PG3 ${g.workflow}: o decide não chama \`scripts/ci/gatilho.mjs ${alvo}\` — fonte única quebrada`);
     if (!/grep -qx 'rodar=false'/.test(decide)) falhas.push(`PG3 ${g.workflow}: o pulo não exige \`rodar=false\` exato — saída vazia ou quebrada do gatilho pularia`);
   }
-  /* ---- PG5: o lote da fila de merge passa pelo mesmo filtro ---- */
-  if (!/^ {2}merge_group:/m.test(on)) falhas.push(`PG5 ${g.workflow} não escuta \`merge_group\` — o lote da fila entra sem ${alvo}`);
-  if (decide) {
-    if (!/BASE: \$\{\{ github\.event\.merge_group\.base_sha \|\| github\.event\.pull_request\.base\.sha \}\}/.test(decide)
-      || !/HEAD: \$\{\{ github\.event\.merge_group\.head_sha \|\| github\.event\.pull_request\.head\.sha \}\}/.test(decide)) falhas.push(`PG5 ${g.workflow}: o decide não lista o diff do lote (\`merge_group.base_sha...head_sha\`)`);
-    if (!/"\$EVENTO" != "merge_group"/.test(decide)) falhas.push(`PG5 ${g.workflow}: o decide não filtra o lote da fila pelo diff dele`);
-    if (!/if \[ -z "\$BASE" \] \|\| \[ -z "\$HEAD" \]; then\n[^\n]*rodar=true[^\n]*\n[^\n]*exit 0/.test(decide)) falhas.push(`PG5 ${g.workflow}: base ou head vazios não mandam rodar — diff de \`...\` vazio pularia o job`);
-  }
+  /* ---- PG5: fora do lote da fila ---- */
+  if (/^ {2}merge_group:/m.test(on)) falhas.push(`PG5 ${g.workflow} escuta \`merge_group\` — ${alvo} não é obrigatório e no lote só prende runner dos checks que são`);
   const jobs = Object.entries(blocos).filter(([nome]) => nome !== 'decide');
   if (!jobs.length) falhas.push(`PG3 ${g.workflow}: nenhum job real encontrado`);
   for (const [nome, corpo] of jobs) {
