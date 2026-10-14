@@ -205,6 +205,8 @@ jobs:
   # tools/ops/tests/workflows.test.mjs cobra que nenhum passo saiu e que ele não espera
   # o job `portao`.
   sertao:
+    needs: decide
+    if: needs.decide.outputs.rodar == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
