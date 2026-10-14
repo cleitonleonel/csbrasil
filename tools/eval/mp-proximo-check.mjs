@@ -9,20 +9,23 @@
      · a contagem do placar vem do prazo anunciado;
      · o main.js liga `onProximo` ao preload e avisa `pronto` DEPOIS de montar, mesmo se a
        montagem falhar (senão o nó espera o teto inteiro).
-   Uso: node tools/eval/mp-proximo-check.mjs [--mutante=sem-capacidade|pronto-antes|sem-finally|proximo-vira-meta] */
+   Uso: node tools/eval/mp-proximo-check.mjs [--mutante=sem-capacidade|proximo-vira-meta|sem-finally|meta-fora-do-try|onproximo-sem-catch|rotulo-velho] */
 import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MAPS } from './harness.mjs';
 import { planoPreload, segundosAteVirada, textoProximo } from '../../public/js/mp-proximo.js';
 
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-/* `proximo-vira-meta`: o anúncio sobrescreve a meta da partida no placar (ids e mapa errados
-   antes da virada). O mutante roda numa cópia do net.js ao lado do original. */
+/* Mutantes de PRODUTO no net.js rodam numa cópia ao lado do original. */
+const MUTANTES_NET = {
+  'sem-capacidade': [", pronto: '1' });", ' });'],
+  'proximo-vira-meta': ['this.proximo = { ...m, recebidoEm: Date.now() };', 'this.meta = m; this.proximo = { ...m, recebidoEm: Date.now() };'],
+};
 const netReal = new URL('../../public/js/net.js', import.meta.url);
 let netUrl = netReal, netMutado = null;
-if (MUT === 'proximo-vira-meta') {
+if (MUTANTES_NET[MUT]) {
   const fonte = readFileSync(netReal, 'utf8');
-  const mutado = fonte.replace('this.proximo = { ...m, recebidoEm: Date.now() };', 'this.meta = m; this.proximo = { ...m, recebidoEm: Date.now() };');
+  const mutado = fonte.replace(...MUTANTES_NET[MUT]);
   if (mutado === fonte) { console.error('mutante: trecho não encontrado'); process.exit(2); }
   netMutado = new URL(`../../public/js/.net-mutante-${process.pid}.js`, import.meta.url);
   writeFileSync(netMutado, mutado);
@@ -51,8 +54,7 @@ function conectar(net) {
 console.log('· NetClient');
 {
   const net = new NetClient('wss://xx.example/ws', { room: 'funk-x-palhaco' });
-  const url = MUT === 'sem-capacidade' ? net.url.replace(/&?pronto=1/, '') : net.url;
-  cobra(new URL(url).searchParams.get('pronto') === '1', 'o cliente se declara capaz de avisar `pronto` (query pronto=1)');
+  cobra(new URL(net.url).searchParams.get('pronto') === '1', 'o cliente se declara capaz de avisar `pronto` (query pronto=1)');
 
   const { enviados, recebe, conexao } = conectar(net);
   recebe({ type: 'welcome', map: 'lajes', partida: 4, roster: [], yourEnt: 7, yourTeam: 'E', espectador: false });
@@ -95,14 +97,30 @@ console.log('· preload e contagem');
 console.log('· main.js');
 {
   let main = readFileSync(new URL('../../public/js/main.js', import.meta.url), 'utf8');
-  if (MUT === 'pronto-antes') main = main.replace('try { await mpMontarPartida(net, m); } finally { if (mpSessao?.net === net) net.avisarPronto(m.partida); }',
-    'net.avisarPronto(m.partida); await mpMontarPartida(net, m);');
-  if (MUT === 'sem-finally') main = main.replace('try { await mpMontarPartida(net, m); } finally { if (mpSessao?.net === net) net.avisarPronto(m.partida); }',
-    'await mpMontarPartida(net, m); net.avisarPronto(m.partida);');
+  const MUT_MAIN = {
+    'sem-finally': [/    \} finally \{ if \(mpSessao\?\.net === net\) net\.avisarPronto\(m\.partida\); \}\n/, '      net.avisarPronto(m.partida);\n    } finally {}\n'],
+    'meta-fora-do-try': [/    try \{\n      mpPararContagemProximo\(\);\n      mpSessao\.chat\?\.aoMudarMeta\(net\.meta\);\n/, '    mpPararContagemProximo();\n    mpSessao.chat?.aoMudarMeta(net.meta);\n    try {\n'],
+    'onproximo-sem-catch': [/try \{ mpPreCarregarProximo\(m\); \} catch \(e\) \{[^\n]*\}/, 'mpPreCarregarProximo(m);'],
+    'rotulo-velho': ["  if (rotulo) rotulo.textContent = tr('PRÓXIMO MAPA CARREGANDO…');\n", ''],
+  };
+  if (MUT_MAIN[MUT]) {
+    const antes = main;
+    main = main.replace(...MUT_MAIN[MUT]);
+    if (main === antes) { console.error('mutante: trecho não encontrado'); process.exit(2); }
+  }
   const corpo = (main.match(/net\.onPartida = async \(m\) => \{([\s\S]*?)\n  \};/) || [])[1] || '';
-  cobra(/try \{ await mpMontarPartida\(net, m\); \} finally \{[^}]*net\.avisarPronto\(m\.partida\)/.test(corpo),
-    'onPartida avisa `pronto` depois de montar a partida, inclusive quando a montagem falha');
-  cobra(/net\.onProximo = \(m\) => \{ if \(mpSessao\?\.net === net\) mpPreCarregarProximo\(m\); \};/.test(main),
+  const dentroDoTry = (corpo.match(/try \{([\s\S]*?)\} finally \{/) || [])[1] || '';
+  cobra(/\} finally \{ if \(mpSessao\?\.net === net\) net\.avisarPronto\(m\.partida\); \}\s*$/.test(corpo)
+      && /await mpMontarPartida\(net, m\);/.test(dentroDoTry)
+      && /aoMudarMeta\(net\.meta\)/.test(dentroDoTry) && /noServeMapaParado\(/.test(dentroDoTry),
+    'onPartida avisa `pronto` num finally que cobre o corpo inteiro (meta, mapa parado e montagem)');
+  const onProx = (main.match(/net\.onProximo = \(m\) => \{([\s\S]*?)\n  \};/) || [])[1] || '';
+  cobra(/try \{ mpPreCarregarProximo\(m\); \} catch \(e\) \{/.test(onProx),
+    'onProximo engole o próprio erro (no WebTransport ele derrubaria o laço de leitura)');
+  const parar = (main.match(/function mpPararContagemProximo\(\) \{([\s\S]*?)\n\}/) || [])[1] || '';
+  cobra(/rotulo\.textContent = tr\('PRÓXIMO MAPA CARREGANDO…'\)/.test(parar),
+    'o aviso volta ao texto padrão na virada: partida sem `proximo` não herda o mapa anterior');
+  cobra(/if \(mpSessao\?\.net !== net\) return;/.test(onProx) && /mpPreCarregarProximo\(m\)/.test(onProx),
     'onProximo dispara o preload da sessão corrente');
   const pre = (main.match(/function mpPreCarregarProximo\(m\) \{([\s\S]*?)\n\}/) || [])[1] || '';
   cobra(/planoPreload\(m,/.test(pre) && /preloadCharacterAssets\(/.test(pre) && /preloadMapProps\(/.test(pre) && /\$\('match-next'\)/.test(pre),
