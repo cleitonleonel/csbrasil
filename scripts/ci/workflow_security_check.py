@@ -136,6 +136,24 @@ def supply_failures(workflows: dict[Path, str]) -> list[str]:
     return errors
 
 
+def merge_group_failures(workflows: dict[Path, str]) -> list[str]:
+    """MGQ1 o lote da fila roda código de PR (de fork também) no contexto do repo: sem
+    segredo além do GITHUB_TOKEN, token só de leitura no topo e nada de pull_request_target."""
+    errors = []
+    for path, source in workflows.items():
+        codigo = '\n'.join(l for l in source.splitlines() if not l.lstrip().startswith('#'))
+        if not re.search(r'^on:\n(?:(?:\s[^\n]*)?\n)*?  merge_group:', codigo, re.M):
+            continue
+        if 'pull_request_target' in codigo:
+            errors.append(f'MGQ1 {path}: escuta merge_group e pull_request_target no mesmo arquivo')
+        for nome in sorted(set(re.findall(r'secrets\.(\w+)', codigo)) - {'GITHUB_TOKEN'}):
+            errors.append(f'MGQ1 {path}: escuta merge_group e lê secrets.{nome} — o lote roda código de PR')
+        topo = re.search(r'^permissions:[^\n]*\n((?:  [^\n]*\n)*)', codigo, re.M)
+        if not topo or 'write' in topo.group(0):
+            errors.append(f'MGQ1 {path}: escuta merge_group sem `permissions:` só de leitura no topo')
+    return errors
+
+
 def read_workflows(root: Path = Path('.github/workflows')) -> dict[Path, str]:
     return {
         path: path.read_text(encoding='utf-8')
@@ -192,6 +210,13 @@ def selftest(source: str) -> list[str]:
         'cli-mutável': (DEPLOY, re.sub(r'vercel@\d+\.\d+\.\d+', 'vercel@latest', deploy)),
     }
     missed += [n for n, (alvo, mutado) in fornecimento.items() if not supply_failures({alvo: mutado})]
+    ci = Path('.github/workflows/ci.yml')
+    fila = {
+        'fila-com-segredo': ci.read_text(encoding='utf-8') + '\n        env:\n          X: ${{ secrets.VERCEL_TOKEN }}\n',
+        'fila-com-target': ci.read_text(encoding='utf-8').replace('  pull_request:\n', '  pull_request_target:\n', 1),
+        'fila-escreve': ci.read_text(encoding='utf-8').replace('permissions:\n  contents: read', 'permissions:\n  contents: write', 1),
+    }
+    missed += [n for n, mutado in fila.items() if not merge_group_failures({ci: mutado})]
     with tempfile.TemporaryDirectory() as tmp:
         mutant = Path(tmp) / 'mutable-action.yaml'
         mutant.write_text('steps:\\n  - uses: actions/checkout@v4\\n', encoding='utf-8')
@@ -208,7 +233,8 @@ def main() -> int:
     workflows = read_workflows()
     errors = (preview_failures(source)
               + separacao_failures(_ler(BUILD), _ler(DEPLOY))
-              + supply_failures(workflows))
+              + supply_failures(workflows)
+              + merge_group_failures(workflows))
     if errors:
         for error in errors:
             print(f'WFS FAIL: {error}')
@@ -219,7 +245,7 @@ def main() -> int:
         if missed:
             print(f'WFS MUTATION FAIL: {", ".join(missed)}')
             return 1
-        print('WFS MUTATION PASS: 9/9 mutações ficaram vermelhas')
+        print('WFS MUTATION PASS: todas as mutações ficaram vermelhas')
     return 0
 
 
