@@ -148,7 +148,7 @@
     "eval:seo": "node tools/eval/seo-check.mjs",
     "eval:pwa-install": "node tools/eval/pwa-install-contract.mjs",
     "eval:seo:mutate": "node tools/eval/seo-check.mjs --mutate",
-    "check:seo": "npm run build && node tools/eval/seo-check.mjs && node tools/eval/canonical-host-check.mjs && node tools/eval/profile-socials-check.mjs && node tools/eval/profile-in-game-check.mjs",
+    "check:seo": "npm run build && node tools/eval/seo-check.mjs && node tools/eval/canonical-host-check.mjs && node tools/eval/profile-views-display-check.mjs && node tools/eval/profile-socials-check.mjs && node tools/eval/profile-in-game-check.mjs",
     "eval:jsonld": "node tools/eval/jsonld-validate.mjs",
     "eval:pause": "node tools/eval/pause-check.mjs",
     "eval:select": "node tools/eval/select-inflate.mjs",
@@ -564,10 +564,10 @@
     "eval:personagem-escolhido": "node tools/eval/personagem-escolhido-check.mjs",
     "eval:game-pages": "node tools/eval/game-pages-check.mjs && node tools/eval/game-pages-check.mjs --mutate",
     "eval:wfconcurrency": "node tools/eval/workflow-concurrency-check.mjs",
-    "eval:home-faq-maps": "node tools/eval/home-faq-maps-check.mjs && ! node tools/eval/home-faq-maps-check.mjs --mutante=mapa-a-menos",
+    "eval:hub-profile-links": "node tools/eval/hub-profile-links-browser.mjs && ! node tools/eval/hub-profile-links-browser.mjs --mutante=ranking-fora",
     "//eval:home-faq-maps": "A resposta de mapas do FAQ da home (PT, EN e JSON-LD) diz quantos são e nomeia todos os mapas da vitrine /mapas. BASE obrigatório.",
     "//eval:hub-profile-links": "Perfil de jogador clicado dentro do lobby (ranking, link ?perfil=) abre na COMUNIDADE do hub, sem sair do jogo. APIs simuladas. BASE obrigatório.",
-    "eval:hub-profile-links": "node tools/eval/hub-profile-links-browser.mjs && ! node tools/eval/hub-profile-links-browser.mjs --mutante=ranking-fora"
+    "eval:home-faq-maps": "node tools/eval/home-faq-maps-check.mjs && ! node tools/eval/home-faq-maps-check.mjs --mutante=mapa-a-menos"
   },
   "repository": {
     "type": "git",

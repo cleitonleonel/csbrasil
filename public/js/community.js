@@ -60,6 +60,12 @@ if(root) {
     }
     mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onGuest:()=>document.querySelector('[data-hub-tab=jogar]')?.click(),onAuthenticated:boot,message});
   }
+  /* Visualizações (backend 064): o total só aparece quando a API manda o campo. Cada perfil
+     de outra pessoa aberto aqui manda UM aviso por carregamento; o backend deduplica por
+     visitante e dia. fetch direto e mudo: falha (backend sem a 064, sem conta) não mexe na sessão. */
+  const viewedProfiles=new Set();
+  const viewsText=n=>`${n.toLocaleString('pt-BR')} ${n===1?'visualização':'visualizações'}`;
+  function countProfileView(p,line){if(!p?.id || viewedProfiles.has(p.id) || auth?.profile?.id===p.id)return;viewedProfiles.add(p.id);fetch('/api/social',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({action:'profile_view',target:p.id}),signal:AbortSignal.timeout(12000)}).then(r=>r.ok?r.json():null).then(out=>{if(line && Number.isSafeInteger(out?.views) && out.views>=0)line.textContent=viewsText(out.views);}).catch(()=>{});}
   async function showProfile(id,version) {
     const {profile:p}=await api('/api/social?action=profile'+(id?`&id=${encodeURIComponent(id)}`:''));
     if(version!==loadVersion)return;
@@ -68,6 +74,7 @@ if(root) {
     if(p.avatar_url){const image=el('img','','social-avatar');image.src=p.avatar_url;image.alt=`Avatar de ${p.nick}`;image.width=76;image.height=76;image.referrerPolicy='no-referrer';identity.append(image);}
     const bio=el('div');bio.append(el('p',p.bio || 'A bio ainda está no aquecimento.'),empty(`Nível ${p.level} · faltam ${p.next_level_points} pontos para o próximo.`));const rank=careerRankBadge(p.points);if(rank)bio.append(rank,empty(careerRankTitle(p.points)));identity.append(bio);c.append(identity);if(p.handle)c.append(empty('@'+p.handle));
     const ranking=el('div','','social-profile-ranking');ranking.append(el('span','RANKING GERAL'),el('strong',p.position?`#${p.position}`:'Privada'));c.append(ranking);
+    const views=Number.isSafeInteger(p.views) && p.views>=0?el('p',viewsText(p.views),'social-profile-views'):null;if(views)c.append(views);countProfileView(p,views);
     const character=profileCharacterCard(p.last_character);c.append(character || empty('Nenhum personagem disponível para mostrar.'));
     const stats=el('div','','social-stats');
     for(const [label,value] of [['PONTOS',p.points],['PARTIDAS',p.matches],['RODADAS GANHAS',p.round_wins ?? p.wins],['RODADAS PERDIDAS',p.round_losses ?? p.losses],['ABATES',p.kills],['MORTES',p.deaths],['K/D',p.kd],['HORAS ATIVAS CONFIRMADAS',(Number(p.verified_play_seconds ?? p.play_seconds)/3600).toFixed(2)]]){const s=el('div','','social-stat');s.append(el('strong',String(value)),el('span',label));stats.append(s);}c.append(stats,empty(p.source==='historical_plus_server_verified'?`Histórico preservado: ${p.legacy_points} pontos. Após a atualização: ${p.verified_points} pontos confirmados pelo servidor. Rodadas ganhas e horas ativas são métricas confirmadas; o tempo antigo fica no histórico.`:'Estatísticas confirmadas pelo servidor. Tempo no menu, espectador e AFK não contam.'),empty(presenceText(p.presence)));
