@@ -8,14 +8,12 @@ import TretaStore from '../components/TretaStore.astro';
 import TretaDialogs from '../components/TretaDialogs.astro';
 import '../styles/career-rank.css';
 import { SITE, abs, DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON, DESC_LONG } from '../lib/site';
-import { readFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
 
 /* Revisão do CSS pelo CONTEÚDO: a versão do pacote não muda quando só o CSS muda, e o
-   WebView servia CSS velho. Hash do arquivo na URL derruba o cache sozinho. */
-const SOCIAL_CSS_REV=createHash('sha1').update(readFileSync('public/social.css')).digest('hex').slice(0,8);
-const TRETA_CSS_REV=createHash('sha1').update(readFileSync('public/treta.css')).digest('hex').slice(0,8);
-const CSS_REV = createHash('sha1').update(readFileSync('public/style.css')).digest('hex').slice(0, 8);
+   WebView servia CSS velho. Hash do arquivo na URL derruba o cache sozinho. Vem do build
+   (astro.config.mjs): esta página também renderiza no SSR de /u/<perfil>, sem `public/`. */
+declare const __CSS_REV__: { style: string; social: string; treta: string };
+const { social: SOCIAL_CSS_REV, treta: TRETA_CSS_REV, style: CSS_REV } = __CSS_REV__;
 
 /* ESTÁTICA de propósito: o Stateloop não publica SSR e `prerender = false` aqui
    fazia o build não emitir dist/client/index.html. Idioma por país: /api/geo-lang. */
