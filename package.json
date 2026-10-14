@@ -549,7 +549,7 @@
     "//eval:rotas": "ADR 0008: cada tela do hub tem rota fixa; ida e volta da tabela, link antigo, 301 do vercel.json, abas da comunidade e <base href>. Os mutantes provam que cada item morde.",
     "eval:rotas": "node tools/eval/rotas-check.mjs && for m in caminho legado redirect abas base; do ! node tools/eval/rotas-check.mjs --mutante=$m >/dev/null 2>&1 || exit 1; done",
     "//eval:rotas-browser": "Deep-link, link antigo e voltar do navegador no hub de verdade. Precisa de BASE com tools/eval/serve.mjs numa porta própria.",
-    "eval:rotas-browser": "node tools/eval/rotas-browser.mjs && ! node tools/eval/rotas-browser.mjs --mutante=query",
+    "eval:rotas-browser": "node tools/eval/rotas-browser.mjs && ! node tools/eval/rotas-browser.mjs --mutante=query && ! node tools/eval/rotas-browser.mjs --mutante=loja-fixa",
     "eval:treta-rewards": "node tools/eval/treta-rewards-check.mjs && node tools/eval/treta-rewards-check.mjs --mutations",
     "eval:treta-skins": "node tools/eval/treta-skins-check.mjs && node tools/eval/treta-skins-check.mjs --mutations",
     "eval:treta-classic": "node tools/eval/treta-classic-coin-check.mjs && node tools/eval/treta-classic-coin-check.mjs --mutations",

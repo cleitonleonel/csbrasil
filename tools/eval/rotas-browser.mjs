@@ -5,9 +5,10 @@
    da raiz, o importmap relativo resolvia `three` para /jogar/vendor/three.module.js (404)
    e o hub não subia. A metade em node é tools/eval/rotas-check.mjs.
 
-   Uso: BASE=http://127.0.0.1:<porta> node tools/eval/rotas-browser.mjs [--fotos=<pasta>] [--mutante=sem-base|query]
+   Uso: BASE=http://127.0.0.1:<porta> node tools/eval/rotas-browser.mjs [--fotos=<pasta>] [--mutante=sem-base|query|loja-fixa]
      sem-base  tira o <base href="/"> da resposta: /jogar/multiplayer tem que reprovar.
-     query     o hubNavigate volta a gravar só a query: o clique na LOJA tem que reprovar. */
+     query     o hubNavigate volta a gravar só a query: o clique na LOJA tem que reprovar.
+     loja-fixa a aba da loja deixa de ir para o caminho: o clique em QUESTS tem que reprovar. */
 import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -39,6 +40,13 @@ try {
       const corpo = await resposta.text();
       const novo = corpo.replace('<base href="/">', '');
       if (novo === corpo && resposta.headers()['content-type']?.includes('html')) throw new Error('MUTANTE sem-base NÃO APLICOU');
+      await route.fulfill({ response: resposta, body: novo });
+    });
+    if (mutante === 'loja-fixa') await context.route(/\/js\/treta-store\.js/, async (route) => {
+      const resposta = await route.fetch();
+      const corpo = await resposta.text();
+      const novo = corpo.replace("history.pushState(null,'',url);", 'void url;');
+      if (novo === corpo) throw new Error('MUTANTE loja-fixa NÃO APLICOU');
       await route.fulfill({ response: resposta, body: novo });
     });
     if (mutante === 'query') await context.route(/\/js\/main\.js/, async (route) => {
@@ -73,6 +81,7 @@ try {
     const q = new URLSearchParams(location.search);
     return { caminho: location.pathname, utm: q.get('utm_source'), telaNaQuery: ['secao', 'partida', 'servidor', 'janela', 'social', 'guia'].some((k) => q.has(k)), aba: menu.hubTab, rede: menu.hubNet, sala: menu.hubMpTab,
       social: document.getElementById('community')?.dataset.view || null, guia,
+      lojaAba: document.querySelector('[data-treta-view][aria-selected="true"]')?.dataset.tretaView || null,
       configuracoes: !document.getElementById('settings-panel').classList.contains('hidden'),
       modal: ['hub-map-modal', 'hub-roster-modal', 'hub-quick'].find((id) => !document.getElementById(id).hidden) || null,
       canonical: document.querySelector('link[rel=canonical]')?.href, robots: document.querySelector('meta[name=robots]')?.content,
@@ -91,7 +100,8 @@ try {
       ['/jogar/multiplayer', { aba: 'jogar', rede: 'mp', sala: 'public' }],
       ['/jogar/multiplayer/privado', { aba: 'jogar', rede: 'mp', sala: 'private' }],
       ['/jogar/mapas', { aba: 'jogar', rede: 'sp', modal: 'hub-map-modal' }],
-      ['/loja', { aba: 'loja' }],
+      ['/loja', { aba: 'loja', lojaAba: 'skins' }],
+      ['/loja/quests', { aba: 'loja', lojaAba: 'quests' }],
       ['/comunidade/amigos', { aba: 'comunidade', social: 'friends' }],
       ['/guia/mapas', { aba: 'sobre', guia: 'mapas' }],
       ['/configuracoes', { configuracoes: true }],
@@ -119,6 +129,10 @@ try {
     await entrar(page, '/');
     await page.click('[data-hub-tab="loja"]');
     confere('clique LOJA', await tela(page), { caminho: '/loja', aba: 'loja' });
+    await page.click('[data-treta-view="quests"]');
+    confere('clique aba QUESTS', await tela(page), { caminho: '/loja/quests', lojaAba: 'quests' });
+    await page.goBack(); await page.waitForTimeout(300);
+    confere('voltar para SKINS', await tela(page), { caminho: '/loja', lojaAba: 'skins' });
     await page.click('[data-hub-tab="comunidade"]');
     confere('clique COMUNIDADE', await tela(page), { caminho: '/comunidade', aba: 'comunidade' });
     await page.click('.social-tabs button[data-tab="friends"]');
