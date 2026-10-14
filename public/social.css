@@ -63,8 +63,9 @@ body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{displa
 .profile-socials{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.profile-social{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 12px;border:1px solid #454b40;background:#0d1116;color:#eff0e9;text-decoration:none;font:600 13px/1 system-ui,sans-serif}.profile-social:hover,.profile-social:focus-visible{border-color:#b4d92e;color:#b4d92e}.profile-social-icon{display:inline-flex;flex:none;width:18px;height:18px}.profile-social-icon svg{width:100%;height:100%;fill:currentColor}
 .social-profile-views{margin:-6px 0 18px;color:#c3ccbb;font:600 13px/1.4 system-ui,sans-serif;letter-spacing:.2px}
 
-/* Convite de login na abertura (login-prompt.js). Reusa .account-button/.account-provider e os ícones
-   do passo de entrada; só a cor de cada botão segue a marca oficial do provedor. */
+/* Convite de login na abertura (login-prompt.js): os botões são os .account-provider oficiais do
+   modal de conta (#910); aqui só o tamanho do convite. */
+.login-prompt .account-button{width:100%;min-height:52px}
 .login-prompt{box-sizing:border-box;width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:0;border:1px solid #535846;border-top:4px solid #b4d92e;background:#0d1115f7;color:#f0f0ed;box-shadow:0 30px 100px #000b;font-family:var(--font)}
 .login-prompt::backdrop{background:#040608a6;backdrop-filter:blur(4px)}
 .login-prompt-card{padding:20px 24px 18px}
@@ -75,18 +76,10 @@ body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{displa
 .login-prompt h2{margin:6px 0 8px;font:400 44px/1 'Bebas Neue',Impact,sans-serif;letter-spacing:.5px}
 .login-prompt-card>p{margin:0;color:#c5c8c0;font:15px/1.5 system-ui,sans-serif}
 .login-prompt-providers{display:grid;gap:10px;margin:20px 0 0}
-.login-prompt .account-button{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:52px;padding:12px 16px;font:700 16px/1.2 var(--font);letter-spacing:.3px;text-transform:none}
 .login-prompt .account-provider-icon{width:22px;height:22px}
-.login-prompt [data-provider=google]{background:#fff;border-color:#fff;color:#1f1f1f}
-.login-prompt [data-provider=discord]{background:#5865f2;border-color:#5865f2;color:#fff}
-.login-prompt [data-provider=x],.login-prompt [data-provider=twitter]{background:#000;border-color:#4a4a4a;color:#fff}
-.login-prompt [data-provider=linkedin_oidc]{background:#0a66c2;border-color:#0a66c2;color:#fff}
-.login-prompt :is([data-provider=discord],[data-provider=linkedin_oidc]) .account-provider-icon path{fill:#fff}
-.login-prompt [data-provider=email]{background:#141619;border-color:#45463e;color:#f0f0ed}
-.login-prompt .account-button:hover:not(:disabled){border-color:#b4d92e}
 .login-prompt-card>.account-entry-status{min-height:0;margin:10px 0 0;color:#c6e956;font-size:14px}
 .login-prompt-card>.account-entry-status:empty{display:none}
-.login-prompt-guest{display:block;width:100%;min-height:44px;margin:12px 0 0;padding:10px;border:0;background:none;color:#e4e6df;font:700 15px/1.2 var(--font);letter-spacing:.3px;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.login-prompt-guest{display:block;width:100%;min-height:44px;margin:12px 0 0;padding:10px;border:0;background:none;color:#e4e6df;font:600 15px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
 .login-prompt-guest:hover{color:#c6e956}
 .login-prompt-card>.login-prompt-note{margin:4px 0 0;color:#a9ada3;font:13px/1.5 system-ui,sans-serif;text-align:center}
 .login-prompt :focus-visible{outline:2px solid #d0ee7d;outline-offset:3px}
