@@ -556,6 +556,8 @@
     "//eval:game-pages": "Contrato do HTML de todas as páginas do lobby e cobertura AEO, com mutações que quebram canonical, shell e índice.",
     "eval:telemetria-coorte": "node tools/eval/telemetria-coorte-check.mjs",
     "eval:personagem-escolhido": "node tools/eval/personagem-escolhido-check.mjs",
+    "//eval:home-faq-maps": "A resposta de mapas do FAQ da home (PT, EN e JSON-LD) diz quantos são e nomeia todos os mapas da vitrine /mapas. BASE obrigatório.",
+    "eval:home-faq-maps": "node tools/eval/home-faq-maps-check.mjs && ! node tools/eval/home-faq-maps-check.mjs --mutante=mapa-a-menos",
     "eval:game-pages": "node tools/eval/game-pages-check.mjs && node tools/eval/game-pages-check.mjs --mutate",
     "eval:wfconcurrency": "node tools/eval/workflow-concurrency-check.mjs"
   },
