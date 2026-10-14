@@ -14,7 +14,7 @@
    scripts/, tools/, .github/, package.json, *.mjs da raiz; docs .md e
    evidência de asset não contam: mencionar não é carregar). O teto de 10 MB é
    do escopo da lane (progress/handoff-20261014/PROMPT-GLM.md, item 2); o maior
-   GLB referenciado hoje tem 8,8 MB (wall_of_cars.glb).
+   GLB referenciado hoje tem 9,2 MB (wall_of_cars.glb).
 
    MUTAÇÃO: `--mutante=bruto` planta um GLB falso de 11 MB não referenciado em
    public/models/props/ e EXIGE que a régua o reprova pelo nome.
@@ -54,7 +54,9 @@ function achaSemRef() {
   return { total: glbs.length, graves, semRef };
 }
 
-const arquivoMutante = 'public/models/props/mutante_peso_bruto.glb';
+// stem montado em runtime: literal em fonte tracked faz o git grep citar a si mesmo
+const arquivoMutante = `public/models/props/${['mutante', 'peso', 'bruto'].join('_')}.glb`;
+const STEM_MUTANTE = arquivoMutante.split('/').pop().replace('.glb', '');
 try {
   if (mutante === 'bruto') { writeFileSync(arquivoMutante, 'glTF'); truncateSync(arquivoMutante, 11 * 1e6); }
   const { total, graves, semRef } = achaSemRef();
