@@ -2,7 +2,7 @@
 
 Objetivo: impedir que uma prova antiga de convidado bloqueie o login, evitar botões de recuperação duplicados e eliminar os 400 dos eventos de convite no funil. Concluído quando o navegador real consegue entrar por um provedor sem vincular um convidado inválido, sem perder progresso local, e os eventos consentidos recebem 200 na API publicada.
 
-Branch isolada `codex/fix-login-guest-20261014`, baseada em `origin/main` `5b5fdba74`. Não editar as lanes Claude do modal pós-partida. O código deste checkpoint está em `public/js/account-entry.js` e `public/js/login-prompt.js`.
+Branch isolada `codex/fix-login-guest-20261014`, baseada em `origin/main` `5b5fdba74`; checkpoint de código `5754b9c5c`. Não editar as lanes Claude do modal pós-partida. O código deste checkpoint está em `public/js/account-entry.js` e `public/js/login-prompt.js`.
 
 Evidência de produção antes da correção: `/health` da API respondeu 200, SHA `7f18ab9`; `GET /api/social-auth` e `?action=providers` no site responderam 200. `POST /api/social-auth` com prova de convidado inválida respondeu `403 {"error":"guest_invalid"}`. As origens públicas testadas não produziram `origin_invalid`. O modal antigo acrescenta um botão a cada 403, como na captura do usuário. `POST /api/funnel` com passo `login_prompt_shown` respondeu `400 {"error":"bad_step"}`; `land` respondeu 200. O backend publicado ainda não contém o PR [#111](https://github.com/corosolto/backend/pull/111), que adiciona os passos, e a migration 067 correspondente precisa ser verificada antes do rollout.
 
