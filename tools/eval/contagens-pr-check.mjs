@@ -29,9 +29,12 @@ const LEVA = /^(package\.json|LICENSE|CHANGELOG\.md|README\.md|AGENTS\.md|CONTRI
 const restaurar = () => rmSync(TMP, { recursive: true, force: true });
 for (const sinal of ['SIGINT', 'SIGTERM']) process.on(sinal, () => { restaurar(); process.exit(1); });
 const T = (p) => join(TMP, p);
+// Sem GIT_* herdado: dentro do hook de pre-push o GIT_DIR apontaria o git da cópia para o repositório real.
+const ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')));
+const NA_COPIA = { cwd: TMP, env: ENV, encoding: 'utf8' };
 const lerT = (p) => readFileSync(T(p), 'utf8');
 const GEN = { docs: 'tools/gen-docs.mjs', arch: 'tools/gen-arch.mjs' };
-const passa = (qual, ...args) => spawnSync('node', [T(GEN[qual]), '--check', ...args], { cwd: TMP, encoding: 'utf8' }).status === 0;
+const passa = (qual, ...args) => spawnSync('node', [T(GEN[qual]), '--check', ...args], NA_COPIA).status === 0;
 const trocar = (p, de, para) => {
   const t = lerT(p);
   const n = typeof de === 'function' ? de(t) : t.replace(de, para);
@@ -47,9 +50,9 @@ try {
   const versionados = execFileSync('git', ['ls-files', '-z']).toString().split('\0').filter((p) => LEVA.test(p) && existsSync(p));
   for (const p of versionados) { mkdirSync(dirname(T(p)), { recursive: true }); cpSync(p, T(p)); }
   for (const [p, t] of Object.entries(fonte)) writeFileSync(T(p), t);
-  execFileSync('git', ['init', '-q'], { cwd: TMP });
-  execFileSync('git', ['add', '-A'], { cwd: TMP });
-  for (const g of Object.values(GEN)) spawnSync('node', [T(g), '--release'], { cwd: TMP, encoding: 'utf8' });
+  execFileSync('git', ['init', '-q'], NA_COPIA);
+  execFileSync('git', ['add', '-A'], NA_COPIA);
+  for (const g of Object.values(GEN)) spawnSync('node', [T(g), '--release'], NA_COPIA);
   base = new Map(['package.json', 'public/js/game.js', 'tools/eval/ARCH.md', ...lerT('tools/gen-docs.mjs').match(/'[\w/.-]+\.md'/g).map((x) => x.slice(1, -1))]
     .filter((p) => existsSync(T(p))).map((p) => [p, lerT(p)]));
   if (!passa('docs', '--release') || !passa('arch', '--release')) throw new Error('nem o modo release deixa a árvore em dia (rode: npm run docs:release e leia o erro)');
@@ -82,7 +85,7 @@ try {
     g.splice(g.findIndex((l) => /^ {2}_dom\(/.test(l)), 0, ...metodo);
     return g.join('\n');
   });
-  spawnSync('node', [T(GEN.arch)], { cwd: TMP, encoding: 'utf8' });
+  spawnSync('node', [T(GEN.arch)], NA_COPIA);
   const sobra = new Map();
   for (const l of base.get('tools/eval/ARCH.md').split('\n')) sobra.set(l, (sobra.get(l) || 0) + 1);
   const mexidas = lerT('tools/eval/ARCH.md').split('\n').filter((l) => !(sobra.get(l) > 0 && sobra.set(l, sobra.get(l) - 1))).length;
