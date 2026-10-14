@@ -69,7 +69,9 @@ async function captura(arma) {
 }
 
 const glb = (arma) => `public/models/viewmodels/coro/${arma}-hires.glb`;
-const originalDe = (arma) => execSync(`git show HEAD:${glb(arma)}`, { maxBuffer: 64 * 1e6 });
+// O original vem de origin/main: nesta branch o CONVERTIDO já está commitado em
+// HEAD, e "git show HEAD" faria o A/B comparar o arquivo consigo mesmo.
+const originalDe = (arma) => execSync(`git show origin/main:${glb(arma)}`, { maxBuffer: 64 * 1e6 });
 
 let falhas = 0;
 const resumo = [];
