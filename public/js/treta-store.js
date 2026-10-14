@@ -38,7 +38,7 @@ const portrait=skin=>asset(skin.id)?.poster || (skin.slot==='eyewear'?`/img/item
 const VIDEO_PATH=/^\/video\/skins\/[a-z0-9-]+\.(webm|mp4|webp)$/;
 let lastPointer='mouse',activePreview=null;
 document.addEventListener('pointerdown',e=>{lastPointer=e.pointerType || 'mouse';},true);
-function skinPreview(button,id) {
+export function skinPreview(button,id) {
   const v=manifest.skins[id]?.video;
   if(!v || ![v.webm,v.mp4,v.poster].every(src=>VIDEO_PATH.test(src || '')))return {tap:()=>false};
   let video=null,tapped=false;
@@ -58,6 +58,22 @@ function skinPreview(button,id) {
   button.addEventListener('focus',()=>{if(button.matches(':focus-visible'))start();});
   button.addEventListener('blur',stop);
   return {tap:()=>{if(lastPointer!=='touch' || tapped)return false;tapped=true;return start();}};
+}
+/* Vitrine do menu (treta-vitrine.js): só skin à venda e aprovada, com arte. null com a
+   loja fora do ar (TRETA_ENABLED off devolve 503) ou antes do manifesto. */
+export function tretaVitrine() {
+  if(!state?.catalog || refreshFailed || !Object.keys(manifest.skins).length)return null;
+  return TRETA_SKINS.filter(s=>available(s.id) && manifest.skins[s.id]?.poster).map(s=>({id:s.id,name:s.name,color:s.color,series:s.series,price:item(s.id).price,poster:manifest.skins[s.id].video?.poster || manifest.skins[s.id].poster,owned:owned(s.id),equipped:equipped(s.id)}));
+}
+export function abrirTretaSkin(id) {
+  const skin=TRETA_SKINS.find(s=>s.id===id);
+  if(skin)void detail(skin);
+  return Boolean(skin);
+}
+export async function equiparTretaSkin(id) {
+  const skin=TRETA_SKINS.find(s=>s.id===id);
+  if(!skin || !owned(id) || !available(id))return false;
+  return equip(skin);
 }
 function notifyEquipment() {
   const revision=`${state?.accountId || ''}:${state?.inventory?.filter(s=>s.equipped && available(s.skin_id)).map(s=>s.skin_id).join(',') || ''}`;
@@ -124,6 +140,7 @@ function draw() {
   $('treta-solo').textContent=active?'JOGAR SOLO POR T$ ▸':'SOLO POR T$ · EM BREVE';
   $('treta-info-login').hidden=!!account?.authenticated;
   drawQuests();if(TRETA_ITEMS_ENABLED)drawEyewear();
+  document.dispatchEvent(new CustomEvent('cs-treta-state'));
 }
 function drawEyewear() {
   $('treta-eyewear-grid').replaceChildren(...TRETA_EYEWEAR.map(s=>{
