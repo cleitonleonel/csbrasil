@@ -14,6 +14,7 @@ const dialogHead=(container,kicker,title)=>{const dialog=container.closest?.('di
 /* /u/<perfil> roda o jogo num iframe da mesma origem. Provedor de login recusa iframe,
    então a ida ao provedor sai do quadro. Em portal de outra origem nada muda. */
 const leaveTo=url=>{let target=location;try{if(top!==self && top.location.origin===location.origin)target=top.location;}catch{ /* topo de outra origem */ }target.assign(url);};
+export {leaveTo};   // o convite de login (login-prompt.js) sai do quadro do mesmo jeito
 let accountRequest=null,configRequest=null,accountActive=false;
 let newsletterDraft=false;
 export async function socialApi(path,body) {

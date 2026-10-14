@@ -53,7 +53,7 @@ function carrega({ consent = null, search = '', embedded = false, menuHidden = f
   const ctx = {
     analyticsAllowed: () => consent === true,
     privacyChoice: () => (consent === null ? null : { analytics: consent }),
-    PROVIDER_ICONS: {}, socialApi: async () => ({}), guestProof: () => undefined, accountError: (e) => e.message,
+    PROVIDER_ICONS: {}, leaveTo: () => {}, socialApi: async () => ({}), guestProof: () => undefined, accountError: (e) => e.message,
     localStorage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)), removeItem: (k) => store.delete(k) },
     sessionStorage: { getItem: (k) => session.get(k) ?? null, setItem: (k, v) => session.set(k, String(v)) },
     location: { search },

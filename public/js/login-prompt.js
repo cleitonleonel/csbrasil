@@ -1,7 +1,7 @@
 /* Convite de login na abertura (dono, 14/10/2026): não bloqueia, 1x por visita, cede ao passo de entrada.
  * Recusado volta após 3 partidas ou 24 h. Régua: tools/eval/login-prompt-check.mjs. */
 import {analyticsAllowed,privacyChoice} from './privacy-preferences.js';
-import {PROVIDER_ICONS,socialApi,guestProof,accountError} from './account-entry.js';
+import {PROVIDER_ICONS,socialApi,guestProof,accountError,leaveTo} from './account-entry.js';
 
 export const LOGIN_PROMPT_KEY='cs_login_prompt';
 export const LOGIN_PROMPT_SESSION_KEY='cs_login_prompt_seen';
@@ -77,7 +77,7 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
       list.append(button('account-button account-provider login-prompt-provider',`Continuar com ${name}`,provider,async()=>{
         const choice=privacyChoice();
         const out=await socialApi('/api/social-auth',{action:'start',provider,returnTo:'game',newsletter:false,...(choice?{analytics:choice.analytics}:{}),...(guestProof()?{guest:guestProof()}:{})});
-        location.assign(out.url);
+        leaveTo(out.url);
       }));
     }
     // E-mail pede a escolha de newsletter e o link de confirmação: segue no passo de entrada completo.
