@@ -85,7 +85,7 @@ const jsonld = [
       <img src={preview(destaque.id)} width="640" height="640" alt={`Vista aérea da arena ${destaque.nome}`} loading="eager" decoding="async">
     </div>
     <div class="card-body">
-      <h2 class="map-nome">{destaque.nome}</h2>
+      <h2 class="map-nome"><a href={`/mapas/${destaque.id}`}>{destaque.nome}</a></h2>
       <p class="meta">
         <b>4v4</b><i>·</i>{destaque.ctf ? 'CTF' : 'Rounds'}<i>·</i>
         {destaque.ctf ? 'captura de bandeiras' : '1:39 por round'}<i>·</i><code>{destaque.id}</code>
@@ -103,7 +103,7 @@ const jsonld = [
 
         </div>
         <div class="card-body">
-          <h3 class="map-nome">{m.nome}</h3>
+          <h3 class="map-nome"><a href={`/mapas/${m.id}`}>{m.nome}</a></h3>
           <p class="meta">
             <b>4v4</b><i>·</i>{m.ctf ? 'CTF' : 'Rounds'}<i>·</i>
             {m.ctf ? 'captura de bandeiras' : '1:39 por round'}<i>·</i><code>{m.id}</code>
