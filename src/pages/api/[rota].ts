@@ -9,14 +9,14 @@ const BACKEND = import.meta.env.PUBLIC_API_BASE || 'https://csbrasil-backend-hup
 const SEGREDO = import.meta.env.API_PROXY_SECRET || '';
 
 const MIGRADAS = new Set([
-  'social','social-auth','social-avatar','acquisition', 'avatar', 'feedback', 'funnel', 'health', 'heartbeat', 'jserror',
+  'social','social-auth','social-avatar','acquisition', 'avatar', 'clans', 'feedback', 'funnel', 'health', 'heartbeat', 'jserror',
   'leaderboard', 'map-plays', 'match', 'mp-ticket', 'online', 'perf', 'pick', 'presence', 'register',
   'submit-match', 'telemetry', 'train-frames',
 ]);
 
-/* social/social-auth/social-avatar dependem do rollout do backend#70; enquanto ele não
+/* social/social-auth/social-avatar (backend#70) e clans (backend#72) dependem do rollout; enquanto ele não
    chega, o 404 upstream é indisponibilidade (503), não rota do site quebrada. */
-const EM_ROLLOUT = ['social', 'social-auth', 'social-avatar'];
+const EM_ROLLOUT = ['social', 'social-auth', 'social-avatar', 'clans'];
 
 const handler: APIRoute = async ({ params, url, request, clientAddress }) => {
   const rota = String(params.rota || '').replace(/\/+$/, '');
@@ -30,7 +30,7 @@ const handler: APIRoute = async ({ params, url, request, clientAddress }) => {
     `${BACKEND.replace(/\/$/, '')}/api/${rota}${url.search}`,
     clientAddress,
     fetch,
-    { segredo: SEGREDO, session: ['social','social-auth','social-avatar','register','avatar','mp-ticket'].includes(rota) },
+    { segredo: SEGREDO, session: ['social','social-auth','social-avatar','register','avatar','mp-ticket','clans'].includes(rota) },
   );
   if (resposta.status === 404 && EM_ROLLOUT.includes(rota)) {
     await resposta.body?.cancel().catch(() => {});
