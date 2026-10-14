@@ -7,15 +7,19 @@ import vm from 'node:vm';
 import {createHash} from 'node:crypto';
 import sharp from 'sharp';
 import {Resvg} from '@resvg/resvg-js';
+import {pathToFileURL} from 'node:url';
+import {careerRank} from '../../public/js/career-rank.js';
 let source=readFileSync('src/lib/profile-card.mjs','utf8');
 const mutant=process.argv.find(s=>s.startsWith('--mutant='))?.split('=')[1];
 if(mutant){
- const patches={'unsafe-source':["!['server_verified','historical_plus_server_verified'].includes(p?.source) || p.visibility!=='public'","false"],'no-portrait':["const image=character&&portrait&&",'const image=false&&character&&portrait&&'],'small-portrait':['x="650" y="8" width="550" height="614"','x="840" y="140" width="300" height="365"'],'other-character-small':['height="614"','height="${character.id===\'canarinho\'?614:365}"']};
+ const patches={'unsafe-source':["!['server_verified','historical_plus_server_verified'].includes(p?.source) || p.visibility!=='public'","false"],'no-portrait':["const image=character&&portrait&&",'const image=false&&character&&portrait&&'],'small-portrait':['x="650" y="8" width="550" height="614"','x="840" y="140" width="300" height="365"'],'other-character-small':['height="614"','height="${character.id===\'canarinho\'?614:365}"'],'no-logo':['const logoImage=logo&&','const logoImage=false&&'],'small-logo':['const LOGO_HEIGHT=150','const LOGO_HEIGHT=60'],'no-badge':['${rankBadge(rank)}',''],'level-from-points':['const level=number(p.level)','const level=number(Math.floor(p.points/100))'],'url-off-margin':['y="570" font-size="20"','y="600" font-size="20"']};
  if(!['no-font','square-source'].includes(mutant)){assert(patches[mutant],'Unknown mutant');const [from,to]=patches[mutant];assert(source.includes(from),'Mutation must apply');source=source.replace(from,to);}
 }
+source=source.replaceAll("'../../public/js/career-rank.js'",JSON.stringify(pathToFileURL(path.resolve('public/js/career-rank.js')).href));
 const {profileCardSvg:cardSvg}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const {SITE}=await import('../../src/lib/site-origin.mjs');
-const profileCardSvg=(p,character=null,portrait=null)=>cardSvg(p,character,portrait,SITE);
+let logo=null;
+const profileCardSvg=(p,character=null,portrait=null,brand=logo)=>cardSvg(p,character,portrait,SITE,brand);
 const font=readFileSync('src/lib/font-data.ts','utf8');
 const dir=mkdtempSync(path.join(tmpdir(),'profile-contract-')),file=path.join(dir,'bold.ttf');
 writeFileSync(file,Buffer.from([...font.matchAll(/'([A-Za-z0-9+/=]+)'/g)].map(m=>m[1]).join(''),'base64'));
@@ -29,7 +33,12 @@ if(mutant==='square-source'){
  prepare=prepare.replace(from,'const file=[`public/img/chars/${id}.webp`,`public/img/chars-hero/${id}.webp`,`public/img/social-chars/${id}.png`].find(existsSync);');
 }
 const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
-const {characters,portraits}=await new AsyncFunction('readFileSync','existsSync','sharp',prepare+';return {characters:SOCIAL_CHARACTERS,portraits:SOCIAL_PORTRAITS}')(readFileSync,(await import('node:fs')).existsSync,sharp);
+const prepared=await new AsyncFunction('readFileSync','existsSync','sharp',prepare+";return {characters:SOCIAL_CHARACTERS,portraits:SOCIAL_PORTRAITS,logo:typeof SOCIAL_LOGO==='undefined'?null:SOCIAL_LOGO}")(readFileSync,(await import('node:fs')).existsSync,sharp);
+const {characters,portraits}=prepared;logo=prepared.logo;
+assert(logo?.startsWith('data:image/png;base64,'),'build must embed the official public/logo.png as SOCIAL_LOGO');
+const logoPixels=await sharp(Buffer.from(logo.split(',')[1],'base64')).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+const logoExpected=await sharp('public/logo.png').trim({threshold:10}).resize({height:150}).ensureAlpha().raw().toBuffer();
+assert(logoPixels.data.equals(logoExpected),'SOCIAL_LOGO must be public/logo.png trimmed and resized once to 150px');
 assert.deepEqual(Object.keys(characters).sort(),Array.from(roster,c=>c.id).sort(),'share roster differs from game');
 const p={source:'server_verified',visibility:'public',nick:'OG Fixture',handle:'treta_fixture',level:3,points:248,position:17,kills:180,deaths:92,kd:1.96,play_seconds:7380};
 const historical={...p,source:'historical_plus_server_verified',legacy_points:200,verified_points:48,verified_play_seconds:0};
@@ -60,6 +69,30 @@ assert.throws(()=>profileCardSvg({...p,source:'browser'}));assert.throws(()=>pro
 assert(!profileCardSvg({...p,nick:'<script>"&'}).includes('<script>'),'nickname escapes XML');
 assert(profileCardSvg(p).includes(`>${new URL(SITE).host}</text>`),'card must print the canonical host');
 assert(!profileCardSvg(p,characters.canarinho,'https://evil.test/image').includes('https://evil.test'),'no arbitrary image fetch');
+const attrs=tag=>Object.fromEntries([...tag.matchAll(/\b([a-zA-Z-]+)="([^"]*)"/g)].map(m=>[m[1],m[2]]));
+const logoTag=[...svg.matchAll(/<image\b[^>]*>/g)].map(m=>m[0]).find(t=>t.includes(logo));
+assert(logoTag,'card must embed the game logo as an image');
+const box=attrs(logoTag),lx=+box.x,ly=+box.y,lw=+box.width,lh=+box.height;
+assert(lh>=140&&lw>=200,`logo must stay legible in small previews; actual ${lw}x${lh}`);
+assert(lx>=40&&ly>=16&&lx+lw<=640&&ly+lh<=614,`logo must sit in the left column safe area; actual ${lx},${ly} ${lw}x${lh}`);
+assert(!/>CORO SOLTO</.test(svg),'logo replaces the plain CORO SOLTO text');
+const noLogo=render(profileCardSvg(p,characters.canarinho,portraits.canarinho,null)).pixels;let logoChanged=0;
+for(let y=ly;y<ly+lh;y++)for(let x=lx;x<lx+lw;x++){const i=(y*1200+x)*4;if(pixels[i]!==noLogo[i]||pixels[i+1]!==noLogo[i+1]||pixels[i+2]!==noLogo[i+2])logoChanged++;}
+assert(logoChanged>lw*lh*0.4,`logo missing from rendered pixels; ${logoChanged} changed in ${lw*lh}`);
+assert(!profileCardSvg(p,null,null,'https://evil.test/logo.png').includes('evil.test'),'no arbitrary logo fetch');
+for(const fixture of [p,{...p,level:1,points:42},{...p,level:520,points:51974}]){
+ const card=profileCardSvg(fixture),rank=careerRank(fixture.points);
+ const badge=card.match(/<g\b[^>]*data-rank="([^"]+)"[^>]*>([\s\S]*?)<\/g>/);
+ assert(badge,`level badge missing for level ${fixture.level}`);
+ assert.equal(badge[1],rank.id,'badge must use the game career rank');
+ assert.equal((badge[2].match(/class="mark"/g)||[]).length,rank.marks,'badge marks must match the game rank');
+ const level=card.match(/<text\b([^>]*)>NÍVEL ([^<]+)<\/text>/);
+ assert(level,'NÍVEL N must be printed beside the name');assert.equal(level[2],fixture.level.toLocaleString('pt-BR'));
+ assert(+attrs(level[1])['font-size']>=26,'NÍVEL N must be prominent');
+ assert(card.includes(`>${rank.label.toUpperCase()}<`),'rank name must be printed in the badge');
+ const nick=card.match(/<text\b([^>]*)>OG Fixture<\/text>/);assert(nick&&+attrs(nick[1])['font-size']>=44,'nickname must stay prominent');
+ for(const [,t] of card.matchAll(/<text\b([^>]*)>/g)){const a=attrs(t);assert(+a.x>=60&&+a.y<=572,`text outside the 60px safe area: x=${a.x} y=${a.y}`);}
+}
 mkdirSync('artifacts/social',{recursive:true});writeFileSync('artifacts/social/profile-card-fixture.png',actual.asPng());
 if(process.argv.includes('--gallery')){
  const folder='artifacts/social/og-stylized';mkdirSync(folder+'/cards',{recursive:true});
@@ -79,4 +112,4 @@ if(process.argv.includes('--gallery')){
   await sharp({create:{width:1200,height:Math.ceil(chunk.length/3)*236,channels:4,background:'#0c0e11'}}).composite(layers).png().toFile(`${folder}/gallery-${group+1}.png`);
  }
 }
-console.log(`PASS roster ${roster.length}/${roster.length}; actual portrait ${imagePixels} pixels y=${minY}..${maxY}; embedded nickname ${textPixels} pixels; public verified source; XML/URL guards; PNG1200x630`);
+console.log(`PASS logo ${lw}x${lh} ${logoChanged}px; level badge; safe area; roster ${roster.length}/${roster.length}; actual portrait ${imagePixels} pixels y=${minY}..${maxY}; embedded nickname ${textPixels} pixels; public verified source; XML/URL guards; PNG1200x630`);
