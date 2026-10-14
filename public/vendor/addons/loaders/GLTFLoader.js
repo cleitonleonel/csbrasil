@@ -66,6 +66,7 @@ import {
 	InstancedBufferAttribute
 } from 'three';
 import { toTrianglesDrawMode } from '../utils/BufferGeometryUtils.js';
+import { MeshoptDecoder } from '../../meshopt_decoder.module.js';
 
 class GLTFLoader extends Loader {
 
@@ -74,8 +75,9 @@ class GLTFLoader extends Loader {
 		super( manager );
 
 		this.dracoLoader = null;
-		this.ktx2Loader = null;
-		this.meshoptDecoder = null;
+		// EXT_meshopt_compression por padrão: 9+ loaders instanciam GLTFLoader pelo
+		// jogo e um setMeshoptDecoder esquecido viraria GLB quebrado no ar (lição 5).
+		this.meshoptDecoder = MeshoptDecoder;
 
 		this.pluginCallbacks = [];
 

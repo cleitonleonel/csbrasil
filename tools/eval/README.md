@@ -26,6 +26,8 @@ com código 1 em falha crítica.
 | `shader-budget-check.mjs` | Deriva do GLB real o orçamento de varyings da urna e protege fog/triplanar no piso WebGL1. | `npm run eval:shaderbudget` |
 | `lajes-cache-check.mjs` | Duas builds reais de Lajes: paridade dos buffers e da sequência RNG, colisores, navegação e oclusores; 49 geometrias compartilhadas nas 9162 caixas, descarte único e isolamento entre builds. | `npm run eval:lajes-cache` |
 | `map-rotation-check.mjs` | Sugestão inicial de mapa: link manda, escolha do carrossel fica, e quem não escolhe roda pelos 5 mapas. | `npm run eval:maprotate` |
+| `meshopt-vm-check.mjs` | O GLB meshopt publicado é o que o manifest registra: sha256, container GLB (magic), EXT_meshopt requerida e CARGA com MeshoptDecoder; mutante `troca-byte`. Compra: o 1º conversor explodiu o viewmodel em .bin externo e nenhuma régua olhava o container. | `npm run eval:meshoptvm` |
+| `vm-meshopt-ab.mjs` | A/B visual de viewmodel por arma na página `public/vm-meshopt-eval.html` (pose de bind, câmera exportada do GLB). VIÉS CONHECIDO: sob SwiftShader a captura dá 25% de falso positivo (A/A mediu); use em GPU real ou confira com o jogo. | `node tools/eval/vm-meshopt-ab.mjs` |
 | `../gen-arch.mjs` | (fora deste diretório) Gera e valida o `ARCH.md`. `--check` reprova se estiver desatualizado. | `npm run arch` |
 
 ## 2. Documentos — leitura, não execução
