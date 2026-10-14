@@ -42,8 +42,13 @@ if(root) {
   function clearConversation(){conversation=null;conversationBefore=null;messageDraft='';messageClientId=null;pendingSend=null;}
   async function openConversation(p){clearConversation();conversation={id:p.id,nick:p.nick};inboxSection='messages';tab='notifications';await render();}
   async function action(name,target,data={}) {const out=await api('/api/social',{action:name,...(target?{target}:{}),...data});await refresh();await render();return out;}
+  function renderGreeting() {
+    const hello=document.getElementById('social-hello'),p=auth?.profile;
+    const handle=p && state?.profile?.id===p.id?state.profile.handle:null;
+    if(hello)hello.textContent=p?`Olá, ${handle?'@'+handle:p.nick}`:'Olá';
+  }
   function renderAccount() {
-    account.replaceChildren();
+    account.replaceChildren();renderGreeting();
     if(auth?.authenticated) {
       account.append(el('h2',auth.profile?`Salve, ${auth.profile.nick}.`:'Sua conta entrou. Falta o nome na camisa.'));
       if(!auth.profile) {
