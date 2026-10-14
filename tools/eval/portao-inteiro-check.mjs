@@ -66,6 +66,7 @@ for (const [nome, cmd] of Object.entries(scripts)) {
 const REGUAS_PR_FAST = [
   'eval:wfsecret', 'eval:wflocal', 'eval:wftimeout', 'eval:wfconcurrency', 'eval:deploygate',
   'eval:autofix', 'eval:mutcega', 'eval:portaointeiro', 'eval:release', 'eval:privacy', 'eval:noescolha',
+  'eval:mergequeue',
 ];
 let ci = existsSync('.github/workflows/ci.yml') ? readFileSync('.github/workflows/ci.yml', 'utf8') : '';
 if (MUT === 'regua-fora-do-pr-fast') ci = ci.replace(/ eval:wfsecret\b/g, '');
