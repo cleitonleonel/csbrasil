@@ -128,7 +128,7 @@ arms.group.traverse(o => { if (o.isMesh && !color) color = o.material.color.toAr
 neutral.group.traverse(o => { if (o.isMesh && !neutralColor) neutralColor = o.material.color.toArray(); });
 check('glove-M-distinct-from-fallback', color.some((v, i) => v !== neutralColor[i]), { color, neutralColor });
 const game = new Game({ renderer, textures: initTextures(renderer), sfx, settings: { bots: 0, quality: 'low', sens: 1 }, playerCharId: 'lobisomem', playerTeam: 'E', playerFaction: 'M', enemyFaction: 'B', nickname: 'REVIEW', mapId: 'piscina_treta', testMode: true, onQuit() {}, onMatchEnd() {} });
-check('hud-team', game._teamName('E') === 'MÍTICO' && game._teamTag('E') === 'MIT', [game._teamName('E'), game._teamTag('E')]);
+check('hud-team', game._teamName('E') === 'ESQUERDA' && game._teamTag('E') === 'ESQ', [game._teamName('E'), game._teamTag('E')]);
 for (const aspect of [1.5, 16 / 9]) {
   globalThis.innerWidth = aspect === 1.5 ? 1200 : 1280; globalThis.innerHeight = aspect === 1.5 ? 800 : 720; game.onResize(); game._vmFrame(true);
   for (const [id, model] of Object.entries(game.vm.models)) model.visible = id === 'shotgun';

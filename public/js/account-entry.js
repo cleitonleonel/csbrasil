@@ -8,6 +8,9 @@ export const PROVIDER_ICONS={"google":"<svg viewBox=\"0 0 120 120\" aria-hidden=
 const withIcon=(b,provider)=>{if(PROVIDER_ICONS[provider]){const i=node('span','','account-provider-icon');i.innerHTML=PROVIDER_ICONS[provider];const label=b.textContent;b.textContent='';b.append(i,label);}return b;};
 const ERRORS={email_invalid:'Revise seu e-mail.',email_unavailable:'A entrada por e-mail está indisponível agora.',email_unverified:'Sua conta precisa de um e-mail confirmado.',rate_limited:'Muitos pedidos. Aguarde antes de tentar de novo.',guest_invalid:'Não foi possível vincular este convidado. Seu progresso local continua salvo.',account_conflict:'Esse nick já tem dono. Escolha outro.',session_expired:'Sua sessão expirou. Entre novamente.',account_hidden:'Conta indisponível pela moderação.'};
 const node=(tag,text='',cls='')=>{const e=document.createElement(tag);e.textContent=text;e.className=cls;return e;};
+/* /u/<perfil> roda o jogo num iframe da mesma origem. Provedor de login recusa iframe,
+   então a ida ao provedor sai do quadro. Em portal de outra origem nada muda. */
+const leaveTo=url=>{let target=location;try{if(top!==self && top.location.origin===location.origin)target=top.location;}catch{ /* topo de outra origem */ }target.assign(url);};
 let accountRequest=null,configRequest=null,accountActive=false;
 let newsletterDraft=false;
 export async function socialApi(path,body) {
@@ -80,7 +83,7 @@ export function mountAccountEntry(container,{auth=null,config={providers:[]},ret
   const providers=node('div','','account-providers');
   for(const provider of providerChoices(config))if(PROVIDER_NAMES[provider]) {
     const enabled=(config.providers || []).includes(provider);
-    const b=button(`ENTRAR COM ${PROVIDER_NAMES[provider]}${enabled?'':' · EM CONFIGURAÇÃO'}`,()=>perform(async()=>{if(!enabled)return;const out=await socialApi('/api/social-auth',{action:'start',provider,...payload()});location.assign(out.url);}),'account-provider');b.disabled=!enabled;b.dataset.provider=provider;providers.append(withIcon(b,provider));
+    const b=button(`ENTRAR COM ${PROVIDER_NAMES[provider]}${enabled?'':' · EM CONFIGURAÇÃO'}`,()=>perform(async()=>{if(!enabled)return;const out=await socialApi('/api/social-auth',{action:'start',provider,...payload()});leaveTo(out.url);}),'account-provider');b.disabled=!enabled;b.dataset.provider=provider;providers.append(withIcon(b,provider));
   }
   entryColumn.append(providers);
   if(!config.providers?.length)entryColumn.append(node('p','Os logins sociais estão em configuração. Você já pode usar e-mail quando habilitado.','social-muted'));
@@ -103,7 +106,7 @@ export function mountAccountIntegrations(container,auth,config,message=()=>{}) {
   const identities=new Set(auth.identities || []),list=node('div','','account-providers');
   for(const provider of providerChoices(config)) {
     const linked=identities.has(provider),enabled=(config.providers || []).includes(provider),b=node('button',`${linked?'✓ '+PROVIDER_NAMES[provider]+' VINCULADO':'VINCULAR '+PROVIDER_NAMES[provider]}`,'account-button');b.type='button';b.disabled=linked || !enabled || !config.linking;
-    b.onclick=async()=>{b.disabled=true;try{const out=await socialApi('/api/social-auth',{action:'link',provider});location.assign(out.url);}catch(e){message(e.message==='linking_unavailable'?'Vinculação em configuração. Tente novamente mais tarde.':e.message==='identity_already_linked'?'Esta rede já está vinculada. Atualize a página.':e.message==='identity_link_failed'?'Não foi possível vincular. Esta rede pode pertencer a outra conta.':accountError(e));b.disabled=false;}};list.append(b);
+    b.onclick=async()=>{b.disabled=true;try{const out=await socialApi('/api/social-auth',{action:'link',provider});leaveTo(out.url);}catch(e){message(e.message==='linking_unavailable'?'Vinculação em configuração. Tente novamente mais tarde.':e.message==='identity_already_linked'?'Esta rede já está vinculada. Atualize a página.':e.message==='identity_link_failed'?'Não foi possível vincular. Esta rede pode pertencer a outra conta.':accountError(e));b.disabled=false;}};list.append(b);
   }
   section.append(list);if(auth.emailVerified)section.append(node('p','✓ E-mail confirmado','social-muted'));
   const badge=accountVerifiedBadge(auth.account_verified);section.append(node('h3','Selo da conta'));

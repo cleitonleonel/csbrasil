@@ -17,7 +17,24 @@ const frame = document.getElementById('hub-guide-frame');
 const loading = panel?.querySelector('[role="status"]');
 let observer;
 let currentUrl;
+let focusOnLoad = false;
 const contentPaths = new Set([...Object.keys(pairs), ...Object.values(pairs), '/mapa', '/apoie']);
+// Páginas internas sem subtab própria (documentos legais, clãs) também abrem no lobby.
+const documents = { '/privacidade': 'PRIVACIDADE', '/termos': 'TERMOS DE USO', '/excluir-dados': 'EXCLUIR DADOS', '/regras-de-uso': 'REGRAS DE USO', '/clans': 'CLÃS' };
+const documentGuide = pathname => (documents[pathname] ? pathname.slice(1) : null);
+for (const pathname of Object.keys(documents)) contentPaths.add(pathname);
+function openFrame(href, title) {
+  const url = new URL(href);
+  url.searchParams.set('embed', '1');
+  if (url.href === currentUrl) return;
+  observer?.disconnect();
+  frame.hidden = true;
+  loading.hidden = false;
+  loading.textContent = LANG === 'en' ? 'LOADING GUIDE…' : 'CARREGANDO GUIA…';
+  frame.title = title;
+  currentUrl = url.href;
+  frame.src = url.href;
+}
 function select(tab, syncUrl = true) {
   const general = tab.dataset.guide === 'overview';
   const pageUrl = new URL(location.href);
@@ -30,18 +47,23 @@ function select(tab, syncUrl = true) {
   overview.hidden = !general;
   panel.hidden = general;
   if (general) return;
+  panel.removeAttribute('aria-label');
   panel.setAttribute('aria-labelledby', tab.id);
-  const url = new URL(tab.href);
-  url.searchParams.set('embed', '1');
-  if (url.href !== currentUrl) {
-    observer?.disconnect();
-    frame.hidden = true;
-    loading.hidden = false;
-    loading.textContent = LANG === 'en' ? 'LOADING GUIDE…' : 'CARREGANDO GUIA…';
-    frame.title = tab.textContent.trim();
-    currentUrl = url.href;
-    frame.src = url.href;
+  openFrame(tab.href, tab.textContent.trim());
+}
+function selectDocument(pathname, syncUrl = true) {
+  const pageUrl = new URL(location.href);
+  pageUrl.searchParams.set('guia', documentGuide(pathname));
+  if (syncUrl) history.replaceState(history.state, '', pageUrl);
+  for (const item of tabs) {
+    item.setAttribute('aria-selected', 'false');
+    item.tabIndex = item === tabs[0] ? 0 : -1;
   }
+  overview.hidden = true;
+  panel.hidden = false;
+  panel.removeAttribute('aria-labelledby');
+  panel.setAttribute('aria-label', documents[pathname]);
+  openFrame(new URL(pathname, location.origin).href, documents[pathname]);
 }
 for (const tab of tabs) {
   tab.addEventListener('click', event => { event.preventDefault(); select(tab); });
@@ -60,6 +82,7 @@ frame?.addEventListener('load', () => {
   currentUrl = frame.contentWindow.location.href;
   loading.hidden = true;
   frame.hidden = false;
+  if (focusOnLoad) { focusOnLoad = false; frame.focus(); }
   const resize = () => {
     const height = `${Math.ceil(doc.body.getBoundingClientRect().height) + 2}px`;
     if (frame.style.height !== height) requestAnimationFrame(() => { frame.style.height = height; });
@@ -72,6 +95,8 @@ frame?.addEventListener('load', () => {
     const link = event.target.closest?.('a[href]');
     if (!link || link.target === '_blank' || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const url = new URL(link.href);
+    // mailto:, tel: e afins ficam com o navegador; origin "null" não é outro site.
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
     const current = new URL(frame.contentWindow.location.href);
     if (url.hash && url.pathname === current.pathname && url.origin === current.origin) {
       const target = doc.getElementById(decodeURIComponent(url.hash.slice(1)));
@@ -88,9 +113,19 @@ frame?.addEventListener('load', () => {
       return;
     }
     if (url.pathname === '/') {
+      // /?secao=... vai para a seção pedida; o roteador do hub (main.js) cuida da comunidade.
       event.preventDefault();
-      document.querySelector('.hub-tabs [data-hub-tab="jogar"]')?.click();
-    } else if (contentPaths.has(url.pathname) || url.pathname.startsWith('/faccoes/')) {
+      const section = url.searchParams.get('secao');
+      if (section === 'comunidade') {
+        const proxy = Object.assign(document.createElement('a'), { href: url.href, hidden: true });
+        document.getElementById('hub-ui').append(proxy);
+        proxy.click();
+        proxy.remove();
+        return;
+      }
+      const hubTab = section && [...document.querySelectorAll('.hub-tabs [data-hub-tab]')].find(item => item.dataset.hubTab === section);
+      (hubTab ?? document.querySelector('.hub-tabs [data-hub-tab="jogar"]'))?.click();
+    } else if (contentPaths.has(url.pathname) || url.pathname.startsWith('/faccoes/') || url.pathname.startsWith('/clans/')) {
       if (LANG === 'en' && pairs[url.pathname]) url.pathname = pairs[url.pathname];
       url.searchParams.set('embed', '1');
       link.href = url.href;
@@ -98,15 +133,16 @@ frame?.addEventListener('load', () => {
   });
 });
 // Cards de guias e changelog abrem a subtab correspondente dentro do lobby.
-for (const link of document.querySelectorAll('.hub-link-grid a, a.hub-changelog, #hub-ui a[href="/mapa"], .menu-footer a')) {
+for (const link of document.querySelectorAll('.hub-link-grid a, a.hub-changelog, #hub-ui a[href="/mapa"], .menu-footer a, .hub-footer a')) {
   link.addEventListener('click', event => {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || new URLSearchParams(location.search).get('home') === 'legacy') return;
     const url = new URL(link.href);
     if (LANG === 'en' && pairs[url.pathname]) url.pathname = pairs[url.pathname];
     const tab = tabs.find(item => item.href === url.href);
-    if (!tab) return;
+    if (!tab && !documentGuide(url.pathname)) return;
     event.preventDefault();
     document.querySelector('.hub-tabs [data-hub-tab="sobre"]')?.click();
+    if (!tab) { focusOnLoad = true; selectDocument(url.pathname); return; }
     select(tab);
     tab.focus();
   });
@@ -115,7 +151,9 @@ for (const link of document.querySelectorAll('.hub-link-grid a, a.hub-changelog,
 const requested = new URLSearchParams(location.search).get('guia');
 const initialTab = tabs.find(tab => tab.dataset.guide === requested);
 if (initialTab) select(initialTab);
+else if (documents[`/${requested}`]) selectDocument(`/${requested}`, false);
 window.addEventListener('popstate', () => {
   const guide = new URLSearchParams(location.search).get('guia');
+  if (documents[`/${guide}`]) return selectDocument(`/${guide}`, false);
   select(tabs.find(tab => tab.dataset.guide === guide) ?? tabs[0], false);
 });
