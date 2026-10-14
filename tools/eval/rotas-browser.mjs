@@ -92,6 +92,7 @@ try {
       ['/jogar/multiplayer/privado', { aba: 'jogar', rede: 'mp', sala: 'private' }],
       ['/jogar/mapas', { aba: 'jogar', rede: 'sp', modal: 'hub-map-modal' }],
       ['/loja', { aba: 'loja' }],
+      ['/ranking', { aba: 'ranking' }],
       ['/comunidade/amigos', { aba: 'comunidade', social: 'friends' }],
       ['/guia/mapas', { aba: 'sobre', guia: 'mapas' }],
       ['/configuracoes', { configuracoes: true }],
@@ -119,6 +120,10 @@ try {
     await entrar(page, '/');
     await page.click('[data-hub-tab="loja"]');
     confere('clique LOJA', await tela(page), { caminho: '/loja', aba: 'loja' });
+    await page.click('[data-hub-tab="ranking"]');
+    confere('clique RANKING', await tela(page), { caminho: '/ranking', aba: 'ranking' });
+    await page.goBack(); await page.waitForTimeout(300);
+    confere('voltar para LOJA depois do RANKING', await tela(page), { caminho: '/loja', aba: 'loja' });
     await page.click('[data-hub-tab="comunidade"]');
     confere('clique COMUNIDADE', await tela(page), { caminho: '/comunidade', aba: 'comunidade' });
     await page.click('.social-tabs button[data-tab="friends"]');
