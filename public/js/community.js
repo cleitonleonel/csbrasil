@@ -124,6 +124,8 @@ if(root) {
     const bio=el('div');bio.append(el('p',p.bio || 'A bio ainda está no aquecimento.'),empty(`Nível ${p.level} · faltam ${p.next_level_points} pontos para o próximo.`));const rank=careerRankBadge(p.points);if(rank)bio.append(rank,empty(careerRankTitle(p.points)));identity.append(bio);c.append(identity);if(p.handle)c.append(empty('@'+p.handle));
     const ranking=el('div','','social-profile-ranking');ranking.append(el('span','RANKING GERAL'),el('strong',p.position?`#${p.position}`:'Privada'));c.append(ranking);
     const views=Number.isSafeInteger(p.views) && p.views>=0?el('p',viewsText(p.views),'social-profile-views'):null;if(views)c.append(views);countProfileView(p,views);
+    // Saldo TRETA$ (backend #114, treta_balance): só quando a API manda o campo. Backend sem o campo não mostra nada.
+    if(Number.isSafeInteger(p.treta_balance) && p.treta_balance>=0){const treta=el('div','','social-profile-treta');treta.setAttribute('aria-label',`Saldo TRETA$ de ${p.nick}`);treta.append(el('span','SALDO TRETA$'),el('strong',`T$ ${p.treta_balance.toLocaleString('pt-BR')}`));c.append(treta);}
     /* last_character só chega aberto quando a pessoa marcou "Mostrar meu último personagem" (share_character, padrão desligado,
        migration 048), para ela mesma e para amigos. Vazio para os outros quase sempre é escolha de privacidade, não falta de dado. */
     const own=auth?.profile?.id===p.id,character=profileCharacterCard(p.last_character);
