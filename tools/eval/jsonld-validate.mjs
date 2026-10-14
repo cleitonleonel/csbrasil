@@ -78,8 +78,10 @@ const ancestrais = (t, vistos = new Set()) => {
   return vistos;
 };
 
-const paginas = ['index.html', 'armas/index.html', 'mapas/index.html', 'personagens/index.html',
-                 'como-jogar/index.html', 'sobre/index.html', 'changelog/index.html'];
+// Mesmo conjunto público do AEO, incluindo traduções e páginas de facções.
+const paginas = [...new Set(JSON.parse(readFileSync(path.join(DIST, 'ai-index.json'), 'utf8')).entries
+  .map(e => new URL(e.url).pathname).filter(p => p !== '/mapa')
+  .map(p => p === '/' ? 'index.html' : p.replace(/^\//, '') + '/index.html'))];
 
 const problemas = [];
 let nos = 0, pares = 0, blocos = 0;

@@ -100,11 +100,17 @@ async function gameShots() {
         await page.waitForFunction(() => window.__game && window.__game.state === 'live', null, { timeout: 900000 });
         tLive = (Date.now() - t0) / 1000;
         await page.waitForTimeout(6000);
+        // A faixa vermelha do ?debug=1 cobre o HUD na foto. O erro que ela mostra já está no
+        // _errs-*.txt; no frame ela só atrapalha o crítico (no CI, sem os assets privados,
+        // a faca 404 acendia a faixa em todo mapa). GL_COM_FAIXA=1 deixa como era.
+        const semFaixa = () => page.evaluate(() => document.getElementById('crash-overlay')?.remove());
+        if (process.env.GL_COM_FAIXA !== '1') await semFaixa();
         await page.screenshot({ path: `${OUT}/game-${map}-${aName}-a.png`, timeout: 120000 });
         // olha em volta: 3 yaws
         for (let i = 1; i <= 3; i++) {
           await page.evaluate((k) => { const g = window.__game; if (g && g.player) { g.player.yaw = (g.player.yaw || 0) + k * 1.6; } }, i);
           await page.waitForTimeout(1500);
+          if (process.env.GL_COM_FAIXA !== '1') await semFaixa();
           await page.screenshot({ path: `${OUT}/game-${map}-${aName}-${'bcd'[i - 1]}.png`, timeout: 120000 });
         }
         // 30s de jogo antes de medir

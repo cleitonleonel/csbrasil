@@ -8,14 +8,14 @@
 import Layout from '../layouts/Layout.astro';
 import pkg from '../../package.json';
 import { ARMAS, MAPAS, PERSONAGENS, FACCOES } from '../data/jogo';
-import { BRAND_FULL, BRAND_ALT, GAME_ID, abs } from '../lib/site';
+import { BRAND_FULL, BRAND_ALT, GAME_ID, abs, RANKING_DESCRIPTION_EN } from '../lib/site';
 
 // overlay EN: a DESC_LONG oficial é PT e mora em src/lib/site.ts; aqui a
 // tradução fica local, como os overlays de characters.astro.
 const DESC_LONG_EN =
   'Free browser FPS game: a CS 1.6 praca_poderes-style sniper arena set in a fictional, ' +
-  'satirical Brasília. Team E, Team B, Urban Tribes, Clowns and Funkeiros, ' +
-  `${MAPAS.length} maps, 26 weapons, bots, rounds, CTF, scoreboard and voice radio. Touch-control web beta for phones; no sign-up.`;
+  'satirical Brazil. Factions, folklore characters, ' +
+  `${MAPAS.length} selectable maps, ${ARMAS.length} weapons, bots, multiplayer beta, rounds, CTF, scoreboard and voice radio. Touch-control web beta for phones; no sign-up.`;
 const FAC_NOME_EN: Record<string, string> = {
   E: 'Team E', B: 'Team B', urbanas: 'Urban Tribes', palhacos: 'Clowns', funkeiros: 'Funkeiros', mitico: 'Mythic',
 };
@@ -49,7 +49,7 @@ const jsonld = [
   <Fragment slot="sub">
     Team E × Team B in a fictional, satirical Brasília: a giant broken ballot box in the
     middle of the arena, a corner bar, pastel, a campsite and Congress on the horizon.
-    {PERSONAGENS.length} original characters in {FACCOES.length} factions, {MAPAS.length} maps,
+    {PERSONAGENS.length} characters in {FACCOES.length} catalogue groups, {MAPAS.length} maps,
     {ARMAS.length} weapons, bots, rounds, CTF, headshots and Unreal Tournament-style multikills.
   </Fragment>
 
@@ -72,10 +72,9 @@ const jsonld = [
 
   <div class="tstat" style="margin-top:26px">
     <div><b>{PERSONAGENS.length}</b><span>characters</span></div>
-    <div><b>{FACCOES.length}</b><span>factions</span></div>
+    <div><b>{FACCOES.length}</b><span>catalogue groups</span></div>
     <div><b>{MAPAS.length}</b><span>maps</span></div>
     <div><b>{ARMAS.length}</b><span>weapons</span></div>
-    <div><b>0</b><span>real people</span></div>
   </div>
 
   <h2>The name</h2>
@@ -88,7 +87,7 @@ const jsonld = [
   <h2>Frequently asked questions</h2>
   <details open><summary><strong>What is {BRAND_FULL}?</strong></summary>
     <p>A free FPS game that runs in the browser: a CS 1.6 praca_poderes-style sniper arena set in a
-      fictional, satirical Brasília, with {FACCOES.length} factions,{' '}
+      fictional, satirical Brasília, with {FACCOES.length} catalogue groups,{' '}
       {PERSONAGENS.length} original characters, {MAPAS.length} maps, {ARMAS.length} weapons, bots,
       a round system and Capture the Flag.</p></details>
   <details><summary><strong>Do I need to install or pay anything?</strong></summary>
@@ -98,8 +97,7 @@ const jsonld = [
     <p>Yes. The web beta has touch controls; play in landscape. Performance varies by device and
       browser.</p></details>
   <details><summary><strong>What are the factions?</strong></summary>
-    <p>{FACCOES.map(f => FAC_NOME_EN[f.id] || f.nome).join(', ')}. Two of them have nothing to do
-      with politics. Every character is a fictional, original archetype - no real people.</p></details>
+    <p>{FACCOES.map(f => FAC_NOME_EN[f.id] || f.nome).join(', ')}. The catalogue also includes cultural and folklore groups. The cast mixes Brazilian satire, folklore and political caricatures.</p></details>
   <details><summary><strong>Is this an official Valve or Counter-Strike game?</strong></summary>
     <p>No. It's an independent fan-made parody, with no affiliation with Valve whatsoever.
       Counter-Strike is a trademark of Valve Corporation.</p></details>
@@ -107,14 +105,9 @@ const jsonld = [
     <p>No. It's light satire handed out equally to every side - no gore, no hate,
       celebrating Brazilian culture.</p></details>
   <details><summary><strong>Is there a global ranking?</strong></summary>
-    <p>Not yet. The game is in <strong>alpha</strong> and the global ranking is switched off until
-      the scoreboard is trustworthy - the current model is forgeable, and a forgeable leaderboard
-      is a wrong number published. Your match stats are saved in the browser and show up in the
-      game's RANKING menu. When it comes back, every player gets their public page at{' '}
-      <code>/u/&lt;id&gt;/&lt;nick&gt;</code> again, with a PNG badge generated on the fly.</p></details>
+    <p>{RANKING_DESCRIPTION_EN}</p></details>
   <details><summary><strong>Can I play with other people?</strong></summary>
-    <p>Not yet. Today every match is against bots, from 1 to 8 per side (4v4 is the default).
-      Multiplayer is the project's next big front.</p></details>
+    <p>Yes. Multiplayer is in beta. Open MULTIPLAYER to join through QUICK PLAY, choose a room or use an invite. You can also create a public or private room.</p></details>
 
   {/* LICENÇA: AGPL-3.0 desde 07/08/2026, igual a página PT. Esta ressalva dizia
       "MIT HOJE, AGPL decidida mas NÃO aplicada" e continuou dizendo DEPOIS que a
@@ -131,14 +124,3 @@ const jsonld = [
     <a href="https://github.com/corosolto/client/issues" rel="noopener"> issues</a>.
   </p>
 </Layout>
-
-<script>
-  // espelho do /sobre: usuário em pt cai na gêmea PT (mesmas regras do i18n.js)
-  try {
-    const q = new URLSearchParams(location.search).get('lang');
-    const ls = localStorage.getItem('cs_lang');
-    const lang = (q === 'pt' || q === 'en') ? q : (ls === 'pt' || ls === 'en') ? ls
-      : (/^pt/i.test(navigator.language || '') ? 'pt' : 'en');
-    if (lang === 'pt') location.replace('/sobre');
-  } catch { /* fica */ }
-</script>
