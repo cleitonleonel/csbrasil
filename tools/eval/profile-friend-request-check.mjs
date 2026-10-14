@@ -1,4 +1,4 @@
-/* profile-friend-request-check.mjs · ADICIONAR AMIGO FUNCIONA PARA QUEM VÊ O PERFIL?
+/* profile-friend-request-check.mjs · ADICIONAR AMIGO FUNCIONA E O PERFIL DOS OUTROS É PÚBLICO?
    Bug do dono (14/10/2026, alpha.92): clicar em PEDIR AMIZADE no perfil do #13 não fazia nada.
    Causa: social_action (backend, migration 040) só aceita alvo com conta (`auth_user is not
    null`); perfil de histórico sem conta responde 404 not_found. O cliente não tinha texto para
@@ -6,7 +6,7 @@
    da tela quando o perfil está rolado. Sucesso também só aparecia lá em cima.
    Pedido do dono (14/10, /u/<perfil> no hub): o botão vira ADICIONAR AMIGO e existe também para
    quem está deslogado (login e depois o pedido sai); amigo vê "AMIGOS", pedido pendente vê
-   "PEDIDO ENVIADO".
+   "PEDIDO ENVIADO"; abas de conta e de configuração só para o dono do perfil.
 
      FR1 · alvo sem conta (404 not_found): aviso ao lado do botão explica, e o botão some
      FR2 · alvo com conta: pedido sai uma vez, aviso "enviado" ao lado, selo PEDIDO ENVIADO e CANCELAR PEDIDO
@@ -14,6 +14,8 @@
      FR4 · deslogado: ADICIONAR AMIGO guarda o pedido, abre SUA CONTA e não manda nada sem sessão
      FR5 · depois do login, o pedido guardado sai UMA vez, o perfil reabre com o aviso e o pedido some
      FR6 · amigo vê o selo AMIGOS e nenhum ADICIONAR AMIGO
+     FR7 · perfil de outra pessoa (logado ou não): sem abas de conta, sem abas do perfil, sem rodadas
+     FR8 · dono: abas do perfil; /u/<eu>/conquistas mostra só conquistas e /u/<eu>/privacidade abre as configurações
 
    Roda o public/js/community.js real numa DOM mínima, com a API social simulada.
    Uso: node tools/eval/profile-friend-request-check.mjs [--mutate] */
@@ -152,6 +154,30 @@ const CASOS = [
     if (u.botao('ADICIONAR AMIGO')) return 'amigo ainda vê ADICIONAR AMIGO';
     return null;
   }],
+  ['FR7 · perfil de outra pessoa: sem abas de conta, sem abas do perfil, sem rodadas', async (c) => {
+    for (const quem of ['eu', 'deslogado']) {
+      const u = await abrir(c, async () => ({ status: 200, body: {} }), { quem });
+      if (u.abasVisiveis() !== 'profile,ranking') return `${quem}: abas visíveis ${u.abasVisiveis()}`;
+      if (u.abasPerfil()) return `${quem}: abas do perfil para visitante: ${u.abasPerfil()}`;
+      if (/Rodadas recentes|Preferências na arena/.test(u.texto())) return `${quem}: rodadas de quem não é amigo aparecem`;
+      if (!/Conquistas/.test(u.texto())) return `${quem}: conquistas públicas sumiram`;
+    }
+    return null;
+  }],
+  ['FR8 · dono: abas do perfil, conquistas sozinha e privacidade nas configurações', async (c) => {
+    const u = await abrir(c, async () => ({ status: 200, body: {} }), { alvo: EU, caminho: '/u/eu_mesmo' });
+    if (u.abasPerfil() !== 'PERFIL,CONQUISTAS,PARTIDAS,PRIVACIDADE') return `abas do dono: ${u.abasPerfil()}`;
+    if (u.abasVisiveis() !== ABAS.join()) return `dono perdeu abas de conta: ${u.abasVisiveis()}`;
+    if (u.botao('ADICIONAR AMIGO')) return 'dono vê ADICIONAR AMIGO no próprio perfil';
+    const conq = await abrir(c, async () => ({ status: 200, body: {} }), { alvo: EU, caminho: '/u/eu_mesmo/conquistas' });
+    if (!/Primeiro abate/.test(conq.texto()) || /RANKING GERAL|Rodadas recentes/.test(conq.texto())) return `aba conquistas: ${conq.texto().slice(0, 160)}`;
+    const priv = await abrir(c, async () => ({ status: 200, body: {} }), { alvo: EU, caminho: '/u/eu_mesmo/privacidade' });
+    if (!/Seu perfil, suas regras/.test(priv.texto())) return `aba privacidade não abre as configurações: ${priv.texto().slice(0, 160)}`;
+    await u.botao('PARTIDAS').onclick(); await esperar();
+    if (u.urls.at(-1) !== '/u/eu_mesmo/partidas' && !String(u.urls.at(-1)).endsWith('/u/eu_mesmo/partidas')) return `aba PARTIDAS não grava o endereço: ${u.urls}`;
+    if (!/Rodadas recentes/.test(u.texto())) return 'aba PARTIDAS sem as rodadas';
+    return null;
+  }],
 ];
 
 const rodar = async (c) => { const out = []; for (const [nome, f] of CASOS) { let erro; try { erro = await f(c); } catch (e) { erro = `exceção: ${e.message}`; } out.push({ nome, erro }); } return out; };
@@ -170,6 +196,11 @@ if (MUTATE) {
     ['FR5', 'pedido guardado não é limpo', fonte.replace('localStorage.removeItem(PENDING_FRIEND);', '')],
     ['FR5', 'pedido guardado sem validade', fonte.replace(' || !(Date.now()-Number(pending.at)<3600000)', '')],
     ['FR6', 'amigo sem selo', fonte.replace("buttons.append(chip('AMIGOS ✓'));", '')],
+    ['FR7', 'abas de conta no perfil alheio', fonte.replace('b.hidden=viewingOther && PRIVATE_TABS.includes(b.dataset.tab);', 'b.hidden=false;')],
+    ['FR7', 'abas do perfil para visitante', fonte.replace('if(!own){content.append(c);return;}', '')],
+    ['FR7', 'rodadas para quem não é amigo', fonte.replace('if(sees)c.append(secPartidas);else c.append(empty(noActivity));', 'c.append(secPartidas);')],
+    ['FR8', 'dono sem aba de privacidade', fonte.replace("if(profileAba==='privacidade'){content.append(nav);showSettings();return;}", '')],
+    ['FR8', 'aba não grava o endereço', fonte.replace("if(alvo.href!==location.href)history.pushState(null,'',alvo);", '')],
   ];
   let cegas = 0;
   console.log('ADICIONAR AMIGO E PERFIL PÚBLICO (MUTANTES: cada um tem que FALHAR)\n');
