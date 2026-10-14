@@ -149,6 +149,8 @@ jobs:
           node tools/eval/canonical-host-check.mjs --mutate
           node tools/eval/profile-in-game-check.mjs
           node tools/eval/profile-in-game-check.mjs --mutate
+          node tools/eval/profile-friend-request-check.mjs
+          node tools/eval/profile-friend-request-check.mjs --mutate
           node tools/eval/profile-socials-check.mjs
           node tools/eval/profile-socials-check.mjs --mutate
           node tools/eval/profile-views-display-check.mjs

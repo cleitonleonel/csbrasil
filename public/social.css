@@ -85,3 +85,4 @@ body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{displa
 .login-prompt-card>.login-prompt-note{margin:4px 0 0;color:#a9ada3;font:13px/1.5 system-ui,sans-serif;text-align:center}
 .login-prompt :focus-visible{outline:2px solid #d0ee7d;outline-offset:3px}
 @media(max-width:480px){.login-prompt-card{padding:18px 18px 14px}.login-prompt h2{font-size:38px}}
+.social-inline-status{min-height:20px;margin:-6px 0 14px;color:#b4d92e;font:600 14px/1.4 system-ui,sans-serif}.social-inline-status:empty{display:none}
