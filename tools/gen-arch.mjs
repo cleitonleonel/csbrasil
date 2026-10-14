@@ -280,6 +280,11 @@ if (comBloco) {
 }
 
 if (process.argv.includes('--check')) {
+  const gerado = comBloco ? atual.slice(atual.indexOf(BEGIN), atual.indexOf(END)) : '';
+  if (/^(<{7}|>{7})( |$)|^={7}$/m.test(gerado)) {
+    console.error('✗ ARCH1  marcador de conflito de merge dentro do bloco gerado do ARCH.md. Resolva e rode: npm run arch');
+    process.exit(1);
+  }
   if (saida !== atual) {
     console.error('✗ ARCH1  ARCH.md está DESATUALIZADO em relação ao código.');
     console.error('         game.js tem ' + game.total + ' linhas; o índice do ARCH.md não bate.');
