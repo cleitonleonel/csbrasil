@@ -37,3 +37,6 @@ body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{displa
 .account-button:has(>.account-provider-icon){display:flex;align-items:center;justify-content:center;gap:10px}
 .account-provider-icon{display:inline-flex;flex:none;width:20px;height:20px}.account-provider-icon svg{width:100%;height:100%}
 .account-provider:disabled .account-provider-icon{filter:grayscale(1)}
+.community:is([data-view=profile],[data-view=settings]) .social-workspace{grid-template-columns:minmax(0,1fr)}
+.community:is([data-view=profile],[data-view=settings]) .social-account-panel{position:static}
+.community:is([data-view=profile],[data-view=settings]) .social-account-panel .social-actions{flex-direction:row;flex-wrap:wrap}

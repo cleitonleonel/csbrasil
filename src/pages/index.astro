@@ -1,9 +1,10 @@
 ---
+import { HOME_FAQ, HOME_FAQ_EN } from '../data/home-faq';
 import pkg from '../../package.json';
 import Community from '../components/Community.astro';
 import AccountEntry from '../components/AccountEntry.astro';
 import '../styles/career-rank.css';
-import { SITE, abs, DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON } from '../lib/site';
+import { SITE, abs, DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON, DESC_LONG } from '../lib/site';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
@@ -14,6 +15,12 @@ const CSS_REV = createHash('sha1').update(readFileSync('public/style.css')).dige
 
 /* ESTÁTICA de propósito: o Stateloop não publica SSR e `prerender = false` aqui
    fazia o build não emitir dist/client/index.html. Idioma por país: /api/geo-lang. */
+const CONTENT_TABS = [
+  ['sobre', 'SOBRE', 'ABOUT'], ['como-jogar', 'COMO JOGAR', 'HOW TO PLAY'],
+  ['personagens', 'PERSONAGENS', 'CHARACTERS'], ['armas', 'ARMAS', 'WEAPONS'],
+  ['mapas', 'MAPAS', 'MAPS'], ['mapa', 'AO VIVO', 'LIVE MAP'],
+  ['changelog', 'NOVIDADES', 'WHAT’S NEW'], ['apoie', 'APOIAR', 'SUPPORT'],
+];
 const V = pkg.version;
 // Commit do deploy (Vercel expõe no build); o multiplayer grava o build do navegador com ele.
 const GIT_SHA = /^[a-f0-9]{40}$/.test(import.meta.env.VERCEL_GIT_COMMIT_SHA || '') ? import.meta.env.VERCEL_GIT_COMMIT_SHA : '';
@@ -118,6 +125,13 @@ window.__GEO_LANG__ = (function () {
     /* `host` na 1ª migalha: sem ele o painel não separa ruído de worktree local de defeito
        no ar, e `version` não serve. Triagem de 13/09 no KNOWN-BUGS.md. */
     var c = { version: versao(), route: location.pathname, breadcrumbs: ['host ' + location.host].concat(migalhas.slice(-(MIGALHAS - 1))) };
+    /* build + coorte, a mesma regra do sinaisDeBuild() de main.js: crash ligado ao commit,
+       e headless/QA separável de jogador. O backend ignora o campo até ter a coluna. */
+    try{
+      c.buildSha = (window.__CS_BUILD && window.__CS_BUILD.sha) || null;
+      c.cohort = navigator.webdriver ? 'automacao'
+        : (/[?&]qa(=|&|$)/.test(location.search) || localStorage.getItem('cs_qa') === '1') ? 'qa' : 'organico';
+    }catch(_){ c.cohort = 'organico'; }
     try{
       // 'cs_anon' é a MESMA chave do `ANON_KEY` de main.js:403 - sem isso o erro não
       // cruza com a telemetria do mesmo navegador, que é metade da utilidade.
@@ -493,7 +507,7 @@ window.__GEO_LANG__ = (function () {
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>CORO SOLTO: Treta Suprema - FPS grátis de navegador (ex-CS BRASIL)</title>
-<meta name="description" content="FPS satírico gratuito no navegador, com Esquerda, Direita e outras facções fictícias, mapas, armas, bots, rounds e CTF. Jogue no desktop ou teste o beta web no celular.">
+<meta name="description" content={DESC_LONG}>
 <meta name="keywords" content="coro solto, cs brasil, jogo de tiro navegador, fps browser grátis, awp, cs 1.6 brasileiro, jogo satira politica, treta suprema, jogo web three.js">
 <meta name="author" content="CORO SOLTO contributors">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -518,7 +532,7 @@ window.__GEO_LANG__ = (function () {
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CORO SOLTO: Treta Suprema">
 <meta property="og:title" content="CORO SOLTO: Treta Suprema - FPS grátis de navegador">
-<meta property="og:description" content="FPS satírico de navegador com Esquerda, Direita e outras facções fictícias, 26 armas, bots, rounds e muita treta. Jogue grátis no navegador.">
+<meta property="og:description" content={DESC_LONG}>
 <meta property="og:url" content={abs('/')}>
 <meta property="og:image" content={abs('/og-image.jpg')}>
 <meta property="og:image:width" content="1200">
@@ -528,7 +542,7 @@ window.__GEO_LANG__ = (function () {
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="CORO SOLTO: Treta Suprema - FPS grátis de navegador">
-<meta name="twitter:description" content="FPS satírico de navegador com Esquerda, Direita e outras facções fictícias, 26 armas e muitos mapas. Jogue grátis no navegador.">
+<meta name="twitter:description" content={DESC_LONG}>
 <meta name="twitter:image" content={abs('/og-image.jpg')}>
 <meta name="twitter:image:alt" content="CORO SOLTO: Treta Suprema - FPS satírico de navegador com facções brasileiras">
 <!-- JSON-LD: UM nó VideoGame no site inteiro, e ele mora AQUI.
@@ -538,80 +552,99 @@ window.__GEO_LANG__ = (function () {
      Agora o nó canônico tem @id estável (…/#game) e vive na home, que é a url
      do próprio jogo; /sobre e as outras páginas só REFERENCIAM esse @id.
      Uma entidade, um dono. (a fonte dos textos é src/lib/site.ts) -->
-<script type="application/ld+json" is:inline set:html={`
-{
+<script type="application/ld+json" is:inline set:html={JSON.stringify({
   "@context": "https://schema.org",
   "@graph": [
-    { "@type": "WebSite", "@id": "${SITE}/#website",
-      "url": "${SITE}/",
+    {
+      "@type": "WebSite",
+      "@id": `${SITE}/#website`,
+      "url": `${SITE}/`,
       "name": "CORO SOLTO: Treta Suprema",
-      "alternateName": ["CORO SOLTO", "CS BRASIL", "CS BRASIL: Treta Suprema"],
+      "alternateName": [
+        "CORO SOLTO",
+        "CS BRASIL",
+        "CS BRASIL: Treta Suprema"
+      ],
       "inLanguage": "pt-BR",
-      "publisher": { "@id": "${SITE}/#org" } },
-    { "@type": "Organization", "@id": "${SITE}/#org",
+      "publisher": {
+        "@id": `${SITE}/#org`
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": `${SITE}/#org`,
       "name": "CORO SOLTO contributors",
-      "url": "${SITE}/",
-      "logo": "${SITE}/og-image.jpg" },
-    { "@type": "WebPage", "@id": "${SITE}/#webpage",
-      "url": "${SITE}/",
+      "url": `${SITE}/`,
+      "logo": `${SITE}/logo.png`
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${SITE}/#webpage`,
+      "url": `${SITE}/`,
       "name": "CORO SOLTO: Treta Suprema - FPS grátis de navegador (ex-CS BRASIL)",
-      "isPartOf": { "@id": "${SITE}/#website" },
-      "primaryImageOfPage": { "@type": "ImageObject", "url": "${SITE}/og-image.jpg", "width": 1200, "height": 630 },
-      "mainEntity": { "@id": "${SITE}/#game" } },
-    { "@type": "VideoGame", "@id": "${SITE}/#game",
+      "isPartOf": {
+        "@id": `${SITE}/#website`
+      },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": `${SITE}/og-image.jpg`,
+        "width": 1200,
+        "height": 630
+      },
+      "mainEntity": {
+        "@id": `${SITE}/#game`
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "@id": `${SITE}/#game`,
       "name": "CORO SOLTO: Treta Suprema",
-      "alternateName": ["CORO SOLTO", "CS BRASIL", "CS BRASIL: Treta Suprema"],
-      "url": "${SITE}/",
-      "image": "${SITE}/og-image.jpg",
-      "description": "FPS de navegador gratuito e satírico com Esquerda, Direita e outras facções fictícias, 26 armas, bots, rounds e Capture the Flag - de uma Brasília fictícia ao ferro velho.",
-      "genre": ["Shooter", "FPS", "Comédia", "Sátira"],
-      "gamePlatform": ["Web Browser", "Desktop", "Mobile"],
+      "alternateName": [
+        "CORO SOLTO",
+        "CS BRASIL",
+        "CS BRASIL: Treta Suprema"
+      ],
+      "url": `${SITE}/`,
+      "image": `${SITE}/og-image.jpg`,
+      "description": DESC_LONG,
+      "genre": [
+        "Shooter",
+        "FPS",
+        "Comédia",
+        "Sátira"
+      ],
+      "gamePlatform": [
+        "Web Browser",
+        "Desktop",
+        "Mobile"
+      ],
       "applicationCategory": "GameApplication",
       "operatingSystem": "Qualquer sistema com navegador moderno compatível",
-      "playMode": "SinglePlayer",
+      "playMode": [
+        "SinglePlayer",
+        "MultiPlayer"
+      ],
       "inLanguage": "pt-BR",
       "isAccessibleForFree": true,
       "isFamilyFriendly": true,
       "license": "https://www.gnu.org/licenses/agpl-3.0.html",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL",
-                  "availability": "https://schema.org/InStock",
-                  "url": "${SITE}/" },
-      "author": { "@id": "${SITE}/#org" },
-      "publisher": { "@id": "${SITE}/#org" },
-      "gameLocation": [
-        { "@type": "Place", "name": "Praça dos Três Poderes" },
-        { "@type": "Place", "name": "Piscina da Treta" },
-        { "@type": "Place", "name": "Loja H (Estacionamento)" },
-        { "@type": "Place", "name": "Ferro Velho do Zé" }
-      ] }
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL",
+        "availability": "https://schema.org/InStock",
+        "url": `${SITE}/`
+      },
+      "author": {
+        "@id": `${SITE}/#org`
+      },
+      "publisher": {
+        "@id": `${SITE}/#org`
+      }
+    }
   ]
-}
-`}></script>
-<script type="application/ld+json" is:inline set:html={`
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "@id": "${SITE}/#faq",
-  "mainEntity": [
-    { "@type": "Question", "name": "O que é CORO SOLTO: Treta Suprema?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Um jogo FPS gratuito que roda no navegador: seis facções jogáveis (Esquerda, Direita, Tribos Urbanas, Palhaços, Funkeiros e Mítico), 53 personagens, mapas satíricos, 26 armas, bots, rounds e Capture the Flag. O jogo já se chamou CS BRASIL." } },
-    { "@type": "Question", "name": "Preciso instalar ou pagar algo?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Não. O jogo é gratuito e roda no navegador, sem download nem cadastro. No celular, você também pode adicionar o beta web à tela inicial pelo menu do navegador quando essa opção estiver disponível." } },
-    { "@type": "Question", "name": "Quais são os controles?",
-      "acceptedAnswer": { "@type": "Answer", "text": "WASD move, mouse mira, clique esquerdo atira, clique direito abre a luneta, Ctrl (ou C) agacha e melhora a mira, Shift corre, Espaço pula, R recarrega, as teclas 1/2/3 (ou a rodinha do mouse) trocam entre primária, pistola e faca, Z/X/V abrem os comandos de voz, M troca de time e Tab mostra o placar." } },
-    { "@type": "Question", "name": "Quais são as facções e os personagens?",
-      "acceptedAnswer": { "@type": "Answer", "text": "São seis facções fictícias e satíricas: Esquerda (8), Direita (9), Tribos Urbanas (9), Palhaços (9), Funkeiros (9) e Mítico (9). Todos são arquétipos originais, sem pessoas reais, e jogam exatamente igual." } },
-    { "@type": "Question", "name": "Quais mapas o jogo tem?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Entre as arenas estão Praça dos Três Poderes, Piscina da Treta, Loja H e Ferro Velho do Zé. O menu mostra os mapas disponíveis e permite escolher rounds ou Capture the Flag." } },
-    { "@type": "Question", "name": "Como funciona o ranking global?",
-      "acceptedAnswer": { "@type": "Answer", "text": "O ranking soma a pontuação das partidas. Cada abate multiplayer confirmado recebe um ponto extra. Consulte a página /ranking para a disponibilidade atual." } },
-    { "@type": "Question", "name": "É um jogo oficial da Valve ou do Counter-Strike?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Não. É uma paródia independente feita por fãs, sem qualquer afiliação com a Valve. Counter-Strike é marca da Valve Corporation." } },
-    { "@type": "Question", "name": "Funciona no celular?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Sim. O beta web tem controles de toque; use o celular na horizontal para jogar. O desempenho varia conforme o aparelho e o navegador." } }
-  ]
-}
-`}></script>
+})} />
+<script type="application/ld+json" is:inline set:html={JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', '@id': `${SITE}/#faq`, mainEntity: HOME_FAQ.map(([name, text]) => ({ '@type': 'Question', name, acceptedAnswer: { '@type': 'Answer', text } })) })} />
 <!-- O ICO tem recortes próprios por tamanho; regenere com tools/eval/canarinho-icon.mjs. -->
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -622,7 +655,7 @@ window.__GEO_LANG__ = (function () {
 <link rel="stylesheet" href={`/map-preview.css?v=${V}-${JS_REV}`} />
 </head>
 <body>
-<h1 class="sr-only">CORO SOLTO: Treta Suprema (ex-CS BRASIL) - jogo FPS gratuito de navegador, Esquerda × Direita</h1>
+<h1 class="sr-only">CORO SOLTO: Treta Suprema (ex-CS BRASIL) - FPS gratuito de navegador com bots e multiplayer beta</h1>
 
 <!-- SPLASH DE BOOT: cobre o load inicial (nada de cena parcial/"minecraft" visível) e
      destrava o áudio COM SOM no 1º gesto (política de autoplay do browser exige gesto;
@@ -736,15 +769,30 @@ window.__GEO_LANG__ = (function () {
 
     <section id="hub-about" class="hub-pane hub-info" role="tabpanel" aria-label="Sobre o jogo" hidden>
       <div class="hub-kicker">03 · O JOGO</div><h2>SOBRE O JOGO</h2>
+      <nav class="hub-content-tabs" role="tablist" aria-label="Guias do jogo">
+        <button id="guide-overview" type="button" role="tab" aria-selected="true" aria-controls="hub-about-overview" data-guide="overview" data-content-en="OVERVIEW">GERAL</button>
+        {CONTENT_TABS.map(([route, label, en]) => <a id={`guide-${route}`} href={`/${route}`} role="tab" aria-selected="false" aria-controls="hub-about-content" tabindex="-1" data-guide={route} data-content-en={en}>{label}</a>)}
+      </nav>
+      <div id="hub-about-overview" role="tabpanel" aria-labelledby="guide-overview">
       <p>CORO SOLTO: Treta Suprema é um FPS gratuito de navegador. Entre numa partida contra bots ou jogue com outras pessoas, escolha seu coro e dispute os mapas da treta.</p>
       <div id="hub-factions" class="hub-factions"></div>
       <a class="hub-changelog" href="/changelog"><small>NO ÚLTIMO PATCH</small><strong>Veja o que mudou na arena</strong><span>NOVIDADES ↗</span></a>
       <nav class="hub-link-grid" aria-label="Conheça o jogo">
         <a href="/clans">CLÃS ↗</a><a href="/sobre">SOBRE ↗</a><a href="/como-jogar">COMO JOGAR ↗</a>
         <a href="/armas">ARMAS ↗</a><a href="/mapas">MAPAS ↗</a>
+        <a href="/personagens">PERSONAGENS ↗</a><a href="/mapa">MAPA AO VIVO ↗</a>
         <a href="/changelog">NOVIDADES ↗</a><a href="https://github.com/corosolto/client" target="_blank" rel="noopener">CÓDIGO ↗</a>
         <a href="/privacidade">PRIVACIDADE ↗</a><a href="/termos">TERMOS DE USO ↗</a>
       </nav>
+      <div class="hub-faq" id="game-faq">
+        <h3 data-en="FREQUENTLY ASKED QUESTIONS">PERGUNTAS FREQUENTES</h3>
+        {HOME_FAQ.map(([q, a], i) => <details><summary data-en={HOME_FAQ_EN[i][0]}>{q}</summary><p data-en={HOME_FAQ_EN[i][1]}>{a}</p></details>)}
+      </div>
+      </div>
+      <div id="hub-about-content" class="hub-about-content" role="tabpanel" aria-labelledby="guide-sobre" hidden>
+        <p class="hub-guide-loading" role="status">CARREGANDO GUIA…</p>
+        <iframe id="hub-guide-frame" title="Guia do jogo" hidden></iframe>
+      </div>
     </section>
 
     <section id="hub-feedback" class="hub-pane hub-info" role="tabpanel" aria-label="Feedback" hidden>
@@ -829,7 +877,7 @@ window.__GEO_LANG__ = (function () {
   <nav class="aaa-links" aria-label="Links do jogo">
     <a href="/?secao=comunidade&amp;social=friends">AMIGOS E CONVITES ▸</a>
     <a href="/ranking" target="_blank" rel="noopener">RANKING GLOBAL <span aria-hidden="true">↗</span></a>
-    <a href="/mapa" target="_blank" rel="noopener">MAPA DA TRETA <span aria-hidden="true">↗</span></a>
+    <a href="/mapa">MAPA DA TRETA <span aria-hidden="true">↗</span></a>
     <a href="/sobre" target="_blank" rel="noopener">SOBRE <span aria-hidden="true">↗</span></a>
   </nav>
 
@@ -960,6 +1008,7 @@ window.__GEO_LANG__ = (function () {
         </div>
         <button id="hub-map-change" class="hub-map-change" type="button">TROCAR MAPA ▸</button>
       </div>
+      <div id="hub-sels" class="hub-sels" role="group" aria-label="Opções da partida"></div>
       <div class="hub-match-chips" role="group" aria-label="Opções da partida">
         <button id="hub-mode-rounds" type="button" aria-pressed="true" title="Selecionar mata-mata"><strong>MATA-MATA</strong><small>MELHOR DE 5</small></button>
         <button id="hub-mode-ctf" type="button" aria-pressed="false" title="Selecionar captura de bandeiras"><strong>CAPTURA</strong><small>MELHOR DE 3</small></button>
@@ -1521,8 +1570,8 @@ window.__GEO_LANG__ = (function () {
          acontece em CTF"). Números casados com game.js:76 e game.js:104-108; se um mudar
          sem o outro, o portão UI4 do tools/eval/ui-check.mjs acusa a partida que não fecha
          ou o cronômetro que não devia existir. -->
-    <p><b>MATA-MATA</b> com respawn: cada round dura 1:39 ou fecha quando um time chega no alvo de abates; o time com mais kills leva o round. Por padrão, vence quem ganhar 3 rounds (melhor de 5); o teto pode ser escolhido na tela de mapas.</p>
-    <p><b>CAPTURA</b> não tem cronômetro de round: a rodada acaba quando um time captura 3 bandeiras (ou domina todas de uma vez). Vence quem ganhar 2 rodadas (melhor de 3). A partida tem um limite de 8 minutos, que só aparece no HUD no último minuto.</p>
+    <p><b>MATA-MATA</b> com respawn: no padrão, cada round dura 1:39; o time com mais kills leva o round. Por padrão, vence quem ganhar 3 rounds (melhor de 5); o teto pode ser escolhido na tela de mapas.</p>
+    <p><b>CAPTURA</b> não tem cronômetro de round: a rodada acaba quando um time atinge a meta de capturas do mapa ou domina todas as bandeiras de uma vez. O padrão é melhor de 3; o menu permite ajustar a quantidade de rounds. A partida tem um limite de 8 minutos, que só aparece no HUD no último minuto.</p>
     <button id="howto-back" class="btn">VOLTAR</button>
   </div>
 </div>
@@ -1617,7 +1666,7 @@ window.__GEO_LANG__ = (function () {
 
 <div id="mp-identity-toast" class="mp-identity-card" role="status" aria-live="polite" hidden>
   <img class="mp-identity-portrait" alt="" width="64" height="64" hidden>
-  <span class="mp-identity-copy"><small>SEU PERSONAGEM NO MULTIPLAYER</small><strong></strong><span></span></span>
+  <span class="mp-identity-copy"><small>SEU PERSONAGEM NO MULTIPLAYER</small><strong></strong><span></span><em class="mp-identity-aviso" hidden></em></span>
 </div>
 
 <!-- CHAT DE SALA (#686, docs/chat-de-sala.md). Irmã do #hud, em camada própria (z 31, acima
@@ -1671,9 +1720,13 @@ window.__GEO_LANG__ = (function () {
   <h2 class="screen-title">PAUSA NA TRETA</h2>
   <div id="mp-identity-pause" class="mp-identity-card" aria-label="Personagem atribuído pelo servidor" hidden>
     <img class="mp-identity-portrait" alt="" width="64" height="64" hidden>
-    <span class="mp-identity-copy"><small>SEU PERSONAGEM NO MULTIPLAYER</small><strong></strong><span></span></span>
+    <span class="mp-identity-copy"><small>SEU PERSONAGEM NO MULTIPLAYER</small><strong></strong><span></span><em class="mp-identity-aviso" hidden></em></span>
   </div>
   <div class="pause-actions panel">
+    <div id="mp-personagem-acoes" class="mp-personagem-acoes" hidden>
+      <button id="mp-personagem-ir" class="btn" type="button">IR PARA O OUTRO LADO</button>
+      <button id="mp-personagem-outro" class="btn" type="button">ESCOLHER OUTRO</button>
+    </div>
     <button id="btn-resume" class="btn btn-big">CONTINUAR</button>
     <button id="btn-pause-settings" class="btn">CONFIGURAÇÕES</button>
     <button id="btn-pause-controls" class="btn">CONTROLES</button>
@@ -1714,6 +1767,7 @@ window.__GEO_LANG__ = (function () {
 
 <!-- Sinais operacionais da sessão (FPS, falhas de carga, abandono); só coleta - docs/runbooks/operacao-autonoma.md -->
 <script type="module" src={`/js/ops.js?v=${V}-${JS_REV}`} is:inline></script>
+<script type="module" src={`/js/site-links.js?v=${V}-${JS_REV}`} is:inline></script>
 <script type="module" src={`/js/main.js?v=${V}-${JS_REV}`} is:inline onload="window.__CS_MAIN_LOADED=1" onerror="window.__CS_MAIN_FAILED=1;window.__CS_BOOT_SRC=this.src"></script>
 <script type="module" src={`/js/pwa-install.js?v=${V}-${JS_REV}`} is:inline></script>
 </body>

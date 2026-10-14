@@ -79,7 +79,7 @@ export default defineConfig({
       title: 'CORO SOLTO: Treta Suprema',
       description:
         'FPS gratuito de navegador estilo CS 1.6: arena de sniper satírica numa ' +
-        'Brasília fictícia, com cinco facções e 44 personagens originais.',
+        'Brasil fictício, com facções originais, bots e multiplayer beta.',
     }),
   ],
 

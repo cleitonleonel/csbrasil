@@ -34,10 +34,10 @@ const NOTA_EN: Record<string, string> = {
   g3sg1: 'A 20-round mag on a semi-auto sniper. The pick for holding a long angle alone.',
   sks: 'The fastest of the semi-autos. Rewards whoever lands the panic follow-up.',
   ak: 'Kills in 3 body shots. The gold standard of rifles: high damage, honest recoil.',
-  akm: 'The AK’s heavy cousin: 4 shots to the body, a touch slower.',
+  akm: 'A slightly slower rate of fire than the AK, with similar damage per shot.',
   m4: 'Faster and steadier than the AK, in exchange for damage per shot.',
   g3: 'Short mag, painful hits. A rifle for those who count their shots.',
-  md97: 'The Brazilian rifle of the arsenal. The highest damage per shot among the automatics.',
+  md97: 'The Brazilian rifle of the arsenal. High damage per shot with a short magazine.',
   m400: 'Battle-rifle damage with M4 stability.',
   scar: 'Balanced to a fault - the least surprising gun, for better and for worse.',
   m92: 'A sawed-off AK. Short, fat on screen, and great in corridors.',
@@ -248,16 +248,7 @@ const jsonld = [
   </div>
 </Layout>
 
-<script>
-  // espelho do /armas: usuário em pt vai pra gêmea PT (mesmas regras do i18n.js do jogo)
-  try {
-    const q = new URLSearchParams(location.search).get('lang');
-    const ls = localStorage.getItem('cs_lang');
-    const lang = (q === 'pt' || q === 'en') ? q : (ls === 'pt' || ls === 'en') ? ls
-      : (/^pt/i.test(navigator.language || '') ? 'pt' : 'en');
-    if (lang === 'pt') location.replace('/armas');
-  } catch { /* storage bloqueado: fica onde está */ }
-</script>
+
 
 <style>
   /* Mesma decisão de layout do /armas: a miniatura vive empilhada na PRIMEIRA

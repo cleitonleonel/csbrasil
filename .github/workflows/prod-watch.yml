@@ -29,6 +29,8 @@ permissions:
   # (actions: write NÃO autoriza — o dispatch morria 403 e o crash-fix nunca
   # rodava; pego na review do Greptile, PR #95)
   contents: write
+  # fecha a issue do incidente quando a produção volta a ficar coerente
+  issues: write
 
 jobs:
   probe:
@@ -115,3 +117,18 @@ jobs:
             -F 'client_payload[message]=prod-watch: edge, banco ou schema de telemetria reprovou' \
             -F 'client_payload[source]=prod-watch.yml' \
             -F 'client_payload[version]=desconhecida'
+
+      # Fecha o ciclo do lado bom: o ops-diag abre e FECHA a issue dele, o prod-watch só
+      # abria. A issue `producao-inconsistente` ficava aberta para sempre depois que o
+      # incidente passava, e quem olhava não sabia se ainda estava vermelho.
+      - name: produção coerente → fecha o incidente aberto
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ABERTA=$(gh issue list --repo "$GITHUB_REPOSITORY" --label crash-auto --state open \
+            --search "producao-inconsistente in:body" --json number --jq '.[0].number // empty')
+          if [ -n "$ABERTA" ]; then
+            gh issue close "$ABERTA" --repo "$GITHUB_REPOSITORY" \
+              --comment "prod-watch voltou a passar (edge, banco e schema coerentes) — incidente encerrado automaticamente."
+          fi

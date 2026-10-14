@@ -147,14 +147,3 @@ summary:hover .cl-perma,summary:focus-within .cl-perma,.cl-perma:focus-visible{o
   });
 })();
 </script>
-
-<script>
-  // espelho do /changelog: usuário em pt cai na gêmea PT (mesmas regras do i18n.js)
-  try {
-    const q = new URLSearchParams(location.search).get('lang');
-    const ls = localStorage.getItem('cs_lang');
-    const lang = (q === 'pt' || q === 'en') ? q : (ls === 'pt' || ls === 'en') ? ls
-      : (/^pt/i.test(navigator.language || '') ? 'pt' : 'en');
-    if (lang === 'pt') location.replace('/changelog');
-  } catch { /* fica */ }
-</script>

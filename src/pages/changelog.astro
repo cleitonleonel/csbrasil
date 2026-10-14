@@ -182,14 +182,3 @@ summary:hover .cl-perma,summary:focus-within .cl-perma,.cl-perma:focus-visible{o
   });
 })();
 </script>
-
-<script>
-  // espelho do /whats-new: usuário em EN cai na gêmea (issue #54)
-  try {
-    const q = new URLSearchParams(location.search).get('lang');
-    const ls = localStorage.getItem('cs_lang');
-    const lang = (q === 'pt' || q === 'en') ? q : (ls === 'pt' || ls === 'en') ? ls
-      : (/^pt/i.test(navigator.language || '') ? 'pt' : 'en');
-    if (lang === 'en') location.replace('/whats-new');
-  } catch { /* fica */ }
-</script>
