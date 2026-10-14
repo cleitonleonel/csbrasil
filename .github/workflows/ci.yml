@@ -24,7 +24,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  # O contexto obrigatório `build` sai de UM job só (DG4), e esse job é o AGREGADOR abaixo.
+  # As invariantes custavam 6,5 a 9 min de um job de 9 a 12 min, em série com todo o
+  # resto; agora rodam em paralelo no job `invariantes`. Nenhum passo saiu.
+  reguas-e-site:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -128,6 +131,45 @@ jobs:
       - name: Skills de terceiros conferem com o lock
         run: npm run verify:skills
 
+      - name: Astro build
+        run: npm run build
+
+      - name: SEO e links publicados (com mutações)
+        run: |
+          node tools/eval/seo-check.mjs
+          node tools/eval/seo-check.mjs --mutate
+          node tools/eval/canonical-host-check.mjs
+          node tools/eval/canonical-host-check.mjs --mutate
+          node tools/eval/profile-in-game-check.mjs
+          node tools/eval/profile-in-game-check.mjs --mutate
+          node tools/eval/profile-socials-check.mjs
+          node tools/eval/profile-socials-check.mjs --mutate
+          node tools/eval/profile-views-display-check.mjs
+          node tools/eval/profile-views-display-check.mjs --mutate
+
+      # PORTÃO DO SITE. `astro build` verde não prova nada sobre as rotas:
+      # /ranking pode dar 500, /sitemap.xml pode sair vazio e o build passa em
+      # todos os casos. Roda DEPOIS do build porque o arnês sobe o `astro dev`,
+      # que precisa das deps instaladas — e checa o caminho de degradação SEM
+      # Supabase, que é exatamente o estado do CI.
+      - name: Páginas do lobby e cobertura SEO/AEO
+        run: npm run eval:game-pages
+
+      - name: Smoke do site (13 rotas, contrato + JSON-LD)
+        run: node tools/eval/site-smoke.mjs
+
+  # O bloco do viewmodel e das invariantes, na MESMA ordem de antes: o vm-mint-audit escreve
+  # o tools/eval/vm_mint_audit.json que as invariantes e o vm-kick-sim leem.
+  invariantes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
       # O auditor de VM escreve o JSON consumido pelas invariantes; a ordem é contrato.
       - name: Enquadramento do viewmodel por arma (26 armas, GLB real)
         run: node tools/eval/vm-mint-audit.mjs
@@ -160,32 +202,26 @@ jobs:
           cat "$SAIDA.err" >&2
           exit "$(cat "$SAIDA.code")"
 
-      - name: Astro build
-        run: npm run build
-
-      - name: SEO e links publicados (com mutações)
+  # O AGREGADOR. É ele que responde pelo contexto obrigatório `build` da main (DG4/DG5).
+  # `if: always()` é o que impede o pulo: sem ele, job necessário vermelho deixa este
+  # SKIPPED, e o ruleset aceita contexto obrigatório pulado como verde. Cancelado,
+  # pulado ou vermelho em qualquer `needs` reprova.
+  build:
+    needs: [reguas-e-site, invariantes]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Todo job do pr-fast verde
+        env:
+          RESULTADOS: ${{ join(needs.*.result, ' ') }}
         run: |
-          node tools/eval/seo-check.mjs
-          node tools/eval/seo-check.mjs --mutate
-          node tools/eval/canonical-host-check.mjs
-          node tools/eval/canonical-host-check.mjs --mutate
-          node tools/eval/profile-in-game-check.mjs
-          node tools/eval/profile-in-game-check.mjs --mutate
-          node tools/eval/profile-socials-check.mjs
-          node tools/eval/profile-socials-check.mjs --mutate
-          node tools/eval/profile-views-display-check.mjs
-          node tools/eval/profile-views-display-check.mjs --mutate
+          echo "resultados: $RESULTADOS"
+          [ -n "$RESULTADOS" ] || { echo "::error::nenhum resultado de job necessário"; exit 1; }
+          for r in $RESULTADOS; do
+            [ "$r" = success ] || { echo "::error::job necessário terminou em $r"; exit 1; }
+          done
 
-      # PORTÃO DO SITE. `astro build` verde não prova nada sobre as rotas:
-      # /ranking pode dar 500, /sitemap.xml pode sair vazio e o build passa em
-      # todos os casos. Roda DEPOIS do build porque o arnês sobe o `astro dev`,
-      # que precisa das deps instaladas — e checa o caminho de degradação SEM
-      # Supabase, que é exatamente o estado do CI.
-      - name: Páginas do lobby e cobertura SEO/AEO
-        run: npm run eval:game-pages
-
-      - name: Smoke do site (13 rotas, contrato + JSON-LD)
-        run: node tools/eval/site-smoke.mjs
   # O bloco de autoria sai do shortlog e o squash reescreve o autor: num PR ele não é
   # derivável (ver tools/eval/docs-autoria-check.mjs). Aqui, na main, é — e só aqui reprova.
   # fetch-depth: 0 é obrigatório: com clone raso o gerador PULA esse bloco e o portão fica cego.
