@@ -50,7 +50,7 @@ for (const rel of ['src/pages/como-jogar.astro', 'src/pages/how-to-play.astro'])
 const jogo = ler('public/js/game.js');
 cobra(/name: \(nickname \|\| ''\)\.trim\(\)\.slice\(0, 32\)/.test(jogo), 'NL3 · nome do jogador local corta em 32');
 cobra(/const nick = key\.slice\(0, 32\);/.test(ler('src/pages/api/badge/[...path].png.ts')), 'NL3 · badge procura o nick com até 32');
-cobra(/String\(p\.nick\)\.slice\(0,32\)/.test(ler('src/lib/profile-card.mjs')), 'NL3 · cartão de perfil (OG) mostra até 32');
+cobra(/String\(p\.nick\)[^\n]*\.slice\(0,32\)/.test(ler('src/lib/profile-card.mjs')), 'NL3 · cartão de perfil (OG) recebe até 32');
 
 cobra(/tr\('VOCÊ'\) : escapeClanName\(e\.name\)\}/.test(jogo), 'NL4 · killfeed escapa o nome');
 cobra(/MORTO POR <b>\$\{escapeClanName\(h\.name\)\}<\/b>/.test(jogo), 'NL4 · tela de morte escapa o nome');
