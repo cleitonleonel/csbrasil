@@ -34,7 +34,16 @@
  *       topo; o bump em grupo próprio (`release-bump`) e nunca cancelável · RLS15 anti-loop do commit do bot ·
  *       RLS16 head.ref do PR é dado, não código (sem `${{ }}` no shell, permissão de leitura).
  *
- * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch | cron-de-volta | sem-dispatch | lote-ignorado | sem-rotulo | sem-filtro-lote | qualquer-merge | pr-aberto | concurrency-no-topo | sem-concurrency | grupo-sem-portao | bump-cancelavel | bump-mesmo-grupo | sem-aviso | loop | injecao.
+ * RLS17: PUSH DO TREM COM RETRY LIMITADO, SÓ SOBRE SHA VERDE (14/10/2026). Às 21:46 de 13/10
+ *       o run morreu em `! [rejected] main -> main (fetch first)`: o #857 entrou entre o rebase
+ *       e o push. O push agora fica num laço de N tentativas (2 <= N <= 10, sem `while true`),
+ *       cada uma refaz o bump (fetch + reset + regeneração: conflito de gerado não existe), com
+ *       backoff, `--atomic`, nunca `--force`, e a última falha sai com erro. E o bump publica
+ *       só o SHA que o embarque viu verde (`needs.embarque.outputs.sha`): se a main andou, a
+ *       cabeça nova só serve depois de o pr-fast DELA terminar verde, dentro de um prazo; senão
+ *       sai com ::error:: e nada é publicado.
+ *
+ * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch | cron-de-volta | sem-dispatch | lote-ignorado | sem-rotulo | sem-filtro-lote | qualquer-merge | pr-aberto | concurrency-no-topo | sem-concurrency | grupo-sem-portao | bump-cancelavel | bump-mesmo-grupo | sem-aviso | loop | injecao | sem-retry | retry-infinito | push-forcado | publica-sem-conferir | sha-solto.
  */
 import { readFileSync, readdirSync, mkdtempSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -219,8 +228,38 @@ const validaLote = () => {
 };
 let lote = validaLote();
 
+/* RLS17 — o push do trem tenta de novo, com teto, sem force, e só sobre SHA com pr-fast verde. */
+const validaRetry = () => {
+  const linhas = workflowRelease.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+  const max = Number(/^\s*MAX_TENTATIVAS=(\d+)\s*$/m.exec(linhas)?.[1] || 0);
+  const ini = linhas.search(/for tentativa in \$\(seq 1 "\$MAX_TENTATIVAS"\); do/);
+  const laco = ini < 0 ? '' : linhas.slice(ini, linhas.indexOf('\n          done', ini));
+  const embarque = blocoJob('embarque');
+  const bump = blocoJob('bump-tag-release');
+  const teto = Number(/^ {4}timeout-minutes:\s*(\d+)/m.exec(bump)?.[1] || 0);
+  return max >= 2 && max <= 10
+    && laco !== ''
+    && !/while true|until /.test(linhas)
+    && /git fetch origin main/.test(laco)
+    && /node tools\/gen-docs\.mjs|refaz_bump/.test(laco)
+    && /if git push --atomic origin main "refs\/tags\/\$NEW"; then/.test(laco)
+    && /"\$tentativa" = "\$MAX_TENTATIVAS"[^\n]*\n[^\n]*::error::[^\n]*\n[^\n]*exit 1/.test(laco)
+    && /sleep \$\(\(/.test(laco)
+    && !/git push[^\n]*(--force|\s-f\s|\s\+refs|\s\+main)/.test(linhas)
+    /* só SHA aprovado: o embarque exporta o SHA, o bump o recebe, reseta NELE e, se a main
+       andou, reconfere o pr-fast da cabeça nova antes de adotá-la */
+    && /^ {6}sha: \$\{\{ steps\.verde\.outputs\.sha \}\}/m.test(embarque)
+    && /"completed success"\)[^\n]*sha=\$SHA/.test(embarque)
+    && /APROVADO: \$\{\{ needs\.embarque\.outputs\.sha \}\}/.test(bump)
+    && /^ {6}actions: read/m.test(bump)
+    && /git reset --hard "\$APROVADO"/.test(laco) && !/git reset --hard origin\/main/.test(laco)
+    && /if \[ "\$CABECA" != "\$APROVADO" \]; then[\s\S]*?if ! pr_fast_verde "\$CABECA"; then\n[^\n]*::error::[^\n]*\n[^\n]*exit 1[\s\S]*?APROVADO=\$CABECA/.test(laco)
+    && /PRAZO=/.test(bump) && teto > 0 && teto <= 30;
+};
+let retryRelease = validaRetry();
+
 if (mutante) {
-  const antes = JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease, geradosNoTrem, lote]);
+  const antes = JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease, geradosNoTrem, lote, retryRelease]);
   const mutaRelease = (de, para) => {
     workflowRelease = workflowRelease.replace(de, para);
     concorrenciaRelease = validaConcorrenciaRelease();
@@ -286,8 +325,29 @@ if (mutante) {
     workflowRelease = workflowRelease.replace(/node tools\/gen-arch\.mjs/g, 'true');
     geradosNoTrem = validaGerados();
   }
+  else if (mutante === 'sem-retry') {
+    workflowRelease = workflowRelease.replace(/^(\s*MAX_TENTATIVAS=)\d+/m, '$11');
+    retryRelease = validaRetry();
+  }
+  else if (mutante === 'retry-infinito') {
+    workflowRelease = workflowRelease.replace('for tentativa in $(seq 1 "$MAX_TENTATIVAS"); do', 'tentativa=0; while true; do tentativa=$((tentativa + 1))');
+    retryRelease = validaRetry();
+  }
+  else if (mutante === 'push-forcado') {
+    workflowRelease = workflowRelease.replace('git push --atomic origin main', 'git push --atomic --force origin main');
+    retryRelease = validaRetry();
+  }
+  else if (mutante === 'publica-sem-conferir') {
+    /* o defeito da primeira versão do retry: publica sobre a main que estiver lá */
+    workflowRelease = workflowRelease.replace('git reset --hard "$APROVADO"', 'git reset --hard origin/main');
+    retryRelease = validaRetry();
+  }
+  else if (mutante === 'sha-solto') {
+    workflowRelease = workflowRelease.replace(/^ {10}APROVADO: \$\{\{ needs\.embarque\.outputs\.sha \}\}\n/m, '');
+    retryRelease = validaRetry();
+  }
   else throw new Error(`mutante desconhecido: ${mutante}`);
-  if (JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease, geradosNoTrem, lote]) === antes) throw new Error(`MUTANTE NAO APLICOU: ${mutante}`);
+  if (JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease, geradosNoTrem, lote, retryRelease]) === antes) throw new Error(`MUTANTE NAO APLICOU: ${mutante}`);
 }
 
 const nomes = comandos.filter(({ linha }) => /--title "CSBR \$/.test(linha)).length;
@@ -297,7 +357,7 @@ const dco = commitsRelease.filter(temDco).length;
 const totalCommits = commitsRelease.length;
 const docsOk = docsRelease.filter(Boolean).length;
 const ok = total > 0 && nomes === total && creditos === total && totalCommits > 0 && dco === totalCommits && docsOk === docsRelease.length && rollbackRelease && caminhoProdUnico && animacoesNoDeploy && concorrenciaRelease && tremRelease && geradosNoTrem
-  && lote.semCron && lote.dispatch && lote.disparaLote && lote.naoDisparaComum && lote.antiLoop && lote.seguro;
+  && lote.semCron && lote.dispatch && lote.disparaLote && lote.naoDisparaComum && lote.antiLoop && lote.seguro && retryRelease;
 
 console.log(`${nomes === total && total ? '✓' : '✗'} RLS1 título CSBR: ${nomes}/${total} caminhos`);
 console.log(`${creditos === total && total ? '✓' : '✗'} RLS2 notas com contribuidores: ${creditos}/${total} caminhos`);
@@ -315,6 +375,7 @@ console.log(`${lote.disparaLote ? '✓' : '✗'} RLS13 merge de PR de lote dispa
 console.log(`${lote.naoDisparaComum ? '✓' : '✗'} RLS14 merge de PR comum não dispara${lote.falhasComum.length ? ` (disparou: ${lote.falhasComum.join(', ')})` : ''}`);
 console.log(`${lote.antiLoop ? '✓' : '✗'} RLS15 commit chore(release) do bot não dispara outro release`);
 console.log(`${lote.seguro ? '✓' : '✗'} RLS16 head.ref do PR é dado, não código; job lote só lê`);
+console.log(`${retryRelease ? '✓' : '✗'} RLS17 push do trem com retry limitado, sem force, e só sobre SHA com pr-fast verde`);
 if (!ok) {
   console.error('Release inválido: preserve créditos, DCO, docs, concorrência segura e um único caminho automático de produção.');
   process.exit(1);
