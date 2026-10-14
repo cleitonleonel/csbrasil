@@ -18,8 +18,9 @@
 // obriga ninguém a rodá-lo.
 //
 // USO
-//   node tools/gen-docs.mjs            reescreve os blocos gerados nos arquivos alvo
-//   node tools/gen-docs.mjs --check    sai 1 se qualquer bloco estiver desatualizado (CI)
+//   node tools/gen-docs.mjs            modo PR: reescreve a estrutura; contagem volátil fica como está
+//   node tools/gen-docs.mjs --check    modo PR: sai 1 se a estrutura de algum bloco estiver velha
+//   node tools/gen-docs.mjs --release [--check]   tudo, inclusive as contagens (trem de release)
 //   node tools/gen-docs.mjs --json     imprime TODOS os fatos medidos (para outras ferramentas)
 //
 // COMO MARCAR UM BLOCO NUM ARQUIVO
@@ -39,6 +40,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from '
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { v, limpa, mesclar } from './gerado-modo.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const R = (p) => join(ROOT, p);
@@ -58,6 +60,7 @@ const sh = (cmd, args) => {
   try { return execFileSync(cmd, args, { cwd: ROOT, encoding: 'utf8' }); } catch { return ''; }
 };
 const incluiLocais = process.argv.includes('--mutante=inclui-locais');
+const RELEASE = process.argv.includes('--release');
 const versionados = new Set(sh('git', ['ls-files', '--cached']).trim().split('\n').filter(Boolean));
 const entraNaMedicao = (p) => incluiLocais || versionados.has(p);
 const glob = (dir, teste) => (existe(dir)
@@ -471,9 +474,9 @@ const BLOCOS = {
   zonas: (f) => [
     '| Zona | O que é | Tamanho medido | Regra |',
     '|---|---|---|---|',
-    `| \`public/\` | o **jogo** | ${f.jogo.arquivos} arquivos \`.js\`, ${num(f.jogo.linhas)} linhas · Three.js \`${f.stack.three}\` vendorizado | ES modules servidos crus, **zero build**, sem dependência de runtime |`,
-    `| \`src/\` | o **site** | ${f.site.paginas} páginas \`.astro\`, ${f.site.apis} rotas \`/api\` · Astro \`${f.stack.astro}\` | framework é bem-vindo; \`service_role\` só no servidor |`,
-    `| \`tools/\` | o **arnês** | ${f.portao.scriptsEval} scripts em \`tools/eval/\`, ${f.portao.scriptsTools} em \`tools/\` | node puro: sobe o jogo real sem browser |`,
+    `| \`public/\` | o **jogo** | ${v(f.jogo.arquivos)} arquivos \`.js\`, ${v(num(f.jogo.linhas))} linhas · Three.js \`${f.stack.three}\` vendorizado | ES modules servidos crus, **zero build**, sem dependência de runtime |`,
+    `| \`src/\` | o **site** | ${v(f.site.paginas)} páginas \`.astro\`, ${v(f.site.apis)} rotas \`/api\` · Astro \`${f.stack.astro}\` | framework é bem-vindo; \`service_role\` só no servidor |`,
+    `| \`tools/\` | o **arnês** | ${v(f.portao.scriptsEval)} scripts em \`tools/eval/\`, ${v(f.portao.scriptsTools)} em \`tools/\` | node puro: sobe o jogo real sem browser |`,
     '',
     f.site.indexHtml
       ? '⚠️ **Existe `public/index.html`** — o que contradiz a doc, que afirma o contrário em várias páginas. Confira quem serve o quê antes de acreditar em qualquer das duas.'
@@ -536,7 +539,7 @@ const BLOCOS = {
     '|---|---|---|---|---:|',
     ...f.mapas.registrados.map((m) => {
       const arq = m.arquivo;
-      return `| \`${m.id}\` | ${m.nome} | ${m.ctf ? '**captura**' : 'rodadas'} | \`${arq || '—'}\` | ${arq ? num(linhas('public/js/' + arq)) : '—'} |`;
+      return `| \`${m.id}\` | ${m.nome} | ${m.ctf ? '**captura**' : 'rodadas'} | \`${arq || '—'}\` | ${arq ? v(num(linhas('public/js/' + arq))) : '—'} |`;
     }),
     '',
     `**${f.mapas.total} mapas registrados** — ${f.mapas.emRodadas} abrem em rodadas e ${f.mapas.emCaptura} em captura. ` +
@@ -569,7 +572,7 @@ const BLOCOS = {
     '| Camada | Ferramenta | Versão |',
     '|---|---|---|',
     `| Motor 3D (WebGL) | **Three.js**, vendorizado | \`${f.stack.three}\` |`,
-    `| Jogo | ES modules vanilla, **zero build** | ${f.jogo.arquivos} arquivos |`,
+    `| Jogo | ES modules vanilla, **zero build** | ${v(f.jogo.arquivos)} arquivos |`,
     `| Site | **Astro** com SSR | \`${f.stack.astro}\` |`,
     `| Hospedagem | adapter **Vercel** | \`${f.stack.adapter}\` |`,
     `| Banco | **Postgres gerenciado** (RLS; schema privado, fora do repo) | \`${f.stack.supabase}\` |`,
@@ -582,8 +585,8 @@ const BLOCOS = {
     '',
     `Three.js sai de \`public/vendor/three.module.js\` (**sem CDN, sem npm no runtime**). ` +
     `Astro e Vercel de \`package.json\` + \`astro.config.mjs\` + \`vercel.json\`. ` +
-        `Dos scripts de \`tools/\`, **${f.pipeline.playwright}** importam Playwright, ` +
-    `**${f.pipeline.gltf}** importam gltf-transform e **${f.pipeline.meshopt}** importam meshoptimizer.`,
+        `Dos scripts de \`tools/\`, **${v(f.pipeline.playwright)}** importam Playwright, ` +
+    `**${v(f.pipeline.gltf)}** importam gltf-transform e **${v(f.pipeline.meshopt)}** importam meshoptimizer.`,
     rodape(f.stack.cmd),
   ].join('\n'),
 
@@ -597,7 +600,7 @@ const BLOCOS = {
     '| **OpenRouter** | arte 2D (cartaz de facção, wallpaper, splash) | `tools/gen-image.mjs` | `OPENROUTER_API_KEY` |',
     '',
     f.pipeline.mint
-      ? `\`mint-assets.json\` registra **${f.pipeline.mint.total} assets** gerados via Mint (${Object.entries(f.pipeline.mint.kinds).map(([k, v]) => `${v} \`${k}\``).join(' · ')}), cada um com \`assetId\`, \`chatUrl\` e notas do que deu errado na tentativa anterior.`
+      ? `\`mint-assets.json\` registra **${v(f.pipeline.mint.total)} assets** gerados via Mint (${v(Object.entries(f.pipeline.mint.kinds).map(([k, n]) => `${n} \`${k}\``).join(' · '))}), cada um com \`assetId\`, \`chatUrl\` e notas do que deu errado na tentativa anterior.`
       : '`mint-assets.json` não foi encontrado nesta árvore.',
     '',
     'As três chaves de API vivem em `.env` na raiz — **gitignored, modo 600, nunca em `argv`** ' +
@@ -653,7 +656,7 @@ const BLOCOS = {
     `npm run check:fast   # ${f.scripts.checkFast}`,
     '```',
     '',
-    `\`package.json\` tem **${f.scripts.total} scripts**; o motivo de cada um mora em \`SCRIPTS.md\` (migrado das chaves \`//nome\` em 18/08/2026) — é onde está o porquê.`,
+    `\`package.json\` tem **${v(f.scripts.total)} scripts**; o motivo de cada um mora em \`SCRIPTS.md\` (migrado das chaves \`//nome\` em 18/08/2026) — é onde está o porquê.`,
     rodape(f.scripts.cmd),
   ].join('\n'),
 
@@ -783,19 +786,19 @@ const BLOCOS_EN = {
   ].join('\n'),
   mapas: (f) => [
     '| Id | Menu name | Opens in | File in `public/js/` | Lines |', '|---|---|---|---|---:|',
-    ...f.mapas.registrados.map((m) => `| \`${m.id}\` | ${m.nome} | ${m.ctf ? '**capture**' : 'rounds'} | \`${m.arquivo || '-'}\` | ${m.arquivo ? numEn(linhas('public/js/' + m.arquivo)) : '-'} |`),
+    ...f.mapas.registrados.map((m) => `| \`${m.id}\` | ${m.nome} | ${m.ctf ? '**capture**' : 'rounds'} | \`${m.arquivo || '-'}\` | ${m.arquivo ? v(numEn(linhas('public/js/' + m.arquivo))) : '-'} |`),
     '', `**${f.mapas.total} registered maps** - ${f.mapas.emRodadas} open in rounds and ${f.mapas.emCaptura} in capture. \`ctfMode\` sets the initial mode; it does not lock it. There are ${f.mapas.arquivosNoDisco} \`map_*.js\` files on disk, so a file alone does **not** make a map playable.`,
     rodapeEn(f.mapas.cmd),
   ].join('\n'),
-  scripts: (f) => ['```bash', `npm run check:fast   # ${f.scripts.checkFast}`, '```', '', `\`package.json\` has **${f.scripts.total} scripts**; the reason behind each one lives in \`SCRIPTS.md\`.`, rodapeEn(f.scripts.cmd)].join('\n'),
+  scripts: (f) => ['```bash', `npm run check:fast   # ${f.scripts.checkFast}`, '```', '', `\`package.json\` has **${v(f.scripts.total)} scripts**; the reason behind each one lives in \`SCRIPTS.md\`.`, rodapeEn(f.scripts.cmd)].join('\n'),
   stack: (f) => [
     '| Layer | Tool | Version |', '|---|---|---|',
-    `| 3D engine (WebGL) | **Three.js**, vendored | \`${f.stack.three}\` |`, `| Game | vanilla ES modules, **zero build** | ${f.jogo.arquivos} files |`,
+    `| 3D engine (WebGL) | **Three.js**, vendored | \`${f.stack.three}\` |`, `| Game | vanilla ES modules, **zero build** | ${v(f.jogo.arquivos)} files |`,
     `| Site | **Astro** with SSR | \`${f.stack.astro}\` |`, `| Hosting | **Vercel** adapter | \`${f.stack.adapter}\` |`,
     `| Database | **managed Postgres** (RLS; private schema) | \`${f.stack.supabase}\` |`, `| Browser checks | **Playwright** | \`${f.stack.playwright}\` |`,
     `| GLB pipeline | **gltf-transform** | \`${f.stack.gltfTransform}\` |`, `| Mesh compression | **meshoptimizer** | \`${f.stack.meshopt}\` |`,
     `| Images | **sharp** · **resvg** | \`${f.stack.sharp}\` · \`${f.stack.resvg}\` |`, `| This documentation | **Docusaurus** | \`${f.stack.docusaurus}\` |`, `| CI runtime | **Node** | \`${f.stack.node}\` |`,
-    '', `Three.js comes from \`public/vendor/three.module.js\`. Of the scripts in \`tools/\`, **${f.pipeline.playwright}** import Playwright, **${f.pipeline.gltf}** import gltf-transform, and **${f.pipeline.meshopt}** import meshoptimizer.`, rodapeEn(f.stack.cmd),
+    '', `Three.js comes from \`public/vendor/three.module.js\`. Of the scripts in \`tools/\`, **${v(f.pipeline.playwright)}** import Playwright, **${v(f.pipeline.gltf)}** import gltf-transform, and **${v(f.pipeline.meshopt)}** import meshoptimizer.`, rodapeEn(f.stack.cmd),
   ].join('\n'),
   assets: (f) => [
     '| Service | What it generates | Script | Key |', '|---|---|---|---|',
@@ -803,7 +806,7 @@ const BLOCOS_EN = {
     '| **Tripo3D** | 3D props from text | `tools/gen-asset.mjs --provider tripo` | `TRIPO_API_KEY` |',
     '| **Meshy** | 3D props and rigging | `tools/gen-asset.mjs --provider meshy` | `MESHY_API_KEY` |',
     '| **OpenRouter** | 2D art | `tools/gen-image.mjs` | `OPENROUTER_API_KEY` |', '',
-    f.pipeline.mint ? `\`mint-assets.json\` records **${f.pipeline.mint.total} assets** generated through Mint (${Object.entries(f.pipeline.mint.kinds).map(([k, v]) => `${v} \`${k}\``).join(' · ')}).` : '`mint-assets.json` was not found.',
+    f.pipeline.mint ? `\`mint-assets.json\` records **${v(f.pipeline.mint.total)} assets** generated through Mint (${v(Object.entries(f.pipeline.mint.kinds).map(([k, n]) => `${n} \`${k}\``).join(' · '))}).` : '`mint-assets.json` was not found.',
     '', 'API keys live in the gitignored root `.env`; generation is offline and the game runs without them.', rodapeEn(f.pipeline.cmd),
   ].join('\n'),
   skills: (f) => [
@@ -845,6 +848,25 @@ const COLOCACAO = {
   invariantes: ['docs/docs/quality-gates.md'],
   pessoas: ['docs/docs/colaborar.md'],
 };
+/* Classe de cada bloco. volatil: só contagem/tamanho/versão, o PR não reescreve nem confere;
+   misto: estrutura confere no PR, valores em `v()` só no release; autoria: ver VERIFICA_AUTORIA. */
+const CLASSE = {
+  versao_atual: 'volatil',
+  numeros: 'volatil',
+  arquivos: 'volatil',
+  invariantes: 'volatil',
+  zonas: 'misto',
+  scripts: 'misto',
+  mapas: 'misto',
+  stack: 'misto',
+  assets: 'misto',
+  regras: 'estrutural',
+  skills: 'estrutural',
+  licenca: 'estrutural',
+  licenca_pontos: 'estrutural',
+  ponteiros: 'estrutural',
+  pessoas: 'autoria',
+};
 const COLOCACAO_EN = {
   numeros: ['docs/i18n/en/docusaurus-plugin-content-docs/current/comecando.md'],
   regras: ['docs/i18n/en/docusaurus-plugin-content-docs/current/comecando.md'],
@@ -879,8 +901,12 @@ const marcador = (nome) => new RegExp(
    clone raso logo acima: onde o número não é derivável, ele não derruba o portão; onde é (a
    main, com `--autoria`), continua mordendo. */
 const VERIFICA_AUTORIA = !process.argv.includes('--check') || process.argv.includes('--autoria');
+const CONFERE = process.argv.includes('--check');
+
+const MARCADOR_CONFLITO = /^(<{7}|>{7})( |$)|^={7}$/m;
 
 function aplicar(fatos) {
+  const comConflito = [];           // marcador de merge dentro de bloco, de qualquer classe
   const mudancas = [];              // { arquivo, novo }
   const achados = new Map();        // bloco -> Set(arquivos em que foi encontrado)
 
@@ -896,8 +922,15 @@ function aplicar(fatos) {
         const chave = local.prefixo + nome;
         if (!achados.has(chave)) achados.set(chave, new Set());
         achados.get(chave).add(arq);
-        if (nome === 'pessoas' && (fatos.raso || !VERIFICA_AUTORIA)) continue;
-        novo = novo.replace(re, (_, abre, __, fecha) => `${abre}\n\n${gerar(fatos).trim()}\n\n${fecha}`);
+        const classe = CLASSE[nome];
+        if (MARCADOR_CONFLITO.test(re.exec(novo)[2])) comConflito.push(`${local.prefixo}${nome} → ${arq}`);
+        if (classe === 'autoria' && (fatos.raso || !VERIFICA_AUTORIA || !(RELEASE || CONFERE))) continue;
+        if (classe === 'volatil' && !RELEASE && re.exec(novo)[2].trim()) continue;
+        novo = novo.replace(re, (_, abre, corpo, fecha) => {
+          const modelo = gerar(fatos);
+          const miolo = RELEASE || classe !== 'misto' ? limpa(modelo) : mesclar(modelo.trim(), corpo.trim());
+          return `${abre}\n\n${miolo.trim()}\n\n${fecha}`;
+        });
       }
     }
     if (novo !== atual) mudancas.push({ arquivo: arq, novo });
@@ -907,6 +940,7 @@ function aplicar(fatos) {
   const semLugar = [];
   const faltando = [];                                                          // colocação declarada, marcador ausente
   const semBloco = [];
+  const semClasse = Object.keys(BLOCOS).filter((nome) => !['volatil', 'misto', 'estrutural', 'autoria'].includes(CLASSE[nome]));
   for (const local of LOCALIZACOES) {
     for (const nome of Object.keys(local.blocos)) if (!local.colocacao[nome]) semLugar.push(local.prefixo + nome);
     for (const [nome, arqs] of Object.entries(local.colocacao)) {
@@ -916,7 +950,7 @@ function aplicar(fatos) {
     }
   }
 
-  return { mudancas, achados, semLugar, faltando, semBloco };
+  return { mudancas, achados, semLugar, faltando, semBloco, semClasse, comConflito };
 }
 
 /* ═══════════════════════════════════════════════════════════ SAÍDA */
@@ -928,7 +962,7 @@ if (process.argv.includes('--json')) {
   process.exit(0);
 }
 
-const { mudancas, achados, semLugar, faltando, semBloco } = aplicar(fatos);
+const { mudancas, achados, semLugar, faltando, semBloco, semClasse, comConflito } = aplicar(fatos);
 
 /* Consistências que NÃO são bloco de doc, mas que a doc depende para não mentir. */
 const inconsistencias = [];
@@ -990,21 +1024,24 @@ if (process.argv.includes('--check')) {
   if (faltando.length) erros.push(`${faltando.length} marcador(es) DECLARADO(S) e AUSENTE(S): ${faltando.join(' · ')}`);
   if (semLugar.length) erros.push(`${semLugar.length} bloco(s) sem colocação declarada em COLOCACAO: ${semLugar.join(', ')}`);
   if (semBloco.length) erros.push(`${semBloco.length} colocação(ões) apontando para bloco inexistente: ${semBloco.join(', ')}`);
+  if (comConflito.length) erros.push(`${comConflito.length} bloco(s) com marcador de conflito de merge: ${comConflito.join(' · ')}`);
+  if (semClasse.length) erros.push(`${semClasse.length} bloco(s) sem classe em CLASSE: ${semClasse.join(', ')}`);
   for (const i of inconsistencias) erros.push(i);
   if (erros.length) {
     console.error('✗ DOCS1  a documentação está DESATUALIZADA em relação ao código.');
     for (const e of erros) console.error('         - ' + e);
-    console.error('         Rode: npm run docs');
+    console.error(`         Rode: npm run ${RELEASE ? 'docs:release' : 'docs'}`);
     process.exit(1);
   }
   const marcadores = [...achados.values()].reduce((s, x) => s + x.size, 0);
   if (!VERIFICA_AUTORIA) console.log('  ⚠ bloco de autoria NÃO conferido aqui (só é derivável depois do merge — ver docs:check:autoria na main)');
-  console.log(`✓ DOCS1  docs em dia (${achados.size} blocos em ${marcadores} marcadores, ${fatos.jogo.arquivos} arquivos de jogo, ${num(fatos.jogo.linhas)} linhas)`);
+  const modo = RELEASE ? 'release: tudo conferido' : 'PR: só estrutura, contagens ficam para o release';
+  console.log(`✓ DOCS1  docs em dia (${achados.size} blocos em ${marcadores} marcadores; ${modo})`);
   process.exit(0);
 }
 
 for (const m of mudancas) writeFileSync(R(m.arquivo), m.novo);
-console.log(`✓ gen-docs — ${mudancas.length} arquivo(s) atualizado(s), ${achados.size} bloco(s) gerados`);
+console.log(`✓ gen-docs (${RELEASE ? 'release' : 'PR, contagens intactas'}) — ${mudancas.length} arquivo(s) atualizado(s), ${achados.size} bloco(s) gerados`);
 for (const m of mudancas) console.log(`  · ${m.arquivo}`);
 if (faltando.length) {
   console.log(`\n  ⚠ ${faltando.length} marcador(es) declarado(s) em COLOCACAO e AUSENTE(S) no arquivo:`);
@@ -1013,4 +1050,6 @@ if (faltando.length) {
 }
 for (const x of semLugar) console.log(`\n  ⚠ bloco '${x}' existe no gerador e não tem colocação declarada — ninguém o consome`);
 for (const x of semBloco) console.log(`\n  ⚠ COLOCACAO declara '${x}', que não existe em BLOCOS`);
+for (const x of semClasse) console.log(`\n  ⚠ bloco '${x}' sem classe em CLASSE`);
+for (const x of comConflito) console.log(`\n  ⚠ marcador de conflito de merge no bloco ${x}: resolva à mão`);
 for (const i of inconsistencias) console.log(`\n  ⚠ ${i}`);
