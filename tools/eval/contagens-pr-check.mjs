@@ -107,6 +107,16 @@ try {
     voltar(arq);
   }
 
+  // ---- marcador de conflito: nem bloco volátil o esconde do PR
+  const MARCAS = '<<<<<<< HEAD\n9999\n=======\n1\n>>>>>>> outro\n';
+  const arqNumeros = /^\s*numeros: \['([^']+)'/m.exec(colocacao)?.[1];
+  trocar(arqNumeros, /(BEGIN:GERADO:numeros\b[^\n]*\n)/, `$1${MARCAS}`);
+  if (passa('docs')) falhas.push(`CPR7 marcador de conflito dentro do bloco numeros (${arqNumeros}) passa no docs:check do PR`);
+  voltar(arqNumeros);
+  trocar('tools/eval/ARCH.md', /(\n## Tamanho dos arquivos indexados\n)/, `\n${MARCAS}$1`);
+  if (passa('arch')) falhas.push('CPR7 marcador de conflito dentro do bloco gerado do ARCH.md passa no arch:check do PR');
+  voltar('tools/eval/ARCH.md');
+
   // ---- fiação: o trem chama o modo release, o autofix e os scripts de PR não
   const release = lerT('.github/workflows/release.yml');
   if (!/node tools\/gen-docs\.mjs --release\b/.test(release) || !/node tools\/gen-arch\.mjs --release\b/.test(release))
