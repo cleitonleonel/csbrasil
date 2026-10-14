@@ -62,7 +62,8 @@ assert.equal(actual.width,1200);assert.equal(actual.height,630);
 const pixels=actual.pixels,blank=without.pixels;
 let imagePixels=0,textPixels=0,minY=630,maxY=-1;
 for(let y=0;y<630;y++)for(let x=650;x<1200;x++){const i=(y*1200+x)*4;if(pixels[i]!==blank[i] || pixels[i+1]!==blank[i+1] || pixels[i+2]!==blank[i+2]){imagePixels++;minY=Math.min(minY,y);maxY=Math.max(maxY,y);}}
-for(let y=110;y<180;y++)for(let x=60;x<800;x++){const i=(y*1200+x)*4;if(pixels[i]>200&&pixels[i+1]>200&&pixels[i+2]>180)textPixels++;}
+const nickTag=svg.match(/<text\b([^>]*)>OG Fixture<\/text>/)[1],nickY=+nickTag.match(/\by="(\d+)"/)[1],nickX=+nickTag.match(/\bx="(\d+)"/)[1];
+for(let y=nickY-50;y<nickY+4;y++)for(let x=nickX;x<800;x++){const i=(y*1200+x)*4;if(pixels[i]>200&&pixels[i+1]>200&&pixels[i+2]>180)textPixels++;}
 assert(imagePixels>0,'portrait missing from rendered pixels');assert(textPixels>0,'embedded font does not render nickname');
 assert(minY<=8&&maxY>=621,`portrait must span the card between its existing 8px border bands; actual y=${minY}..${maxY}`);
 assert.throws(()=>profileCardSvg({...p,source:'browser'}));assert.throws(()=>profileCardSvg({...p,visibility:'private'}));
