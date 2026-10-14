@@ -87,7 +87,7 @@ class Element {
 const all=n=>[n,...n.children.filter(c=>typeof c==='object').flatMap(all)];
 const words=n=>[n.textContent,...n.children.map(c=>typeof c==='string'?c:words(c))].join(' ');
 async function ui(authenticated=false,{nick='Guest',bootSplash=false,runCommunity=true,authGate=null,tab='profile',profileValues={},providers=required}={}) {
-  const ids=Object.fromEntries(['community','social-status','social-account','social-content','social-unread','hub-social-unread','account-entry-dialog','account-entry-body','account-entry-close','hub-account-login','account-completion','account-completion-copy','main-menu'].map(id=>[id,new Element(id==='account-completion'?'details':'div')]));
+  const ids=Object.fromEntries(['community','social-status','social-account','social-content','social-unread','hub-social-unread','account-entry-dialog','account-entry-body','account-entry-close','hub-account-login','account-completion','account-completion-copy','main-menu','social-hello','social-logout'].map(id=>[id,new Element(id==='account-completion'?'details':'div')]));
   ids['main-menu'].classList={contains:()=>false};
   if(bootSplash)ids['boot-splash']=new Element('div');
   ids.community.dataset.tab=tab;ids.community.dataset.site='https://www.corosolto.com.br';
@@ -146,7 +146,7 @@ await check('E04','early account opening hydrates available Auth methods',async(
   assert.equal(u.ids['account-entry-dialog'].open,true,'Auth arrival unexpectedly dismisses manual entry');
   assert.doesNotMatch(words(u.ids['account-entry-body']),/carregando/i,'manual opening remains stuck loading');
   assert(all(u.ids['account-entry-body']).some(n=>n.tagName==='INPUT' && n.type==='email'),'email method never hydrates into already-open dialog');
-  for(const provider of ['GOOGLE','TWITTER','FACEBOOK','LINKEDIN'])assert(new RegExp(provider,'i').test(words(u.ids['account-entry-body'])),`${provider} never hydrates`);
+  for(const provider of ['google','twitter','facebook','linkedin_oidc'])assert(all(u.ids['account-entry-body']).some(n=>n.tagName==='BUTTON' && n.dataset.provider===provider),`${provider} never hydrates`);
   for(const key of ['cs_anon','awpbr_token','awpbr_stats'])assert.equal(u.storage.get(key),u.before[key],'loading race destroys guest');
 });
 await check('P01','pause community and resume preserve the same game',()=> {
@@ -218,7 +218,7 @@ await check('G01','guest action stays inside game',async()=> {
   const u=await ui();const action=all(u.ids['social-account']).find(n=>/JOGAR COMO CONVIDADO|CONTINUAR COMO CONVIDADO/.test(n.textContent));assert(action,'guest alternative absent');assert.equal(action.tagName,'BUTTON','guest action is a page navigation');assert.equal(u.calls.filter(c=>c.action==='newsletter').length,0);
 });
 await check('G02','logout preserves anonymous progress and ownership',async()=> {
-  const u=await ui(true);const b=all(u.ids['social-account']).find(n=>n.tagName==='BUTTON' && /SAIR DA CONTA/.test(n.textContent));assert(b,'logout action absent');await b.onclick();
+  const u=await ui(true);const b=u.ids['social-logout'];assert(b && !b.hidden && b.onclick,'logout action absent');await b.onclick();
   for(const key of ['cs_anon','awpbr_token','awpbr_stats'])assert.equal(u.storage.get(key),u.before[key],`logout destroys guest ${key}`);
 });
 await check('N01','account newsletter consent is separate and initially unchecked',async()=> {
@@ -227,8 +227,8 @@ await check('N01','account newsletter consent is separate and initially unchecke
 await check('A06','existing accounts link identities without signing in again',async()=> {
   const u=await ui(true,{runCommunity:false});const c=new Element('div');
   u.entry.mountAccountIntegrations(c,{authenticated:true,identities:['google']},{providers:['google','discord','x','linkedin_oidc'],linking:true});
-  const linked=all(c).find(n=>n.tagName==='BUTTON' && /Google VINCULADO/.test(n.textContent));assert(linked?.disabled);
-  const b=all(c).find(n=>n.tagName==='BUTTON' && n.textContent==='VINCULAR Discord');assert(b && !b.disabled);await b.onclick();
+  const google=all(c).find(n=>n.dataset?.provider==='google');assert.equal(google?.dataset.linked,'true','linked login is not shown as state');assert(!all(google).some(n=>n.tagName==='BUTTON'),'linked login still rendered as a button');
+  const b=all(c).find(n=>n.tagName==='BUTTON' && n.getAttribute('aria-label')==='Vincular Discord');assert(b && !b.disabled);await b.onclick();
   const call=u.calls.find(c=>c.action==='link');assert.equal(call.body.provider,'discord');assert(!('authUser' in call.body));assert(!u.calls.some(c=>c.action==='start'));
 });
 await check('C03','new users have independent optional cookies and newsletter choices',async()=> {
@@ -238,12 +238,12 @@ await check('C03','new users have independent optional cookies and newsletter ch
   assert.equal(JSON.parse(u.storage.get('cs_privacy')).analytics,true);assert(!u.calls.some(c=>c.action==='newsletter_start'));
 });
 await check('C04','disabled providers remain visible without a login action',async()=> {
-  const u=await ui(false,{providers:[]});await u.entry.initAccountEntry();u.ids['hub-account-login'].onclick();const buttons=all(u.ids['account-entry-body']).filter(n=>n.tagName==='BUTTON' && /EM CONFIGURAÇÃO/.test(n.textContent));
-  assert.equal(buttons.length,4);for(const provider of ['Google','Discord','X / Twitter','LinkedIn'])assert(buttons.some(b=>b.textContent.includes(provider) && b.disabled));
+  const u=await ui(false,{providers:[]});await u.entry.initAccountEntry();u.ids['hub-account-login'].onclick();const buttons=all(u.ids['account-entry-body']).filter(n=>n.tagName==='BUTTON' && /em configuração/i.test(words(n)));
+  assert.equal(buttons.length,4);for(const provider of ['Google','Discord','X','LinkedIn'])assert(buttons.some(b=>words(b).includes(provider) && b.disabled));
   assert(!u.calls.some(c=>c.action==='start'),'Unavailable providers started OAuth');
 });
-await check('R01','missing avatar/socials reminder is collapsible',async()=> {
-  assert(entrySource,'shared account entry is absent');const markup=menuMarkup(path.join(root,'src/pages/index.astro'));assert.match(markup,/<details\b[^>]*id=["']account-completion["']/,'game has no collapsible completion reminder');const u=await ui(true,{runCommunity:false});await u.entry.initAccountEntry();const reminder=u.ids['account-completion'];assert.equal(reminder.hidden,false,'missing profile has no reminder');assert.equal(reminder.open,false,'reminder forced open');assert(/foto|avatar/i.test(u.ids['account-completion-copy'].textContent) && /redes|links/i.test(u.ids['account-completion-copy'].textContent),'reminder does not name missing photo and socials');
+await check('R01','lobby identity replaces the completion reminder (owner 2026-10-14)',async()=> {
+  assert(entrySource,'shared account entry is absent');const markup=menuMarkup(path.join(root,'src/pages/index.astro'));assert.doesNotMatch(markup,/id=["']account-completion["']|COMPLETE SEU PERFIL/,'completion reminder still competes with the header identity');assert.match(markup,/id=["']hub-view-profile["']/,'header has no Ver perfil link');
 });
 await check('C02','portrait rotate guard exempts only visible community menu',()=> {
   assert.match(index,/\/social\.css/,'social stylesheet not linked from game');

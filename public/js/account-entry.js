@@ -2,15 +2,19 @@ import {analyticsAllowed,mountPrivacyChoice,setPrivacyChoice} from './privacy-pr
 import {accountVerifiedBadge} from './account-verified.js';
 const REQUIRED_PROVIDERS=['google','discord','x','linkedin_oidc'];
 const providerChoices=config=>[...new Set([...REQUIRED_PROVIDERS.map(p=>p==='x' && config.providers?.includes('twitter') && !config.providers?.includes('x')?'twitter':p),...(config.providers || [])])];
-const PROVIDER_NAMES={google:'Google',twitter:'X / Twitter',x:'X / Twitter',facebook:'Facebook',linkedin_oidc:'LinkedIn',discord:'Discord',github:'GitHub'};
+const PROVIDER_NAMES={google:'Google',twitter:'X',x:'X',facebook:'Facebook',linkedin_oidc:'LinkedIn',discord:'Discord',github:'GitHub'};
 // Marcas oficiais: G do Google (asset do Google), Discord/X/LinkedIn do simple-icons (CC0; LinkedIn via v11.14.0, como em src/lib/net-svg.ts).
-const PROVIDER_ICONS={"google":"<svg viewBox=\"0 0 120 120\" aria-hidden=\"true\"><path fill=\"#4285F4\" d=\"M117.6,61.3636364 C117.6,57.1090909 117.218182,53.0181818 116.509091,49.0909091 L60,49.0909091 L60,72.3 L92.2909091,72.3 C90.9,79.8 86.6727273,86.1545455 80.3181818,90.4090909 L80.3181818,105.463636 L99.7090909,105.463636 C111.054545,95.0181818 117.6,79.6363636 117.6,61.3636364 L117.6,61.3636364 Z\"/><path fill=\"#34A853\" d=\"M60,120 C76.2,120 89.7818182,114.627273 99.7090909,105.463636 L80.3181818,90.4090909 C74.9454545,94.0090909 68.0727273,96.1363636 60,96.1363636 C44.3727273,96.1363636 31.1454545,85.5818182 26.4272727,71.4 L6.38181818,71.4 L6.38181818,86.9454545 C16.2545455,106.554545 36.5454545,120 60,120 L60,120 Z\"/><path fill=\"#FBBC05\" d=\"M26.4272727,71.4 C25.2272727,67.8 24.5454545,63.9545455 24.5454545,60 C24.5454545,56.0454545 25.2272727,52.2 26.4272727,48.6 L26.4272727,33.0545455 L6.38181818,33.0545455 C2.31818182,41.1545455 0,50.3181818 0,60 C0,69.6818182 2.31818182,78.8454545 6.38181818,86.9454545 L26.4272727,71.4 L26.4272727,71.4 Z\"/><path fill=\"#EA4335\" d=\"M60,23.8636364 C68.8090909,23.8636364 76.7181818,26.8909091 82.9363636,32.8363636 L100.145455,15.6272727 C89.7545455,5.94545455 76.1727273,0 60,0 C36.5454545,0 16.2545455,13.4454545 6.38181818,33.0545455 L26.4272727,48.6 C31.1454545,34.4181818 44.3727273,23.8636364 60,23.8636364 L60,23.8636364 Z\"/></svg>","discord":"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"#5865F2\" d=\"M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z\"/></svg>","x":"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z\"/></svg>","linkedin_oidc":"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"#0A66C2\" d=\"M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z\"/></svg>","twitter":"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z\"/></svg>"};
+export const PROVIDER_ICONS={"google":"<svg viewBox=\"0 0 120 120\" aria-hidden=\"true\"><path fill=\"#4285F4\" d=\"M117.6,61.3636364 C117.6,57.1090909 117.218182,53.0181818 116.509091,49.0909091 L60,49.0909091 L60,72.3 L92.2909091,72.3 C90.9,79.8 86.6727273,86.1545455 80.3181818,90.4090909 L80.3181818,105.463636 L99.7090909,105.463636 C111.054545,95.0181818 117.6,79.6363636 117.6,61.3636364 L117.6,61.3636364 Z\"/><path fill=\"#34A853\" d=\"M60,120 C76.2,120 89.7818182,114.627273 99.7090909,105.463636 L80.3181818,90.4090909 C74.9454545,94.0090909 68.0727273,96.1363636 60,96.1363636 C44.3727273,96.1363636 31.1454545,85.5818182 26.4272727,71.4 L6.38181818,71.4 L6.38181818,86.9454545 C16.2545455,106.554545 36.5454545,120 60,120 L60,120 Z\"/><path fill=\"#FBBC05\" d=\"M26.4272727,71.4 C25.2272727,67.8 24.5454545,63.9545455 24.5454545,60 C24.5454545,56.0454545 25.2272727,52.2 26.4272727,48.6 L26.4272727,33.0545455 L6.38181818,33.0545455 C2.31818182,41.1545455 0,50.3181818 0,60 C0,69.6818182 2.31818182,78.8454545 6.38181818,86.9454545 L26.4272727,71.4 L26.4272727,71.4 Z\"/><path fill=\"#EA4335\" d=\"M60,23.8636364 C68.8090909,23.8636364 76.7181818,26.8909091 82.9363636,32.8363636 L100.145455,15.6272727 C89.7545455,5.94545455 76.1727273,0 60,0 C36.5454545,0 16.2545455,13.4454545 6.38181818,33.0545455 L26.4272727,48.6 C31.1454545,34.4181818 44.3727273,23.8636364 60,23.8636364 L60,23.8636364 Z\"/></svg>","discord":"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"#5865F2\" d=\"M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z\"/></svg>","x":"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z\"/></svg>","linkedin_oidc":"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"#0A66C2\" d=\"M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z\"/></svg>","twitter":"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z\"/></svg>"};
 const withIcon=(b,provider)=>{if(PROVIDER_ICONS[provider]){const i=node('span','','account-provider-icon');i.innerHTML=PROVIDER_ICONS[provider];const label=b.textContent;b.textContent='';b.append(i,label);}return b;};
 const ERRORS={email_invalid:'Revise seu e-mail.',email_unavailable:'A entrada por e-mail está indisponível agora.',email_unverified:'Sua conta precisa de um e-mail confirmado.',rate_limited:'Muitos pedidos. Aguarde antes de tentar de novo.',guest_invalid:'Não foi possível vincular este convidado. Seu progresso local continua salvo.',account_conflict:'Esse nick já tem dono. Escolha outro.',session_expired:'Sua sessão expirou. Entre novamente.',account_hidden:'Conta indisponível pela moderação.'};
 const node=(tag,text='',cls='')=>{const e=document.createElement(tag);e.textContent=text;e.className=cls;return e;};
+const quiet=(text,fn)=>{const b=node('button',text,'account-link');b.type='button';b.onclick=fn;return b;};
+// O cabeçalho do modal acompanha o estado: convite para quem chega, saudação para quem já entrou.
+const dialogHead=(container,kicker,title)=>{const dialog=container.closest?.('dialog');const k=dialog?.querySelector('header small'),t=dialog?.querySelector('header h2');if(k)k.textContent=kicker;if(t)t.textContent=title;return t;};
 /* /u/<perfil> roda o jogo num iframe da mesma origem. Provedor de login recusa iframe,
    então a ida ao provedor sai do quadro. Em portal de outra origem nada muda. */
 const leaveTo=url=>{let target=location;try{if(top!==self && top.location.origin===location.origin)target=top.location;}catch{ /* topo de outra origem */ }target.assign(url);};
+export {leaveTo};   // o convite de login (login-prompt.js) sai do quadro do mesmo jeito
 let accountRequest=null,configRequest=null,accountActive=false;
 let newsletterDraft=false;
 export async function socialApi(path,body) {
@@ -61,11 +65,20 @@ export function mountAccountEntry(container,{auth=null,config={providers:[]},ret
   const say=text=>{status.textContent=text;message(text);};
   const button=(text,fn,cls='')=>{const b=node('button',text,`account-button ${cls}`);b.type='button';b.onclick=async()=>{b.disabled=true;try{await fn();}catch(e){say(accountError(e));}finally{b.disabled=false;}};return b;};
   if(auth?.authenticated) {
-    if(auth.profile){container.append(node('p',`Salve, ${auth.profile.nick}. Sua conta está salva.`),button('VER MEU PERFIL',()=>{document.querySelector('[data-hub-tab=comunidade]')?.click();document.dispatchEvent(new CustomEvent('cs-community-open',{detail:{tab:'profile'}}));onGuest();}),button('SAIR DA CONTA',async()=>{await logoutAccount(auth);await onAuthenticated({authenticated:false});}));mountAccountIntegrations(container,auth,config,say);void mountProfilePreferences(container,{auth,message:say});container.append(status);return;}
+    if(auth.profile) {
+      const title=dialogHead(container,'SUA CONTA',`Olá, ${auth.profile.nick}`);
+      if(title)socialApi('/api/social?action=profile').then(({profile})=>{if(profile?.id===auth.profile.id && profile.handle && title.textContent===`Olá, ${auth.profile.nick}`)title.textContent=`Olá, @${profile.handle}`;}).catch(()=>{});
+      const actions=node('div','','account-actions');
+      actions.append(button('VER MEU PERFIL',()=>{document.querySelector('[data-hub-tab=comunidade]')?.click();document.dispatchEvent(new CustomEvent('cs-community-open',{detail:{tab:'profile'}}));onGuest();}),quiet('Sair da conta',async()=>{try{await logoutAccount(auth);await onAuthenticated({authenticated:false});}catch(e){say(accountError(e));}}));
+      container.append(node('p','Sua conta está salva. Progresso e conquistas ficam no servidor.','social-muted account-lede'),actions);
+      mountAccountIntegrations(container,auth,config,say);void mountProfilePreferences(container,{auth,message:say,fold:true});container.append(status);return;
+    }
+    dialogHead(container,'A PORTA DA RESENHA','CHEGA JUNTO.');
     const form=node('form'),label=node('label','Como a turma vai te chamar?','social-field'),nick=node('input');nick.required=true;nick.maxLength=14;nick.pattern='[A-Za-z0-9_.\\-]{2,14}';nick.autocomplete='nickname';label.append(nick);
     const submit=button('VESTIR A CAMISA ▸',async()=>{if(!form.reportValidity())return;const out=await socialApi('/api/social-auth',{action:'onboard',nick:nick.value,...(guestProof()?{guest:guestProof()}:{})});auth.profile=out.profile;auth.account_verified=out.account_verified===true;acceptAccount(auth);await onAuthenticated(auth);});
     form.append(label,node('p','2 a 14 letras, números, ponto, hífen ou _.','social-muted'),submit);form.onsubmit=e=>{e.preventDefault();submit.click();};container.append(form);void mountProfilePreferences(container,{auth,message:say});container.append(status);return;
   }
+  dialogHead(container,'A PORTA DA RESENHA','CHEGA JUNTO.');
   container.append(node('p','Guarde suas conquistas, encontre a turma e volte pra próxima treta.','social-muted'));
   const grid=node('div','','account-entry-grid'),entryColumn=node('section','','account-login-column'),choiceColumn=node('section','','account-choice-column');
   entryColumn.append(node('h3','ENTRE OU CRIE SUA CONTA'));choiceColumn.append(node('h3','SUAS ESCOLHAS'));
@@ -83,7 +96,7 @@ export function mountAccountEntry(container,{auth=null,config={providers:[]},ret
   const providers=node('div','','account-providers');
   for(const provider of providerChoices(config))if(PROVIDER_NAMES[provider]) {
     const enabled=(config.providers || []).includes(provider);
-    const b=button(`ENTRAR COM ${PROVIDER_NAMES[provider]}${enabled?'':' · EM CONFIGURAÇÃO'}`,()=>perform(async()=>{if(!enabled)return;const out=await socialApi('/api/social-auth',{action:'start',provider,...payload()});leaveTo(out.url);}),'account-provider');b.disabled=!enabled;b.dataset.provider=provider;providers.append(withIcon(b,provider));
+    const b=button(`Continuar com ${PROVIDER_NAMES[provider]}${enabled?'':' · em configuração'}`,()=>perform(async()=>{if(!enabled)return;const out=await socialApi('/api/social-auth',{action:'start',provider,...payload()});leaveTo(out.url);}),'account-provider');b.disabled=!enabled;b.dataset.provider=provider;providers.append(withIcon(b,provider));
   }
   entryColumn.append(providers);
   if(!config.providers?.length)entryColumn.append(node('p','Os logins sociais estão em configuração. Você já pode usar e-mail quando habilitado.','social-muted'));
@@ -102,23 +115,30 @@ export function mountAccountEntry(container,{auth=null,config={providers:[]},ret
   container.append(status,button('CONTINUAR COMO CONVIDADO',()=>{setPrivacyChoice(analytics.checked);newsletterDraft=consent.checked;onGuest();},'account-guest'));
 }
 export function mountAccountIntegrations(container,auth,config,message=()=>{}) {
-  const section=node('section','','account-integrations');section.append(node('h3','Logins vinculados'),node('p','Vincule uma rede para entrar depois na mesma conta. Links públicos do perfil são configurados separadamente.','social-muted'));
-  const identities=new Set(auth.identities || []),list=node('div','','account-providers');
+  const section=node('section','','account-integrations');section.append(node('h3','Logins vinculados'),node('p','Entre com qualquer rede vinculada e caia na mesma conta.','social-muted'));
+  const identities=new Set(auth.identities || []),list=node('ul','','account-logins');
   for(const provider of providerChoices(config)) {
-    const linked=identities.has(provider),enabled=(config.providers || []).includes(provider),b=node('button',`${linked?'✓ '+PROVIDER_NAMES[provider]+' VINCULADO':'VINCULAR '+PROVIDER_NAMES[provider]}`,'account-button');b.type='button';b.disabled=linked || !enabled || !config.linking;
-    b.onclick=async()=>{b.disabled=true;try{const out=await socialApi('/api/social-auth',{action:'link',provider});leaveTo(out.url);}catch(e){message(e.message==='linking_unavailable'?'Vinculação em configuração. Tente novamente mais tarde.':e.message==='identity_already_linked'?'Esta rede já está vinculada. Atualize a página.':e.message==='identity_link_failed'?'Não foi possível vincular. Esta rede pode pertencer a outra conta.':accountError(e));b.disabled=false;}};list.append(b);
+    const name=PROVIDER_NAMES[provider] || provider,linked=identities.has(provider),enabled=(config.providers || []).includes(provider),row=node('li','','account-login');
+    row.dataset.provider=provider;row.append(withIcon(node('span',name,'account-login-name'),provider));
+    if(linked){row.dataset.linked='true';row.append(node('span','✓ Vinculado','account-login-state'));}
+    else if(enabled && config.linking) {
+      const b=quiet('Vincular',async()=>{b.disabled=true;try{const out=await socialApi('/api/social-auth',{action:'link',provider});leaveTo(out.url);}catch(e){message(e.message==='linking_unavailable'?'Vinculação em configuração. Tente novamente mais tarde.':e.message==='identity_already_linked'?'Esta rede já está vinculada. Atualize a página.':e.message==='identity_link_failed'?'Não foi possível vincular. Esta rede pode pertencer a outra conta.':accountError(e));b.disabled=false;}});
+      b.setAttribute('aria-label',`Vincular ${name}`);row.append(b);
+    }else row.append(node('span','Em breve','account-login-state account-login-off'));
+    list.append(row);
   }
-  section.append(list);if(auth.emailVerified)section.append(node('p','✓ E-mail confirmado','social-muted'));
-  const badge=accountVerifiedBadge(auth.account_verified);section.append(node('h3','Selo da conta'));
-  if(badge)section.append(badge,node('p','Seu e-mail está confirmado e uma rede social está vinculada. O selo indica essas verificações da conta.','social-muted'));
-  else section.append(node('p','Para receber o selo de verificado, confirme seu e-mail e vincule pelo menos uma rede social.','social-muted'));
-  if(!list.childElementCount)section.append(node('p','Os logins sociais ainda não estão habilitados neste ambiente.','social-muted'));if(!config.linking)section.append(node('p','A vinculação de novas redes aguarda habilitação neste ambiente.','social-muted'));container.append(section);
+  section.append(list);
+  if(!list.childElementCount)section.append(node('p','Os logins sociais ainda não estão habilitados neste ambiente.','social-muted'));
+  const verify=node('div','','account-verify'),badge=accountVerifiedBadge(auth.account_verified);
+  if(badge)verify.append(badge,node('span','E-mail confirmado e rede social vinculada.','social-muted'));
+  else verify.append(node('span',auth.emailVerified?'✓ E-mail confirmado. Vincule uma rede social para ganhar o selo de verificado.':'Para ganhar o selo de verificado, confirme seu e-mail e vincule uma rede social.','social-muted'));
+  section.append(verify);container.append(section);
 }
 const preferenceMounts=new WeakMap();
-export async function mountProfilePreferences(container,{auth=null,message=()=>{}}={}) {
-  const section=node('section','','account-preferences'),stamp={};preferenceMounts.set(container,stamp);
+export async function mountProfilePreferences(container,{auth=null,message=()=>{},fold=false}={}) {
+  const section=node(fold?'details':'section','',fold?'account-preferences account-fold':'account-preferences'),stamp={};preferenceMounts.set(container,stamp);
   if(container.id==='profile-preferences')container.replaceChildren();container.append(section);
-  section.append(node('h3','Newsletter e cookies'));
+  section.append(node(fold?'summary':'h3','Newsletter e cookies'));
   const note=node('p','','account-entry-status');note.setAttribute('role','status');
   const say=text=>{note.textContent=text;message(text);};
   let current=auth;
@@ -137,9 +157,9 @@ export function mountNewsletter(container,auth,message=()=>{}) {
   const status=node('p',auth.newsletter?.status==='pending'?'Falta confirmar seu e-mail para receber novidades.':'Sua escolha é opcional e separada da conta.','social-muted');status.setAttribute('role','status');
   check.onchange=async()=>{check.disabled=true;try{if(check.checked){await socialApi('/api/social-auth',{action:'newsletter_start',returnTo:'community'});auth.newsletter={status:'pending'};check.checked=false;status.textContent='Enviamos o link. Confirme seu e-mail neste navegador para receber novidades.';mountNewsletter(container,auth,message);}else{await socialApi('/api/social-auth',{action:'newsletter',subscribed:false});auth.newsletter={status:'unsubscribed'};status.textContent='Você saiu da lista de novidades.';}message(status.textContent);}catch(e){check.checked=auth.newsletter?.status==='subscribed';status.textContent=accountError(e);message(status.textContent);}finally{check.disabled=false;}};
   container.append(label,status);
-  if(auth.newsletter?.status==='pending'){const cancel=node('button','CANCELAR INSCRIÇÃO PENDENTE','account-button');cancel.type='button';cancel.onclick=async()=>{try{await socialApi('/api/social-auth',{action:'newsletter',subscribed:false});auth.newsletter={status:'unsubscribed'};mountNewsletter(container,auth,message);}catch(e){message(accountError(e));}};container.append(cancel);}
+  if(auth.newsletter?.status==='pending'){const cancel=node('button','Cancelar inscrição pendente','account-link');cancel.type='button';cancel.onclick=async()=>{try{await socialApi('/api/social-auth',{action:'newsletter',subscribed:false});auth.newsletter={status:'unsubscribed'};mountNewsletter(container,auth,message);}catch(e){message(accountError(e));}};container.append(cancel);}
 }
-export async function initAccountEntry({onSession=()=>{},skipPrompt=false}={}) {
+export async function initAccountEntry({onSession=()=>{},onReady=()=>{},skipPrompt=false}={}) {
   const dialog=document.getElementById('account-entry-dialog'),body=document.getElementById('account-entry-body'),close=document.getElementById('account-entry-close'),open=document.getElementById('hub-account-login');
   if(!dialog || !body)return;
   let auth=null,config=null,dismissed=false,previousFocus=null,loading=true,loadError=null;
@@ -147,20 +167,37 @@ export async function initAccountEntry({onSession=()=>{},skipPrompt=false}={}) {
   close.onclick=hide;dialog.addEventListener('cancel',()=>{dismissed=true;});
   const draw=()=>{
     if(loading || loadError){const p=node('p',loading?'Carregando as opções de entrada…':accountError(loadError),'account-entry-status');p.setAttribute('role','status');const guest=node('button','CONTINUAR COMO CONVIDADO','account-button account-guest');guest.type='button';guest.onclick=hide;body.replaceChildren(p,guest);if(loadError){const retry=node('button','TENTAR DE NOVO','account-button');retry.type='button';retry.onclick=()=>void hydrate();body.append(retry);}return;}
-    mountAccountEntry(body,{auth,config,onGuest:hide,onAuthenticated:async session=>{auth=session;acceptAccount(auth);onSession(auth);if(auth.profile){hide();await completion();}else draw();}});
+    mountAccountEntry(body,{auth,config,onGuest:hide,onAuthenticated:async session=>{auth=session;acceptAccount(auth);onSession(auth);if(auth.profile){hide();await identity();}else draw();}});
   };
   const show=()=>{previousFocus=document.activeElement;draw();if(!dialog.open)dialog.showModal();};
   open.onclick=show;
-  const nudge=document.getElementById('account-completion');
-  async function completion() {
-    nudge.hidden=true;
+  let card=null;
+  // Um elemento só no topo: @handle de quem entrou ou o convite para reivindicar o perfil.
+  const paintIdentity=()=>{
+    const name=document.getElementById('hub-identity-name'),cta=document.getElementById('hub-identity-cta'),view=document.getElementById('hub-view-profile'),avatar=document.getElementById('hub-avatar');
+    const signed=!!auth?.authenticated,profile=signed?auth.profile:null,mine=card && card.id===profile?.id?card:null;
+    const label=profile?(mine?.handle?'@'+mine.handle:profile.nick):signed?'Falta seu nick':'Reivindique seu perfil';
+    open.dataset.state=profile?'account':'guest';
+    if(name)name.textContent=label;else open.textContent=label;
+    if(cta){cta.hidden=!!profile;cta.textContent=signed?'CONTINUAR':'ENTRAR';}
+    if(view)view.hidden=!profile;
+    if(avatar && mine?.avatar_url)avatar.style.backgroundImage=`url("${encodeURI(mine.avatar_url)}")`;
+    open.setAttribute('aria-label',profile?`Sua conta: ${label}`:signed?'Escolha seu nick para terminar a entrada':'Reivindique seu perfil: entrar ou criar conta');
+  };
+  async function identity() {
+    paintIdentity();
     if(!auth?.profile)return;
-    try{const {profile}=await socialApi('/api/social?action=profile');if(!profile.avatar_url || !profile.socials?.length){nudge.hidden=false;document.getElementById('account-completion-copy').textContent=!profile.avatar_url && !profile.socials?.length?'Dê uma cara ao seu coro: adicione foto e redes.':!profile.avatar_url?'Sua foto ainda está no aquecimento.':'Adicione suas redes ao perfil, se quiser.';}}catch{ /* lembrete não bloqueia a entrada */ }
+    try{const {profile}=await socialApi('/api/social?action=profile');card=profile;paintIdentity();}catch{ /* sem o cartão, o nick segura o lugar do @handle */ }
   }
+  const view=document.getElementById('hub-view-profile');
+  if(view)view.onclick=event=>{event.preventDefault();document.querySelector('[data-hub-tab=comunidade]')?.click();document.dispatchEvent(new CustomEvent('cs-community-open',{detail:{tab:'profile'}}));};
   const failedReturn=new URLSearchParams(location.search).has('auth_error');
-  const maybePrompt=()=>{if(loading || skipPrompt || dismissed || dialog.open || document.getElementById('boot-splash') || document.getElementById('main-menu')?.classList.contains('hidden'))return;if(failedReturn || (auth?.authenticated?!auth.profile:true)){show();if(failedReturn)body.append(node('p','Esse link de entrada expirou ou foi aberto em outro navegador. Peça um novo link.','account-entry-status'));}};
+  const wantsPrompt=()=>failedReturn || (auth?.authenticated?!auth.profile:!localStorage.getItem('awpbr_nick')?.trim());
+  const maybePrompt=()=>{if(loading || skipPrompt || dismissed || dialog.open || document.getElementById('boot-splash') || document.getElementById('main-menu')?.classList.contains('hidden'))return;if(wantsPrompt()){show();if(failedReturn)body.append(node('p','Esse link de entrada expirou ou foi aberto em outro navegador. Peça um novo link.','account-entry-status'));}};
   const observer=new MutationObserver(maybePrompt);observer.observe(document.body,{childList:true});
-  async function hydrate(){loading=true;loadError=null;if(dialog.open)draw();try{[auth,config]=await Promise.all([loadAccount(),loadAuthOptions()]);acceptAccount(auth);onSession(auth);open.textContent=auth?.authenticated?'MINHA CONTA':'ENTRAR';await completion();}catch(e){loadError=e;}finally{loading=false;if(dialog.open)draw();maybePrompt();}}
+  async function hydrate(){loading=true;loadError=null;if(dialog.open)draw();try{[auth,config]=await Promise.all([loadAccount(),loadAuthOptions()]);acceptAccount(auth);onSession(auth);await identity();}catch(e){loadError=e;}finally{loading=false;if(dialog.open)draw();maybePrompt();}}
   await hydrate();
-  document.addEventListener('cs-account-change',event=>{auth=event.detail;onSession(auth);open.textContent=auth?.authenticated?'MINHA CONTA':'ENTRAR';void completion();});
+  // O passo de entrada (com a escolha de cookies) vem antes de qualquer outro convite de conta.
+  onReady({auth,config,accountBusy:()=>dialog.open || dismissed || wantsPrompt()});
+  document.addEventListener('cs-account-change',event=>{auth=event.detail;onSession(auth);void identity();});
 }

@@ -24,7 +24,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/lula-drip.webm",
+        "mp4": "/video/skins/lula-drip.mp4",
+        "poster": "/video/skins/lula-drip.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "bolsonaro-drip": {
       "character": "capitao",
@@ -49,7 +57,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/bolsonaro-drip.webm",
+        "mp4": "/video/skins/bolsonaro-drip.mp4",
+        "poster": "/video/skins/bolsonaro-drip.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "senador-drip": {
       "character": "senador",
@@ -74,7 +90,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/senador-drip.webm",
+        "mp4": "/video/skins/senador-drip.mp4",
+        "poster": "/video/skins/senador-drip.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "janja": {
       "character": "dama",
@@ -99,7 +123,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/janja.webm",
+        "mp4": "/video/skins/janja.mp4",
+        "poster": "/video/skins/janja.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "michelle-bolsonaro": {
       "character": "julia-zanatta",
@@ -124,7 +156,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/michelle-bolsonaro.webm",
+        "mp4": "/video/skins/michelle-bolsonaro.mp4",
+        "poster": "/video/skins/michelle-bolsonaro.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "lula-na-regua": {
       "character": "barbudo",
@@ -175,7 +215,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/lula-cyborg.webm",
+        "mp4": "/video/skins/lula-cyborg.mp4",
+        "poster": "/video/skins/lula-cyborg.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "bolsonaro-cyborg": {
       "character": "capitao",
@@ -200,7 +248,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/bolsonaro-cyborg.webm",
+        "mp4": "/video/skins/bolsonaro-cyborg.mp4",
+        "poster": "/video/skins/bolsonaro-cyborg.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "aljuiz-toga-mandrake": {
       "character": "juiz",
@@ -225,7 +281,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/aljuiz-toga-mandrake.webm",
+        "mp4": "/video/skins/aljuiz-toga-mandrake.mp4",
+        "poster": "/video/skins/aljuiz-toga-mandrake.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "lula-mandrake": {
       "character": "barbudo",
@@ -250,7 +314,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/lula-mandrake.webm",
+        "mp4": "/video/skins/lula-mandrake.mp4",
+        "poster": "/video/skins/lula-mandrake.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "bolsonaro-mandrake": {
       "character": "capitao",
@@ -275,7 +347,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/bolsonaro-mandrake.webm",
+        "mp4": "/video/skins/bolsonaro-mandrake.mp4",
+        "poster": "/video/skins/bolsonaro-mandrake.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "michelle-mandrake": {
       "character": "julia-zanatta",
@@ -300,7 +380,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/michelle-mandrake.webm",
+        "mp4": "/video/skins/michelle-mandrake.mp4",
+        "poster": "/video/skins/michelle-mandrake.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     },
     "zero-um-mandrake": {
       "character": "senador",
@@ -325,7 +413,15 @@
         "walkfire": "walkfire"
       },
       "gripProfile": "mint24-curl-v1",
-      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes"
+      "reviewScope": "visual estático com arma canônica; clipes/solo medidos; transições e mobile físico pendentes",
+      "video": {
+        "webm": "/video/skins/zero-um-mandrake.webm",
+        "mp4": "/video/skins/zero-um-mandrake.mp4",
+        "poster": "/video/skins/zero-um-mandrake.webp",
+        "seconds": 2.833,
+        "width": 480,
+        "height": 480
+      }
     }
   }
 }
