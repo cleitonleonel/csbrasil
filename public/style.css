@@ -343,6 +343,12 @@ html[data-home-ui="hub"] #main-menu:has(#menu-setup[data-step="profile"]) .hub-c
 .hub-factions,.hub-link-grid{gap:12px;margin:34px 0 18px}
 .hub-factions>div{gap:18px;min-height:104px;padding:18px;background:linear-gradient(135deg,#1a1814ec,#0d0e11e8);font:700 21px/1 var(--font);letter-spacing:.5px}
 .hub-factions img{width:58px;height:58px}
+/* Grupos vêm do elenco (7 hoje). POLÍTICOS mostra dois brasões sobrepostos; o nome encolhe e quebra antes de invadir o card vizinho. */
+.hub-factions>div{min-width:0}.hub-factions>div>span:last-child{min-width:0;overflow-wrap:anywhere}
+.hub-faction-crests{display:flex;flex:none}.hub-faction-crests img+img{margin-left:-30px}
+@media(min-width:1000px){.hub-factions{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:999px){.hub-factions>div{gap:12px;padding:12px}.hub-factions img{width:44px;height:44px}.hub-faction-crests img+img{margin-left:-24px}}
+@media(max-width:760px){.hub-factions>div{gap:10px;min-height:72px;padding:10px;font-size:17px}.hub-factions img{width:36px;height:36px}.hub-faction-crests img+img{margin-left:-20px}}
 .hub-link-grid{margin-top:16px}
 .hub-link-grid a{display:flex;align-items:center;min-height:56px;padding:15px 18px;font:700 15px/1 var(--font);letter-spacing:1px}
 .hub-changelog{gap:20px;margin:28px 0 0;padding:20px 24px;background:#0d0e11e8}

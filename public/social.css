@@ -40,3 +40,5 @@ body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{displa
 .community:is([data-view=profile],[data-view=settings]) .social-workspace{grid-template-columns:minmax(0,1fr)}
 .community:is([data-view=profile],[data-view=settings]) .social-account-panel{position:static}
 .community:is([data-view=profile],[data-view=settings]) .social-account-panel .social-actions{flex-direction:row;flex-wrap:wrap}
+.profile-socials{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.profile-social{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 12px;border:1px solid #454b40;background:#0d1116;color:#eff0e9;text-decoration:none;font:600 13px/1 system-ui,sans-serif}.profile-social:hover,.profile-social:focus-visible{border-color:#b4d92e;color:#b4d92e}.profile-social-icon{display:inline-flex;flex:none;width:18px;height:18px}.profile-social-icon svg{width:100%;height:100%;fill:currentColor}
+.social-profile-views{margin:-6px 0 18px;color:#c3ccbb;font:600 13px/1.4 system-ui,sans-serif;letter-spacing:.2px}
