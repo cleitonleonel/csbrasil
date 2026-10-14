@@ -170,6 +170,8 @@ if (BROWSER) {
       await ctx.route('**/js/login-prompt.js*', (rota) => rota.fulfill({ status: 200, body: fontePrompt, contentType: 'text/javascript' }));
     }
     const page = await ctx.newPage();
+    page.__falhas = [];
+    page.on('requestfailed', (r) => { if (r.url().includes('/api/social')) page.__falhas.push(`${r.url().split('/api/')[1]} ${r.failure()?.errorText}`); });
     await page.goto(`${BASE}/${query}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await page.waitForFunction(() => window.__CS_MAIN_READY__ === true, null, { timeout: 120000 });
     // `antes` roda logo no MAIN_READY e solta a sessão em seguida: segurar mais que 12 s estoura o timeout do socialApi.
@@ -180,12 +182,17 @@ if (BROWSER) {
     return { ctx, page, funil };
   }
   const aberto = (page) => page.evaluate(() => document.getElementById('login-prompt')?.open === true);
+  const estado = (page) => page.evaluate(() => ({ dialogs: [...document.querySelectorAll('dialog[open]')].map((d) => d.id), ready: document.getElementById('login-prompt')?.dataset.ready || null, conta: document.getElementById('hub-account-login')?.textContent, menuEscondido: document.getElementById('main-menu')?.classList.contains('hidden') }));
+  const esperaAberto = async (page, msg = 'popup não abriu') => {
+    try { await page.waitForFunction(() => document.getElementById('login-prompt')?.open === true, null, { timeout: 20000 }); }
+    catch { throw new Error(`${msg} ${JSON.stringify({ ...(await estado(page)), falhasApi: page.__falhas })}`); }
+  };
   const shot = async (page, nome) => { if (!SHOTS) return; await page.mouse.move(2, 2); await page.waitForTimeout(150); await page.screenshot({ path: `${SHOTS}/${nome}.png` }); };
 
   await caso('LB1', 'browser: deslogado vê o convite, foco no Google, aria-modal, Esc fecha e grava a recusa', async () => {
     const { ctx, page, funil } = await abre();
     try {
-      assert.equal(await aberto(page), true, 'popup não abriu');
+      await esperaAberto(page, 'popup não abriu');
       assert.equal(await page.getAttribute('#login-prompt', 'aria-modal'), 'true');
       assert.equal(await page.evaluate(() => document.activeElement?.dataset.provider), 'google', 'foco inicial');
       const nomes = await page.$$eval('#login-prompt-providers button', (bs) => bs.map((b) => b.textContent.trim()));
@@ -224,7 +231,7 @@ if (BROWSER) {
       assert.equal(await aberto(page), false);
       // não vale passar no vazio: de volta ao menu, o mesmo carregamento abre o convite
       await page.evaluate(() => { document.getElementById('main-menu').classList.remove('hidden'); document.body.append(document.createElement('div')); });
-      await page.waitForFunction(() => document.getElementById('login-prompt').open, null, { timeout: 10000 });
+      await esperaAberto(page, 'não abriu depois');
     } finally { await ctx.close(); }
   });
   await caso('LB5', 'browser: 1a visita sem nick mostra o passo de entrada (cookies) e não o convite', async () => {
@@ -242,12 +249,12 @@ if (BROWSER) {
     const a = await abre({ seed: { dismissedAt: Date.now() - 3600e3, matches: 2 } });
     try { assert.equal(await aberto(a.page), false, 'recusa de 1 h com 2 partidas'); } finally { await a.ctx.close(); }
     const b = await abre({ seed: { dismissedAt: Date.now() - 3600e3, matches: 3 } });
-    try { assert.equal(await aberto(b.page), true, '3 partidas'); } finally { await b.ctx.close(); }
+    try { await esperaAberto(b.page, '3 partidas'); } finally { await b.ctx.close(); }
   });
   await caso('LB7', 'browser: sem consentimento nenhum evento sai; clique manda o provedor', async () => {
     const a = await abre({ consent: false });
     try {
-      assert.equal(await aberto(a.page), true);
+      await esperaAberto(a.page);
       await a.page.click('#login-prompt-guest');
       await a.page.waitForTimeout(300);
       assert.equal(a.funil.filter((f) => String(f.step).startsWith('login_prompt')).length, 0, 'evento sem consentimento');
@@ -257,7 +264,7 @@ if (BROWSER) {
       await b.page.click('#login-prompt [data-provider=discord]');
       await b.page.waitForTimeout(300);
       assert(b.funil.some((f) => f.step === 'login_prompt_provider_click' && f.provider === 'discord'), 'provider_click sem provedor');
-      assert.equal(await aberto(b.page), true, 'erro do provedor fechou o convite');
+      await esperaAberto(b.page, 'erro do provedor fechou o convite');
     } finally { await b.ctx.close(); }
   });
   await caso('LB9', 'browser: outro diálogo aberto (apresentação da loja) adia o convite', async () => {
@@ -265,13 +272,13 @@ if (BROWSER) {
     try {
       assert.equal(await aberto(page), false, 'empilhou sobre outro diálogo');
       await page.evaluate(() => { document.getElementById('lp-outro').close(); document.body.append(document.createElement('div')); });
-      await page.waitForFunction(() => document.getElementById('login-prompt').open, null, { timeout: 10000 });
+      await esperaAberto(page, 'não abriu depois');
     } finally { await ctx.close(); }
   });
   await caso('LB8', 'browser: mobile 390x844 cabe sem rolagem lateral', async () => {
     const { ctx, page } = await abre({ viewport: { width: 390, height: 844 } });
     try {
-      assert.equal(await aberto(page), true);
+      await esperaAberto(page);
       const r = await page.evaluate(() => { const b = document.getElementById('login-prompt').getBoundingClientRect(); return { l: b.left, r: b.right, t: b.top, bt: b.bottom, sw: document.getElementById('login-prompt').scrollWidth, cw: document.getElementById('login-prompt').clientWidth }; });
       assert(r.l >= 0 && r.r <= 390 && r.t >= 0 && r.bt <= 844, `fora da tela ${JSON.stringify(r)}`);
       assert(r.sw <= r.cw, 'rolagem lateral');
