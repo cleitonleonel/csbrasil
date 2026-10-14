@@ -4965,14 +4965,11 @@ export class Game {
   }
 
   // ---------------- Capture the Flag (?ctf=1) ----------------
-  // Cor do time no CTF (anel/bandeira/HUD). AZUL pro lado do JOGADOR quando a facção é Tribos
-  // Urbanas; senão P vermelho / B verde. `dark` = tom mais escuro (pano da bandeira).
+  // Cor do time pelo LADO (ESQUERDA vermelho, DIREITA azul): online `_factionOf` do lado do
+  // jogador é a categoria do corpo e pintava o próprio time de rosa/ouro/roxo/cinza.
   _teamColor(side, dark = false) {
-    // o que depende de partida fica aqui (quem é espelho, que facção está de cada lado);
-    // a COR de cada facção mora no registro do elenco e é a mesma que bandeira e rim
-    // consomem. O roxo do espelho sai de ESPELHO, e não mais de literal solto aqui.
     if (this._mirror(side)) return dark ? ESPELHO.escura : ESPELHO.base;
-    return factionColor(this._factionOf(side), dark);
+    return factionColor(side, dark);
   }
   /* TINTA CLARA DO TIME — só pra TEXTO sobre chip tingido (killfeed). Por que existe:
      o chip do killfeed é `background:${cor}2e` (a própria cor do time a 18%) com o texto
@@ -4984,7 +4981,7 @@ export class Game {
      Mantém a leitura "vermelho = time-e / verde = time-b" e passa a 5,9-9,1:1. */
   _teamInk(side) {
     if (this._mirror(side)) return ESPELHO.palida;
-    return factionInk(this._factionOf(side));
+    return factionInk(side);
   }
   // Pack de vozes/round por FACÇÃO: o lado do jogador usa 'U' (Tribos) quando a facção é Tribos
   // Urbanas; senão o lado (P/B). O inimigo é sempre político. Corrige "Tribos usa voz de Time E".
