@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // CPR: contagem gerada não entra em PR (dois PRs abertos conflitavam no "N scripts"); só o release a reescreve.
-// Uso: node tools/eval/contagens-pr-check.mjs [--mutante=volatil-vira-estrutural|release-pula-volatil|arch-sem-mascara|mesclar-com-cursor|autofix-release]
+// Uso: node tools/eval/contagens-pr-check.mjs [--mutante=volatil-vira-estrutural|release-pula-volatil|arch-sem-mascara|mesclar-com-cursor|aceita-marcador|autofix-release]
 import { execFileSync, spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -12,6 +12,7 @@ const MUTANTES = {
   'release-pula-volatil': ['tools/gen-docs.mjs', "classe === 'volatil' && !RELEASE &&", "classe === 'volatil' &&"],
   'arch-sem-mascara': ['tools/gen-arch.mjs', "const RELEASE = process.argv.includes('--release');", 'const RELEASE = true;'],
   'mesclar-com-cursor': ['tools/gerado-modo.mjs', '(velha, k) => !usadas.has(k) && re.test(velha)', '(velha, k) => k > Math.max(-1, ...usadas) && re.test(velha)'],
+  'aceita-marcador': ['tools/gen-docs.mjs', 'const MARCADOR_CONFLITO = /^(<{7}|>{7})( |$)|^={7}$/m;', 'const MARCADOR_CONFLITO = /(?!)/;'],
   'autofix-release': ['.github/workflows/autofix.yml', 'node tools/gen-docs.mjs   ||', 'node tools/gen-docs.mjs --release ||'],
 };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
