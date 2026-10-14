@@ -4319,7 +4319,7 @@ export class Game {
       // chip = tint da cor CHEIA do time; texto = tinta PÁLIDA do time (ver _teamInk):
       // texto na cor cheia sobre o próprio tint dava 3,2-3,9:1 (ui-check.mjs, UI1)
       const c = this._teamColor(e.team);
-      return `<span class="kf-n" style="background:${c}2e;color:${this._teamInk(e.team)}">${e.isPlayer ? tr('VOCÊ') : e.name}</span>`;
+      return `<span class="kf-n" style="background:${c}2e;color:${this._teamInk(e.team)}">${e.isPlayer ? tr('VOCÊ') : escapeClanName(e.name)}</span>`;
     };
     row.innerHTML = attacker && attacker !== victim
       ? `${cn(attacker)}${head ? this._skullIcon() : ''}${this._killfeedWeaponIcon(weap)}${cn(victim)}`
@@ -5839,7 +5839,7 @@ export class Game {
       this._deathShown = h.at;
       const tier = { ruim: 'PERNA DE PAU', medio: 'MEDIANO', bom: 'BOM', muitobom: 'MONSTRO' }[h.tier] || '';
       this._deathPanel.innerHTML =
-        `<div style="font-size:15px;color:#fff">MORTO POR <b>${h.name}</b>${tier ? ` <span style="opacity:.65;font-size:11px">(${tier})</span>` : ''}</div>` +
+        `<div style="font-size:15px;color:#fff">MORTO POR <b>${escapeClanName(h.name)}</b>${tier ? ` <span style="opacity:.65;font-size:11px">(${tier})</span>` : ''}</div>` +
         `<div>${h.weap} · ${h.dist.toFixed(0)} m · ${h.head ? 'NA CABEÇA' : h.dmg + ' de dano'}</div>` +
         `<div style="opacity:.75;font-size:11px">veio ${h.quad || (h.behind ? '⚠ PELAS COSTAS' : 'DA SUA FRENTE')} · ${Math.round(h.total)} de dano nesta vida</div>`;
     }
