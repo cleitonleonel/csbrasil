@@ -285,6 +285,7 @@ if (BROWSER) {
     }
     const page = await ctx.newPage();
     await page.goto(`${BASE}/${query}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+    await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; pointer-events: none !important; }' });
     await page.waitForFunction(() => window.__CS_MAIN_READY__ === true, null, { timeout: 120000 });
     await page.locator('#splash-enter:not(.hidden)').waitFor({ timeout: 120000 }).catch(() => {});
     if (await page.locator('#boot-splash').count()) await page.locator('#boot-splash').dispatchEvent('pointerdown').catch(() => {});
@@ -370,6 +371,7 @@ if (BROWSER) {
     const a = await abre({ nick: 'Visitante', consent: true, intro: true });
     try {
       await jogaPartida(a.page);
+      assert.equal(await convite(a.page), true, `convite não abriu: ${await abertos(a.page)}`);
       await a.page.click('#login-prompt [data-provider=discord]');
       await a.page.waitForTimeout(300);
       await a.page.click('#login-prompt-close');
