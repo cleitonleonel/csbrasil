@@ -34,6 +34,7 @@ async function equipar(id,botao,aviso) {
 }
 function card(s,aviso) {
   const item=node('li','','treta-vitrine-card');item.style.setProperty('--skin-color',s.color);item.dataset.skin=s.id;
+  if(s.equipped)item.dataset.equipada='';
   const abrir=node('button','','treta-vitrine-abrir');abrir.type='button';
   const img=node('img');img.src=s.poster;img.alt=`Skin ${s.name}`;img.loading='lazy';img.decoding='async';img.width=72;img.height=72;
   const texto=node('span','','treta-vitrine-texto');texto.append(node('small',s.series),node('strong',s.name));
@@ -45,6 +46,10 @@ function card(s,aviso) {
   if(s.equipped)item.append(node('span','EQUIPADA','treta-vitrine-equipada'));
   else if(s.owned){const b=node('button','EQUIPAR','treta-vitrine-equipar');b.type='button';b.onclick=()=>void equipar(s.id,b,aviso);item.append(b);}
   return item;
+}
+function fimDaLista() {
+  const l=$('treta-vitrine-lista');
+  l.toggleAttribute('data-fim',l.scrollLeft+l.clientWidth>=l.scrollWidth-4);
 }
 function desenhar() {
   const host=$('treta-vitrine');
@@ -58,7 +63,9 @@ function desenhar() {
   assinatura=nova;
   const aviso=$('treta-vitrine-aviso');aviso.textContent='';
   $('treta-vitrine-lista').replaceChildren(...lista.map(s=>card(s,aviso)));
-  host.hidden=false;
+  /* Celular: só o título cabe abaixo do JOGAR; três rostos mostram que tem skin ali. */
+  $('treta-vitrine-teaser').replaceChildren(...lista.slice(0,3).map(s=>{const i=node('span');i.style.backgroundImage=`url("${s.poster}")`;return i;}));
+  host.hidden=false;fimDaLista();
 }
 
 export function iniciarVitrine() {
@@ -66,6 +73,8 @@ export function iniciarVitrine() {
   if(!host || host.dataset.pronta)return;
   host.dataset.pronta='1';
   $('treta-vitrine-loja').onclick=()=>document.querySelector('.hub-tabs [data-hub-tab="loja"]')?.click();
+  $('treta-vitrine-teaser').onclick=()=>host.scrollIntoView({block:'end',behavior:'smooth'});
+  $('treta-vitrine-lista').addEventListener('scroll',fimDaLista,{passive:true});
   document.addEventListener('cs-treta-state',desenhar);
   document.addEventListener('cs-shop-open',seguirDeepLink);
   $('treta-detail')?.addEventListener('close',()=>{if(estadoDaUrl(location.href)?.secao==='loja')semSkinNaUrl();});
