@@ -25,7 +25,7 @@
    RT6  (--dist) o build tem uma página por rota, com canonical, robots, og:url e base
         certos, e o sitemap lista as indexáveis.
 
-   uso: node tools/eval/rotas-check.mjs [--dist] [--mutante=caminho|legado|redirect|abas|base|robots|href-antigo]
+   uso: node tools/eval/rotas-check.mjs [--dist] [--mutante=caminho|legado|redirect|abas|base|robots|perfil|href-antigo]
    Cada mutante quebra de propósito o que um item mede; o item TEM que ficar vermelho. */
 import { readFileSync, existsSync } from 'node:fs';
 import { strict as assert } from 'node:assert';
@@ -41,6 +41,7 @@ const mutar = (texto, de, para, nome) => {
   return novo;
 };
 if (MUT === 'caminho') fonteRotas = mutar(fonteRotas, "return servidor === 'privado' ? '/jogar/multiplayer/privado'", "return servidor === 'privado' ? '/jogar/multiplayer'", MUT);
+if (MUT === 'perfil') fonteRotas = mutar(fonteRotas, "return perfilNoCaminho ? `/u/${encodeURIComponent(perfil)}` : null;", 'return null;', MUT);
 if (MUT === 'legado') fonteRotas = mutar(fonteRotas, "if (secao === 'loja') return '/loja';", "if (secao === 'loja') return null;", MUT);
 const R = await import(`data:text/javascript;base64,${Buffer.from(fonteRotas).toString('base64')}`);
 
@@ -167,6 +168,27 @@ const LEGADO = [
   if (MUT === 'base') hub = mutar(hub, '<base href="/">', '', MUT);
   const base = hub.indexOf('<base href="/">'), mapa = hub.indexOf('<script type="importmap"');
   item('RT5', base > 0 && mapa > base, `index.astro sem <base href="/"> antes do importmap (base=${base}, importmap=${mapa}). Em /jogar/multiplayer o three resolveria para /jogar/vendor/three.module.js e o jogo não subiria.`);
+}
+
+// RT7: perfil na janela de cima mora em /u/<perfil>; no iframe de /u continua na query.
+{
+  const erros = [];
+  const ID = '11111111-1111-4111-8111-111111111111';
+  for (const [caminho, perfil] of [['/u/rubenmarcus', 'rubenmarcus'], ['/u/rubenmarcus/conquistas', 'rubenmarcus'], [`/u/${ID}/Nick`, ID], ['/u/rubenmarcus/', 'rubenmarcus']]) {
+    const e = R.estadoDaUrl(SITE + caminho);
+    if (e?.secao !== 'comunidade' || e?.social !== 'profile' || e?.perfil !== perfil) erros.push(`${caminho} abre ${JSON.stringify(e)}`);
+  }
+  if (R.estadoDaUrl(`${SITE}/u/x`)) erros.push('/u/x (handle inválido) virou estado do hub');
+  const estado = { secao: 'comunidade', social: 'profile', perfil: 'rubenmarcus' };
+  if (R.caminhoDoEstado(estado, { perfilNoCaminho: true }) !== '/u/rubenmarcus') erros.push(`janela de cima: ${R.caminhoDoEstado(estado, { perfilNoCaminho: true })}`);
+  if (R.caminhoDoEstado(estado) !== null) erros.push('iframe: perfil saiu da query e quebraria o iframe de /u');
+  const legado = R.urlDoEstado(R.estadoDaUrl(`${SITE}/?secao=comunidade&social=profile&perfil=${ID}`), `${SITE}/?secao=comunidade&social=profile&perfil=${ID}`, { perfilNoCaminho: true });
+  if (legado.pathname !== `/u/${ID}` || legado.search) erros.push(`link antigo de perfil na janela de cima virou ${legado.href}`);
+  if (!R.ABAS_PERFIL || Object.keys(R.ABAS_PERFIL).join() !== 'conquistas,partidas,privacidade') erros.push(`ABAS_PERFIL ${JSON.stringify(R.ABAS_PERFIL)}`);
+  const pagina = readFileSync('src/pages/u/[...path].astro', 'utf8');
+  const abasSsr = /const ABAS:Record<string,string>=(\{[^}]*\})/.exec(pagina)?.[1];
+  if (!abasSsr || JSON.stringify(Function(`return ${abasSsr}`)()) !== JSON.stringify(R.ABAS_PERFIL)) erros.push(`abas do SSR (${abasSsr}) diferentes de ABAS_PERFIL`);
+  item('RT7', !erros.length, `perfil fora do contrato (${erros.length}): ${erros.slice(0, 4).join('; ')}`);
 }
 
 // RT8
