@@ -31,10 +31,10 @@
  *       RLS11 sem cron · RLS12 workflow_dispatch · RLS13 dispara no merge de lote ·
  *       RLS14 não dispara em PR comum (nem PR aberto, nem label parecida) · RLS8 concurrency
  *       nos jobs que embarcam, com grupo que só é `release-main` quando o lote sai, nunca no
- *       topo · RLS15 anti-loop do commit do bot ·
+ *       topo; o bump em grupo próprio (`release-bump`) e nunca cancelável · RLS15 anti-loop do commit do bot ·
  *       RLS16 head.ref do PR é dado, não código (sem `${{ }}` no shell, permissão de leitura).
  *
- * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch | cron-de-volta | sem-dispatch | lote-ignorado | sem-rotulo | sem-filtro-lote | qualquer-merge | pr-aberto | concurrency-no-topo | sem-concurrency | grupo-sem-portao | loop | injecao.
+ * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch | cron-de-volta | sem-dispatch | lote-ignorado | sem-rotulo | sem-filtro-lote | qualquer-merge | pr-aberto | concurrency-no-topo | sem-concurrency | grupo-sem-portao | bump-cancelavel | bump-mesmo-grupo | loop | injecao.
  */
 import { readFileSync, readdirSync, mkdtempSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -104,10 +104,13 @@ let animacoesNoDeploy = /(?:^|\s)anims:check(?:\s|$)/.test(packageJson.scripts['
 /* RLS8 — com o gatilho em todo push da main, concurrency no TOPO deixaria o merge de um PR
    comum cancelar o lote que espera o pr-fast. O grupo vive nos dois jobs que embarcam. */
 const CONCORRENCIA_JOB = (porta) => `    concurrency:\n      group: \${{ needs.${porta}.outputs.sai == 'true' && 'release-main' || format('release-fora-{0}', github.run_id) }}\n      cancel-in-progress: \${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}\n`;
+/* O bump NÃO divide grupo com o embarque e NUNCA é cancelado: embarque novo cancelando bump
+   velho no meio do push/tag/Release deixava tag sem Release e backend sem aviso. */
+const CONCORRENCIA_BUMP = "    concurrency:\n      group: ${{ needs.embarque.outputs.sai == 'true' && 'release-bump' || format('release-fora-{0}', github.run_id) }}\n      cancel-in-progress: false\n";
 const blocoJob = (nome) => new RegExp(`^  ${nome}:\\n((?:(?: {4}[^\\n]*)?\\n)*)`, 'm').exec(workflowRelease)?.[1] || '';
 const validaConcorrenciaRelease = () => !/^concurrency:/m.test(workflowRelease)
   && blocoJob('embarque').includes(CONCORRENCIA_JOB('lote'))
-  && blocoJob('bump-tag-release').includes(CONCORRENCIA_JOB('embarque'));
+  && blocoJob('bump-tag-release').includes(CONCORRENCIA_BUMP);
 let concorrenciaRelease = validaConcorrenciaRelease();
 
 /* RLS9 — o filtro roda de verdade: o que importa é o código de saída que a Vercel vê. */
@@ -251,6 +254,8 @@ if (mutante) {
   else if (mutante === 'pr-aberto') mutaRelease('select(.merged_at != null and .base.ref == "main")', 'select(.base.ref == "main")');
   else if (mutante === 'concurrency-no-topo') mutaRelease('\npermissions:\n  contents: write\n', '\nconcurrency:\n  group: release-main\n  cancel-in-progress: true\n\npermissions:\n  contents: write\n');
   else if (mutante === 'sem-concurrency') mutaRelease(CONCORRENCIA_JOB('lote'), '');
+  else if (mutante === 'bump-cancelavel') mutaRelease(/(group: \$\{\{ needs\.embarque[^\n]*\n      cancel-in-progress:) false/, '$1 true');
+  else if (mutante === 'bump-mesmo-grupo') mutaRelease("'release-bump'", "'release-main'");
   else if (mutante === 'grupo-sem-portao') mutaRelease(/group: \$\{\{ needs\.lote\.outputs[^\n]*/, 'group: release-main');
   else if (mutante === 'loop') mutaRelease(ANTI_LOOP, 'if: always()');
   else if (mutante === 'injecao') mutaRelease('case "$2" in', 'eval "X=$2"; case "$2" in');
@@ -298,7 +303,7 @@ console.log(`${docsOk === docsRelease.length ? '✓' : '✗'} RLS4 site de docs 
 console.log(`${rollbackRelease ? '✓' : '✗'} RLS5 falha local restaura a árvore de trabalho`);
 console.log(`${caminhoProdUnico ? '✓' : '✗'} RLS6 produção tem um caminho automático e fallback manual`);
 console.log(`${animacoesNoDeploy ? '✓' : '✗'} RLS7 deploy valida manifesto e GLBs mesclados de animação`);
-console.log(`${concorrenciaRelease ? '✓' : '✗'} RLS8 concurrency nos jobs que embarcam (lote novo cancela o velho), nunca no topo; push do bot não cancela`);
+console.log(`${concorrenciaRelease ? '✓' : '✗'} RLS8 embarque cancelável (lote novo cancela o velho), bump em grupo próprio e nunca cancelado, nada no topo`);
 console.log(`${tremRelease ? '✓' : '✗'} RLS9 produção só sai no commit de release, e o release só sai com a main verde`);
 console.log(`${geradosNoTrem ? '✓' : '✗'} RLS10 bloco gerado velho na main não trava o trem; o PR e o commit do release conferem`);
 console.log(`${lote.semCron ? '✓' : '✗'} RLS11 sem cron: release não sai por horário`);

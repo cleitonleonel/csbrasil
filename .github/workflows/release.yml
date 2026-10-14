@@ -160,10 +160,13 @@ jobs:
     if: needs.embarque.outputs.sai == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Mesmo grupo do embarque: lote novo cancela o bump velho (ver lá).
+    # Grupo PRÓPRIO e NUNCA cancelável: o embarque de um lote novo dividindo grupo com este
+    # job cancelaria o bump velho no meio do push/tag/Release, deixando tag sem Release e o
+    # backend sem aviso. Bump em andamento termina; o próximo espera na fila, refaz o
+    # `pull --rebase` e calcula a versão sobre a main que o anterior deixou.
     concurrency:
-      group: ${{ needs.embarque.outputs.sai == 'true' && 'release-main' || format('release-fora-{0}', github.run_id) }}
-      cancel-in-progress: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
+      group: ${{ needs.embarque.outputs.sai == 'true' && 'release-bump' || format('release-fora-{0}', github.run_id) }}
+      cancel-in-progress: false
     steps:
       # Push do bump autenticado como csbrasil-BOT: o ruleset da main (protecao-main)
       # não permite bypass do github-actions[bot]; o guard "chore(release):" impede o loop do PAT.
