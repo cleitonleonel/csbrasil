@@ -24,7 +24,14 @@
  *       main, docs:check, arch:check e a autoria só rodam no commit `chore(release):`; no PR
  *       docs:check e arch:check continuam valendo sempre, e o release regenera os dois.
  *
- * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | trem-por-push | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch.
+ * RLS11: PUSH DO TREM COM RETRY LIMITADO (14/10/2026). Às 21:46 de 13/10 o run morreu em
+ *       `! [rejected] main -> main (fetch first)`: o #857 entrou entre o rebase e o push. O
+ *       --atomic deixou tudo limpo, mas o trem não saiu. O push agora fica num laço de N
+ *       tentativas (2 <= N <= 10, sem `while true`), cada uma refaz o bump sobre a main que
+ *       está no remoto (fetch + reset + regeneração, então conflito de gerado não existe),
+ *       com backoff, `--atomic`, nunca `--force`, e a última falha sai com erro.
+ *
+ * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | trem-por-push | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch | sem-retry | retry-infinito | push-forcado.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -127,8 +134,27 @@ const validaGerados = () => {
 };
 let geradosNoTrem = validaGerados();
 
+/* RLS11 — o push do trem tenta de novo, com teto, sem force. */
+const validaRetry = () => {
+  const linhas = workflowRelease.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+  const max = Number(/^\s*MAX_TENTATIVAS=(\d+)\s*$/m.exec(linhas)?.[1] || 0);
+  const ini = linhas.search(/for tentativa in \$\(seq 1 "\$MAX_TENTATIVAS"\); do/);
+  const laco = ini < 0 ? '' : linhas.slice(ini, linhas.indexOf('\n          done', ini));
+  return max >= 2 && max <= 10
+    && laco !== ''
+    && !/while true|until /.test(linhas)
+    && /git fetch origin main/.test(laco)
+    && /git reset --hard origin\/main/.test(laco)
+    && /node tools\/gen-docs\.mjs|refaz_bump/.test(laco)
+    && /if git push --atomic origin main "refs\/tags\/\$NEW"; then/.test(laco)
+    && /"\$tentativa" = "\$MAX_TENTATIVAS"[^\n]*\n[^\n]*::error::[^\n]*\n[^\n]*exit 1/.test(laco)
+    && /sleep \$\(\(/.test(laco)
+    && !/git push[^\n]*(--force|\s-f\s|\s\+refs|\s\+main)/.test(linhas);
+};
+let retryRelease = validaRetry();
+
 if (mutante) {
-  const antes = JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease, geradosNoTrem]);
+  const antes = JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease, geradosNoTrem, retryRelease]);
   if (mutante === 'nome-antigo') comandos[0].linha = comandos[0].linha.replace('"CSBR ', '"CORO SOLTO ');
   else if (mutante === 'semcreditos') comandos[0].linha = comandos[0].linha.replace(' --generate-notes', '');
   else if (mutante === 'semdco') {
@@ -180,8 +206,20 @@ if (mutante) {
     workflowRelease = workflowRelease.replace(/node tools\/gen-arch\.mjs/g, 'true');
     geradosNoTrem = validaGerados();
   }
+  else if (mutante === 'sem-retry') {
+    workflowRelease = workflowRelease.replace(/^(\s*MAX_TENTATIVAS=)\d+/m, '$11');
+    retryRelease = validaRetry();
+  }
+  else if (mutante === 'retry-infinito') {
+    workflowRelease = workflowRelease.replace('for tentativa in $(seq 1 "$MAX_TENTATIVAS"); do', 'tentativa=0; while true; do tentativa=$((tentativa + 1))');
+    retryRelease = validaRetry();
+  }
+  else if (mutante === 'push-forcado') {
+    workflowRelease = workflowRelease.replace('git push --atomic origin main', 'git push --atomic --force origin main');
+    retryRelease = validaRetry();
+  }
   else throw new Error(`mutante desconhecido: ${mutante}`);
-  if (JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease, geradosNoTrem]) === antes) throw new Error(`MUTANTE NAO APLICOU: ${mutante}`);
+  if (JSON.stringify([comandos, commitsRelease, docsRelease, rollbackRelease, caminhoProdUnico, animacoesNoDeploy, concorrenciaRelease, tremRelease, geradosNoTrem, retryRelease]) === antes) throw new Error(`MUTANTE NAO APLICOU: ${mutante}`);
 }
 
 const nomes = comandos.filter(({ linha }) => /--title "CSBR \$/.test(linha)).length;
@@ -190,7 +228,7 @@ const total = comandos.length;
 const dco = commitsRelease.filter(temDco).length;
 const totalCommits = commitsRelease.length;
 const docsOk = docsRelease.filter(Boolean).length;
-const ok = total > 0 && nomes === total && creditos === total && totalCommits > 0 && dco === totalCommits && docsOk === docsRelease.length && rollbackRelease && caminhoProdUnico && animacoesNoDeploy && concorrenciaRelease && tremRelease && geradosNoTrem;
+const ok = total > 0 && nomes === total && creditos === total && totalCommits > 0 && dco === totalCommits && docsOk === docsRelease.length && rollbackRelease && caminhoProdUnico && animacoesNoDeploy && concorrenciaRelease && tremRelease && geradosNoTrem && retryRelease;
 
 console.log(`${nomes === total && total ? '✓' : '✗'} RLS1 título CSBR: ${nomes}/${total} caminhos`);
 console.log(`${creditos === total && total ? '✓' : '✗'} RLS2 notas com contribuidores: ${creditos}/${total} caminhos`);
@@ -202,6 +240,7 @@ console.log(`${animacoesNoDeploy ? '✓' : '✗'} RLS7 deploy valida manifesto e
 console.log(`${concorrenciaRelease ? '✓' : '✗'} RLS8 push do bot não cancela publicação e dispatch`);
 console.log(`${tremRelease ? '✓' : '✗'} RLS9 produção só sai no trem de release, e o trem só sai com a main verde`);
 console.log(`${geradosNoTrem ? '✓' : '✗'} RLS10 bloco gerado velho na main não trava o trem; o PR e o commit do release conferem`);
+console.log(`${retryRelease ? '✓' : '✗'} RLS11 push do trem com retry limitado: fetch, refaz o bump sobre a main nova, --atomic, sem force`);
 if (!ok) {
   console.error('Release inválido: preserve créditos, DCO, docs, concorrência segura e um único caminho automático de produção.');
   process.exit(1);
