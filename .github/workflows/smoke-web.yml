@@ -2,8 +2,6 @@ name: smoke-web
 
 on:
   pull_request:
-  merge_group:
-    types: [checks_requested]
   workflow_dispatch:
 
 permissions:
@@ -12,7 +10,7 @@ permissions:
 # Push novo no MESMO PR cancela o smoke velho: ele testaria um commit que já não é
 # a cabeça do PR e prende runner do plano Free (teto de 20 jobs) por até 40 min.
 concurrency:
-  group: smoke-web-${{ github.event.pull_request.number || github.event.merge_group.head_ref || github.ref }}
+  group: smoke-web-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -37,17 +35,13 @@ jobs:
         id: filtro
         env:
           EVENTO: ${{ github.event_name }}
-          BASE: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha }}
-          HEAD: ${{ github.event.merge_group.head_sha || github.event.pull_request.head.sha }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          if [ "$EVENTO" != "pull_request" ] && [ "$EVENTO" != "merge_group" ]; then
+          if [ "$EVENTO" != "pull_request" ]; then
             echo "rodar=true" >> "$GITHUB_OUTPUT"
             echo "$EVENTO: roda sempre"; exit 0
-          fi
-          if [ -z "$BASE" ] || [ -z "$HEAD" ]; then
-            echo "rodar=true" >> "$GITHUB_OUTPUT"
-            echo "::warning::$EVENTO sem base ou head: sem saber o que mudou, roda"; exit 0
           fi
           # -z e quotePath=false: nome com acento sai cru, não entre aspas em octal (que
           # não casaria com nada e pularia o job). A lista vai separada por NUL.
