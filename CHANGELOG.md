@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.94`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.95`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,29 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.95] — 2026-10-14
+
+### Mudado
+- Lote CI 2: automerge, checkout leve e retry do release (#937)
+- Regenerate generated blocks for lote CI 2
+- Regenerate generated blocks for lote CI 2
+- Atualiza comentários do release que citavam o pull --rebase
+- Executa a pr_fast_verde do release na RLS17
+- Publica o release só sobre SHA com pr-fast verde
+- Renumera a cláusula do retry para RLS17 e cobra o SHA aprovado
+- Faz checkout leve no job autofix
+- Cobra checkout leve no job autofix
+- Tira o job autofix do checkout leve deste PR
+- Devolve a eval:wfcheckout ao package.json depois do merge da main
+- Mede a defesa do WSEC1 por job
+- Tenta de novo o push do trem de release
+- Cobra retry limitado no push do trem de release
+- Troca o job bot-token do automerge por passo de guarda
+- Cobra a guarda do token do automerge como passo
+- Roda a eval:wfcheckout no pr-fast
+- Faz checkout leve nos jobs que só leem histórico
+- Cobra checkout leve nos jobs que só leem histórico
 
 ## [2.1.0-alpha.94] — 2026-10-14
 
