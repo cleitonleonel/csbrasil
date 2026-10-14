@@ -151,6 +151,7 @@ if (BROWSER) {
         if (nick) localStorage.setItem('awpbr_nick', nick);
         if (consent !== null) localStorage.setItem('cs_privacy', JSON.stringify({ version: 'corosolto-analytics-v1', analytics: consent, updatedAt: new Date(0).toISOString() }));
         if (seed) localStorage.setItem('cs_login_prompt', JSON.stringify(seed));
+        localStorage.setItem('cs_treta_intro', 'v1');   // apresentação da loja já vista; o LB9 cobre o empilhamento
       } catch {}
     }, { nick, consent, seed });
     const funil = [];
