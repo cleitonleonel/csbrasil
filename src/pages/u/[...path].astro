@@ -64,7 +64,7 @@ const avatar=p?.avatar_url===`/api/social-avatar?id=${p?.id}`?p.avatar_url:https
     {aba==='privacidade' && <section class="profile-aba" aria-labelledby="aba-titulo"><h2 id="aba-titulo">Privacidade</h2><p>Esta página mostra só o que {p.nick} deixou público. Quem vê o perfil, a presença e a atividade é escolha de cada jogador.</p><p>Para mudar o que aparece no seu perfil, entre na sua conta e abra as configurações.</p><a class="play" href="/comunidade/configuracoes">ABRIR MINHAS CONFIGURAÇÕES ▸</a></section>}
     <a class="play profile-action" href={game}>VER PERFIL NO JOGO ▸</a>
   </div>
-  {character?<figure class="profile-character"><img src={character.portrait} alt={character.nome} width="480" height="580"/><figcaption><span>Último personagem</span><strong>{character.nome}</strong></figcaption></figure>:<div class="character-empty"><p>Nenhum personagem disponível para mostrar.</p><span>A próxima treta começa no jogo.</span></div>}
+  {character?<figure class="profile-character"><img src={character.portrait} alt={character.nome} width="480" height="580"/><figcaption><span>Último personagem</span><strong>{character.nome}</strong></figcaption></figure>:<div class="character-empty"><p>Personagem não compartilhado.</p><span>O jogador escolhe se mostra o último personagem, e só rodada confirmada pelo servidor conta.</span></div>}
 </article>:<section class="unavailable"><h1>Perfil indisponível</h1><p>{description}</p><a class="play" href={game}>VOLTAR AO JOGO ▸</a></section>}
 </main>
 <footer><span>CORO SOLTO: TRETA SUPREMA</span><nav aria-label="Informações do jogo"><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a></nav></footer>

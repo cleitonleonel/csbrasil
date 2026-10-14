@@ -4,6 +4,7 @@ import {careerRankBadge,careerRankTitle} from './career-rank.js';
 import {questList} from './community-inbox.js';
 import {accountVerifiedBadge} from './account-verified.js';
 import {profileCharacterCard} from './profile-character.js';
+import {WEAPONS} from './data/weapons.js';
 const root=document.getElementById('community');
 if(root) {
   const status=document.getElementById('social-status'),account=document.getElementById('social-account'),content=document.getElementById('social-content');
@@ -22,8 +23,10 @@ if(root) {
     if(!r.ok) {if(data.error==='session_expired' && requestAuth===auth){auth=null;state=null;profileId='';clearConversation();content.replaceChildren();document.getElementById('social-unread').textContent='';document.getElementById('hub-social-unread').textContent='';renderAccount();}throw new Error(data.error || 'social_unavailable');}
     return data;
   }
-  function button(text,fn,cls='') {
-    const b=el('button',text,cls);b.type='button';b.onclick=async()=>{b.disabled=true;message('Só um instante…');try{await fn();message('Tá anotado.');}catch(e){message(errors[e.message] || 'Não deu certo agora. Tente de novo.');}finally{b.disabled=false;}};return b;
+  // `feedback`: aviso ao lado do botão. O #social-status fica no topo da comunidade e some da tela quando o perfil rola.
+  function button(text,fn,cls='',feedback=null) {
+    const say=t=>{message(t);if(feedback)feedback.textContent=t;};
+    const b=el('button',text,cls);b.type='button';b.onclick=async()=>{b.disabled=true;say('Só um instante…');try{await fn();say('Tá anotado.');}catch(e){say(errors[e.message] || 'Não deu certo agora. Tente de novo.');}finally{b.disabled=false;}};return b;
   }
   function link(text,href) {const a=el('a',text);a.href=href;return a;}
   const empty=(text)=>el('p',text,'social-muted');
@@ -32,7 +35,24 @@ if(root) {
   function input(value='',max=280,type='text') {const i=el('input');i.type=type;i.value=value;if(Number.isInteger(max))i.maxLength=max;return i;}
   const date=(value)=>value?new Date(value).toLocaleString('pt-BR'):'Ainda sem atividade';
   function presenceText(p) {if(!p)return 'Presença privada';if(p.game)return `Jogando ${p.game.mode==='ctf'?'CAPTURA':'ABATE'} · ${p.game.map}`;return p.online?'Online na resenha':`Offline · ${date(p.last_active_at)}`;}
-  const names={first_kill:'Primeiro abate confirmado',ten_kills:'Dez abates na conta',first_win:'Primeira vitória',one_hour:'Uma hora de arena ativa'};
+  // Pedido de amizade: o banco só aceita alvo com conta (social_action, 040). Perfil de histórico sem conta responde not_found.
+  let profileNotice=null;const noAccountTargets=new Set();
+  async function requestFriend(p){
+    try{const out=await api('/api/social',{action:'request',target:p.id});profileNotice={id:p.id,text:out?.state==='accepted'?'Pedido aceito: agora vocês são amigos.':'Pedido de amizade enviado. Ele aparece na CENTRAL de quem recebe.'};}
+    catch(e){if(e.message!=='not_found')throw e;noAccountTargets.add(p.id);profileNotice={id:p.id,text:'Este jogador ainda não tem conta na resenha, então não recebe pedido de amizade.'};}
+    await refresh();await render();
+  }
+  const names={first_kill:'Primeiro abate',ten_kills:'Dez abates na conta',first_win:'Primeira vitória',one_hour:'Uma hora de arena ativa'};
+  /* Conquistas de contagem seguem os totais que o próprio perfil mostra (histórico preservado + confirmadas).
+     O banco só grava player_achievement quando ingere rodada verificada, então quem jogou antes do corte ficava sem nada.
+     Hora de arena usa só o tempo confirmado: o tempo antigo contava menu e AFK. Data só aparece quando o servidor manda. */
+  function profileAchievements(p){
+    const kills=Number(p.kills) || 0,wins=Math.max(Number(p.round_wins) || 0,Number(p.legacy_wins ?? p.wins) || 0),active=Number(p.verified_play_seconds ?? 0) || 0;
+    const derived={first_kill:kills>=1,ten_kills:kills>=10,first_win:wins>=1,one_hour:active>=3600};
+    const saved=new Map((p.achievements || []).filter(a=>Object.hasOwn(names,a?.key)).map(a=>[a.key,a]));
+    return Object.keys(names).filter(k=>saved.has(k) || derived[k]).map(k=>({key:k,at:saved.get(k)?.at || null,source:saved.has(k)?'server':'history'}));
+  }
+  const achievementText=a=>`${names[a.key]} · ${a.at?new Date(a.at).toLocaleDateString('pt-BR'):a.source==='history'?'pelo histórico preservado':'conquistada'}`;
   async function refresh(){
     const owner=auth?.profile?.id,next=owner?await api('/api/social'):null;if(owner!==auth?.profile?.id)return;
     if(next?.messages_enabled){try{next.inbox=await api('/api/social?action=inbox');}catch{next.inboxError=true;}}
@@ -44,18 +64,20 @@ if(root) {
   function clearConversation(){conversation=null;conversationBefore=null;messageDraft='';messageClientId=null;pendingSend=null;}
   async function openConversation(p){clearConversation();conversation={id:p.id,nick:p.nick};inboxSection='messages';tab='notifications';await render();}
   async function action(name,target,data={}) {const out=await api('/api/social',{action:name,...(target?{target}:{}),...data});await refresh();await render();return out;}
+  // Saudação no topo da Comunidade; com perfil, o painel de conta some e sobra só o "Sair da conta".
+  function renderGreeting() {
+    const hello=document.getElementById('social-hello'),logout=document.getElementById('social-logout'),panel=account.closest?.('details'),p=auth?.profile;
+    const handle=p && state?.profile?.id===p.id?state.profile.handle:null;
+    if(hello)hello.textContent=p?`Olá, ${handle?'@'+handle:p.nick}`:'Olá';
+    if(panel)panel.hidden=!!p;
+    if(logout){logout.hidden=!p;logout.onclick=async()=>{logout.disabled=true;try{await logoutAccount(auth);auth=null;state=null;profileId='';clearConversation();await boot();}catch(e){message(errors[e.message] || 'Não deu certo agora. Tente de novo.');}finally{logout.disabled=false;}};}
+  }
   function renderAccount() {
-    account.replaceChildren();
+    account.replaceChildren();renderGreeting();
+    if(auth?.profile)return;
     if(auth?.authenticated) {
-      account.append(el('h2',auth.profile?`Salve, ${auth.profile.nick}.`:'Sua conta entrou. Falta o nome na camisa.'));
-      if(!auth.profile) {
-        mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onAuthenticated:boot,message});
-      } else {
-        account.append(empty('Sua conta e seu progresso ficam salvos no servidor. O modo offline continua disponível.'));
-        const buttons=el('div','','social-actions');
-        buttons.append(link('SEU PERFIL',state?.profile?.url || `/u/${auth.profile.id}/${encodeURIComponent(auth.profile.nick)}`));
-        buttons.append(button('SAIR DA CONTA',async()=>{await logoutAccount(auth);auth=null;state=null;profileId='';clearConversation();await boot();}));account.append(buttons);
-      }
+      account.append(el('h2','Sua conta entrou. Falta o nome na camisa.'));
+      mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onAuthenticated:boot,message});
       return;
     }
     mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onGuest:()=>document.querySelector('[data-hub-tab=jogar]')?.click(),onAuthenticated:boot,message});
@@ -75,27 +97,40 @@ if(root) {
     const bio=el('div');bio.append(el('p',p.bio || 'A bio ainda está no aquecimento.'),empty(`Nível ${p.level} · faltam ${p.next_level_points} pontos para o próximo.`));const rank=careerRankBadge(p.points);if(rank)bio.append(rank,empty(careerRankTitle(p.points)));identity.append(bio);c.append(identity);if(p.handle)c.append(empty('@'+p.handle));
     const ranking=el('div','','social-profile-ranking');ranking.append(el('span','RANKING GERAL'),el('strong',p.position?`#${p.position}`:'Privada'));c.append(ranking);
     const views=Number.isSafeInteger(p.views) && p.views>=0?el('p',viewsText(p.views),'social-profile-views'):null;if(views)c.append(views);countProfileView(p,views);
-    const character=profileCharacterCard(p.last_character);c.append(character || empty('Nenhum personagem disponível para mostrar.'));
+    /* last_character só chega aberto quando a pessoa marcou "Mostrar meu último personagem" (share_character, padrão desligado,
+       migration 048), para ela mesma e para amigos. Vazio para os outros quase sempre é escolha de privacidade, não falta de dado. */
+    const own=auth?.profile?.id===p.id,character=profileCharacterCard(p.last_character);
+    c.append(character || empty(own?'Seu último personagem aparece aqui depois da primeira rodada confirmada pelo servidor.':'Este jogador não compartilha o último personagem, ou ainda não jogou uma rodada confirmada.'));
+    if(own && p.settings?.share_character===false)c.append(empty('Só você e seus amigos veem seu personagem. Para mostrar a todos, marque "Mostrar meu último personagem no perfil público" em PRIVACIDADE.'));
     const stats=el('div','','social-stats');
     for(const [label,value] of [['PONTOS',p.points],['PARTIDAS',p.matches],['RODADAS GANHAS',p.round_wins ?? p.wins],['RODADAS PERDIDAS',p.round_losses ?? p.losses],['ABATES',p.kills],['MORTES',p.deaths],['K/D',p.kd],['HORAS ATIVAS CONFIRMADAS',(Number(p.verified_play_seconds ?? p.play_seconds)/3600).toFixed(2)]]){const s=el('div','','social-stat');s.append(el('strong',String(value)),el('span',label));stats.append(s);}c.append(stats,empty(p.source==='historical_plus_server_verified'?`Histórico preservado: ${p.legacy_points} pontos. Após a atualização: ${p.verified_points} pontos confirmados pelo servidor. Rodadas ganhas e horas ativas são métricas confirmadas; o tempo antigo fica no histórico.`:'Estatísticas confirmadas pelo servidor. Tempo no menu, espectador e AFK não contam.'),empty(presenceText(p.presence)));
+    // Armas mais usadas (backend 068): abates confirmados pelo nó em partida multiplayer. Sem o campo, a seção não aparece.
+    if(Array.isArray(p.top_weapons)){
+      const top=p.top_weapons.filter(w=>typeof w?.weapon==='string' && Number.isSafeInteger(w.kills) && w.kills>0).slice(0,3),list=el('ol','','social-list profile-weapons');
+      for(const w of top)list.append(el('li',`${WEAPONS[w.weapon]?.name || w.weapon.toUpperCase()} · ${w.kills.toLocaleString('pt-BR')} ${w.kills===1?'abate':'abates'}`));
+      c.append(el('h3','Armas que mais usa'),top.length?list:empty('As armas aparecem a partir das partidas multiplayer confirmadas pelo servidor.'));
+    }
+    const notice=el('p',profileNotice?.id===p.id?profileNotice.text:'','social-inline-status');notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
     const buttons=el('div','','social-actions');buttons.append(button('COPIAR LINK',async()=>navigator.clipboard.writeText(`${root.dataset.site}${p.url}`)));
     if(p.visibility==='public'){const publicLink=link('ABRIR PERFIL PÚBLICO ↗',p.url);publicLink.dataset.publicProfile='true';buttons.append(publicLink);}
     if(auth?.profile && auth.profile.id!==p.id) {
-      if(p.relationship==='friend'){if(state?.messages_enabled)buttons.append(button('MANDAR MENSAGEM',()=>openConversation(p)));buttons.append(button('CHAMAR PARA A SALA',()=>action('invite',p.id)),button('REMOVER AMIGO',()=>action('remove',p.id)));}
-      else if(p.relationship==='incoming')buttons.append(button('ACEITAR AMIZADE',()=>action('accept',p.id)),button('RECUSAR',()=>action('decline',p.id)));
-      else if(p.relationship==='outgoing')buttons.append(button('CANCELAR PEDIDO',()=>action('cancel',p.id)));
-      else buttons.append(button('PEDIR AMIZADE',()=>action('request',p.id)));
-      buttons.append(button('BLOQUEAR',async()=>{await action('block',p.id);profileId='';await render();},'social-danger'),button('DENUNCIAR',()=>showReport(p)));
+      if(p.relationship==='friend'){if(state?.messages_enabled)buttons.append(button('MANDAR MENSAGEM',()=>openConversation(p),'',notice));buttons.append(button('CHAMAR PARA A SALA',()=>action('invite',p.id),'',notice),button('REMOVER AMIGO',()=>action('remove',p.id),'',notice));}
+      else if(p.relationship==='incoming')buttons.append(button('ACEITAR AMIZADE',()=>action('accept',p.id),'',notice),button('RECUSAR',()=>action('decline',p.id),'',notice));
+      else if(p.relationship==='outgoing')buttons.append(button('CANCELAR PEDIDO',()=>action('cancel',p.id),'',notice));
+      else if(!noAccountTargets.has(p.id))buttons.append(button('PEDIR AMIZADE',()=>requestFriend(p),'',notice));
+      buttons.append(button('BLOQUEAR',async()=>{await action('block',p.id);profileId='';await render();},'social-danger',notice),button('DENUNCIAR',()=>showReport(p),'',notice));
     }
-    c.append(buttons);
+    c.append(buttons,notice);
     if(p.socials?.length || p.social_link){const socials=profileSocialLinks(p);if(socials.length){const row=el('nav','','profile-socials');row.setAttribute('aria-label','Redes públicas');for(const s of socials)row.append(profileSocialLink(s));c.append(row);}}
     c.append(el('h3','Conquistas'));
-    const achievements=el('ul','','social-list');for(const a of p.achievements)achievements.append(el('li',`${names[a.key] || a.key} · ${date(a.at)}`));c.append(p.achievements.length?achievements:empty('A primeira conquista vem da primeira treta confirmada.'));
+    const earned=profileAchievements(p),achievements=el('ul','','social-list');for(const a of earned)achievements.append(el('li',achievementText(a)));c.append(earned.length?achievements:empty('A primeira conquista vem do primeiro abate.'));
+    // Rodadas e preferências: o servidor só manda para a própria pessoa e para amigos (activity_visibility). Vazio para os outros não quer dizer "sem rodada".
+    const sees=auth?.profile?.id===p.id || p.relationship==='friend',noActivity=sees?(p.source==='historical_plus_server_verified'?'O histórico antigo guarda só os totais. As rodadas aparecem aqui a partir da primeira partida confirmada pelo servidor.':'Nenhuma rodada confirmada ainda.'):'As rodadas deste jogador aparecem só para os amigos dele.';
     c.append(el('h3','Preferências na arena'));
-    const favorites=el('ul','','social-list');for(const f of p.favorites)favorites.append(el('li',`${f.map} · ${f.mode} · ${f.character || 'Personagem não registrado'} · ${f.faction || 'Facção não registrada'} (${f.rounds} rodadas)`));c.append(p.favorites.length?favorites:empty('Jogue uma rodada verificada para começar seu histórico.'));
+    const favorites=el('ul','','social-list');for(const f of p.favorites)favorites.append(el('li',`${f.map} · ${f.mode} · ${f.character || 'Personagem não registrado'} · ${f.faction || 'Facção não registrada'} (${f.rounds} rodadas)`));c.append(p.favorites.length?favorites:empty(noActivity));
     c.append(el('h3','Rodadas recentes'));
     for(const h of p.history)c.append(empty(`${date(h.started_at)} · ${h.map} · ${h.mode} · ${h.kills} abates / ${h.deaths} mortes${h.complete?'':' · encerrada antes do placar'}`));
-    if(!p.history.length)c.append(empty('Nenhuma rodada confirmada ainda.'));
+    if(!p.history.length)c.append(empty(noActivity));
     content.append(c);
   }
   function showReport(p) {
@@ -209,7 +244,7 @@ if(root) {
     mountAccountIntegrations(c,auth,loginConfig,message);void mountProfilePreferences(c,{auth,message});
     c.append(el('h3','Jogadores bloqueados'));for(const b of state.blocks)c.append(empty(b.nick),button('DESBLOQUEAR',()=>action('unblock',b.id)));if(!state.blocks.length)c.append(empty('Nenhum jogador bloqueado.'));content.append(c);
   }
-  async function render(){const version=++loadVersion;root.dataset.view=tab;content.replaceChildren();content.setAttribute('aria-busy','true');for(const b of document.querySelectorAll('.social-tabs button'))b.setAttribute('aria-current',String(b.dataset.tab===tab));try{if(tab==='profile'){if(profileId || auth?.profile)await showProfile(profileId || auth.profile.id,version);else content.append(empty('Entre na conta para criar seu perfil.'));}else if(tab==='friends')showFriends();else if(tab==='ranking')await showRanking(version);else if(tab==='notifications')await showCentral(version);else if(tab==='feed')showFeed();else if(tab==='settings')showSettings();}catch(e){message(errors[e.message] || 'Perfil privado ou indisponível.');content.append(empty('Não foi possível carregar esta tela.'),button('TENTAR DE NOVO',render));}finally{if(version===loadVersion)content.setAttribute('aria-busy','false');}}
+  async function render(){const version=++loadVersion;root.dataset.view=tab;content.replaceChildren();content.setAttribute('aria-busy','true');for(const b of document.querySelectorAll('.social-tabs button')){const on=b.dataset.tab===tab;b.setAttribute('aria-selected',String(on));b.setAttribute('tabindex',on?'0':'-1');if(on)content.setAttribute('aria-labelledby',b.id);}try{if(tab==='profile'){if(profileId || auth?.profile)await showProfile(profileId || auth.profile.id,version);else content.append(empty('Entre na conta para criar seu perfil.'));}else if(tab==='friends')showFriends();else if(tab==='ranking')await showRanking(version);else if(tab==='notifications')await showCentral(version);else if(tab==='feed')showFeed();else if(tab==='settings')showSettings();}catch(e){message(errors[e.message] || 'Perfil privado ou indisponível.');content.append(empty('Não foi possível carregar esta tela.'),button('TENTAR DE NOVO',render));}finally{if(version===loadVersion)content.setAttribute('aria-busy','false');}}
   async function boot(){message('Carregando a turma…');try{[auth,loginConfig]=await Promise.all([loadAccount(),loadAuthOptions()]);if(auth?.profile){acceptAccount(auth);await api('/api/social',{action:'presence'});}await refresh();renderAccount();await render();message('');}catch(e){message(errors[e.message] || 'A comunidade não respondeu.');renderAccount();content.replaceChildren(button('TENTAR DE NOVO',boot));}}
   /* Aba da comunidade no CAMINHO (/comunidade/amigos), mesma tabela de public/js/rotas.js
      (tools/eval/rotas-check.mjs confere). Sem import: a régua do backend roda este arquivo num vm. */
@@ -217,6 +252,8 @@ if(root) {
   const abaDoCaminho=()=>{const slug=(location.pathname || '').match(/^\/comunidade(?:\/([a-z]+))?\/?$/);return slug?Object.keys(SLUG_DA_ABA).find(k=>SLUG_DA_ABA[k]===(slug[1] || '')) || null:null;};
   const caminhoDaAba=aba=>{const menu=document.getElementById('main-menu');if(menu?.dataset.socialPaused==='true' || menu?.dataset.hubTab!=='comunidade' || !(aba in SLUG_DA_ABA))return;const alvo=new URL(location.href);alvo.pathname=SLUG_DA_ABA[aba]?`/comunidade/${SLUG_DA_ABA[aba]}`:'/comunidade';for(const k of ['secao','social','perfil'])alvo.searchParams.delete(k);if(alvo.href!==location.href)history.pushState(null,'',alvo);};
   for(const b of document.querySelectorAll('.social-tabs button'))b.onclick=()=>{tab=b.dataset.tab;if(tab==='profile')profileId=root.dataset.profile || '';const url=new URL(location.href);if(url.searchParams.has('perfil')){url.searchParams.delete('perfil');if(url.searchParams.has('social'))url.searchParams.set('social',tab);history.replaceState(history.state,'',url);}caminhoDaAba(tab);message('');void render();};
+  // Teclado de abas (WAI-ARIA tabs): setas e Home/End movem o foco e ativam a aba.
+  for(const b of document.querySelectorAll('.social-tabs button'))b.onkeydown=event=>{const list=[...document.querySelectorAll('.social-tabs button')],i=list.indexOf(b);const next={ArrowRight:i+1,ArrowLeft:i-1,Home:0,End:list.length-1}[event.key];if(next===undefined)return;event.preventDefault();const t=list[(next+list.length)%list.length];t.focus();t.click();};
   setInterval(async()=>{if(document.hidden || !auth?.profile)return;try{await api('/api/social',{action:'presence'});await refresh();if(['notifications','feed'].includes(tab) && !document.activeElement?.closest('form'))await render();}catch(e){message(errors[e.message] || 'A atualização da comunidade falhou.');}},30000);
   const query=new URLSearchParams(location.search);if(['profile','friends','ranking','notifications','feed','settings'].includes(query.get('social')))tab=query.get('social');if(abaDoCaminho())tab=abaDoCaminho();
   root.addEventListener('click',event=>{const a=event.target.closest('a');if(!a || a.dataset.publicProfile==='true')return;const url=new URL(a.href,location.href),match=url.pathname.match(/^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f-]{36})(?:\/|$)/i);if(url.origin!==location.origin || !match)return;event.preventDefault();profileId=match[1];tab='profile';void render();});

@@ -21,10 +21,11 @@
         a régua do backend roda o arquivo num vm sem módulos).
    RT5  `<base href="/">` no hub ANTES do importmap. Sem ele, em /jogar/multiplayer o
         `three` vira /jogar/vendor/three.module.js (404) e o jogo não sobe.
+   RT8  nenhum link de marcação (href) usa mais a forma antiga `/?secao=`: link novo nasce no caminho.
    RT6  (--dist) o build tem uma página por rota, com canonical, robots, og:url e base
         certos, e o sitemap lista as indexáveis.
 
-   uso: node tools/eval/rotas-check.mjs [--dist] [--mutante=caminho|legado|redirect|abas|base|robots|perfil]
+   uso: node tools/eval/rotas-check.mjs [--dist] [--mutante=caminho|legado|redirect|abas|base|robots|perfil|href-antigo]
    Cada mutante quebra de propósito o que um item mede; o item TEM que ficar vermelho. */
 import { readFileSync, existsSync } from 'node:fs';
 import { strict as assert } from 'node:assert';
@@ -188,6 +189,19 @@ const LEGADO = [
   const abasSsr = /const ABAS:Record<string,string>=(\{[^}]*\})/.exec(pagina)?.[1];
   if (!abasSsr || JSON.stringify(Function(`return ${abasSsr}`)()) !== JSON.stringify(R.ABAS_PERFIL)) erros.push(`abas do SSR (${abasSsr}) diferentes de ABAS_PERFIL`);
   item('RT7', !erros.length, `perfil fora do contrato (${erros.length}): ${erros.slice(0, 4).join('; ')}`);
+}
+
+// RT8
+{
+  const { readdirSync, statSync } = await import('node:fs');
+  const arquivos = (dir) => readdirSync(dir).flatMap((n) => { const p = `${dir}/${n}`; return statSync(p).isDirectory() ? arquivos(p) : /\.(astro|js|ts|mjs)$/.test(n) ? [p] : []; });
+  const achados = [];
+  for (const arquivo of [...arquivos('src'), ...arquivos('public/js')]) {
+    let texto = readFileSync(arquivo, 'utf8');
+    if (MUT === 'href-antigo' && arquivo === 'src/pages/index.astro') texto += '\n<a href="/?secao=loja">loja</a>';
+    for (const m of texto.matchAll(/href=["'{`]+\/\?secao=[^"'`}\s>]*/g)) achados.push(`${arquivo}: ${m[0]}`);
+  }
+  item('RT8', !achados.length, `${achados.length} link(s) na forma antiga: ${achados.slice(0, 4).join('; ')}. Use o caminho de public/js/rotas.js (ex.: /comunidade, /loja).`);
 }
 
 // RT6
