@@ -2,7 +2,9 @@
 // CPR: contagem gerada não entra em PR (dois PRs abertos conflitavam no "N scripts"); só o release a reescreve.
 // Uso: node tools/eval/contagens-pr-check.mjs [--mutante=volatil-vira-estrutural|release-pula-volatil|arch-sem-mascara|autofix-release]
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
 const MUTANTES = {
@@ -13,41 +15,42 @@ const MUTANTES = {
 };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
-const ler = (p) => readFileSync(p, 'utf8');
-const fonte = { 'tools/gen-docs.mjs': ler('tools/gen-docs.mjs'), 'tools/gen-arch.mjs': ler('tools/gen-arch.mjs'), '.github/workflows/autofix.yml': ler('.github/workflows/autofix.yml') };
+const ler = (p) => (existsSync(p) ? readFileSync(p, 'utf8') : '');
+const fonte = { 'tools/gerado-modo.mjs': ler('tools/gerado-modo.mjs'), 'tools/gen-docs.mjs': ler('tools/gen-docs.mjs'), 'tools/gen-arch.mjs': ler('tools/gen-arch.mjs'), '.github/workflows/autofix.yml': ler('.github/workflows/autofix.yml') };
 if (MUT) {
   const [arq, de, para] = MUTANTES[MUT];
   if (!fonte[arq].includes(de)) { console.error(`MUTANTE NAO APLICOU: ${MUT}`); process.exit(2); }
   fonte[arq] = fonte[arq].replace(de, para);
 }
-const GEN = { docs: 'tools/.contagens-gen-docs.mjs', arch: 'tools/.contagens-gen-arch.mjs' };
-
-const TOCADOS = ['package.json', 'public/js/game.js', 'README.md', 'AGENTS.md', 'CHANGELOG.md', 'tools/eval/ARCH.md',
-  ...ler('tools/gen-docs.mjs').match(/docs\/[\w/.-]+\.md/g)];
-const alvos = [...new Set(TOCADOS)].filter((p) => existsSync(p));
-const sujo = execFileSync('git', ['status', '--porcelain', '--', ...alvos]).toString().trim();
-if (sujo) { console.log(`  \x1b[31m✗\x1b[0m CPR não dá para medir: arquivo tocado pela régua com mudança não commitada\n${sujo}`); process.exit(1); }
-const originais = new Map(alvos.map((p) => [p, ler(p)]));
-const restaurar = () => {
-  for (const [p, t] of originais) writeFileSync(p, t);
-  for (const g of Object.values(GEN)) rmSync(g, { force: true });
-};
+// Mede numa cópia: só os arquivos versionados que os geradores leem, com o conteúdo da árvore.
+const TMP = mkdtempSync(join(tmpdir(), 'contagens-pr-'));
+const LEVA = /^(package\.json|LICENSE|CHANGELOG\.md|README\.md|AGENTS\.md|CONTRIBUTING\.md|mint-assets\.json|skills-lock\.json|public\/js\/.*|public\/vendor\/three\.module\.js|public\/llms\.txt|src\/.*|tools\/[^/]+\.mjs|tools\/eval\/[^/]+\.(mjs|py|md)|docs\/(docs|i18n|issues)\/.*|docs\/package\.json|docs\/docusaurus\.config\.js|\.github\/workflows\/.*|\.claude\/skills\/[^/]+\/SKILL\.md)$/;
+const restaurar = () => rmSync(TMP, { recursive: true, force: true });
 for (const sinal of ['SIGINT', 'SIGTERM']) process.on(sinal, () => { restaurar(); process.exit(1); });
-
-const passa = (qual, ...args) => spawnSync('node', [GEN[qual], '--check', ...args], { encoding: 'utf8' }).status === 0;
+const T = (p) => join(TMP, p);
+const lerT = (p) => readFileSync(T(p), 'utf8');
+const GEN = { docs: 'tools/gen-docs.mjs', arch: 'tools/gen-arch.mjs' };
+const passa = (qual, ...args) => spawnSync('node', [T(GEN[qual]), '--check', ...args], { cwd: TMP, encoding: 'utf8' }).status === 0;
 const trocar = (p, de, para) => {
-  const t = ler(p);
+  const t = lerT(p);
   const n = typeof de === 'function' ? de(t) : t.replace(de, para);
   if (n === t) throw new Error(`não consegui alterar ${p}`);
-  writeFileSync(p, n);
+  writeFileSync(T(p), n);
 };
-const voltar = (p) => writeFileSync(p, originais.get(p));
+let base;
+const voltar = (p) => writeFileSync(T(p), base.get(p));
 
 const falhas = [];
+let quebrou = false;
 try {
-  writeFileSync(GEN.docs, fonte['tools/gen-docs.mjs']);
-  writeFileSync(GEN.arch, fonte['tools/gen-arch.mjs']);
-  for (const g of Object.values(GEN)) spawnSync('node', [g, '--release'], { encoding: 'utf8' });
+  const versionados = execFileSync('git', ['ls-files', '-z']).toString().split('\0').filter((p) => LEVA.test(p) && existsSync(p));
+  for (const p of versionados) { mkdirSync(dirname(T(p)), { recursive: true }); cpSync(p, T(p)); }
+  for (const [p, t] of Object.entries(fonte)) writeFileSync(T(p), t);
+  execFileSync('git', ['init', '-q'], { cwd: TMP });
+  execFileSync('git', ['add', '-A'], { cwd: TMP });
+  for (const g of Object.values(GEN)) spawnSync('node', [T(g), '--release'], { cwd: TMP, encoding: 'utf8' });
+  base = new Map(['package.json', 'public/js/game.js', 'tools/eval/ARCH.md', ...lerT('tools/gen-docs.mjs').match(/'[\w/.-]+\.md'/g).map((x) => x.slice(1, -1))]
+    .filter((p) => existsSync(T(p))).map((p) => [p, lerT(p)]));
   if (!passa('docs', '--release') || !passa('arch', '--release')) throw new Error('nem o modo release deixa a árvore em dia (rode: npm run docs:release e leia o erro)');
 
   // ---- o PR típico: um script npm a mais e uma linha a mais no game.js
@@ -83,17 +86,18 @@ try {
   }
 
   // ---- fiação: o trem chama o modo release, o autofix e os scripts de PR não
-  const release = ler('.github/workflows/release.yml');
+  const release = lerT('.github/workflows/release.yml');
   if (!/node tools\/gen-docs\.mjs --release\b/.test(release) || !/node tools\/gen-arch\.mjs --release\b/.test(release))
     falhas.push('CPR5 release.yml não chama gen-docs/gen-arch com --release: nada regenera as contagens');
   const conserta = /- name: Conserta o mecânico[\s\S]*?(?=\n\s*\n|\n {6}- )/.exec(fonte['.github/workflows/autofix.yml'])?.[0] || '';
   if (!/gen-docs\.mjs/.test(conserta) || /--release/.test(conserta))
     falhas.push('CPR5 o autofix regenera em modo release: volta a empurrar contagem para todo PR (e a trazer a main junto)');
-  const s = JSON.parse(originais.get('package.json')).scripts;
+  const s = JSON.parse(base.get('package.json')).scripts;
   const pr = ['docs', 'docs:check', 'arch', 'arch:check'].filter((k) => !s[k] || /--release/.test(s[k]));
   const rel = ['docs:release', 'docs:check:release', 'arch:release', 'arch:check:release'].filter((k) => !/--release/.test(s[k] || ''));
   if (pr.length || rel.length) falhas.push(`CPR5 scripts npm fora do contrato: ${[...pr, ...rel].join(', ')} (os de PR sem --release, os :release com)`);
 } catch (e) {
+  quebrou = true;
   falhas.push(`CPR não deu para medir: ${String(e.message || e).split('\n')[0]}`);
 } finally {
   restaurar();
@@ -105,5 +109,5 @@ if (MUT && !falhas.length) {
   console.log(`  \x1b[31m✗\x1b[0m MUTAÇÃO '${MUT}' não acendeu nenhuma cláusula — portão cego (lei 3)`);
   falhas.push('mutacao-cega');
 }
-if (MUT && falhas.length && !falhas.includes('mutacao-cega')) { console.log(`  ✓ mutante ${MUT} ficou vermelho`); process.exit(0); }
+if (MUT && falhas.length && !quebrou && !falhas.includes('mutacao-cega')) { console.log(`  ✓ mutante ${MUT} ficou vermelho`); process.exit(0); }
 process.exit(falhas.length ? 1 : 0);
