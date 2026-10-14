@@ -74,6 +74,8 @@ jobs:
         run: npm run eval:treta-coins
       - name: Acúmulo de armas no chão tem teto
         run: npm run eval:drop
+      - name: Loja sem nome de político real
+        run: npm run eval:treta-nomes
       - name: Proxy de captura grava só dentro da pasta de saída
         run: npm run eval:capturecodex
       # Pendurar a régua só no `check:fast` a faria rodar na máquina de quem lembra
