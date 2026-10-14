@@ -30,6 +30,33 @@ export function equippedTretaSkin(characterId) {
   return skin && item(skin.skin_id)?.character_id===characterId?skin.skin_id:null;
 }
 const portrait=skin=>asset(skin.id)?.poster || (skin.slot==='eyewear'?`/img/items/${skin.id}.webp`:`/img/chars/${skin.character}.webp`);
+/* Vídeo curto da skin no card (tools/gen-skin-video.mjs). Nada de vídeo no boot: o
+   <video> só nasce no primeiro hover, foco por teclado ou primeiro toque, com preload
+   none. Com prefers-reduced-motion o card fica no poster estático. Um vídeo por vez. */
+const VIDEO_PATH=/^\/video\/skins\/[a-z0-9-]+\.(webm|mp4|webp)$/;
+let lastPointer='mouse',activePreview=null;
+document.addEventListener('pointerdown',e=>{lastPointer=e.pointerType || 'mouse';},true);
+function skinPreview(button,id) {
+  const v=manifest.skins[id]?.video;
+  if(!v || ![v.webm,v.mp4,v.poster].every(src=>VIDEO_PATH.test(src || '')))return {tap:()=>false};
+  let video=null,tapped=false;
+  const stop=()=>{button.classList.remove('treta-previewing');video?.pause();if(activePreview===stop)activePreview=null;};
+  const start=()=>{
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
+    if(activePreview && activePreview!==stop)activePreview();
+    if(!video){
+      video=document.createElement('video');video.className='treta-card-video';video.muted=true;video.defaultMuted=true;video.loop=true;video.playsInline=true;video.preload='none';video.poster=v.poster;video.setAttribute('aria-hidden','true');
+      for(const [src,type] of [[v.webm,'video/webm; codecs="vp9"'],[v.mp4,'video/mp4']]){const source=document.createElement('source');source.src=src;source.type=type;video.append(source);}
+      button.querySelector('img').after(video);
+    }
+    activePreview=stop;button.classList.add('treta-previewing');video.play().catch(()=>{});return true;
+  };
+  button.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch')start();});
+  button.addEventListener('pointerleave',e=>{if(e.pointerType!=='touch')stop();});
+  button.addEventListener('focus',()=>{if(button.matches(':focus-visible'))start();});
+  button.addEventListener('blur',stop);
+  return {tap:()=>{if(lastPointer!=='touch' || tapped)return false;tapped=true;return start();}};
+}
 function notifyEquipment() {
   const revision=`${state?.accountId || ''}:${state?.inventory?.filter(s=>s.equipped && available(s.skin_id)).map(s=>s.skin_id).join(',') || ''}`;
   if(revision===equipmentRevision)return;
@@ -81,7 +108,7 @@ function draw() {
     const image=node('img');image.src=portrait(s);image.alt=manifest.skins[s.id]?.poster?`Skin ${s.name}`:'Personagem base usado como referência de produção';image.loading='lazy';
     const copy=node('div','','treta-card-copy');const price=node('b',money(item(s.id)?.price ?? s.price));price.append(node('span',owned(s.id)?'VER SKIN':'VER DETALHE'));
     copy.append(node('small',manifest.skins[s.id]?.poster?s.series:`${s.series} · PERSONAGEM BASE`),node('strong',s.name),price);
-    button.append(label,image,copy);button.onclick=()=>void detail(s);return button;
+    button.append(label,image,copy);const preview=skinPreview(button,s.id);button.onclick=()=>{if(preview.tap())return;void detail(s);};return button;
   }));
   if(!skins.length){
     const empty=node('div','','treta-empty');empty.append(node('strong',loading?'CARREGANDO ARMÁRIO':refreshFailed?'ARMÁRIO INDISPONÍVEL':'SEU PRÓXIMO VISUAL COMEÇA AQUI'),node('p',loading?'Buscando seus visuais na conta.':refreshFailed?'Tente de novo para consultar suas skins.':state?.authenticated?'As skins que você adquirir vão aparecer aqui.':'Entre na conta para ver seus visuais.'),node('button','VER TODAS AS SKINS','treta-secondary'));
