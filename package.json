@@ -556,7 +556,7 @@
     "//eval:cla-ssr": "ADR 0008: /clans/<id> sai do servidor com tag, nome, descrição, canonical e JSON-LD do clã, sem levar a sessão ao backend. Precisa de npm run build antes.",
     "eval:cla-ssr": "node tools/eval/cla-ssr-check.mjs && node tools/eval/cla-ssr-check.mjs --mutate",
     "//eval:rotas": "ADR 0008: cada tela do hub tem rota fixa; ida e volta da tabela, link antigo, 301 do vercel.json, abas da comunidade e <base href>. Os mutantes provam que cada item morde.",
-    "eval:rotas": "node tools/eval/rotas-check.mjs && for m in caminho legado redirect abas base href-antigo; do ! node tools/eval/rotas-check.mjs --mutante=$m >/dev/null 2>&1 || exit 1; done href-antigo perfil;",
+    "eval:rotas": "node tools/eval/rotas-check.mjs && for m in caminho legado redirect abas base href-antigo perfil perfil-aba; do ! node tools/eval/rotas-check.mjs --mutante=$m >/dev/null 2>&1 || exit 1; done",
     "//eval:compartilhar": "ADR 0008: botão único de compartilhar (Web Share ou cópia) e os 6 pontos ligados à URL certa, com mutantes.",
     "eval:compartilhar": "node tools/eval/compartilhar-check.mjs && for m in cancelar origem ponto; do ! node tools/eval/compartilhar-check.mjs --mutante=$m >/dev/null 2>&1 || exit 1; done",
     "//eval:compartilhar-browser": "Fim de partida e ranking no hub de verdade: Web Share no celular, cópia no computador. Precisa de BASE com tools/eval/serve.mjs.",

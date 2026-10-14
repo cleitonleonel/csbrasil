@@ -11,8 +11,10 @@ if(root) {
   let loginConfig={providers:[]};
   let inboxSection='quests',conversation=null,conversationBefore=null,messageDraft='',messageClientId=null,pendingSend=null;
   let auth=null,state=null,tab=root.dataset.tab || 'profile',profileId=root.dataset.profile || new URLSearchParams(location.search).get('perfil') || '',rankingScope='global',rankingQuery='',rankingOffset=0,rankingPeriod='all',rankingMode='all',rankingGameType='all',loadVersion=0;
-  // Perfil compartilhado (/u/<perfil>) chega com o perfil como destino: o painel da conta começa recolhido para o perfil ficar no topo.
-  if(new URLSearchParams(location.search).get('perfil'))account.closest?.('details')?.removeAttribute('open');
+  // Perfil compartilhado (/u/<perfil>, ou o link antigo com ?perfil=) chega com o perfil como destino: o painel da conta começa recolhido para o perfil ficar no topo.
+  if(new URLSearchParams(location.search).get('perfil') || /^\/u\/[^/]/.test(location.pathname || ''))account.closest?.('details')?.removeAttribute('open');
+  // O SSR de /u/<perfil> manda o perfil legível ao lado da comunidade (crawler e sem JS). Com a comunidade no ar, ela desenha o perfil.
+  document.getElementById?.('perfil-ssr')?.remove();
   const errors={handle_invalid:'Use de 3 a 24 letras, números ou _. Comece com letra.',handle_taken:'Esse ID já tem dono. Escolha outro.',handle_locked:'Seu ID já foi escolhido e fica fixo para preservar os links.',nick_invalid:'Use de 2 a 14 letras, números, _ . ou -.',nick_taken:'Esse nick já está em uso. Escolha outro.',account_hidden:'Esta conta está indisponível pela moderação.',session_expired:'Sua sessão expirou. Entre de novo para continuar.',social_unavailable:'A resenha está fora do ar. Tente de novo.',social_not_configured:'A comunidade aguarda configuração do servidor.',rate_limited:'Calma, fiscal da resenha. Tente de novo em um minuto.',blocked:'Esse jogador não pode interagir com você.',room_solo:'Essa sala é solo. Entre no multiplayer para chamar amigos.',room_full:'A sala lotou. Peça outro convite.',room_closed:'Essa sala já encerrou.',room_unavailable:'O servidor da sala não respondeu.',invite_expired:'O convite venceu. Peça outro.',invite_closed:'Esse convite já foi respondido.',join_room_first:'Entre numa sala do jogo antes de convidar.',provider_unavailable:'Esse login ainda não está habilitado.',account_conflict:'Esse nick ou progresso já pertence a outra conta.',guest_invalid:'Não foi possível comprovar o convidado. Seu progresso local continua salvo.',links_invalid:'Use links HTTPS das redes indicadas.',settings_invalid:'Revise a bio e as opções de privacidade.'};
   const el=(tag,text='',cls='')=>{const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n;};
   const message=(text)=>{status.textContent=text;};
@@ -112,7 +114,8 @@ if(root) {
     }
     const notice=el('p',profileNotice?.id===p.id?profileNotice.text:'','social-inline-status');notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
     const buttons=el('div','','social-actions');buttons.append(button('COPIAR LINK',async()=>navigator.clipboard.writeText(`${root.dataset.site}${p.url}`)));
-    if(p.visibility==='public'){const publicLink=link('ABRIR PERFIL PÚBLICO ↗',p.url);publicLink.dataset.publicProfile='true';buttons.append(publicLink);
+    // /u/<perfil> já é o hub: o perfil público é esta tela, sem botão para "abrir o perfil público".
+    if(p.visibility==='public'){
       // Import na hora do clique: a régua do backend roda este arquivo num vm sem módulos.
       const share=button('COMPARTILHAR PERFIL',async()=>{const {compartilhar,linkCompartilhavel}=await import('./compartilhar.js');const r=await compartilhar({titulo:`${p.nick} no CORO SOLTO`,texto:`Olha o perfil de ${p.nick} no CORO SOLTO.`,url:linkCompartilhavel(p.url,'perfil')});if(r==='copiado')message('Link do perfil copiado.');});share.dataset.share='perfil';buttons.append(share);}
     if(auth?.profile && auth.profile.id!==p.id) {
