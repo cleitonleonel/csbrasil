@@ -548,6 +548,8 @@
     "eval:treta-equip-route": "node tools/eval/treta-equip-route-check.mjs && node tools/eval/treta-equip-route-check.mjs --mutations",
     "eval:treta-rewards": "node tools/eval/treta-rewards-check.mjs && node tools/eval/treta-rewards-check.mjs --mutations",
     "eval:treta-skins": "node tools/eval/treta-skins-check.mjs && node tools/eval/treta-skins-check.mjs --mutations",
+    "eval:treta-video": "node tools/eval/treta-skin-video-check.mjs && node tools/eval/treta-skin-video-check.mjs --mutations",
+    "eval:treta-video-hover": "node tools/eval/treta-video-hover-browser.mjs && node tools/eval/treta-video-hover-browser.mjs --mutations",
     "eval:treta-classic": "node tools/eval/treta-classic-coin-check.mjs && node tools/eval/treta-classic-coin-check.mjs --mutations",
     "// ranking-home": "Relato: status SSR contradizia o ranking carregado; 38 estados dos renderers reais, sem browser/rede.",
     "eval:ranking-home-status": "node tools/eval/ranking-home-status.mjs",
