@@ -70,10 +70,16 @@ jobs:
         run: npm run eval:uuid
       - name: Loja sem fila de próximas skins
         run: npm run eval:treta-fila
+      - name: Sete moedas da loja com arte própria
+        run: npm run eval:treta-coins
       - name: Acúmulo de armas no chão tem teto
         run: npm run eval:drop
+      - name: Loja sem nome de político real
+        run: npm run eval:treta-nomes
       - name: Proxy de captura grava só dentro da pasta de saída
         run: npm run eval:capturecodex
+      - name: Aba da loja no hub diz só LOJA
+        run: npm run eval:hub-loja
       # Pendurar a régua só no `check:fast` a faria rodar na máquina de quem lembra
       # de rodar, e NÃO no portão: este job lista cada `npm run eval:*` explicitamente.
       - name: Todo mapa devolve o que o game.js consome
