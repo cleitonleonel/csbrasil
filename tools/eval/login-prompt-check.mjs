@@ -172,8 +172,9 @@ if (BROWSER) {
     const page = await ctx.newPage();
     await page.goto(`${BASE}/${query}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await page.waitForFunction(() => window.__CS_MAIN_READY__ === true, null, { timeout: 120000 });
-    if (await page.locator('#boot-splash').count()) await page.locator('#boot-splash').click({ timeout: 30000 }).catch(() => {});
+    // `antes` roda logo no MAIN_READY e solta a sessão em seguida: segurar mais que 12 s estoura o timeout do socialApi.
     if (antes) { await antes(page); liberaAuth(); }
+    if (await page.locator('#boot-splash').count()) await page.locator('#boot-splash').click({ timeout: 30000 }).catch(() => {});
     await page.waitForFunction(() => document.getElementById('login-prompt')?.dataset.ready === 'true' || new URLSearchParams(location.search).get('embed') === '1', null, { timeout: 60000 }).catch(() => {});
     await page.waitForTimeout(300);
     return { ctx, page, funil };
@@ -217,9 +218,13 @@ if (BROWSER) {
   await caso('LB4', 'browser: sessão resolvida durante a partida não abre o convite', async () => {
     const { ctx, page } = await abre({ antes: (p) => p.evaluate(() => document.getElementById('main-menu').classList.add('hidden')) });
     try {
+      assert.equal(await page.evaluate(() => document.getElementById('main-menu').classList.contains('hidden')), true, 'menu não ficou escondido');
       await page.evaluate(() => document.body.append(document.createElement('div')));
       await page.waitForTimeout(300);
       assert.equal(await aberto(page), false);
+      // não vale passar no vazio: de volta ao menu, o mesmo carregamento abre o convite
+      await page.evaluate(() => { document.getElementById('main-menu').classList.remove('hidden'); document.body.append(document.createElement('div')); });
+      await page.waitForFunction(() => document.getElementById('login-prompt').open, null, { timeout: 10000 });
     } finally { await ctx.close(); }
   });
   await caso('LB5', 'browser: 1a visita sem nick mostra o passo de entrada (cookies) e não o convite', async () => {
@@ -256,7 +261,7 @@ if (BROWSER) {
     } finally { await b.ctx.close(); }
   });
   await caso('LB9', 'browser: outro diálogo aberto (apresentação da loja) adia o convite', async () => {
-    const { ctx, page } = await abre({ antes: (p) => p.evaluate(() => { const d = document.createElement('dialog'); d.id = 'lp-outro'; document.body.append(d); d.showModal(); }) });
+    const { ctx, page } = await abre({ antes: (p) => p.evaluate(() => { const d = document.createElement('dialog'); d.id = 'lp-outro'; document.body.append(d); d.show(); }) });
     try {
       assert.equal(await aberto(page), false, 'empilhou sobre outro diálogo');
       await page.evaluate(() => { document.getElementById('lp-outro').close(); document.body.append(document.createElement('div')); });
