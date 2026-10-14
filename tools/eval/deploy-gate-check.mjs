@@ -135,7 +135,8 @@ const corposDeJob = (fonte) => {
   let build = corpos.build || '';
   if (MUT === 'agregador-sem-job') build = build.replace(/^( {4}needs:\s*\[)([^\]]*)\]/m, (_, a, b) => `${a}${b.split(',').map((x) => x.trim()).slice(1).join(', ')}]`);
   if (MUT === 'agregador-pula') build = build.replace(/^ {4}if: always\(\)\s*\n/m, '');
-  if (MUT === 'agregador-cego') build = build.replace(/exit 1; \}/, 'exit 0; }');
+  /* O alvo é a checagem DENTRO do laço: é ela que reprova o resultado ruim. */
+  if (MUT === 'agregador-cego') build = build.replace(/(\[ "\$r" = success \] \|\| \{[^}\n]*)exit 1; \}/, '$1exit 0; }');
   if (!build) falhas.push('DG5 ci.yml não tem o job `build` — o contexto obrigatório ficaria sem dono');
   else if (!/^ {4}needs:/m.test(build)) falhas.push('DG5 o `build` não é agregador (sem `needs:`): as invariantes (6,5 a 9 min) seguram o resto do pr-fast em série, num job só');
   else {
