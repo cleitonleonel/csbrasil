@@ -2306,12 +2306,21 @@ if (HUB_ENABLED) {
   new MutationObserver(syncOnline).observe(onlineCount, { childList: true, characterData: true, subtree: true });
   syncOnline();
   const factionGrid = $('hub-factions');
-  for (const fac of ['E', 'B', 'U', 'C', 'F', 'M']) {
+  // Grupos saem do elenco jogável: grupo novo em characters.js aparece aqui sem lista à mão.
+  // Políticos não têm brasão próprio e jogam pelos dois lados, então mostram os dois.
+  const groupOrder = ['E', 'B', 'P', 'U', 'C', 'F', 'M'];
+  const groups = [...new Set(CHARACTERS.map((c) => c.team))]
+    .sort((a, b) => (groupOrder.indexOf(a) + 1 || 99) - (groupOrder.indexOf(b) + 1 || 99));
+  for (const fac of groups) {
     const item = document.createElement('div');
-    item.style.setProperty('--hub-faction', PALETA[fac]?.base || '#b4d92e');
-    const crest = document.createElement('img'); crest.src = `/img/brasoes/${fac.toLowerCase()}.png`; crest.alt = '';
+    item.dataset.faction = fac;
+    item.style.setProperty('--hub-faction', PALETA[fac]?.base || (fac === 'P' ? '#d6b55a' : '#b4d92e'));
+    const crests = document.createElement('span'); crests.className = 'hub-faction-crests';
+    for (const letter of fac === 'P' ? ['e', 'b'] : [fac.toLowerCase()]) {
+      const crest = document.createElement('img'); crest.src = `/img/brasoes/${letter}.png`; crest.alt = ''; crests.appendChild(crest);
+    }
     const name = document.createElement('span'); name.textContent = tr(FACTION_NAME[fac] || fac);
-    item.append(crest, name); factionGrid.appendChild(item);
+    item.append(crests, name); factionGrid.appendChild(item);
   }
   const legacyPlay = $('btn-jogar').onclick;
   $('btn-jogar').onclick = () => {
