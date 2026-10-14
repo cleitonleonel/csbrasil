@@ -146,7 +146,7 @@ await check('E04','early account opening hydrates available Auth methods',async(
   assert.equal(u.ids['account-entry-dialog'].open,true,'Auth arrival unexpectedly dismisses manual entry');
   assert.doesNotMatch(words(u.ids['account-entry-body']),/carregando/i,'manual opening remains stuck loading');
   assert(all(u.ids['account-entry-body']).some(n=>n.tagName==='INPUT' && n.type==='email'),'email method never hydrates into already-open dialog');
-  for(const provider of ['GOOGLE','TWITTER','FACEBOOK','LINKEDIN'])assert(new RegExp(provider,'i').test(words(u.ids['account-entry-body'])),`${provider} never hydrates`);
+  for(const provider of ['google','twitter','facebook','linkedin_oidc'])assert(all(u.ids['account-entry-body']).some(n=>n.tagName==='BUTTON' && n.dataset.provider===provider),`${provider} never hydrates`);
   for(const key of ['cs_anon','awpbr_token','awpbr_stats'])assert.equal(u.storage.get(key),u.before[key],'loading race destroys guest');
 });
 await check('P01','pause community and resume preserve the same game',()=> {
@@ -238,8 +238,8 @@ await check('C03','new users have independent optional cookies and newsletter ch
   assert.equal(JSON.parse(u.storage.get('cs_privacy')).analytics,true);assert(!u.calls.some(c=>c.action==='newsletter_start'));
 });
 await check('C04','disabled providers remain visible without a login action',async()=> {
-  const u=await ui(false,{providers:[]});await u.entry.initAccountEntry();u.ids['hub-account-login'].onclick();const buttons=all(u.ids['account-entry-body']).filter(n=>n.tagName==='BUTTON' && /EM CONFIGURAÇÃO/.test(n.textContent));
-  assert.equal(buttons.length,4);for(const provider of ['Google','Discord','X / Twitter','LinkedIn'])assert(buttons.some(b=>b.textContent.includes(provider) && b.disabled));
+  const u=await ui(false,{providers:[]});await u.entry.initAccountEntry();u.ids['hub-account-login'].onclick();const buttons=all(u.ids['account-entry-body']).filter(n=>n.tagName==='BUTTON' && /em configuração/i.test(words(n)));
+  assert.equal(buttons.length,4);for(const provider of ['Google','Discord','X','LinkedIn'])assert(buttons.some(b=>words(b).includes(provider) && b.disabled));
   assert(!u.calls.some(c=>c.action==='start'),'Unavailable providers started OAuth');
 });
 await check('R01','missing avatar/socials reminder is collapsible',async()=> {
