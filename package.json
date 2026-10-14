@@ -22,6 +22,8 @@
     "fetch-audio": "bash scripts/fetch-audio.sh",
     "arch": "node tools/gen-arch.mjs",
     "arch:check": "node tools/gen-arch.mjs --check",
+    "arch:release": "node tools/gen-arch.mjs --release",
+    "arch:check:release": "node tools/gen-arch.mjs --check --release",
     "docs": "node tools/gen-docs.mjs",
     "docs:check": "node tools/gen-docs.mjs --check",
     "docs:check:autoria": "node tools/gen-docs.mjs --check --autoria",
