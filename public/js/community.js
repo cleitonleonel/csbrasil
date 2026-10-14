@@ -32,7 +32,17 @@ if(root) {
   function input(value='',max=280,type='text') {const i=el('input');i.type=type;i.value=value;if(Number.isInteger(max))i.maxLength=max;return i;}
   const date=(value)=>value?new Date(value).toLocaleString('pt-BR'):'Ainda sem atividade';
   function presenceText(p) {if(!p)return 'Presença privada';if(p.game)return `Jogando ${p.game.mode==='ctf'?'CAPTURA':'ABATE'} · ${p.game.map}`;return p.online?'Online na resenha':`Offline · ${date(p.last_active_at)}`;}
-  const names={first_kill:'Primeiro abate confirmado',ten_kills:'Dez abates na conta',first_win:'Primeira vitória',one_hour:'Uma hora de arena ativa'};
+  const names={first_kill:'Primeiro abate',ten_kills:'Dez abates na conta',first_win:'Primeira vitória',one_hour:'Uma hora de arena ativa'};
+  /* Conquistas de contagem seguem os totais que o próprio perfil mostra (histórico preservado + confirmadas).
+     O banco só grava player_achievement quando ingere rodada verificada, então quem jogou antes do corte ficava sem nada.
+     Hora de arena usa só o tempo confirmado: o tempo antigo contava menu e AFK. Data só aparece quando o servidor manda. */
+  function profileAchievements(p){
+    const kills=Number(p.kills) || 0,wins=Math.max(Number(p.round_wins) || 0,Number(p.legacy_wins ?? p.wins) || 0),active=Number(p.verified_play_seconds ?? 0) || 0;
+    const derived={first_kill:kills>=1,ten_kills:kills>=10,first_win:wins>=1,one_hour:active>=3600};
+    const saved=new Map((p.achievements || []).filter(a=>Object.hasOwn(names,a?.key)).map(a=>[a.key,a]));
+    return Object.keys(names).filter(k=>saved.has(k) || derived[k]).map(k=>({key:k,at:saved.get(k)?.at || null,source:saved.has(k)?'server':'history'}));
+  }
+  const achievementText=a=>`${names[a.key]} · ${a.at?new Date(a.at).toLocaleDateString('pt-BR'):a.source==='history'?'pelo histórico preservado':'conquistada'}`;
   async function refresh(){
     const owner=auth?.profile?.id,next=owner?await api('/api/social'):null;if(owner!==auth?.profile?.id)return;
     if(next?.messages_enabled){try{next.inbox=await api('/api/social?action=inbox');}catch{next.inboxError=true;}}
@@ -90,7 +100,7 @@ if(root) {
     c.append(buttons);
     if(p.socials?.length || p.social_link){const socials=profileSocialLinks(p);if(socials.length){const row=el('nav','','profile-socials');row.setAttribute('aria-label','Redes públicas');for(const s of socials)row.append(profileSocialLink(s));c.append(row);}}
     c.append(el('h3','Conquistas'));
-    const achievements=el('ul','','social-list');for(const a of p.achievements)achievements.append(el('li',`${names[a.key] || a.key} · ${date(a.at)}`));c.append(p.achievements.length?achievements:empty('A primeira conquista vem da primeira treta confirmada.'));
+    const earned=profileAchievements(p),achievements=el('ul','','social-list');for(const a of earned)achievements.append(el('li',achievementText(a)));c.append(earned.length?achievements:empty('A primeira conquista vem do primeiro abate.'));
     c.append(el('h3','Preferências na arena'));
     const favorites=el('ul','','social-list');for(const f of p.favorites)favorites.append(el('li',`${f.map} · ${f.mode} · ${f.character || 'Personagem não registrado'} · ${f.faction || 'Facção não registrada'} (${f.rounds} rodadas)`));c.append(p.favorites.length?favorites:empty('Jogue uma rodada verificada para começar seu histórico.'));
     c.append(el('h3','Rodadas recentes'));
