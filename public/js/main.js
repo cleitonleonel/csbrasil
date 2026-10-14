@@ -4527,7 +4527,8 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
     mpGuardarEscolhaSp();
     if (MAPS[m.map]) currentMap = m.map;
     matchMode = m.ctf ? 'ctf' : 'rounds';
-    await mpMontarPartida(net, m);
+    // o nó segura o round 1 até este aviso (teto de 10 s lá); vai mesmo se a montagem falhar
+    try { await mpMontarPartida(net, m); } finally { if (mpSessao?.net === net) net.avisarPronto(m.partida); }
   };
   await mpMontarPartida(net, welcome);
 }
