@@ -1,0 +1,12 @@
+---
+// Uma cópia ESTÁTICA da home por rota de public/js/rotas.js, sem função que possa
+// devolver 200 com 0 bytes (docs/adr/0008-rotas-fixas.md).
+import Hub from './index.astro';
+import { ROTAS_HUB } from '../../public/js/rotas.js';
+
+export function getStaticPaths() {
+  return ROTAS_HUB.map((rota) => ({ params: { hub: rota.caminho.slice(1) }, props: { rota } }));
+}
+const { rota } = Astro.props;
+---
+<Hub rota={rota} />

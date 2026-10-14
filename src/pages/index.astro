@@ -24,6 +24,15 @@ const CONTENT_TABS = [
   ['mapas', 'MAPAS', 'MAPS'], ['mapa', 'AO VIVO', 'LIVE MAP'],
   ['changelog', 'NOVIDADES', 'WHAT’S NEW'], ['apoie', 'APOIAR', 'SUPPORT'],
 ];
+/* ROTA FIXA (docs/adr/0008-rotas-fixas.md): src/pages/[...hub].astro renderiza esta página
+   com `rota` para cada caminho de public/js/rotas.js. Sem `rota` é a home, como sempre foi. */
+const rota = Astro.props.rota as undefined | { caminho: string; titulo: string; descricao: string; indexavel: boolean; canonical?: string };
+const HOME_TITLE = 'CORO SOLTO: Treta Suprema - FPS grátis de navegador (ex-CS BRASIL)';
+const pageTitle = rota ? `${rota.titulo} · CORO SOLTO: Treta Suprema` : HOME_TITLE;
+const ogTitle = rota ? pageTitle : 'CORO SOLTO: Treta Suprema - FPS grátis de navegador';
+const pageDesc = rota ? rota.descricao : DESC_LONG;
+const pageUrl = abs(rota ? (rota.canonical || rota.caminho) : '/');
+const selfUrl = abs(rota ? rota.caminho : '/');
 const V = pkg.version;
 // Commit do deploy (Vercel expõe no build); o multiplayer grava o build do navegador com ele.
 const GIT_SHA = /^[a-f0-9]{40}$/.test(import.meta.env.VERCEL_GIT_COMMIT_SHA || '') ? import.meta.env.VERCEL_GIT_COMMIT_SHA : '';
@@ -510,11 +519,14 @@ window.__GEO_LANG__ = (function () {
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>CORO SOLTO: Treta Suprema - FPS grátis de navegador (ex-CS BRASIL)</title>
-<meta name="description" content={DESC_LONG}>
+<!-- Toda rota do hub (/jogar/multiplayer, /loja...) serve este HTML: caminho relativo
+     (importmap ./js/, models/, img/) resolve da raiz em qualquer uma delas. -->
+<base href="/">
+<title>{pageTitle}</title>
+<meta name="description" content={pageDesc}>
 <meta name="keywords" content="coro solto, cs brasil, jogo de tiro navegador, fps browser grátis, awp, cs 1.6 brasileiro, jogo satira politica, treta suprema, jogo web three.js">
 <meta name="author" content="CORO SOLTO contributors">
-<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="robots" content={!rota || rota.indexavel ? 'index, follow, max-image-preview:large' : 'noindex, follow'}>
 <meta name="theme-color" content="#090704">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -523,21 +535,21 @@ window.__GEO_LANG__ = (function () {
 <!-- CANONICAL: host de src/lib/site-origin.mjs. Este link
      estava no host sem www e brigava com o canonical das outras páginas
      (que sai de astro.config.mjs) - dois hosts, sinal diluído. -->
-<link rel="canonical" href={abs('/')}>
+<link rel="canonical" href={pageUrl}>
 <!-- HREFLANG. Repetido aqui porque esta página tem <head> PRÓPRIO e não passa
      pelo Layout.astro - a home é o jogo, não uma página de conteúdo. Deixar de
      fora justamente a URL mais importante do site é o tipo de buraco que só
      aparece quando alguém compara página por página.
      Mesmo host e mesma forma do canonical acima. Ver Layout.astro pro porquê
      de `x-default` e da auto-referência. -->
-<link rel="alternate" hreflang="pt-BR" href={abs('/')}>
-<link rel="alternate" hreflang="x-default" href={abs('/')}>
+{(!rota || rota.indexavel) && <><link rel="alternate" hreflang="pt-BR" href={pageUrl}>
+<link rel="alternate" hreflang="x-default" href={pageUrl}></>}
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CORO SOLTO: Treta Suprema">
-<meta property="og:title" content="CORO SOLTO: Treta Suprema - FPS grátis de navegador">
-<meta property="og:description" content={DESC_LONG}>
-<meta property="og:url" content={abs('/')}>
+<meta property="og:title" content={ogTitle}>
+<meta property="og:description" content={pageDesc}>
+<meta property="og:url" content={selfUrl}>
 <meta property="og:image" content={abs('/og-image.jpg')}>
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -545,8 +557,8 @@ window.__GEO_LANG__ = (function () {
 <meta property="og:locale" content="pt_BR">
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="CORO SOLTO: Treta Suprema - FPS grátis de navegador">
-<meta name="twitter:description" content={DESC_LONG}>
+<meta name="twitter:title" content={ogTitle}>
+<meta name="twitter:description" content={pageDesc}>
 <meta name="twitter:image" content={abs('/og-image.jpg')}>
 <meta name="twitter:image:alt" content="CORO SOLTO: Treta Suprema - FPS satírico de navegador com facções brasileiras">
 <!-- JSON-LD: UM nó VideoGame no site inteiro, e ele mora AQUI.
@@ -556,7 +568,10 @@ window.__GEO_LANG__ = (function () {
      Agora o nó canônico tem @id estável (…/#game) e vive na home, que é a url
      do próprio jogo; /sobre e as outras páginas só REFERENCIAM esse @id.
      Uma entidade, um dono. (a fonte dos textos é src/lib/site.ts) -->
-<script type="application/ld+json" is:inline set:html={JSON.stringify({
+{rota ? (rota.indexavel && <script type="application/ld+json" is:inline set:html={JSON.stringify({
+  '@context': 'https://schema.org', '@type': 'WebPage', '@id': `${pageUrl}#webpage`, url: pageUrl, name: pageTitle,
+  description: pageDesc, inLanguage: 'pt-BR', isPartOf: { '@id': `${SITE}/#website` }, about: { '@id': `${SITE}/#game` },
+})} />) : <script type="application/ld+json" is:inline set:html={JSON.stringify({
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -647,8 +662,8 @@ window.__GEO_LANG__ = (function () {
       }
     }
   ]
-})} />
-<script type="application/ld+json" is:inline set:html={JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', '@id': `${SITE}/#faq`, mainEntity: HOME_FAQ.map(([name, text]) => ({ '@type': 'Question', name, acceptedAnswer: { '@type': 'Answer', text } })) })} />
+})} />}
+{!rota && <script type="application/ld+json" is:inline set:html={JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', '@id': `${SITE}/#faq`, mainEntity: HOME_FAQ.map(([name, text]) => ({ '@type': 'Question', name, acceptedAnswer: { '@type': 'Answer', text } })) })} />}
 <!-- O ICO tem recortes próprios por tamanho; regenere com tools/eval/canarinho-icon.mjs. -->
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
