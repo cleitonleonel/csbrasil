@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.91`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.92`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,75 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.92] — 2026-10-14
+
+### Mudado
+- Lote 3: perfil e lobby no jogo, card OG, rodadas e próximo mapa do MP, time pelo lado (#919)
+- Medir espera do chat no relógio do jogo
+- Regenerate generated blocks for lote 3
+- Mandar pronto mesmo com erro na troca e limpar o aviso
+- Cobrar pronto em qualquer caminho e onProximo sem erro solto
+- Regenerate docs counts
+- Focus the guide frame after it is shown
+- Leave mailto links in embedded pages to the browser
+- Route embedded /?secao= links to the requested hub section
+- Open the clans page inside the lobby
+- Cover links inside embedded legal pages and CLÃS
+- Fit the social links comment in two lines
+- Paint the MP player's team with its side color
+- Fit the faction grid on narrow screens
+- Measure faction grid fit at 390, 780 and 1536 px
+- Measure radar ally vs amber contrast by hue
+- Add MP team color ruler for the player's own side
+- Drop perfil from the URL when switching social tab
+- Check that switching social tab drops perfil from the URL
+- Fix stale _teamName note in the faction name map
+- Derive the loading chip's enemy side from the player's side
+- Raise the MP CTF flag of the owning side, not the body
+- Regenerate generated docs blocks
+- Regenerate generated docs blocks
+- Check profile social links with mutants
+- Show social icons on the public profile page
+- Show social icons on the in-game profile
+- Add public social links with icons for profiles
+- Check profile views display with mutants
+- Show profile views on the public profile page
+- Show and count profile views in the game
+- Strip control characters from card nickname
+- Show NÍVEL — when the profile has no level
+- Wrap long nicknames instead of shrinking them
+- Require legible long nicknames on profile card
+- Check the served profile card carries the logo
+- Show game logo and rank badge on profile OG card
+- Require logo and level badge in profile card contract
+- Pré-carregar o próximo mapa durante o placar
+- Regenerate generated docs blocks
+- Check the profile page opens in game with SEO intact
+- Open the public profile page inside the game
+- Send social login out of a same-origin frame
+- Collapse the account panel on a shared profile
+- Skip the account prompt on a shared profile arrival
+- Avisar o nó quando o mapa novo estiver montado
+- Cobrar próximo mapa no placar no cliente
+- Regenerate docs counts for the FAQ maps check
+- List all playable maps in the home FAQ
+- Add check that the home FAQ names every map
+- Open hub footer legal links inside the lobby
+- Cover hub footer links in the lobby links check
+- Usar teto de rodadas da sala no HUD online
+- Cobrar teto de rodadas do servidor no HUD online
+- Name the MP player's team by its side, not its body
+- Regenerate docs counts for the profile link check
+- Open player profiles in the lobby community pane
+- Add browser check for player profile links in the lobby
+- Regenerate docs counts for the faction grid check
+- List every playable group in the lobby about panel
+- Add browser check for lobby faction grid
+- Regenerate docs counts for the new lobby check
+- Open privacy and terms pages inside the lobby
+- Add browser check for lobby about-panel links
+- Add MP team label ruler for the player's own side
 
 ## [2.1.0-alpha.91] — 2026-10-14
 
