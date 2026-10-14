@@ -334,7 +334,7 @@ function showLoading(label, status = 'CARREGANDO MODELOS 3D…', mapName = '') {
   if (vs) {
     const a = $('load-vs-a'), b = $('load-vs-b');
     if (mapName && currentEnemyFaction) {
-      a.textContent = tr(FACTION_NAME[currentFaction] || ''); a.style.color = (PALETA[currentFaction] || {}).base || '#e0762a';
+      a.textContent = tr(FACTION_NAME[currentTeam] || ''); a.style.color = (PALETA[currentTeam] || {}).base || '#e0762a';
       b.textContent = tr(FACTION_NAME[currentEnemyFaction] || ''); b.style.color = (PALETA[currentEnemyFaction] || {}).base || '#8258d8';
       vs.classList.remove('hidden');
     } else vs.classList.add('hidden');
@@ -3940,7 +3940,7 @@ function mpMostrarIdentidade(estado) {
   // O personagem usado para preload é um fallback técnico; não anunciá-lo como atribuição.
   const nome = espectador ? 'Espectador' : def?.name || 'Personagem não identificado';
   const detalhe = espectador ? 'Aguardando vaga em um time'
-    : def ? tr(FACTION_NAME[def.team] || def.team) : 'O servidor ainda não informou seu personagem';
+    : def ? tr(FACTION_NAME[corpo.team] || corpo.team) : 'O servidor ainda não informou seu personagem';
   for (const id of ['mp-identity-toast', 'mp-identity-pause']) {
     const card = document.getElementById(id);
     if (!card) continue;

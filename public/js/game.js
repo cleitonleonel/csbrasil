@@ -4991,8 +4991,9 @@ export class Game {
   // Facção que ocupa um LADO físico (P/B): lado do jogador = playerFaction, o outro = enemyFaction.
   _factionOf(side) { return side === this.playerTeam ? this.playerFaction : this.enemyFaction; }
   _voiceKey(side) { return this._factionOf(side); }   // pack de vozes/round por facção (P/B/U)
-  _teamName(side) { const f = this._factionOf(side); return f === 'U' ? 'TRIBOS URBANAS' : f === 'C' ? 'PALHAÇOS' : f === 'F' ? 'FUNKEIROS' : f === 'M' ? 'MÍTICO' : (TEAM_LABEL[f] || f); }
-  _teamTag(side) { const f = this._factionOf(side); return f === 'U' ? 'TRB' : f === 'C' ? 'PLH' : f === 'F' ? 'FNK' : f === 'M' ? 'MIT' : f === 'E' ? 'ESQ' : 'DIR'; }
+  // Nome, sigla e brasão do time são do LADO: online a playerFaction é a categoria do corpo (só mãos).
+  _teamName(side) { return TEAM_LABEL[side] || side; }
+  _teamTag(side) { return side === 'B' ? 'DIR' : 'ESQ'; }
 
   /* Uma plaqueta do HUD. Chamada por QUADRO, então tudo aqui é comparação barata:
      o número só é escrito se mudou, e o brasão (data-f, arte no CSS) só quando a
@@ -5005,7 +5006,7 @@ export class Game {
     /* minúscula porque o seletor de atributo do CSS é SENSÍVEL A CAIXA e os arquivos
        são b/c/e/f/u.png — `data-f="U"` não casaria com `[data-f="u"]` e o brasão
        simplesmente não apareceria, sem erro nenhum no console. */
-    const f = String(this._factionOf(side) || '').toLowerCase();
+    const f = String(side || '').toLowerCase();
     const crest = this.el['crest' + slot];
     if (crest && crest.dataset.f !== f) crest.dataset.f = f;
     const sig = this.el['sigla' + slot], tag = this._teamTag(side);
@@ -8177,7 +8178,7 @@ export class Game {
       const totalRounds = this._inspectionTotalRounds || this.roundsMax;
       const clock = this.ctf ? Math.max(0, Math.ceil(this.ctfMatchLeft)) : Math.max(0, Math.ceil(this.timeLeft));
       const clockText = `${Math.floor(clock / 60)}:${String(clock % 60).padStart(2, '0')}`;
-      const crest = (side) => String(this._factionOf(side) || 'E').toLowerCase();
+      const crest = (side) => String(side || 'E').toLowerCase();
       document.querySelector('#scoreboard h3').innerHTML =
         (r ? `<span class="sb-result">${r.titulo}</span><span class="sb-result-sub">${r.sub}</span>` : '') +
         `<span class="sb-clock">RODADA ${this.roundNum}/${totalRounds} · <em>${clockText}</em></span>` +
@@ -8188,8 +8189,8 @@ export class Game {
       /* DUAS COLUNAS COM BRASÃO (referência 08_placar, pedido do dono 07/08: "na tela de
          placar, temos que pôr o brasão de cada time e alinhar as informações à coluna de
          cada um"). O brasão é o MESMO arquivo que estampa a bandeira CTF (img/brasoes/),
-         lido pela letra da facção que ocupa o lado — nunca pelo lado cru (a lição do
-         _factionOf: lado 'B' ≠ facção 'B' por acidente de letra). */
+         lido pela letra do LADO: online a facção do jogador é a categoria do corpo
+         (C/F/U/M/P), que escolhe as mãos e não o time. */
 
       const coluna = (side) => {
         const linhas = [...this.combatants].filter(c => c.team === side).sort(rank).map((c, i) => {
