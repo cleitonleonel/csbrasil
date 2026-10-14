@@ -94,6 +94,21 @@ for(const fixture of [p,{...p,level:1,points:42},{...p,level:520,points:51974}])
  const nick=card.match(/<text\b([^>]*)>OG Fixture<\/text>/);assert(nick&&+attrs(nick[1])['font-size']>=44,'nickname must stay prominent');
  for(const [,t] of card.matchAll(/<text\b([^>]*)>/g)){const a=attrs(t);assert(+a.x>=60&&+a.y<=572,`text outside the 60px safe area: x=${a.x} y=${a.y}`);}
 }
+const nickTexts=card=>[...card.matchAll(/<text\b([^>]*fill="#f2ead8"[^>]*font-weight="bold"[^>]*|[^>]*font-weight="bold"[^>]*fill="#f2ead8"[^>]*)>([^<]*)<\/text>/g)].map(m=>({...attrs(m[1]),text:m[2]})).filter(t=>+t.y<126);
+let longNickChecked=0;
+for(const nick of ['ŒÆŴÓÕÂÊÔÇ@WMŒÆŴÓÕÂÊÔÇ@WM','WWWWWWWWWWWWWWWWWWWWWWWW','Coro😀Solto🔥Treta😀Supremaa']){
+ const card=profileCardSvg({...p,nick}),lines=nickTexts(card);
+ assert(lines.length>=1&&lines.length<=2,`nickname must use one or two lines: ${nick}`);
+ for(const line of lines)assert(+line['font-size']>=28,`nickname ${nick} shrank to ${line['font-size']}px; minimum 28px`);
+ const shown=lines.map(l=>l.text).join('');
+ assert(!/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/.test(shown),'nickname cut inside a surrogate pair');
+ assert(shown===[...nick].slice(0,24).join('')||shown.endsWith('…')&&[...nick].join('').startsWith(shown.slice(0,-1)),`nickname must be whole or a clean prefix with an ellipsis: ${shown}`);
+ const px=render(card).pixels;let inside=0,past=0;
+ for(let y=20;y<126;y++)for(let x=280;x<1200;x++){const i=(y*1200+x)*4;if(px[i]>200&&px[i+1]>200&&px[i+2]>180){if(x<645)inside++;else past++;}}
+ assert(inside>0,`nickname ${nick} did not render`);
+ assert.equal(past,0,`nickname ${nick} crosses into the portrait column (x>=645): ${past} px`);
+ longNickChecked++;
+}
 mkdirSync('artifacts/social',{recursive:true});writeFileSync('artifacts/social/profile-card-fixture.png',actual.asPng());
 if(process.argv.includes('--gallery')){
  const folder='artifacts/social/og-stylized';mkdirSync(folder+'/cards',{recursive:true});
@@ -113,4 +128,4 @@ if(process.argv.includes('--gallery')){
   await sharp({create:{width:1200,height:Math.ceil(chunk.length/3)*236,channels:4,background:'#0c0e11'}}).composite(layers).png().toFile(`${folder}/gallery-${group+1}.png`);
  }
 }
-console.log(`PASS logo ${lw}x${lh} ${logoChanged}px; level badge; safe area; roster ${roster.length}/${roster.length}; actual portrait ${imagePixels} pixels y=${minY}..${maxY}; embedded nickname ${textPixels} pixels; public verified source; XML/URL guards; PNG1200x630`);
+console.log(`PASS logo ${lw}x${lh} ${logoChanged}px; level badge; long nicknames ${longNickChecked}/3; safe area; roster ${roster.length}/${roster.length}; actual portrait ${imagePixels} pixels y=${minY}..${maxY}; embedded nickname ${textPixels} pixels; public verified source; XML/URL guards; PNG1200x630`);
