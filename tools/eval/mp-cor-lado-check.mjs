@@ -25,14 +25,15 @@
      MC1  todos os pontos pintam o time do jogador com a cor do LADO (e o inimigo com a do outro)
      MC2  dois colegas no mesmo lado com corpos diferentes veem as MESMAS cores em todos os pontos
      MC3  contraste: aliado × inimigo distantes (RGB >= 200), blip aliado × âmbar do inimigo
-          revelado (RGB >= 120), e a tinta do kill feed é a `palida` do lado, a que a UI1
-          (ui-check.mjs) mede a 5,9-9,1:1; com espelho forçado o inimigo vira ESPELHO
+          revelado em matiz (>= 25°; o ouro dos funkeiros fica a 5°), e a tinta do kill feed
+          é a `palida` do lado, a que a UI1 (ui-check.mjs) mede a 5,9-9,1:1; com espelho
+          forçado o inimigo vira ESPELHO
      SP1  no SP as cores de todos os pontos são as de antes (facção = lado)
 
    MUTANTES (cópia irmã temporária do game.js; o arquivo não é tocado)
      --mutante=cor-categoria   `_teamColor`/`_teamInk` voltam a `_factionOf(side)` -> MC1, MC2, MC3 vermelhas
-     --mutante=sem-contraste   os dois lados pintam com a cor da ESQUERDA           -> MC3 vermelha
-   Nos dois, SP1 só cai no sem-contraste (ele muda o SP de propósito).
+     --mutante=sem-contraste   os dois lados pintam com a cor da ESQUERDA           -> MC1, MC3, SP1 vermelhas
+   SP1 só cai no sem-contraste, que muda o SP de propósito.
 
    uso: node tools/eval/mp-cor-lado-check.mjs [--mutante=<nome>]
    ═══════════════════════════════════════════════════════════════════════════════════ */
@@ -87,6 +88,13 @@ const identidade = new Function('CHARACTERS', 'charId', 'team', 'online', 'enemy
 const rgb = (h) => { const s = String(h).replace('#', ''); return [0, 2, 4].map((i) => parseInt(s.slice(i, i + 2), 16)); };
 const dist = (a, b) => { const x = rgb(a), y = rgb(b); return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]); };
 const hex = (c) => `#${c.getHexString()}`;
+const matiz = (h) => {
+  const [r, g, b] = rgb(h).map((v) => v / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  if (!d) return 0;
+  const x = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return (x * 60 + 360) % 360;
+};
+const difMatiz = (a, b) => { const d = Math.abs(matiz(a) - matiz(b)); return Math.min(d, 360 - d); };
 
 /* ── uma partida, medindo cada ponto que pinta com a cor do time ─────────────── */
 const textures = H.initTextures();
@@ -178,8 +186,8 @@ for (const team of ['E', 'B']) {
       && (r.aliados === 0 || r.blipAliado === COR(L))
       && r.halo === COR(L) && r.anel[0] === anelRef[L] && r.anel[1] === anelRef[O];
     marca('MC1', ok1, `${caso}: time ${r.cor.meu} tinta ${r.tinta.meu} · feed ${r.feed.map((f) => `${f.chip}/${f.tinta}`).join(' ')} · placar E ${r.placar.E} B ${r.placar.B} · radar ${r.blipAliado} · halo ${r.halo} · anel ${r.anel.join('/')}`);
-    const ok3 = dist(r.cor.meu, r.cor.dele) >= 200 && (!r.blipAliado || dist(r.blipAliado, AMBAR) >= 120) && r.tinta.meu === PAL(L);
-    marca('MC3', ok3, `${caso}: aliado ${r.cor.meu} × inimigo ${r.cor.dele} = ${dist(r.cor.meu, r.cor.dele).toFixed(0)} · blip ${r.blipAliado} × âmbar = ${r.blipAliado ? dist(r.blipAliado, AMBAR).toFixed(0) : '-'} · tinta ${r.tinta.meu}`);
+    const ok3 = dist(r.cor.meu, r.cor.dele) >= 200 && (!r.blipAliado || difMatiz(r.blipAliado, AMBAR) >= 25) && r.tinta.meu === PAL(L);
+    marca('MC3', ok3, `${caso}: aliado ${r.cor.meu} × inimigo ${r.cor.dele} = ${dist(r.cor.meu, r.cor.dele).toFixed(0)} · blip ${r.blipAliado} × âmbar = ${r.blipAliado ? difMatiz(r.blipAliado, AMBAR).toFixed(0) + '°' : '-'} · tinta ${r.tinta.meu}`);
     linhas.push(`${caso.padEnd(28)} time ${r.cor.meu} · tinta ${r.tinta.meu} · radar ${r.blipAliado} · halo ${r.halo} · placar E ${r.placar.E} B ${r.placar.B} · anel ${r.anel[0]}`);
   }
   // MC2: colegas no mesmo lado, corpos diferentes, veem o mesmo
