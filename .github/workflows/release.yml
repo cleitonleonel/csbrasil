@@ -134,6 +134,9 @@ jobs:
       contents: read
     outputs:
       sai: ${{ steps.verde.outputs.sai }}
+      # O SHA que o embarque viu verde. O bump publica ESTE, ou outro que ele mesmo
+      # reconfira verde; nunca a main que estiver lá na hora (RLS17).
+      sha: ${{ steps.verde.outputs.sha }}
     steps:
       - name: main verde e com commit novo?
         id: verde
@@ -148,7 +151,7 @@ jobs:
             LINHA=$(gh run list --repo "$REPO" --workflow ci.yml --branch main --commit "$SHA" --event push \
                       --json status,conclusion --jq '.[0] | "\(.status) \(.conclusion)"' 2>/dev/null || true)
             case "$LINHA" in
-              "completed success") echo "pr-fast verde em $SHA — embarca"; echo "sai=true" >> "$GITHUB_OUTPUT"; exit 0 ;;
+              "completed success") echo "pr-fast verde em $SHA — embarca"; { echo "sai=true"; echo "sha=$SHA"; } >> "$GITHUB_OUTPUT"; exit 0 ;;
               completed*) echo "::warning::pr-fast NÃO está verde em $SHA ($LINHA) — trem não sai"; echo "sai=false" >> "$GITHUB_OUTPUT"; exit 0 ;;
               ""|"null null")
                 # No push do lote o pr-fast deste SHA nasce JUNTO com este run: ainda não
@@ -164,7 +167,13 @@ jobs:
     needs: embarque
     if: needs.embarque.outputs.sai == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 30 (teto da WT2): até 5 bumps de ~1 min mais a espera pelo pr-fast de uma cabeça
+    # nova, que o passo corta num prazo próprio de 22 min antes de publicar qualquer coisa.
+    timeout-minutes: 30
+    # actions: read para reconferir o pr-fast quando a main anda durante o bump.
+    permissions:
+      actions: read
+      contents: write
     # Grupo PRÓPRIO e NUNCA cancelável: o embarque de um lote novo dividindo grupo com este
     # job cancelaria o bump velho no meio do push/tag/Release, deixando tag sem Release e o
     # backend sem aviso. Bump em andamento termina; o próximo espera na fila, refaz o
@@ -194,6 +203,10 @@ jobs:
 
       - name: bump da versão + docs gerados + tag
         if: steps.guard.outputs.skip != 'true'
+        env:
+          APROVADO: ${{ needs.embarque.outputs.sha }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
           set -e
           # Autoria do bump: assina como csbrasil-deploy-bot quando a conta máquina
@@ -268,24 +281,53 @@ jobs:
           # main do remoto, volta a árvore para ela (reset + clean; a tag local da tentativa
           # anterior sai) e REFAZ o bump: versão, CHANGELOG, docs, ARCH e commit são todos
           # gerados, então regenerar sobre a main nova é o rebase sem conflito possível. Teto
-          # de tentativas, backoff curto, nunca --force; a última falha sai com erro (RLS11).
+          # de tentativas, backoff curto, nunca --force; a última falha sai com erro (RLS17).
           # A primeira volta do laço faz o que o `git pull --rebase` fazia antes do bump.
+          # SÓ PUBLICA SHA COM PR-FAST VERDE. O embarque aprovou $APROVADO. Se a main andou
+          # (antes da primeira volta ou entre duas), a cabeça nova só serve depois de o
+          # pr-fast DELA terminar verde; senão nada é publicado e o erro diz por quê.
+          [ -n "$APROVADO" ] || { echo "::error::o embarque não passou o SHA aprovado; nada a publicar"; exit 1; }
+          PRAZO=$(( $(date +%s) + 22 * 60 ))
+          pr_fast_verde() {
+            while [ "$(date +%s)" -lt "$PRAZO" ]; do
+              LINHA=$(gh run list --repo "$REPO" --workflow ci.yml --branch main --commit "$1" --event push \
+                        --json status,conclusion --jq '.[0] | "\(.status) \(.conclusion)"' 2>/dev/null || true)
+              case "$LINHA" in
+                "completed success") return 0 ;;
+                completed*) echo "::warning::pr-fast de $1 terminou $LINHA"; return 1 ;;
+              esac
+              sleep 30
+            done
+            return 1
+          }
           MAX_TENTATIVAS=5
           for tentativa in $(seq 1 "$MAX_TENTATIVAS"); do
             git fetch origin main
-            git reset --hard origin/main
+            CABECA=$(git rev-parse origin/main)
+            if [ "$CABECA" != "$APROVADO" ]; then
+              case "$(git log -1 --format=%s "$CABECA")" in
+                "chore(release):"*) echo "::error::a main andou para $CABECA, que já é um commit de release: outro trem saiu, este não publica nada."; exit 1 ;;
+              esac
+              echo "::warning::a main andou de $APROVADO para $CABECA; espero o pr-fast da cabeça nova antes de publicar"
+              if ! pr_fast_verde "$CABECA"; then
+                echo "::error::a main andou para $CABECA e o pr-fast dela não ficou verde no prazo: nada foi publicado. O próximo lote (ou gh workflow run release.yml) tenta de novo."
+                exit 1
+              fi
+              APROVADO=$CABECA
+            fi
+            git reset --hard "$APROVADO"
             git clean -fdq
             [ -z "${NEW:-}" ] || git tag -d "$NEW" 2>/dev/null || true
             refaz_bump
             if git push --atomic origin main "refs/tags/$NEW"; then
-              echo "release $NEW empurrado na tentativa $tentativa"
+              echo "release $NEW empurrado sobre $APROVADO na tentativa $tentativa"
               break
             fi
             if [ "$tentativa" = "$MAX_TENTATIVAS" ]; then
               echo "::error::push do release rejeitado $MAX_TENTATIVAS vezes (a main andou a cada tentativa): nada subiu, o --atomic garante. Rode de novo: gh workflow run release.yml"
               exit 1
             fi
-            echo "::warning::push do release rejeitado na tentativa $tentativa (a main andou); refaço o bump sobre a main nova"
+            echo "::warning::push do release rejeitado na tentativa $tentativa (a main andou); confiro a cabeça nova e refaço o bump"
             sleep $((tentativa * 10))
           done
           git ls-remote --exit-code origin "refs/tags/$NEW" > /dev/null
