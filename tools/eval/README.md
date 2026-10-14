@@ -26,6 +26,7 @@ com código 1 em falha crítica.
 | `shader-budget-check.mjs` | Deriva do GLB real o orçamento de varyings da urna e protege fog/triplanar no piso WebGL1. | `npm run eval:shaderbudget` |
 | `lajes-cache-check.mjs` | Duas builds reais de Lajes: paridade dos buffers e da sequência RNG, colisores, navegação e oclusores; 49 geometrias compartilhadas nas 9162 caixas, descarte único e isolamento entre builds. | `npm run eval:lajes-cache` |
 | `map-rotation-check.mjs` | Sugestão inicial de mapa: link manda, escolha do carrossel fica, e quem não escolhe roda pelos 5 mapas. | `npm run eval:maprotate` |
+| `mapas-sob-demanda-check.mjs` | Mapas sob demanda (lane glm/peso): nenhum módulo de ARENA no grafo estático do boot (import() dinâmico não conta); contrato de `carregaMapa` (instala build, memoiza, resolve alias) e conferência registro×módulo que rejeita metadado divergente. Mutantes `estatico` e `registro`. Entra no check:fast junto com a fiação do main.js. | `npm run eval:mapasobdemanda` |
 | `../gen-arch.mjs` | (fora deste diretório) Gera e valida o `ARCH.md`. `--check` reprova se estiver desatualizado. | `npm run arch` |
 
 ## 2. Documentos — leitura, não execução

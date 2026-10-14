@@ -1,24 +1,7 @@
 import { withVisibleShotOccluders } from './shot_surfaces.js';
-import { preloadMansaoAmbience } from './mansao_ambience.js';
-import { buildMansao, MANSAO_PROPS, MANSAO_AMBIENCE } from './map_mansao.js';
-import { buildAmazonia, AMAZONIA_PROPS, AMAZONIA_AMBIENCE } from './map_amazonia.js';
-import { buildEscadao, ESCADAO_PROPS, ESCADAO_AMBIENCE } from './map_escadao.js';
-// Map registry — single source of truth for selectable arenas.
-import { buildBrasilia, BRASILIA_PROPS } from './map_brasilia.js';
-import { buildPoolDay, PISCINA_PROPS } from './map_piscina.js';
-import { buildHavan, havanPropsForMatch } from './map_havan.js';
-import { buildFerroVelho, FERRO_PROPS } from './map_ferrovelho.js';
-import { buildQuebrada, QUEBRADA_PROPS } from './map_quebrada.js';
-import { buildCorrego, CORREGO_PROPS, CORREGO_AMBIENCE } from './map_corrego.js';
-import { buildLajes, LAJES_PROPS, LAJES_AMBIENCE } from './map_lajes_authored.js';
-import { buildObras, OBRAS_PROPS } from './map_obras.js';
-import { buildPosto, POSTO_PROPS } from './map_posto.js';
-import { buildUpa, UPA_PROPS } from './map_upa.js';
-import { buildAtacadao, ATACADAO_PROPS } from './map_atacadao.js';
-import { buildCampoMorro, CAMPOMORRO_PROPS, CAMPOMORRO_AMBIENCE } from './map_campomorro.js';
-import { buildParque, PARQUE_PROPS, PARQUE_AMBIENCE } from './map_parque.js';
-import { buildVelhoOeste, VELHO_OESTE_PROPS, VELHO_OESTE_AMBIENCE } from './map_velho_oeste.js';
-import { buildPenitenciaria, PENITENCIARIA_PROPS, PENITENCIARIA_AMBIENCE } from './map_penitenciaria.js';
+
+/* Mapas sob demanda (lane glm/peso): registro com metadados leves; o módulo da
+   arena só entra por carregaMapa. Régua eval:mapasobdemanda; fiação no PR. */
 
 /* IDS SEM NOME DE COUNTER-STRIKE (rodada de 11/08).
    ═══════════════════════════════════════════════════════════════════════════════════
@@ -38,66 +21,153 @@ import { buildPenitenciaria, PENITENCIARIA_PROPS, PENITENCIARIA_AMBIENCE } from 
      fy_quebrada    -> quebrada         (Quebrada — Rua do Baile)
 
    Ver `ALIAS_MAPA` logo abaixo do registro: id antigo continua resolvendo, e o motivo
-   de isso não ser opcional está escrito lá. */
+   de isso não ser opcional está lá. */
 export const MAPS = {
-  campomorro: { name: 'Campinho do Morro', build: buildCampoMorro, props: CAMPOMORRO_PROPS, ambience: CAMPOMORRO_AMBIENCE, ctfMode: true },
-  mansao: { name: 'Mansão do Joá', preload: preloadMansaoAmbience, build: buildMansao, props: MANSAO_PROPS, ambience: MANSAO_AMBIENCE, ctfMode: true },
-  amazonia: { name: 'Treta na Amazônia', build: buildAmazonia, props: AMAZONIA_PROPS, ambience: AMAZONIA_AMBIENCE, ctfMode: true },
-  escadao: { name: 'Escadão (Morro)', build: buildEscadao, props: ESCADAO_PROPS, ambience: ESCADAO_AMBIENCE, ctfMode: true },
-  praca_poderes: { name: 'Praça dos Três Poderes', build: buildBrasilia, props: BRASILIA_PROPS }, // Brasília fiel (substitui o clássico)
-  /* `praca_old` (a "Praça (clássico)", public/js/map.js) SAIU DO REGISTRO — pedido literal do
-     dono: "vamos apagar a praça clássica". Ela era a versão procedural anterior da mesma
-     praça que o awp_map já entrega em Brasília fiel, e ficava no menu como um 5º cartaz que
-     ninguém escolhia. O arquivo map.js foi apagado junto; nada mais o importava (o awp_map
-     mora em map_brasilia.js e NÃO compartilha código com ele — as duas funções de construção
-     eram independentes, cada uma com seu próprio `addBox`/`lam`).
-     Efeitos colaterais desta remoção, todos medidos e conferidos:
-       • pickup-check cai de 246 para 244 pickups (o praca_old tinha 2 armas no chão) — é a
-         ÚNICA redução de arma desta rodada e ela vem do mapa apagado, não de mapa vivo;
-       • as réguas que iteram "os 5 mapas" passam a iterar 4 (map-check, invariants, botsim);
-       • `tools/eval/ui-check.mjs` ainda lista 'praca_old' na constante MAPAS dele — não é
-         defeito: `resolveMapId` (logo abaixo) devolve o DEFAULT_MAP para id desconhecido,
-         então aquela corrida vira uma segunda passada no awp_map em vez de quebrar. O
-         arquivo está em mão de outro agente nesta rodada e por isso não foi tocado. */
-  piscina_treta: { name: 'Piscina da Treta',        build: buildPoolDay, props: PISCINA_PROPS },   // salão fechado do CS 1.6; a versão Piscinão está em map_piscinao_ramos.js, fora do registro
-  // props via getter: a seleção de carros é sorteada por partida (seed no startGame) — peso
-  // `ctfMode: true` = ABRE em CTF, mas o jogador pode trocar pra rounds no menu.
-  // Era um flag `ctfOnly` que travava o modo. Pedido do dono: "os mapas todos podem ser rounds
-  // ou CTF, mas tem uns que forçam ser CTF". A geometria dos dois foi desenhada em volta
-  // das bandeiras, então CTF continua sendo o padrão — só deixou de ser prisão.
-  loja_h:      { name: 'Loja H (Estacionamento)', build: buildHavan, get props() { return havanPropsForMatch(); }, ctfMode: true },
-  ferro_velho: { name: 'Ferro Velho do Zé',    build: buildFerroVelho, props: FERRO_PROPS, ctfMode: true },
-  // Quebrada: rua reta com rotunda do baile numa ponta e campinho de terra na outra, CTF de
-  // 4 bandeiras (campinho · bar de esquina · ponto de ônibus · praça do baile). Spec do dono
-  // em HANDOFF.md §A0.10. As vielas de fundo (x = ∓23) são requisito da CTF2, não decoração.
-  quebrada:    { name: 'Quebrada (Rua do Baile)', build: buildQuebrada, props: QUEBRADA_PROPS, ctfMode: true },
-  /* DÍVIDA herdada: o prefixo `fy_` faz parte do id e renomear só aqui quebra CALADO —
-     `LOOKS`/`LOOK` caem no default de Brasília. Renome exige mudança própria com régua. */
-  corrego:  { name: 'Córrego (Favela de SP)', build: buildCorrego, props: CORREGO_PROPS, ambience: CORREGO_AMBIENCE, ctfMode: true },
-  lajes: { name: 'Lajes (Comunidade)', build: buildLajes, props: LAJES_PROPS, ambience: LAJES_AMBIENCE, ctfMode: true },
-  // Posto de gasolina de beira de estrada na hora dourada, cercado de casas de favela e com a
-  // greve dos caminhoneiros travando a pista. 3 corredores (loja O · marquise C · pátio L),
-  // simétrico em z=0. Procedural (marquise/bombas/loja/totem) + props (kombi/fusca/pneus/casas).
-  posto_treta: { name: 'Posto da Treta', build: buildPosto, props: POSTO_PROPS, ctfMode: true },
-  // UPA 24h: pronto-socorro lotado, mapa 100% INTERNO (prédio fechado, sem céu). Salas de verdade
-  // — recepção/espera, triagem, consultórios, raio-x, farmácia, enfermaria e emergência — ligadas
-  // por corredor central em cruz com portas de vidro. Piso com faixas de sinalização coloridas
-  // levando a cada setor e aparelhos médicos procedurais (monitores, respirador, crash cart, O2).
-  // Cheio de canto pra se esconder. A treta é a fila eterna: "SENHA 999 · ESPERA 8H".
-  upa_24h: { name: 'UPA 24h da Treta', build: buildUpa, props: UPA_PROPS, ctfMode: true },
-  // Canteiro de obra da prefeitura que nunca acaba: TERRENO ONDULADO com buracos de escavação
-  // (groundHeightAt), estrutura meio-construída no centro, tapumes, andaimes, guindaste, entulho.
-  // Simétrico em z=0. A treta é o "desvio de dinheiro público".
-  obras_prefeitura: { name: 'Obras da Prefeitura', build: buildObras, props: OBRAS_PROPS, ctfMode: true },
-  // Galpão de atacado estilo Loja H: LOJA fechada (Time B) + ESTACIONAMENTO aberto (Time E) ligados
-  // por portas de verdade na fachada. Gôndolas reais (gondola_mercado/eletro), caixas, doca, e um
-  // bairro/skyline em volta. A treta é o preço absurdo. Simétrico funcional, A* pelos corredores.
-  atacadao_treta: { name: 'Atacadão da Treta', build: buildAtacadao, props: ATACADAO_PROPS, ctfMode: true },
-  parque_treta: { name: 'Parque da Treta', build: buildParque, props: PARQUE_PROPS, ambience: PARQUE_AMBIENCE, ctfMode: true },
-  velho_oeste: { name: 'Sertão da Treta', build: buildVelhoOeste, props: VELHO_OESTE_PROPS, ambience: VELHO_OESTE_AMBIENCE, ctfMode: true },
-  penitenciaria: { name: 'CARANDIRU', build: buildPenitenciaria, props: PENITENCIARIA_PROPS, ambience: PENITENCIARIA_AMBIENCE, ctfMode: true },
+  campomorro: { name: 'Campinho do Morro', ctfMode: true,
+    props: ['arquibancada', 'junkyard_container', 'caixa_som_baile', 'stall', 'fav_house', 'pilha_pneus', 'moto_cg', 'fusca', 'casa_favela_azul', 'casa_favela_tijolo', 'varal_roupas', 'grama_corrego_01', 'grama_corrego_02', 'planta_corrego_taboa', 'planta_corrego_taioba'],
+    ambience: ['rat', 'pigeonGround', 'dog', 'jacare', 'capivara', 'cat', 'chicken', 'cow', 'armadillo', 'cockroach', 'parrot'],
+  },
+  mansao: { name: 'Mansão do Joá', ctfMode: true,
+    props: ['mesa_guardasol', 'guarda_sol', '1968_volkswagen_beetle', '2014_mini_cooper_s_f56', '2002_volkswagen_golf_r32_mk4', 'palmeira_imperial', 'palmeira_ravenala', 'heliconia', 'costela_adao', 'bananeira', 'ixora', 'agave', 'samambaia', 'banco_jardim', 'poste_jardim', 'escultura_jardim', 'vaso_tropical', 'lounge_externo', 'lampiao_fachada', 'mansao_sofa', 'mansao_poltrona', 'mansao_mesa_centro', 'mansao_lustre', 'coqueiro'],
+    ambience: ['rat', 'pigeonGround', 'parrot'],
+  },
+  amazonia: { name: 'Treta na Amazônia', ctfMode: true,
+    props: ['samambaia', 'heliconia', 'planta_corrego_taboa', 'planta_corrego_taioba', 'grama_corrego_01', 'grama_corrego_02', 'stall', 'arara_roupas', 'caixa_dagua', 'botijao_gas', 'pilha_pneus', 'tires', 'dumpster', 'galinha_mint_amazonia', 'pintinho_mint_amazonia', 'canoa_rabeta_amazonia', 'palafita_aberta_amazonia', 'arvore_mata_amazonia', 'palmeira_babacu_amazonia'],
+    ambience: ['rat', 'pigeonGround', 'dog', 'jacare', 'capivara', 'cat', 'chicken', 'cow', 'armadillo', 'cockroach', 'parrot', 'jacare', 'capivara', 'boto', 'onca', 'tucano', 'preguica', 'macaco', 'anta', 'arara', 'piranha', 'carcara'],
+  },
+  escadao: { name: 'Escadão (Morro)', ctfMode: true,
+    props: ['pilha_pneus', 'tires', 'dumpster', 'moto_cg', 'fusca', 'mesa_guardasol', 'guarda_sol', 'stall', 'arara_roupas', 'caixa_dagua', 'varal_roupas_01', 'varal_roupas_02', 'casa_favela_azul', 'casa_favela_tijolo', 'varal_roupas', 'samambaia', 'grama_corrego_02', 'escadao_casa_r3', 'escadao_varanda_r4', 'escadao_eletrica_r4'],
+    ambience: ['rat', 'pigeonGround', 'dog', 'jacare', 'capivara', 'chicken', 'cow', 'armadillo', 'cockroach', 'parrot', 'escadaoCat'],
+  },
+  praca_poderes: { name: 'Praça dos Três Poderes',   // Brasília fiel (substitui o clássico)
+    props: ['congresso', 'catedral', 'ministerio', 'palacio', 'justica', 'tires', 'stall', 'tent', 'bus', 'drinkstand', 'urna', 'towner'],
+  },
+  piscina_treta: { name: 'Piscina da Treta',   // salão fechado do CS 1.6; a versão Piscinão está em map_piscinao_ramos.js, fora do registro
+    props: ['piscina_armarios', 'piscina_banco', 'piscina_espreguicadeira', 'piscina_escada'],
+  },
+  // props via getter APÓS carregaMapa: a seleção de carros é sorteada por partida
+  // (seed no startGame). `ctfMode: true` = ABRE em CTF, mas o jogador pode trocar.
+  loja_h: { name: 'Loja H (Estacionamento)', ctfMode: true },
+  ferro_velho: { name: 'Ferro Velho do Zé', ctfMode: true,
+    props: ['muro_carros', 'fileira_carros', 'monte_carros', 'guindaste', 'prensa_carros', 'pilha_pneus', 'abandoned_car', 'broken_car', 'broken_car_2', 'carro_danificado', 'destroyed_car', 'junk_car', 'dumpster', 'jersey_barrier', 'sandbags', 'concrete_roadblock'],
+  },
+  quebrada: { name: 'Quebrada (Rua do Baile)', ctfMode: true,
+    props: ['pilha_pneus', 'tires', 'jersey_barrier', 'stall', 'tent', 'caixa_som', 'arquibancada', 'churrasqueira', 'mesa_guardasol', 'guarda_sol', 'moto_cg', 'kombi', 'uno_mille', 'fusca', 'saveiro', 'dumpster', 'arara_roupas', 'drinkstand', 'fav_house', 'fav_brasileira', 'fav_modular', 'tiara_gt83', 'botijao_gas', 'vw_9150', 'fachada_comercio', 'onibus_sptrans', 'caixa_som_baile'],
+  },
+  corrego: { name: 'Córrego (Favela de SP)', ctfMode: true,
+    props: ['pilha_pneus', 'tires', 'dumpster', 'moto_cg', 'fusca', 'mesa_guardasol', 'guarda_sol', 'stall', 'arara_roupas', 'caixa_som', 'fav_house', 'fav_brasileira', 'caixa_dagua', 'botijao_gas', 'uno_mille', 'fiat_uno', 'kombi', 'grama_corrego_01', 'grama_corrego_02', 'planta_corrego_taboa', 'planta_corrego_taioba', 'pipa_papel', 'helicoptero_pm'],
+    ambience: ['rat', 'pigeonGround', 'dog', 'jacare', 'capivara', 'cat', 'chicken', 'cow', 'armadillo', 'cockroach', 'parrot', 'jacare', 'capivara'],
+  },
+  lajes: { name: 'Lajes (Comunidade)', ctfMode: true,
+    props: ['lajes_casa_01', 'lajes_casa_02', 'lajes_casa_03', 'lajes_casa_04', 'lajes_casa_05', 'lajes_casa_06', 'lajes_casa_07', 'lajes_varal', 'caixa_dagua', 'helicoptero_pm', 'moto_cg'],
+    ambience: ['rat', 'pigeonGround', 'dog', 'jacare', 'capivara', 'cat', 'chicken', 'cow', 'armadillo', 'cockroach', 'parrot', 'pipa'],
+  },
+  posto_treta: { name: 'Posto da Treta', ctfMode: true,
+    props: ['bombas_combustivel', 'loja_conveniencia', 'kombi', 'saveiro', 'fusca', 'dumpster', 'quiosque', 'botijao_gas', 'jersey_barrier', 'concrete_roadblock', 'sandbags', 'pilha_pneus', 'tires', 'fileira_carros', 'opala', 'chevette', 'brasilia_vw', 'fiat_uno', 'uno_mille', 'moto_cg', 'cooler', 'caixa_som', 'guarda_sol', 'mesa_guardasol', 'shopping_cart', 'vw_9150', 'manequim', 'fav_house', 'fav_modular', 'fav_brasileira', 'fachada_comercio', 'bus', 'onibus_urbano', 'ixora', 'agave', 'samambaia'],
+  },
+  upa_24h: { name: 'UPA 24h da Treta', ctfMode: true,
+    props: ['upa_maca', 'upa_monitor', 'upa_soro', 'upa_oxigenio', 'upa_biombo', 'upa_longarina', 'upa_cadeira_rodas', 'upa_armario', 'upa_balcao'],
+  },
+  obras_prefeitura: { name: 'Obras da Prefeitura', ctfMode: true,
+    props: ['andaime', 'container_escritorio', 'construction_rubble', 'guindaste', 'concrete_roadblock', 'jersey_barrier', 'sandbags', 'dumpster', 'botijao_gas', 'pilha_pneus', 'vw_9150', 'kombi', 'fav_house', 'fav_modular', 'fachada_comercio', 'opala', 'fiat_uno', 'chevette'],
+  },
+  atacadao_treta: { name: 'Atacadão da Treta', ctfMode: true,
+    props: ['estante_pallets', 'freezer', 'ilha_caixas', 'caixa_cobranca', 'gondola_mercado', 'gondola_eletro', 'stall', 'balcao_acougue', 'balcao_padaria', 'ilha_hortifruti', 'geladeira_bebidas', 'moto_cg', 'drinkstand', 'guarda_sol', 'mesa_guardasol', 'shopping_cart', 'cooler', 'pilha_pneus', 'dumpster', 'vw_9150', 'fileira_carros', 'kombi', 'saveiro', 'opala', 'fiat_uno', 'chevette', 'brasilia_vw', 'fusca', 'fav_house', 'fav_modular', 'fav_brasileira', 'fachada_comercio'],
+  },
+  parque_treta: { name: 'Parque da Treta', ctfMode: true,
+    props: ['parque_coreto', 'roda_gigante_roda', 'roda_gigante_base', 'carrossel', 'barraca_quermesse', 'predio_artdeco'],
+    ambience: ['rat', 'pigeonGround', 'dog', 'parrot'],
+  },
+  velho_oeste: { name: 'Sertão da Treta', ctfMode: true,
+    props: ['sertao_macambira', 'sertao_juazeiro', 'sertao_xique_xique', 'sertao_poco_roda', 'sertao_capelinha', 'caixa_som_baile', 'casa_pedra', 'casa_geminada', 'igrejinha', 'caminhao_antigo'],
+    ambience: ['rat', 'pigeonGround', 'parrot', 'calango', 'lagarto', 'sertaoGoat', 'sertaoHen', 'sertaoChick'],
+  },
+  penitenciaria: { name: 'CARANDIRU', ctfMode: true,
+    props: [],
+    ambience: ['rat', 'pigeonGround'],
+  },
 };
-for (const map of Object.values(MAPS)) map.build = withVisibleShotOccluders(map.build);
+
+/* Módulo de cada mapa: import dinâmico, memoizado. `build` e `preload` só existem
+   depois de `carregaMapa`; quem chamar `build` sem carregar recebe TypeError alto
+   em vez de mapa mudo (LICOES.md, lição 5). */
+const MODULOS = {
+  campomorro: () => import('./map_campomorro.js'),
+  mansao: () => import('./map_mansao.js'),
+  amazonia: () => import('./map_amazonia.js'),
+  escadao: () => import('./map_escadao.js'),
+  praca_poderes: () => import('./map_brasilia.js'),
+  piscina_treta: () => import('./map_piscina.js'),
+  loja_h: () => import('./map_havan.js'),
+  ferro_velho: () => import('./map_ferrovelho.js'),
+  quebrada: () => import('./map_quebrada.js'),
+  corrego: () => import('./map_corrego.js'),
+  lajes: () => import('./map_lajes_authored.js'),
+  posto_treta: () => import('./map_posto.js'),
+  upa_24h: () => import('./map_upa.js'),
+  obras_prefeitura: () => import('./map_obras.js'),
+  atacadao_treta: () => import('./map_atacadao.js'),
+  parque_treta: () => import('./map_parque.js'),
+  velho_oeste: () => import('./map_velho_oeste.js'),
+  penitenciaria: () => import('./map_penitenciaria.js'),
+};
+
+// Export do módulo que casa com cada entrada do registro (para a conferência).
+const EXPORTS = {
+  campomorro: { build: 'buildCampoMorro', props: 'CAMPOMORRO_PROPS', ambience: 'CAMPOMORRO_AMBIENCE' },
+  mansao: { build: 'buildMansao', props: 'MANSAO_PROPS', ambience: 'MANSAO_AMBIENCE', preload: 'preloadMansaoAmbience' },
+  amazonia: { build: 'buildAmazonia', props: 'AMAZONIA_PROPS', ambience: 'AMAZONIA_AMBIENCE' },
+  escadao: { build: 'buildEscadao', props: 'ESCADAO_PROPS', ambience: 'ESCADAO_AMBIENCE' },
+  praca_poderes: { build: 'buildBrasilia', props: 'BRASILIA_PROPS' },
+  piscina_treta: { build: 'buildPoolDay', props: 'PISCINA_PROPS' },
+  loja_h: { build: 'buildHavan', propsGetter: 'havanPropsForMatch' },
+  ferro_velho: { build: 'buildFerroVelho', props: 'FERRO_PROPS' },
+  quebrada: { build: 'buildQuebrada', props: 'QUEBRADA_PROPS' },
+  corrego: { build: 'buildCorrego', props: 'CORREGO_PROPS', ambience: 'CORREGO_AMBIENCE' },
+  lajes: { build: 'buildLajes', props: 'LAJES_PROPS', ambience: 'LAJES_AMBIENCE' },
+  posto_treta: { build: 'buildPosto', props: 'POSTO_PROPS' },
+  upa_24h: { build: 'buildUpa', props: 'UPA_PROPS' },
+  obras_prefeitura: { build: 'buildObras', props: 'OBRAS_PROPS' },
+  atacadao_treta: { build: 'buildAtacadao', props: 'ATACADAO_PROPS' },
+  parque_treta: { build: 'buildParque', props: 'PARQUE_PROPS', ambience: 'PARQUE_AMBIENCE' },
+  velho_oeste: { build: 'buildVelhoOeste', props: 'VELHO_OESTE_PROPS', ambience: 'VELHO_OESTE_AMBIENCE' },
+  penitenciaria: { build: 'buildPenitenciaria', props: 'PENITENCIARIA_PROPS', ambience: 'PENITENCIARIA_AMBIENCE' },
+};
+
+const _igual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const _carregados = new Map();
+
+export function carregaMapa(id) {
+  const alvo = resolveMapId(id);
+  if (_carregados.has(alvo)) return _carregados.get(alvo);
+  const promessa = MODULOS[alvo]().then((m) => {
+    const entrada = MAPS[alvo];
+    const nomes = EXPORTS[alvo];
+    for (const campo of ['props', 'ambience']) {
+      const doModulo = m[nomes[campo]];
+      if (doModulo === undefined) continue;
+      if (!_igual(entrada[campo] ?? null, doModulo)) {
+        throw new Error(`[mapas] ${alvo}.${campo} no registro diverge do módulo (${nomes[campo]}): atualize o registro em maps.js`);
+      }
+    }
+    entrada.build = withVisibleShotOccluders(m[nomes.build]);
+    if (nomes.preload) entrada.preload = m[nomes.preload];
+    if (nomes.propsGetter) Object.defineProperty(entrada, 'props', { get: () => m[nomes.propsGetter](), configurable: true });
+    return m;
+  });
+  _carregados.set(alvo, promessa);
+  return promessa;
+}
+
+export const mapaCarregado = (id) => typeof MAPS[resolveMapId(id)]?.build === 'function';
+
+/* Seed dos carros da Loja H: o main.js importava setHavanCarSeed direto do módulo
+   da arena (import estático que devolvia o mapa ao grafo do boot). Pela mesma porta. */
+export async function defineSeedHavan(seed) {
+  const m = await carregaMapa('loja_h');
+  m.setHavanCarSeed(seed);
+}
+
 export const MAP_IDS = Object.keys(MAPS);
 export const DEFAULT_MAP = 'praca_poderes';
 

@@ -30,6 +30,7 @@
     "eval:invariants": "node tools/eval/invariants.mjs",
     "prod:coherence": "node tools/eval/prod-coherence.mjs",
     "eval:modgraph": "node tools/eval/module-graph-check.mjs && node tools/eval/module-graph-check.mjs --mutante=06-09",
+    "eval:mapasobdemanda": "node tools/eval/mapas-sob-demanda-check.mjs && node tools/eval/mapas-sob-demanda-check.mjs --mutante=estatico && node tools/eval/mapas-sob-demanda-check.mjs --mutante=registro",
     "ops:diag": "node tools/ops/diagnose.mjs",
     "ops:diag:local": "node tools/ops/diagnose.mjs --local",
     "ops:selftest": "node tools/ops/selftest.mjs",
