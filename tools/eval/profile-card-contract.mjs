@@ -12,7 +12,7 @@ import {careerRank} from '../../public/js/career-rank.js';
 let source=readFileSync('src/lib/profile-card.mjs','utf8');
 const mutant=process.argv.find(s=>s.startsWith('--mutant='))?.split('=')[1];
 if(mutant){
- const patches={'unsafe-source':["!['server_verified','historical_plus_server_verified'].includes(p?.source) || p.visibility!=='public'","false"],'no-portrait':["const image=character&&portrait&&",'const image=false&&character&&portrait&&'],'small-portrait':['x="650" y="8" width="550" height="614"','x="840" y="140" width="300" height="365"'],'other-character-small':['height="614"','height="${character.id===\'canarinho\'?614:365}"'],'no-logo':['const logoImage=logo&&','const logoImage=false&&'],'small-logo':['const LOGO_HEIGHT=150','const LOGO_HEIGHT=60'],'no-badge':['${rankBadge(rank)}',''],'level-from-points':['const level=number(p.level)','const level=number(Math.floor(p.points/100))'],'url-off-margin':['y="570" font-size="20"','y="600" font-size="20"'],'one-line-nick':['if(single>=34)','if(true)'],'narrow-estimate':['??117)','??64)'],'code-unit-cut':["[...String(p.nick)].slice(0,24).join('')",'String(p.nick).slice(0,24)']};
+ const patches={'unsafe-source':["!['server_verified','historical_plus_server_verified'].includes(p?.source) || p.visibility!=='public'","false"],'no-portrait':["const image=character&&portrait&&",'const image=false&&character&&portrait&&'],'small-portrait':['x="650" y="8" width="550" height="614"','x="840" y="140" width="300" height="365"'],'other-character-small':['height="614"','height="${character.id===\'canarinho\'?614:365}"'],'no-logo':['const logoImage=logo&&','const logoImage=false&&'],'small-logo':['const LOGO_HEIGHT=150','const LOGO_HEIGHT=60'],'no-badge':['${rankBadge(rank)}',''],'level-from-points':["const level=p.level==null?'—':number(p.level)",'const level=number(Math.floor(p.points/100))'],'url-off-margin':['y="570" font-size="20"','y="600" font-size="20"'],'one-line-nick':['if(single>=34)','if(true)'],'narrow-estimate':['??117)','??64)'],'code-unit-cut':["[...String(p.nick)].slice(0,24).join('')",'String(p.nick).slice(0,24)']};
  if(!['no-font','square-source'].includes(mutant)){assert(patches[mutant],'Unknown mutant');const [from,to]=patches[mutant];assert(source.includes(from),'Mutation must apply');source=source.replace(from,to);}
 }
 source=source.replaceAll("'../../public/js/career-rank.js'",JSON.stringify(pathToFileURL(path.resolve('public/js/career-rank.js')).href));
@@ -95,6 +95,7 @@ for(const fixture of [p,{...p,level:1,points:42},{...p,level:520,points:51974}])
  for(const [,t] of card.matchAll(/<text\b([^>]*)>/g)){const a=attrs(t);assert(+a.x>=60&&+a.y<=572,`text outside the 60px safe area: x=${a.x} y=${a.y}`);}
 }
 const nickTexts=card=>[...card.matchAll(/<text\b([^>]*fill="#f2ead8"[^>]*font-weight="bold"[^>]*|[^>]*font-weight="bold"[^>]*fill="#f2ead8"[^>]*)>([^<]*)<\/text>/g)].map(m=>({...attrs(m[1]),text:m[2]})).filter(t=>+t.y<126);
+for(const level of [null,undefined])assert(profileCardSvg({...p,level}).includes('>NÍVEL —<'),`missing level must read NÍVEL —, not 0 (${level})`);
 let longNickChecked=0;
 for(const nick of ['ŒÆŴÓÕÂÊÔÇ@WMŒÆŴÓÕÂÊÔÇ@WM','WWWWWWWWWWWWWWWWWWWWWWWW','Coro😀Solto🔥Treta😀Supremaa']){
  const card=profileCardSvg({...p,nick}),lines=nickTexts(card);
