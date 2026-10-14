@@ -545,6 +545,8 @@
     "eval:green-cover-pattern": "node tools/eval/green-cover-pattern-check.mjs --self-test",
     "eval:treta-eyewear": "node tools/eval/treta-eyewear-adversarial-check.mjs && node tools/eval/treta-eyewear-loader-check.mjs && node tools/eval/treta-eyewear-assets-check.mjs && node tools/eval/treta-items-off-check.mjs && node tools/eval/treta-items-off-check.mjs --mutations",
     "eval:treta-equip-route": "node tools/eval/treta-equip-route-check.mjs && node tools/eval/treta-equip-route-check.mjs --mutations",
+    "//eval:cla-ssr": "ADR 0008: /clans/<id> sai do servidor com tag, nome, descrição, canonical e JSON-LD do clã, sem levar a sessão ao backend. Precisa de npm run build antes.",
+    "eval:cla-ssr": "node tools/eval/cla-ssr-check.mjs && node tools/eval/cla-ssr-check.mjs --mutate",
     "eval:treta-rewards": "node tools/eval/treta-rewards-check.mjs && node tools/eval/treta-rewards-check.mjs --mutations",
     "eval:treta-skins": "node tools/eval/treta-skins-check.mjs && node tools/eval/treta-skins-check.mjs --mutations",
     "eval:treta-classic": "node tools/eval/treta-classic-coin-check.mjs && node tools/eval/treta-classic-coin-check.mjs --mutations",
