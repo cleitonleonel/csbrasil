@@ -573,7 +573,7 @@
     "eval:game-pages": "node tools/eval/game-pages-check.mjs && node tools/eval/game-pages-check.mjs --mutate",
     "eval:wfconcurrency": "node tools/eval/workflow-concurrency-check.mjs",
     "eval:home-faq-maps": "node tools/eval/home-faq-maps-check.mjs && ! node tools/eval/home-faq-maps-check.mjs --mutante=mapa-a-menos",
-    "eval:hub-profile-links": "node tools/eval/hub-profile-links-browser.mjs && ! node tools/eval/hub-profile-links-browser.mjs --mutante=ranking-fora",
+    "eval:hub-profile-links": "node tools/eval/hub-profile-links-browser.mjs && ! node tools/eval/hub-profile-links-browser.mjs --mutante=ranking-fora && ! node tools/eval/hub-profile-links-browser.mjs --mutante=perfil-na-query",
     "//eval:home-faq-maps": "A resposta de mapas do FAQ da home (PT, EN e JSON-LD) diz quantos são e nomeia todos os mapas da vitrine /mapas. BASE obrigatório.",
     "eval:hub-about-links": "node tools/eval/hub-about-links-browser.mjs && ! node tools/eval/hub-about-links-browser.mjs --mutante=paginas-fora && ! node tools/eval/hub-about-links-browser.mjs --mutante=secao-jogar && ! node tools/eval/hub-about-links-browser.mjs --mutante=mailto-aba",
     "eval:mp-proximo": "node tools/eval/mp-proximo-check.mjs",
