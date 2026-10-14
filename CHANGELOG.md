@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.95`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.96`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,65 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.96] — 2026-10-14
+
+### Mudado
+- Agent: Claude (#930)
+- Agent: Claude (#931)
+- Agent: Claude (#933)
+- Agent: Claude (#934)
+- Agent: Claude (#935)
+- Agent: Claude (#939)
+- Agent: Claude (#940)
+- Agent: Claude (#936)
+- Lote rotas fixas: ADR 0008 e PRs #930-#940 (#941)
+- Regenera as contagens da documentação
+- Merge corosolto/main into claude/rotas-cla-20261014
+- Merge claude/rotas-base-20261014 into claude/rotas-perfil-20261014
+- Reprova link de marcação na forma antiga /?secao=
+- Aponta o Ver perfil do topo para /comunidade
+- Regenera blocos gerados da documentação
+- Adiciona régua das páginas de arena com mutantes
+- Lista as páginas de arena no sitemap
+- Liga cada arena de /mapas à página dela
+- Cria uma página por arena em /mapas/id
+- Regenera blocos gerados da documentação
+- Adiciona régua do head do clã com mutantes
+- Põe tag, nome e descrição do clã no head de /clans/id
+- Regenera blocos gerados da documentação
+- Mede no navegador a aba RANKING em /ranking
+- Ajusta as réguas ao /ranking do hub
+- Redireciona com 301 o link antigo ?secao=ranking
+- Abre a aba RANKING do hub em /ranking
+- Dá o compartilhar ao arnês da loja OFF
+- Regenera blocos gerados da documentação
+- Adiciona régua dos pontos de compartilhar
+- Liga o compartilhar do clã
+- Liga o compartilhar do perfil na comunidade
+- Liga o compartilhar da skin na loja
+- Liga os pontos de compartilhar do hub
+- Cria botão único de compartilhar com Web Share
+- Dá as funções de rotas.js ao arnês da loja OFF
+- Regenera blocos gerados da documentação
+- Mede no navegador a aba da loja e o voltar
+- Grava a aba da loja em /loja/aba
+- Regenera blocos gerados da documentação
+- Mede no navegador o perfil em /u/perfil e o voltar
+- Adiciona abas ao perfil público em /u/perfil/aba
+- Leva o perfil aberto no hub para /u/perfil
+- Regenera blocos gerados da documentação
+- Adiciona régua de rotas fixas com mutantes
+- Serve as rotas fixas do hub no servidor de eval
+- Lista /loja e /comunidade no sitemap
+- Redireciona com 301 os links antigos com ?secao=
+- Aponta os links da comunidade para as rotas novas
+- Grava o guia aberto em /guia/slug
+- Grava a aba da comunidade no caminho
+- Navega o hub por caminho em vez de query
+- Serve uma cópia estática do hub por rota fixa
+- Cria tabela de rotas fixas do hub
+- Propõe ADR de rotas fixas para cada tela
 
 ## [2.1.0-alpha.95] — 2026-10-14
 
