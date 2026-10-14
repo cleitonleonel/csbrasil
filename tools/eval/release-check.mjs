@@ -30,10 +30,11 @@
  *       decide roda DE VERDADE aqui, com um `gh` falso que devolve PRs de mentira pelo jq.
  *       RLS11 sem cron · RLS12 workflow_dispatch · RLS13 dispara no merge de lote ·
  *       RLS14 não dispara em PR comum (nem PR aberto, nem label parecida) · RLS8 concurrency
- *       nos jobs que embarcam, nunca no topo · RLS15 anti-loop do commit do bot ·
+ *       nos jobs que embarcam, com grupo que só é `release-main` quando o lote sai, nunca no
+ *       topo · RLS15 anti-loop do commit do bot ·
  *       RLS16 head.ref do PR é dado, não código (sem `${{ }}` no shell, permissão de leitura).
  *
- * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch | cron-de-volta | sem-dispatch | lote-ignorado | sem-rotulo | sem-filtro-lote | qualquer-merge | pr-aberto | concurrency-no-topo | sem-concurrency | loop | injecao.
+ * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch | cron-de-volta | sem-dispatch | lote-ignorado | sem-rotulo | sem-filtro-lote | qualquer-merge | pr-aberto | concurrency-no-topo | sem-concurrency | grupo-sem-portao | loop | injecao.
  */
 import { readFileSync, readdirSync, mkdtempSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -102,11 +103,11 @@ let animacoesNoDeploy = /(?:^|\s)anims:check(?:\s|$)/.test(packageJson.scripts['
   && /(?:^|\s)anims:merge:check(?:\s|$)/.test(packageJson.scripts['check:deploy'] || '');
 /* RLS8 — com o gatilho em todo push da main, concurrency no TOPO deixaria o merge de um PR
    comum cancelar o lote que espera o pr-fast. O grupo vive nos dois jobs que embarcam. */
-const CONCORRENCIA_JOB = "    concurrency:\n      group: release-main\n      cancel-in-progress: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}\n";
+const CONCORRENCIA_JOB = (porta) => `    concurrency:\n      group: \${{ needs.${porta}.outputs.sai == 'true' && 'release-main' || format('release-fora-{0}', github.run_id) }}\n      cancel-in-progress: \${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}\n`;
 const blocoJob = (nome) => new RegExp(`^  ${nome}:\\n((?:(?: {4}[^\\n]*)?\\n)*)`, 'm').exec(workflowRelease)?.[1] || '';
 const validaConcorrenciaRelease = () => !/^concurrency:/m.test(workflowRelease)
-  && blocoJob('embarque').includes(CONCORRENCIA_JOB)
-  && blocoJob('bump-tag-release').includes(CONCORRENCIA_JOB);
+  && blocoJob('embarque').includes(CONCORRENCIA_JOB('lote'))
+  && blocoJob('bump-tag-release').includes(CONCORRENCIA_JOB('embarque'));
 let concorrenciaRelease = validaConcorrenciaRelease();
 
 /* RLS9 — o filtro roda de verdade: o que importa é o código de saída que a Vercel vê. */
@@ -249,7 +250,8 @@ if (mutante) {
   else if (mutante === 'qualquer-merge') mutaRelease("    needs: lote\n    if: needs.lote.outputs.sai == 'true'\n", '    needs: lote\n');
   else if (mutante === 'pr-aberto') mutaRelease('select(.merged_at != null and .base.ref == "main")', 'select(.base.ref == "main")');
   else if (mutante === 'concurrency-no-topo') mutaRelease('\npermissions:\n  contents: write\n', '\nconcurrency:\n  group: release-main\n  cancel-in-progress: true\n\npermissions:\n  contents: write\n');
-  else if (mutante === 'sem-concurrency') mutaRelease(CONCORRENCIA_JOB, '');
+  else if (mutante === 'sem-concurrency') mutaRelease(CONCORRENCIA_JOB('lote'), '');
+  else if (mutante === 'grupo-sem-portao') mutaRelease(/group: \$\{\{ needs\.lote\.outputs[^\n]*/, 'group: release-main');
   else if (mutante === 'loop') mutaRelease(ANTI_LOOP, 'if: always()');
   else if (mutante === 'injecao') mutaRelease('case "$2" in', 'eval "X=$2"; case "$2" in');
   else if (mutante === 'ignora-sem-filtro') {

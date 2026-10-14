@@ -119,8 +119,10 @@ jobs:
     # (03:21 de 18/08): rebase cobre a janela evento→execução, não a janela execução→push.
     # O push do bump pelo bot não pode cancelar o run que ainda cria o Release e avisa o
     # backend (o `lote` já o barra; a expressão fica como segunda trava).
+    # O grupo só é `release-main` quando o `lote` disse que sai: run de PR comum ganha grupo
+    # próprio e não cancela ninguém mesmo que o GitHub avalie a concurrency de job pulado.
     concurrency:
-      group: release-main
+      group: ${{ needs.lote.outputs.sai == 'true' && 'release-main' || format('release-fora-{0}', github.run_id) }}
       cancel-in-progress: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
     permissions:
       actions: read
@@ -160,7 +162,7 @@ jobs:
     timeout-minutes: 20
     # Mesmo grupo do embarque: lote novo cancela o bump velho (ver lá).
     concurrency:
-      group: release-main
+      group: ${{ needs.embarque.outputs.sai == 'true' && 'release-main' || format('release-fora-{0}', github.run_id) }}
       cancel-in-progress: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
     steps:
       # Push do bump autenticado como csbrasil-BOT: o ruleset da main (protecao-main)
