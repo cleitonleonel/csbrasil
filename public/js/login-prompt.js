@@ -85,6 +85,7 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
   };
   const maybeShow=()=>{
     if(dialog.open || document.getElementById('boot-splash'))return;
+    dialog.dataset.ready='true';   // decidiu com a splash fora; a régua espera isto
     if(!loginPromptDue({auth,config,embedded:isEmbedded(),playing:inMatch(),accountBusy:accountBusy(),seen:seenThisVisit(),record:readRecord()}))return;
     markSeen();draw();previousFocus=document.activeElement;
     dialog.showModal();
@@ -98,5 +99,4 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
   document.addEventListener('cs-account-change',e=>{auth=e.detail;if(auth?.authenticated && dialog.open)dialog.close();});
   new MutationObserver(maybeShow).observe(document.body,{childList:true});
   maybeShow();
-  dialog.dataset.ready='true';   // a régua espera a decisão em vez de adivinhar um tempo
 }
