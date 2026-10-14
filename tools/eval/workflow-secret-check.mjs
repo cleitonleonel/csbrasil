@@ -18,6 +18,12 @@
    de um `if:` que o exclua desse caso. O guard de secret continua podendo existir e
    continuar falhando alto onde o secret DEVERIA estar lá.
 
+   WSEC2 · o csbrasil-bot-automerge sem CSBRASIL_BOT_TOKEN avisa (`::warning` "Bot
+           inerte") e pula num PASSO de guarda, não num job separado. O job `bot-token`
+           existia só para ler o secret e subia um runner a mais em cada disparo, e o
+           automerge dispara em label, sync, review e a cada pr-fast que termina. Todo
+           passo depois da guarda obedece a ela (`if: env.pular != '1'`).
+
    Uso: node tools/eval/workflow-secret-check.mjs [--mutante=<nome>]
    ============================================================================ */
 import { readFileSync, readdirSync } from 'node:fs';
@@ -25,7 +31,7 @@ import { join } from 'node:path';
 
 const DIR = '.github/workflows';
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-const MUTANTES = { 'guard-sem-if': 'WSEC1', 'gatilho-cego-novo': 'WSEC1' };
+const MUTANTES = { 'guard-sem-if': 'WSEC1', 'gatilho-cego-novo': 'WSEC1', 'guarda-em-job': 'WSEC2', 'passo-fura-guarda': 'WSEC2', 'guarda-muda': 'WSEC2' };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
 /* Gatilhos que, num PR de fork, chegam sem secret. `pull_request` entra na lista
@@ -63,6 +69,26 @@ for (const nome of arquivos) {
   if (!temDefesa) {
     falhas.push(`WSEC1 ${nome}: guard de secret + gatilho cego (${cegos.join(', ')}) sem \`if:\` que exclua o caso de fork`);
   }
+}
+
+/* ---- WSEC2: a guarda do token do automerge é passo, avisa, e manda nos seguintes ---- */
+{
+  let am = readFileSync(join(DIR, 'csbrasil-bot-automerge.yml'), 'utf8');
+  if (MUT === 'guarda-em-job') am = am.replace(/^jobs:\n/m, 'jobs:\n  bot-token:\n    runs-on: ubuntu-latest\n    timeout-minutes: 5\n    steps:\n      - run: echo token\n');
+  if (MUT === 'passo-fura-guarda') am = am.replace(/(- name: Fetch PR status\n)\s+if: env\.pular != '1'\n/, '$1');
+  if (MUT === 'guarda-muda') am = am.replace(/::warning title=Bot inerte::/, '');
+  const ids = [...am.slice(Math.max(0, am.search(/^jobs:\s*$/m))).matchAll(/^ {2}([\w-]+):\s*$/gm)].map((m) => m[1]);
+  const ini = am.indexOf('\n  automerge:\n');
+  const job = ini < 0 ? '' : am.slice(ini);
+  if (ids.length !== 1 || ids[0] !== 'automerge') falhas.push(`WSEC2 csbrasil-bot-automerge.yml tem os jobs [${ids.join(', ')}] — a guarda do token é passo do \`automerge\`, não job separado`);
+  const passos = job.split(/\n {6}- /).slice(1);
+  const guarda = passos[0] || '';
+  if (!/-z "\$GH_TOKEN"/.test(guarda) || !/pular=1[^\n]*GITHUB_ENV/.test(guarda)) falhas.push('WSEC2 o primeiro passo do automerge não é a guarda do token (`-z "$GH_TOKEN"` → `pular=1` no GITHUB_ENV)');
+  if (!/::warning title=Bot inerte::/.test(guarda)) falhas.push('WSEC2 a guarda do token não avisa (`::warning title=Bot inerte::`) — bot inerte em silêncio');
+  if (/exit 1/.test(guarda)) falhas.push('WSEC2 a guarda do token reprova: sem PAT o automerge pula, não pinta o PR de vermelho');
+  passos.slice(1).forEach((p, i) => {
+    if (!/^\s*if: env\.pular != '1'/m.test(p)) falhas.push(`WSEC2 o passo ${i + 2} do automerge (${(/name: ([^\n]+)/.exec(p) || /uses: ([^\n@]+)/.exec(p) || [, '?'])[1]}) roda mesmo sem o token`);
+  });
 }
 
 for (const f of falhas) console.log(`  \x1b[31m✗\x1b[0m ${f}`);
