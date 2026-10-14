@@ -101,11 +101,13 @@ if(root) {
     if(p.socials?.length || p.social_link){const socials=profileSocialLinks(p);if(socials.length){const row=el('nav','','profile-socials');row.setAttribute('aria-label','Redes públicas');for(const s of socials)row.append(profileSocialLink(s));c.append(row);}}
     c.append(el('h3','Conquistas'));
     const earned=profileAchievements(p),achievements=el('ul','','social-list');for(const a of earned)achievements.append(el('li',achievementText(a)));c.append(earned.length?achievements:empty('A primeira conquista vem do primeiro abate.'));
+    // Rodadas e preferências: o servidor só manda para a própria pessoa e para amigos (activity_visibility). Vazio para os outros não quer dizer "sem rodada".
+    const sees=auth?.profile?.id===p.id || p.relationship==='friend',noActivity=sees?(p.source==='historical_plus_server_verified'?'O histórico antigo guarda só os totais. As rodadas aparecem aqui a partir da primeira partida confirmada pelo servidor.':'Nenhuma rodada confirmada ainda.'):'As rodadas deste jogador aparecem só para os amigos dele.';
     c.append(el('h3','Preferências na arena'));
-    const favorites=el('ul','','social-list');for(const f of p.favorites)favorites.append(el('li',`${f.map} · ${f.mode} · ${f.character || 'Personagem não registrado'} · ${f.faction || 'Facção não registrada'} (${f.rounds} rodadas)`));c.append(p.favorites.length?favorites:empty('Jogue uma rodada verificada para começar seu histórico.'));
+    const favorites=el('ul','','social-list');for(const f of p.favorites)favorites.append(el('li',`${f.map} · ${f.mode} · ${f.character || 'Personagem não registrado'} · ${f.faction || 'Facção não registrada'} (${f.rounds} rodadas)`));c.append(p.favorites.length?favorites:empty(noActivity));
     c.append(el('h3','Rodadas recentes'));
     for(const h of p.history)c.append(empty(`${date(h.started_at)} · ${h.map} · ${h.mode} · ${h.kills} abates / ${h.deaths} mortes${h.complete?'':' · encerrada antes do placar'}`));
-    if(!p.history.length)c.append(empty('Nenhuma rodada confirmada ainda.'));
+    if(!p.history.length)c.append(empty(noActivity));
     content.append(c);
   }
   function showReport(p) {
