@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.89`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.90`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,156 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.90] — 2026-10-14
+
+### Mudado
+- Agent: Claude (#850)
+- Agent: Claude (#852)
+- Agent: Claude (#856)
+- Agent: Claude (#832)
+- Agent: Claude (#877)
+- Agent: Claude (#878)
+- Agent: Claude (#820)
+- Lote: armas, render, bots, IBL no viewmodel e wallpapers (#884)
+- Lote final: lote 2, lote CI, #873 e lote bb (#890)
+- Tighten the probe ping check so measuring after the wait fails
+- Run ui-regression for scripts, tsconfig and its own workflow, and fail when the diff fails
+- Regenerate generated blocks for the final batch
+- Passa root ao render da comunidade na régua do ranking
+- Stop promising live presence in the /mapa title
+- Drop the stale arena count from the home FAQ
+- Regera as contagens da documentação do lote bb
+- Regera blocos de invariantes no quality-gates
+- Regenera as contagens da documentação
+- Atualiza o SIM_HASH depois do merge da main
+- Aceita quebra de linha no matchRoster do netcode-check
+- Fecha o select da home quando o foco sai pelo teclado
+- Tira de novo o gerador de grafite do check:fast
+- Regenera as contagens da documentação
+- Traduz os rótulos dos selects da home
+- Enxuga o cabeçalho do workflow gauntlet-captura
+- Deixa a captura horária vermelha sem foto ou sem live
+- Recusa hora inválida no rodízio da captura
+- Adiciona régua do payload de build SHA e coorte
+- Tira software da coorte de telemetria
+- Deriva as contagens do FAQ da home dos dados do jogo
+- Alinha o FAQ do mapa ao vivo com a presença só para amigos
+- Corrige a nota dos Políticos no catálogo
+- Encurta o comentário de sinaisDeBuild para duas linhas
+- Usa o host de site-origin no game-pages-check
+- Declara o host canônico no llms.txt gerado
+- Regenera as contagens da documentação
+- Mede o fallback do ping no fim da resposta
+- Regenerate docs
+- Use full width for community profile and settings
+- Add nick rename field to community profile settings
+- Remove verified solo button from community account
+- Regenera as contagens da documentação
+- AF8 cobre o cenário A/B do merge limpo
+- Autofix regenera na árvore mesclada sem subir merge à toa
+- RLS10 exige a condição exata da autoria
+- WC2 exige concurrency nos workflows que não cancelam
+- Regenera blocos gerados depois do merge da main
+- Invariantes em paralelo com 2 vagas por padrão
+- Regenera blocos gerados depois do merge da main
+- Régua RLS10: gerado velho não trava o trem
+- Gerado velho no push da main não trava o trem
+- Regenera as contagens da documentação na main
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Regenera as contagens da documentação
+- Mede os selects da home no navegador
+- Troca as opções da home por selects que abrem
+- Atualiza o SIM_HASH depois do merge da main
+- Regenera as contagens da documentação
+- Mede a regra do personagem com nó local
+- Cobra a regra do personagem no check:fast
+- Registra a regra do personagem escolhido (ADR 0007)
+- Respeita o personagem escolhido no multiplayer
+- Decide o personagem do MP numa função pura
+- Devolve o personagem do SP ao sair da sala
+- Regenera as contagens da documentação
+- Ignora o modo de armas do menu no multiplayer
+- Regenera as contagens da documentação
+- Mede o SP depois de uma sala com nó local
+- Cobra a devolução do mapa do SP no check:fast
+- Devolve o mapa do SP ao sair do multiplayer
+- Regenera as contagens da documentação
+- Mantém a troca de arma até o input sair no MP
+- Roda as sub-simulações das invariantes em paralelo
+- Planta as pontes do three antes das sub-simulações
+- Regenera as contagens da documentação
+- Tira os comentários de fim de linha das constantes do bot
+- Regenera as contagens da documentação
+- Encurta os comentários dos sentidos do bot
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Tira do passo Lajes as réguas que as invariantes rodam
+- pr-fast reaproveita o botsim das invariantes
+- Grava a saída das sub-simulações sob demanda
+- Reaproveita sub-simulação repetida nas invariantes
+- Mede e imprime o tempo de cada sub-simulação
+- freshReport aceita auditor assíncrono
+- Régua DG4: só o pr-fast responde pelo contexto build
+- Renomeia o job do preview-build para preview
+- Régua AF8: autofix só traz a base com conflito
+- Autofix não traz a base quando não há conflito
+- Varredura do autofix dispara só para CONFLICTING
+- Adiciona régua de concurrency por PR nos workflows
+- Agrupa preview-deploy por PR e cancela o velho
+- Agrupa automerge por PR e cancela o run velho
+- Cancela pr-gates velho do mesmo PR
+- Cancela smoke-web velho do mesmo PR
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Regenera as contagens da documentação
+- Encurta o comentário do IBL no viewmodel
+- Regenera as contagens da documentação
+- Mede na GPU o IBL só no viewmodel
+- Atualiza o SIM_HASH depois do IBL no viewmodel
+- Regenera as contagens da documentação
+- Aplica o IBL só ao viewmodel
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Untrack the wallpapers roster plan
+- Regenerate docs and ARCH for eval:menuwallboot
+- Add boot check for the menu wallpaper swap
+- Keep the hub home wallpaper when the manifest loads
+- fix(gauntlet): captura sobre o build de produção, sem a faixa de debug na foto
+- docs: regenera blocos derivados (novo workflow e ferramenta do gauntlet)
+- feat(gauntlet): captura horária de um mapa em rodízio para o agente de gráficos
+- docs: regenera blocos derivados
+- docs: regenera blocos derivados
+- feat(telemetria): build SHA e coorte em perf, partida e erro
+- feat(bots): cone de visão de 120° e audição do jogador
+- ci(ui-regression): só sobe os dois servidores quando o PR mexe em tela
+- fix(ci): fecha o loop de crash e corta ruído dos bots
+- Cobra desenho no teto de subpassos no passo-sim
+- Desenha o quadro quando o teto de subpassos esgota
+- Regenerate docs and ARCH after the fallback fix
+- Check wallpaper fallback against the manifest
+- Sync menu wallpaper fallback with the manifest
+- Regenera docs e ARCH com a régua do rIC ocioso
+- Cobra o teto do rIC ocioso das armas no check:fast
+- Põe teto de 5 s no preload ocioso das armas
+- Restringe o pós-processamento à cena desenhada na tela
+- docs(media): Registra o draft e limites de entrega
+- docs(media): Registra checks e comparação com a base
+- Conferir cache de módulos públicos quando o layout os utiliza
+- Validar cache do Three apenas no layout que importa o módulo
+- fix(media): Ilustra o elenco no estilo dos wallpapers
+- Expandir guias e padronizar avatares dos personagens
+- fix(media): Define acabamento ilustrado para o elenco novo
+- fix(media): Resolve masters entre checkouts e registra validação final
+- feat(media): Adiciona wallpapers do elenco e corrige loading em 5K
+- Integrar páginas e guias ao visual do lobby
+- docs(media): Document roster rotation and generation handoff
+- feat(media): Add political and mythical header sprites
+- feat(media): Rotate menu art and prepare roster assets
 
 ## [2.1.0-alpha.89] — 2026-10-13
 
