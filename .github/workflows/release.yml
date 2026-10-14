@@ -134,6 +134,9 @@ jobs:
       contents: read
     outputs:
       sai: ${{ steps.verde.outputs.sai }}
+      # O SHA que o embarque viu verde. O bump publica ESTE, ou outro que ele mesmo
+      # reconfira verde; nunca a main que estiver lá na hora (RLS17).
+      sha: ${{ steps.verde.outputs.sha }}
     steps:
       - name: main verde e com commit novo?
         id: verde
@@ -148,7 +151,7 @@ jobs:
             LINHA=$(gh run list --repo "$REPO" --workflow ci.yml --branch main --commit "$SHA" --event push \
                       --json status,conclusion --jq '.[0] | "\(.status) \(.conclusion)"' 2>/dev/null || true)
             case "$LINHA" in
-              "completed success") echo "pr-fast verde em $SHA — embarca"; echo "sai=true" >> "$GITHUB_OUTPUT"; exit 0 ;;
+              "completed success") echo "pr-fast verde em $SHA — embarca"; { echo "sai=true"; echo "sha=$SHA"; } >> "$GITHUB_OUTPUT"; exit 0 ;;
               completed*) echo "::warning::pr-fast NÃO está verde em $SHA ($LINHA) — trem não sai"; echo "sai=false" >> "$GITHUB_OUTPUT"; exit 0 ;;
               ""|"null null")
                 # No push do lote o pr-fast deste SHA nasce JUNTO com este run: ainda não
@@ -164,11 +167,17 @@ jobs:
     needs: embarque
     if: needs.embarque.outputs.sai == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 30 (teto da WT2): até 5 bumps de ~1 min mais a espera pelo pr-fast de uma cabeça
+    # nova, que o passo corta num prazo próprio de 22 min antes de publicar qualquer coisa.
+    timeout-minutes: 30
+    # actions: read para reconferir o pr-fast quando a main anda durante o bump.
+    permissions:
+      actions: read
+      contents: write
     # Grupo PRÓPRIO e NUNCA cancelável: o embarque de um lote novo dividindo grupo com este
     # job cancelaria o bump velho no meio do push/tag/Release, deixando tag sem Release e o
-    # backend sem aviso. Bump em andamento termina; o próximo espera na fila, refaz o
-    # `pull --rebase` e calcula a versão sobre a main que o anterior deixou.
+    # backend sem aviso. Bump em andamento termina; o próximo espera na fila e refaz o
+    # bump sobre a main que o anterior deixou (o laço de tentativas do passo abaixo).
     concurrency:
       group: ${{ needs.embarque.outputs.sai == 'true' && 'release-bump' || format('release-fora-{0}', github.run_id) }}
       cancel-in-progress: false
@@ -194,6 +203,10 @@ jobs:
 
       - name: bump da versão + docs gerados + tag
         if: steps.guard.outputs.skip != 'true'
+        env:
+          APROVADO: ${{ needs.embarque.outputs.sha }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
           set -e
           # Autoria do bump: assina como csbrasil-deploy-bot quando a conta máquina
@@ -202,50 +215,53 @@ jobs:
           # o e-mail bater com uma conta real — bot "de mentira" não tem foto.
           git config user.name "csbrasil-deploy-bot"
           git config user.email "${{ secrets.BOT_GIT_EMAIL || vars.BOT_GIT_EMAIL || '41898282+github-actions[bot]@users.noreply.github.com' }}"
-          # Rebase ANTES do commit: se a main andou desde o evento, a tag fica no commit
-          # certo (tagar antes do rebase deixaria a tag órfã do push).
-          git pull --rebase origin main
-          NEW=$(npm version prerelease --no-git-tag-version)
-          V=${NEW#v}
-          node -e "
-            const fs = require('fs');
-            const p = 'public/js/version.js';
-            fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace(/VERSION = '[^']*'/, \"VERSION = '$V'\"));
-          "
-          # SIM_HASH: impressão digital do código que o nó de multiplayer simula. O nó
-          # anuncia o do ref que ele vendoriza e o navegador compara com este; release
-          # que não toca a simulação mantém o hash e não tira ninguém do MP.
-          node scripts/sim-hash.mjs --write
-          node scripts/sync-changelog.mjs
-          node tools/gen-docs.mjs
-          (cd docs && npm ci && npm run build:site)
-          # gen-arch também: o ARCH.md embute a versão do jogo no cabeçalho gerado, e sem
-          # regenerá-lo aqui o arch:check reprova o PR SEGUINTE (caso real 08/08: o bump
-          # do alpha.38 deixou o ARCH.md em alpha.37 e o PR #94 nasceu vermelho). Os dois
-          # geradores são node puro, não precisam de npm ci.
-          node tools/gen-arch.mjs
-          if git ls-remote --exit-code --tags origin "$NEW" > /dev/null 2>&1; then
-            echo "::error::tag $NEW já existe no remoto — bump manual necessário."
-            exit 1
-          fi
-          git add package.json package-lock.json public/js/version.js CHANGELOG.md README.md AGENTS.md docs/ public/docs/ tools/eval/ARCH.md tools/eval/README.md
-          # O `Agent:` vai explícito — a AF7 cobra os dois trailers em todo commit de
-          # workflow desde o #451. O Signed-off-by fica com o `-s` porque o e-mail desta
-          # identidade vem de secret (BOT_GIT_EMAIL); grafá-lo na mensagem congelaria o
-          # secret no YAML, e o `-s` o grava com a identidade configurada acima.
-          git commit -s -m "chore(release): $NEW" \
-                     -m "Agent: csbrasil-deploy-bot (release)"
-          # Tag ANOTADA + push explícito do ref. `--follow-tags` só sobe tag anotada, e
-          # `git tag` sem `-a` cria tag LEVE: o alpha.38 (08/08) nasceu leve, ficou só no
-          # runner, e o `gh release create` abortou com "tag exists locally but has not
-          # been pushed" (reproduzido em repo bare local: tag leve + --follow-tags = nada
-          # no remoto). O ls-remote final é a régua que prova que a tag subiu de verdade.
-          git tag -a "$NEW" -m "$NEW"
+          # O bump inteiro mora numa função porque ele é REFEITO a cada tentativa de push.
+          refaz_bump() {
+            NEW=$(npm version prerelease --no-git-tag-version)
+            V=${NEW#v}
+            node -e "
+              const fs = require('fs');
+              const p = 'public/js/version.js';
+              fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace(/VERSION = '[^']*'/, \"VERSION = '$V'\"));
+            "
+            # SIM_HASH: impressão digital do código que o nó de multiplayer simula. O nó
+            # anuncia o do ref que ele vendoriza e o navegador compara com este; release
+            # que não toca a simulação mantém o hash e não tira ninguém do MP.
+            node scripts/sim-hash.mjs --write
+            node scripts/sync-changelog.mjs
+            node tools/gen-docs.mjs
+            # O npm ci do site de docs só repete se o lock dele mudou na main nova.
+            LOCK_DOCS_AGORA=$(git hash-object docs/package-lock.json)
+            if [ "${LOCK_DOCS:-}" != "$LOCK_DOCS_AGORA" ]; then (cd docs && npm ci); LOCK_DOCS=$LOCK_DOCS_AGORA; fi
+            (cd docs && npm run build:site)
+            # gen-arch também: o ARCH.md embute a versão do jogo no cabeçalho gerado, e sem
+            # regenerá-lo aqui o arch:check reprova o PR SEGUINTE (caso real 08/08: o bump
+            # do alpha.38 deixou o ARCH.md em alpha.37 e o PR #94 nasceu vermelho). Os dois
+            # geradores são node puro, não precisam de npm ci.
+            node tools/gen-arch.mjs
+            if git ls-remote --exit-code --tags origin "$NEW" > /dev/null 2>&1; then
+              echo "::error::tag $NEW já existe no remoto — bump manual necessário."
+              exit 1
+            fi
+            git add package.json package-lock.json public/js/version.js CHANGELOG.md README.md AGENTS.md docs/ public/docs/ tools/eval/ARCH.md tools/eval/README.md
+            # O `Agent:` vai explícito — a AF7 cobra os dois trailers em todo commit de
+            # workflow desde o #451. O Signed-off-by fica com o `-s` porque o e-mail desta
+            # identidade vem de secret (BOT_GIT_EMAIL); grafá-lo na mensagem congelaria o
+            # secret no YAML, e o `-s` o grava com a identidade configurada acima.
+            git commit -s -m "chore(release): $NEW" \
+                       -m "Agent: csbrasil-deploy-bot (release)"
+            # Tag ANOTADA + push explícito do ref. `--follow-tags` só sobe tag anotada, e
+            # `git tag` sem `-a` cria tag LEVE: o alpha.38 (08/08) nasceu leve, ficou só no
+            # runner, e o `gh release create` abortou com "tag exists locally but has not
+            # been pushed" (reproduzido em repo bare local: tag leve + --follow-tags = nada
+            # no remoto). O ls-remote final é a régua que prova que a tag subiu de verdade.
+            git tag -a "$NEW" -m "$NEW"
+          }
           # --atomic: OS DOIS REFS SOBEM OU NENHUM SOBE.
           #
           # Sem ele, um `git push` com dois refspecs sobe cada um por conta própria. Foi
-          # exatamente assim que a esteira travou em 12/08: entre o `pull --rebase` acima e
-          # este push, outro merge entrou na main; o ref `main` foi REJEITADO por
+          # exatamente assim que a esteira travou em 12/08: entre o rebase (era um
+          # `git pull --rebase`, hoje é o reset do laço abaixo) e este push, outro merge entrou na main; o ref `main` foi REJEITADO por
           # não-fast-forward e o ref da TAG subiu do mesmo jeito. Resultado medido:
           # v2.0.0-alpha.92 e v2.0.0-alpha.93 existiam no remoto e NENHUMA das duas estava
           # na história da main, com o package.json parado no .92.
@@ -258,7 +274,62 @@ jobs:
           # Com --atomic, main rejeitada = tag não sobe, o job falha limpo, e a próxima
           # execução refaz o mesmo número de versão. A corrida volta a ser retentável em
           # vez de terminal.
-          git push --atomic origin main "refs/tags/$NEW"
+          #
+          # RETRY LIMITADO (14/10/2026). O --atomic deixa a corrida limpa, mas não a ganha: às
+          # 21:46 de 13/10 o run morreu em `! [rejected] main -> main (fetch first)` porque o
+          # #857 entrou entre o rebase e o push, e o trem não saiu. Cada tentativa agora traz a
+          # main do remoto, volta a árvore para ela (reset + clean; a tag local da tentativa
+          # anterior sai) e REFAZ o bump: versão, CHANGELOG, docs, ARCH e commit são todos
+          # gerados, então regenerar sobre a main nova é o rebase sem conflito possível. Teto
+          # de tentativas, backoff curto, nunca --force; a última falha sai com erro (RLS17).
+          # A primeira volta do laço substitui o `git pull --rebase` que vinha antes do bump.
+          # SÓ PUBLICA SHA COM PR-FAST VERDE. O embarque aprovou $APROVADO. Se a main andou
+          # (antes da primeira volta ou entre duas), a cabeça nova só serve depois de o
+          # pr-fast DELA terminar verde; senão nada é publicado e o erro diz por quê.
+          [ -n "$APROVADO" ] || { echo "::error::o embarque não passou o SHA aprovado; nada a publicar"; exit 1; }
+          PRAZO=$(( $(date +%s) + 22 * 60 ))
+          pr_fast_verde() {
+            while [ "$(date +%s)" -lt "$PRAZO" ]; do
+              LINHA=$(gh run list --repo "$REPO" --workflow ci.yml --branch main --commit "$1" --event push \
+                        --json status,conclusion --jq '.[0] | "\(.status) \(.conclusion)"' 2>/dev/null || true)
+              case "$LINHA" in
+                "completed success") return 0 ;;
+                completed*) echo "::warning::pr-fast de $1 terminou $LINHA"; return 1 ;;
+              esac
+              sleep 30
+            done
+            return 1
+          }
+          MAX_TENTATIVAS=5
+          for tentativa in $(seq 1 "$MAX_TENTATIVAS"); do
+            git fetch origin main
+            CABECA=$(git rev-parse origin/main)
+            if [ "$CABECA" != "$APROVADO" ]; then
+              case "$(git log -1 --format=%s "$CABECA")" in
+                "chore(release):"*) echo "::error::a main andou para $CABECA, que já é um commit de release: outro trem saiu, este não publica nada."; exit 1 ;;
+              esac
+              echo "::warning::a main andou de $APROVADO para $CABECA; espero o pr-fast da cabeça nova antes de publicar"
+              if ! pr_fast_verde "$CABECA"; then
+                echo "::error::a main andou para $CABECA e o pr-fast dela não ficou verde no prazo: nada foi publicado. O próximo lote (ou gh workflow run release.yml) tenta de novo."
+                exit 1
+              fi
+              APROVADO=$CABECA
+            fi
+            git reset --hard "$APROVADO"
+            git clean -fdq
+            [ -z "${NEW:-}" ] || git tag -d "$NEW" 2>/dev/null || true
+            refaz_bump
+            if git push --atomic origin main "refs/tags/$NEW"; then
+              echo "release $NEW empurrado sobre $APROVADO na tentativa $tentativa"
+              break
+            fi
+            if [ "$tentativa" = "$MAX_TENTATIVAS" ]; then
+              echo "::error::push do release rejeitado $MAX_TENTATIVAS vezes (a main andou a cada tentativa): nada subiu, o --atomic garante. Rode de novo: gh workflow run release.yml"
+              exit 1
+            fi
+            echo "::warning::push do release rejeitado na tentativa $tentativa (a main andou); confiro a cabeça nova e refaço o bump"
+            sleep $((tentativa * 10))
+          done
           git ls-remote --exit-code origin "refs/tags/$NEW" > /dev/null
 
       - name: GitHub Release

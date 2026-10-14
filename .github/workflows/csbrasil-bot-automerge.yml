@@ -30,45 +30,45 @@ concurrency:
   cancel-in-progress: ${{ github.event.action != 'labeled' }}
 
 jobs:
-  bot-token:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      available: ${{ steps.check.outputs.available }}
-    steps:
-      - id: check
-        env:
-          BOT_TOKEN: ${{ secrets.CSBRASIL_BOT_TOKEN }}
-        run: |
-          if [ -n "$BOT_TOKEN" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=Bot inerte::CSBRASIL_BOT_TOKEN nao configurado — este workflow esta pulando. Ele PRECISA de PAT: merge/push com o GITHUB_TOKEN padrao nao dispara os workflows a jusante, entao a PR entraria sem rodar os portoes."
-          fi
-
+  # A GUARDA DO TOKEN É PASSO, NÃO JOB (14/10/2026). Era um job `bot-token` só para ler o
+  # secret: um runner a mais em cada disparo, e este workflow dispara em label, sync,
+  # ready_for_review e a cada pr-fast que termina. Sem o PAT o job continua verde e
+  # pulando, com o mesmo aviso (WSEC2 cobra a guarda e o `if:` de cada passo seguinte).
   automerge:
-    needs: bot-token
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # workflow_run de push na main (ou de fork, que não traz número de PR) não tem PR para olhar.
     if: >-
-      needs.bot-token.outputs.available == 'true' &&
-      (github.event_name != 'workflow_run' ||
-       (github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.pull_requests[0].number))
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.pull_requests[0].number)
     env:
       GH_TOKEN: ${{ secrets.CSBRASIL_BOT_TOKEN }}
       PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number || github.event.workflow_run.pull_requests[0].number }}
     steps:
+      - name: Guarda do token do bot
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "pular=1" >> "$GITHUB_ENV"
+            echo "::warning title=Bot inerte::CSBRASIL_BOT_TOKEN nao configurado — este workflow esta pulando. Ele PRECISA de PAT: merge/push com o GITHUB_TOKEN padrao nao dispara os workflows a jusante, entao a PR entraria sem rodar os portoes."
+          fi
+      # Leve (CL1): o job só roda scripts/ci/*.py; o resto vem da API.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        if: env.pular != '1'
+        with:
+          filter: blob:none
+          sparse-checkout: scripts/ci
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        if: env.pular != '1'
         with:
           python-version: '3.13'
       - name: Garante a etiqueta de pronto
+        if: env.pular != '1'
         run: python3 scripts/ci/ensure_labels.py pronto-pra-merge
       - name: Fetch PR status
+        if: env.pular != '1'
         run: gh pr view "$PR_NUMBER" --json isDraft,labels,reviewDecision,mergeStateStatus,statusCheckRollup,files,changedFiles > /tmp/automerge.json
       - name: Check eligibility
+        if: env.pular != '1'
         # O autoteste roda ANTES da decisão: este script mescla sem humano no
         # caminho, e portão quebrado que passa calado aqui mescla PR vermelho.
         run: |
@@ -80,6 +80,7 @@ jobs:
       # de merge continuando humano. O que era merge vira etiqueta e um comentário que
       # diz por que o PR está pronto.
       - name: Marca como pronto quando elegível
+        if: env.pular != '1'
         run: |
           python3 - <<'PY'
           import json, os, subprocess, sys
