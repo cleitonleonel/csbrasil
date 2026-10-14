@@ -9,6 +9,8 @@ const withIcon=(b,provider)=>{if(PROVIDER_ICONS[provider]){const i=node('span','
 const ERRORS={email_invalid:'Revise seu e-mail.',email_unavailable:'A entrada por e-mail está indisponível agora.',email_unverified:'Sua conta precisa de um e-mail confirmado.',rate_limited:'Muitos pedidos. Aguarde antes de tentar de novo.',guest_invalid:'Não foi possível vincular este convidado. Seu progresso local continua salvo.',account_conflict:'Esse nick já tem dono. Escolha outro.',session_expired:'Sua sessão expirou. Entre novamente.',account_hidden:'Conta indisponível pela moderação.'};
 const node=(tag,text='',cls='')=>{const e=document.createElement(tag);e.textContent=text;e.className=cls;return e;};
 const quiet=(text,fn)=>{const b=node('button',text,'account-link');b.type='button';b.onclick=fn;return b;};
+// O cabeçalho do modal acompanha o estado: convite para quem chega, saudação para quem já entrou.
+const dialogHead=(container,kicker,title)=>{const dialog=container.closest?.('dialog');const k=dialog?.querySelector('header small'),t=dialog?.querySelector('header h2');if(k)k.textContent=kicker;if(t)t.textContent=title;return t;};
 let accountRequest=null,configRequest=null,accountActive=false;
 let newsletterDraft=false;
 export async function socialApi(path,body) {
@@ -59,11 +61,20 @@ export function mountAccountEntry(container,{auth=null,config={providers:[]},ret
   const say=text=>{status.textContent=text;message(text);};
   const button=(text,fn,cls='')=>{const b=node('button',text,`account-button ${cls}`);b.type='button';b.onclick=async()=>{b.disabled=true;try{await fn();}catch(e){say(accountError(e));}finally{b.disabled=false;}};return b;};
   if(auth?.authenticated) {
-    if(auth.profile){container.append(node('p',`Salve, ${auth.profile.nick}. Sua conta está salva.`),button('VER MEU PERFIL',()=>{document.querySelector('[data-hub-tab=comunidade]')?.click();document.dispatchEvent(new CustomEvent('cs-community-open',{detail:{tab:'profile'}}));onGuest();}),button('SAIR DA CONTA',async()=>{await logoutAccount(auth);await onAuthenticated({authenticated:false});}));mountAccountIntegrations(container,auth,config,say);void mountProfilePreferences(container,{auth,message:say});container.append(status);return;}
+    if(auth.profile) {
+      const title=dialogHead(container,'SUA CONTA',`Olá, ${auth.profile.nick}`);
+      if(title)socialApi('/api/social?action=profile').then(({profile})=>{if(profile?.id===auth.profile.id && profile.handle && title.textContent===`Olá, ${auth.profile.nick}`)title.textContent=`Olá, @${profile.handle}`;}).catch(()=>{});
+      const actions=node('div','','account-actions');
+      actions.append(button('VER MEU PERFIL',()=>{document.querySelector('[data-hub-tab=comunidade]')?.click();document.dispatchEvent(new CustomEvent('cs-community-open',{detail:{tab:'profile'}}));onGuest();}),quiet('Sair da conta',async()=>{try{await logoutAccount(auth);await onAuthenticated({authenticated:false});}catch(e){say(accountError(e));}}));
+      container.append(node('p','Sua conta está salva. Progresso e conquistas ficam no servidor.','social-muted account-lede'),actions);
+      mountAccountIntegrations(container,auth,config,say);void mountProfilePreferences(container,{auth,message:say,fold:true});container.append(status);return;
+    }
+    dialogHead(container,'A PORTA DA RESENHA','CHEGA JUNTO.');
     const form=node('form'),label=node('label','Como a turma vai te chamar?','social-field'),nick=node('input');nick.required=true;nick.maxLength=14;nick.pattern='[A-Za-z0-9_.\\-]{2,14}';nick.autocomplete='nickname';label.append(nick);
     const submit=button('VESTIR A CAMISA ▸',async()=>{if(!form.reportValidity())return;const out=await socialApi('/api/social-auth',{action:'onboard',nick:nick.value,...(guestProof()?{guest:guestProof()}:{})});auth.profile=out.profile;auth.account_verified=out.account_verified===true;acceptAccount(auth);await onAuthenticated(auth);});
     form.append(label,node('p','2 a 14 letras, números, ponto, hífen ou _.','social-muted'),submit);form.onsubmit=e=>{e.preventDefault();submit.click();};container.append(form);void mountProfilePreferences(container,{auth,message:say});container.append(status);return;
   }
+  dialogHead(container,'A PORTA DA RESENHA','CHEGA JUNTO.');
   container.append(node('p','Guarde suas conquistas, encontre a turma e volte pra próxima treta.','social-muted'));
   const grid=node('div','','account-entry-grid'),entryColumn=node('section','','account-login-column'),choiceColumn=node('section','','account-choice-column');
   entryColumn.append(node('h3','ENTRE OU CRIE SUA CONTA'));choiceColumn.append(node('h3','SUAS ESCOLHAS'));
@@ -120,10 +131,10 @@ export function mountAccountIntegrations(container,auth,config,message=()=>{}) {
   section.append(verify);container.append(section);
 }
 const preferenceMounts=new WeakMap();
-export async function mountProfilePreferences(container,{auth=null,message=()=>{}}={}) {
-  const section=node('section','','account-preferences'),stamp={};preferenceMounts.set(container,stamp);
+export async function mountProfilePreferences(container,{auth=null,message=()=>{},fold=false}={}) {
+  const section=node(fold?'details':'section','',fold?'account-preferences account-fold':'account-preferences'),stamp={};preferenceMounts.set(container,stamp);
   if(container.id==='profile-preferences')container.replaceChildren();container.append(section);
-  section.append(node('h3','Newsletter e cookies'));
+  section.append(node(fold?'summary':'h3','Newsletter e cookies'));
   const note=node('p','','account-entry-status');note.setAttribute('role','status');
   const say=text=>{note.textContent=text;message(text);};
   let current=auth;
@@ -142,7 +153,7 @@ export function mountNewsletter(container,auth,message=()=>{}) {
   const status=node('p',auth.newsletter?.status==='pending'?'Falta confirmar seu e-mail para receber novidades.':'Sua escolha é opcional e separada da conta.','social-muted');status.setAttribute('role','status');
   check.onchange=async()=>{check.disabled=true;try{if(check.checked){await socialApi('/api/social-auth',{action:'newsletter_start',returnTo:'community'});auth.newsletter={status:'pending'};check.checked=false;status.textContent='Enviamos o link. Confirme seu e-mail neste navegador para receber novidades.';mountNewsletter(container,auth,message);}else{await socialApi('/api/social-auth',{action:'newsletter',subscribed:false});auth.newsletter={status:'unsubscribed'};status.textContent='Você saiu da lista de novidades.';}message(status.textContent);}catch(e){check.checked=auth.newsletter?.status==='subscribed';status.textContent=accountError(e);message(status.textContent);}finally{check.disabled=false;}};
   container.append(label,status);
-  if(auth.newsletter?.status==='pending'){const cancel=node('button','CANCELAR INSCRIÇÃO PENDENTE','account-button');cancel.type='button';cancel.onclick=async()=>{try{await socialApi('/api/social-auth',{action:'newsletter',subscribed:false});auth.newsletter={status:'unsubscribed'};mountNewsletter(container,auth,message);}catch(e){message(accountError(e));}};container.append(cancel);}
+  if(auth.newsletter?.status==='pending'){const cancel=node('button','Cancelar inscrição pendente','account-link');cancel.type='button';cancel.onclick=async()=>{try{await socialApi('/api/social-auth',{action:'newsletter',subscribed:false});auth.newsletter={status:'unsubscribed'};mountNewsletter(container,auth,message);}catch(e){message(accountError(e));}};container.append(cancel);}
 }
 export async function initAccountEntry({onSession=()=>{},skipPrompt=false}={}) {
   const dialog=document.getElementById('account-entry-dialog'),body=document.getElementById('account-entry-body'),close=document.getElementById('account-entry-close'),open=document.getElementById('hub-account-login');
