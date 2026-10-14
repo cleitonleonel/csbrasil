@@ -93,6 +93,8 @@ jobs:
           npm run eval:sertao-sky-lifecycle
       - name: Veículos do estacionamento em escala de fábrica
         run: npm run eval:escala
+      - name: Loja, vídeos de hover das skins (VP9 + H.264 + poster, até 400 KB)
+        run: npm run eval:treta-video
       - name: Orçamento de shader WebGL1
         run: npm run eval:shaderbudget
       - name: Sitemap pagina além do max-rows do PostgREST

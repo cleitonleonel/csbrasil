@@ -47,11 +47,17 @@ import * as THREE from 'three';
 import { MAPS, resolveMapId } from './js/maps.js';
 import { initTextures } from './js/textures.js';
 import { CHARACTERS } from './js/characters.js';
-import { preloadCharacterAssets, buildCharacterModel } from './js/glbchars.js';
+import { preloadCharacterAssets, preloadCosmeticAssets, buildCharacterModel } from './js/glbchars.js';
 import { enableLightBloom } from './js/bloom.js';
 
 const qp = new URLSearchParams(location.search);
-const ID = qp.get('id') || 'mandrake';
+/* ?skin=<id da loja> veste o personagem base com o GLB aprovado em
+   /models/skins/manifest.json, pelo mesmo preloadCosmeticAssets() do jogo. O id do
+   personagem sai do manifesto; ?id= é ignorado nesse caso. */
+const SKIN = qp.get('skin') || '';
+const SKIN_ENTRY = SKIN ? (await (await fetch('/models/skins/manifest.json')).json()).skins?.[SKIN] : null;
+if (SKIN && !SKIN_ENTRY?.approved) throw new Error('skin fora do manifesto aprovado: ' + SKIN);
+const ID = SKIN_ENTRY?.character || qp.get('id') || 'mandrake';
 const MAPID = resolveMapId(qp.get('map') || 'loja_h');
 const BG = (qp.get('bg') || 'cena').toLowerCase();       // 'cena' | 'alpha'
 const ALPHA = BG === 'alpha';
@@ -134,8 +140,9 @@ const doCenario = [];
 scene.traverse((o) => { if (o.isMesh || o.isPoints || o.isSprite) doCenario.push(o); });
 
 await preloadCharacterAssets([ID]);
+if (SKIN) await preloadCosmeticAssets([SKIN]);
 
-const def = CHARACTERS.find((c) => c.id === ID) || { id: ID, team: 'P' };
+const def = { ...(CHARACTERS.find((c) => c.id === ID) || { id: ID, team: 'P' }), ...(SKIN ? { skinId: SKIN } : {}) };
 const built = buildCharacterModel(def, { weapon: false });
 if (!built || !built.group) throw new Error('sem modelo para ' + ID);
 
@@ -168,7 +175,7 @@ const alturaPers = Math.max(0.1, caixa.max.y - caixa.min.y);
    vieram de olhar o resultado nos 44, não de teoria. */
 const PLANO = SHOT === 'busto'
   ? { fatia: 0.42, centro: 0.84 }   // cabeça + ombros
-  : { fatia: 1.16, centro: 0.52 };  // corpo inteiro com folga
+  : { fatia: parseFloat(qp.get('fatia')) || 1.16, centro: 0.52 };  // corpo inteiro com folga
 const alvoAuto = caixa.min.y + alturaPers * PLANO.centro;
 const distAuto = (alturaPers * PLANO.fatia / 2) / Math.tan((FOV * Math.PI / 180) / 2);
 
@@ -184,7 +191,7 @@ camera.lookAt(sp.x, gy + ALVO, sp.z);
    ACESFilmic que o game.js:2271 usa no caminho sem composer. */
 if (ALPHA) {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = parseFloat(qp.get('exp')) || 1.0;   // ?exp= p/ casar com a luz da TretaStage (1.4)
 } else {
   enableLightBloom(renderer, { quality: qp.get('q') || 'high' });
 }
@@ -207,7 +214,8 @@ for (let k = 0; k < 30; k++) avanca(1 / FPS);
 renderer.render(scene, camera);
 
 window.CHARVID = {
-  ready: true, id: ID, w: W, h: H, fps: FPS, bg: BG, shot: SHOT,
+  ready: true, id: ID, skin: SKIN || null, skinned: !!SKIN && built.ctrl?.charId === SKIN,
+  idleSecs: ctrl?.actions?.idle?.getClip?.().duration || 0, w: W, h: H, fps: FPS, bg: BG, shot: SHOT,
   poses: ['idle', 'walk', 'run', 'shoot', 'death', 'crouch', 'jump'],
   pose(s) { aplicaPose(s); },
   reset() { t = 0; for (let k = 0; k < 30; k++) avanca(1 / FPS); renderer.render(scene, camera); },
