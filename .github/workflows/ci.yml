@@ -173,6 +173,8 @@ jobs:
           node tools/eval/profile-views-display-check.mjs --mutate
           node tools/eval/rotas-check.mjs --dist
           ! node tools/eval/rotas-check.mjs --dist --mutante=robots
+          node tools/eval/perfil-abas-check.mjs
+          node tools/eval/perfil-abas-check.mjs --mutate
 
       # PORTÃO DO SITE. `astro build` verde não prova nada sobre as rotas:
       # /ranking pode dar 500, /sitemap.xml pode sair vazio e o build passa em
