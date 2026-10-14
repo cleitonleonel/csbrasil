@@ -98,4 +98,5 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
   document.addEventListener('cs-account-change',e=>{auth=e.detail;if(auth?.authenticated && dialog.open)dialog.close();});
   new MutationObserver(maybeShow).observe(document.body,{childList:true});
   maybeShow();
+  dialog.dataset.ready='true';   // a régua espera a decisão em vez de adivinhar um tempo
 }

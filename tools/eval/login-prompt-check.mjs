@@ -172,7 +172,8 @@ if (BROWSER) {
     await page.waitForFunction(() => window.__CS_MAIN_READY__ === true, null, { timeout: 120000 });
     if (await page.locator('#boot-splash').count()) await page.locator('#boot-splash').click({ timeout: 30000 }).catch(() => {});
     if (antes) { await antes(page); liberaAuth(); }
-    await page.waitForTimeout(1500);
+    await page.waitForFunction(() => document.getElementById('login-prompt')?.dataset.ready === 'true' || new URLSearchParams(location.search).get('embed') === '1', null, { timeout: 60000 }).catch(() => {});
+    await page.waitForTimeout(300);
     return { ctx, page, funil };
   }
   const aberto = (page) => page.evaluate(() => document.getElementById('login-prompt')?.open === true);
@@ -199,7 +200,7 @@ if (BROWSER) {
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => window.__CS_MAIN_READY__ === true, null, { timeout: 120000 });
       if (await page.locator('#boot-splash').count()) await page.locator('#boot-splash').click().catch(() => {});
-      await page.waitForTimeout(1500);
+      await page.waitForFunction(() => document.getElementById('login-prompt')?.dataset.ready === 'true', null, { timeout: 60000 });
       assert.equal(await aberto(page), false, 'voltou na mesma visita');
     } finally { await ctx.close(); }
   });
