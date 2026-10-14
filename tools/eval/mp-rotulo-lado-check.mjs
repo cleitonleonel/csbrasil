@@ -28,7 +28,8 @@
      ML1  nome do time (`_teamName`, placar e banners) = ESQUERDA/DIREITA do lado
      ML2  sigla (`_teamTag`) e linha do HUD "RODADA n/N · ESQ x × y DIR"
      ML3  brasão do HUD (plaqueta) e do placar = e.png/b.png do lado
-     ML4  chip versus da tela de carregamento = ESQUERDA/DIREITA
+     ML4  chip versus da tela de carregamento = ESQUERDA/DIREITA, os dois lados; o do
+          adversário deriva do lado oposto mesmo se o servidor mandar uma categoria
      ML5  subtítulo do cartão "SEU PERSONAGEM NO MULTIPLAYER" = ESQUERDA/DIREITA
      ML6  viewmodel: `playerFaction` (luva e braços) continua a categoria do personagem
      ML7  CTF online: o pano da bandeira do dono (netgame.js applyCtfState -> _flagTexFor) é
@@ -40,6 +41,7 @@
      --mutante=rotulo-categoria   devolve rótulo/sigla/brasão/chip/cartão à categoria -> ML1-ML5 vermelhas
      --mutante=maos-lado          aplica `faction = side` também online (mão vira o lado) -> ML6 vermelha
      --mutante=bandeira-categoria devolve o pano do CTF online a `_factionOf(dono)`  -> ML7 vermelha
+     --mutante=chip-inimigo-faccao chip do adversário volta a ler currentEnemyFaction -> ML4 vermelha
    Em todos, SP1 continua verde.
 
    uso: node tools/eval/mp-rotulo-lado-check.mjs [--mutante=<nome>]
@@ -51,7 +53,7 @@ import * as H from './harness.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-if (MUT && !['rotulo-categoria', 'maos-lado', 'bandeira-categoria'].includes(MUT)) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
+if (MUT && !['rotulo-categoria', 'maos-lado', 'bandeira-categoria', 'chip-inimigo-faccao'].includes(MUT)) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
 const NOME = { E: 'ESQUERDA', B: 'DIREITA' };
 const SIGLA = { E: 'ESQ', B: 'DIR' };
@@ -80,6 +82,7 @@ if (MUT === 'rotulo-categoria') {
 if (MUT === 'maos-lado') mainSrc = troca(mainSrc, 'if (!online) faction = side;', 'faction = side;', 'main.js');
 let netSrc = fs.readFileSync(path.join(RAIZ, 'public/js/netgame.js'), 'utf8');
 if (MUT === 'bandeira-categoria') netSrc = troca(netSrc, 'const fac = pt.owner || null;', 'const fac = pt.owner ? game._factionOf(pt.owner) : null;', 'netgame.js');
+if (MUT === 'chip-inimigo-faccao') mainSrc = troca(mainSrc, "b.textContent = tr(FACTION_NAME[ladoDele] || '');", "b.textContent = tr(FACTION_NAME[currentEnemyFaction] || '');", 'main.js');
 
 /* O Game mutado mora numa cópia IRMÃ do game.js (mesma pasta, então os imports relativos
    resolvem) que some no fim. Sem mutante de game.js, o Game é o do harness. */
@@ -184,6 +187,9 @@ for (const cat of CATS) for (const team of ['E', 'B']) {
   marca('ML4', r.chip[0] === NOME[L] && r.chip[1] === NOME[O], `${caso}: chip ${r.chip.join(' × ')}`);
   marca('ML5', r.cartao === NOME[L], `${caso}: cartão "${r.cartao}"`);
   marca('ML6', r.maos === def.team, `${caso}: viewmodel com ${r.maos} (personagem é ${def.team})`);
+  // o servidor mandou uma categoria como facção do adversário: o chip continua dizendo o lado
+  const s = partida({ def, team, online: true, inimigoDoServidor: 'F' });
+  marca('ML4', s.chip[0] === NOME[L] && s.chip[1] === NOME[O], `${caso}, inimigo 'F' no servidor: chip ${s.chip.join(' × ')}`);
   const c = partida({ def, team, online: true, ctf: true });
   marca('ML7', c.panos && c.panos.n >= 2 && c.panos.meu === L && c.panos.dele === O,
     `${caso} CTF: ${c.panos ? `${c.panos.n} bandeiras, pano meu ${c.panos.meu} dele ${c.panos.dele}` : 'sem bandeiras'}`);

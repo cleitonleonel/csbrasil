@@ -619,7 +619,7 @@ const funcMap = blocoFuncao(main, 'renderMapScreen');
 const i18nDinamico = /\$\{tr\('MAPA'\)\}[\s\S]{0,100}\$\{tr\('DE'\)\}/.test(main)
   && /tr\(FACTION_NAME\[currentFaction\] \|\| ''\)[\s\S]{0,120}tr\('PERSONAGENS'\)/.test(main)
   && /a\.textContent = tr\(FACTION_NAME\[currentTeam\] \|\| ''\)/.test(main)
-  && /b\.textContent = tr\(FACTION_NAME\[currentEnemyFaction\] \|\| ''\)/.test(main)
+  && /b\.textContent = tr\(FACTION_NAME\[ladoDele\] \|\| ''\)/.test(main)
   && /chip\.textContent = `\$\{n\} \$\{tr\('PERSONAGENS'\)\}`/.test(main)
   && /ms-desc'\)\.textContent = tr\(MAP_DESC\[currentMap\] \|\| ''\)/.test(main)
   && /frase\('escolhaAdversario', tr\(FACTION_NAME\[myFaction\]/.test(main)

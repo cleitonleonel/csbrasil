@@ -335,7 +335,8 @@ function showLoading(label, status = 'CARREGANDO MODELOS 3D…', mapName = '') {
     const a = $('load-vs-a'), b = $('load-vs-b');
     if (mapName && currentEnemyFaction) {
       a.textContent = tr(FACTION_NAME[currentTeam] || ''); a.style.color = (PALETA[currentTeam] || {}).base || '#e0762a';
-      b.textContent = tr(FACTION_NAME[currentEnemyFaction] || ''); b.style.color = (PALETA[currentEnemyFaction] || {}).base || '#8258d8';
+      const ladoDele = currentTeam === 'B' ? 'E' : 'B';
+      b.textContent = tr(FACTION_NAME[ladoDele] || ''); b.style.color = (PALETA[ladoDele] || {}).base || '#8258d8';
       vs.classList.remove('hidden');
     } else vs.classList.add('hidden');
   }
