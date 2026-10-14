@@ -3,6 +3,7 @@ import vercel from '@astrojs/vercel';
 import { aeoCurado } from './scripts/aeo.mjs';
 import { moduleCacheManifest } from './scripts/module-cache.mjs';
 import {readFileSync,existsSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import sharp from 'sharp';
 import { SITE } from './src/lib/site-origin.mjs';
 
@@ -45,6 +46,10 @@ const SOCIAL_LOGO='data:image/png;base64,'+(await sharp(readFileSync('public/log
    Régua: `tools/eval/ssr-render-check.mjs` (`--mutante=sem-publicjs` reproduz o pacote
    sem `public/js` e volta a ficar vermelha). */
 const MANIFESTO_JS = moduleCacheManifest();
+/* Revisão dos CSS do hub pelo CONTEÚDO, calculada aqui pelo mesmo motivo do manifesto:
+   o hub também é renderizado no SSR de /u/<perfil>, e lá não existe `public/`. */
+const revisaoCss = (arquivo) => createHash('sha1').update(readFileSync(arquivo)).digest('hex').slice(0, 8);
+const CSS_REV = { style: revisaoCss('public/style.css'), social: revisaoCss('public/social.css'), treta: revisaoCss('public/treta.css') };
 
 export default defineConfig({
   output: 'static',
@@ -56,6 +61,7 @@ export default defineConfig({
   vite: {
     define: {
       __MANIFESTO_JS__: JSON.stringify(MANIFESTO_JS),
+      __CSS_REV__: JSON.stringify(CSS_REV),
       __SOCIAL_PORTRAITS__: JSON.stringify(SOCIAL_PORTRAITS),
       __SOCIAL_CHARACTERS__: JSON.stringify(SOCIAL_CHARACTERS),
       __SOCIAL_LOGO__: JSON.stringify(SOCIAL_LOGO),

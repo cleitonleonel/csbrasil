@@ -119,15 +119,17 @@ await caso('LP8', 'telemetria só com consentimento de analytics', () => {
   }
   for (const nome of ['login_prompt_shown', 'login_prompt_dismissed', 'login_prompt_provider_click']) assert(fontePrompt.includes(`'${nome}'`), nome);
 });
-await caso('LP10', 'perfil compartilhado (/u/<perfil> abre o jogo em iframe com ?perfil=) pula o convite', () => {
+await caso('LP10', 'perfil compartilhado (/u/<perfil>, que é o hub, e o link antigo ?perfil=) pula o convite', () => {
   const skip = fonteMain.match(/onReady:ready=>initLoginPrompt\(\{\.\.\.ready,skip:Boolean\((.*?)\),track:/)?.[1] || '';
-  assert(skip.includes("params.get('perfil')"), `skip do convite: ${skip || 'não achado'}`);
+  assert(skip.includes('perfilCompartilhado'), `skip do convite: ${skip || 'não achado'}`);
+  const decl = fonteMain.match(/^const perfilCompartilhado = ([^\n]*);$/m)?.[1] || '';
+  assert(decl.includes("params.get('perfil')") && decl.includes('estadoDaUrl(location.href)?.perfil'), `perfilCompartilhado: ${decl || 'não achado'}`);
   assert(skip.includes("params.get('sala')"), 'convite de sala');
 });
 await caso('LP9', 'fiação: partida conta, conta vem antes, mesmo pipeline do funil', () => {
   const ini = fonteMain.indexOf('async function _startGame('), fim = fonteMain.indexOf('\n}\n', ini);
   assert(/if \(!continuaPartida\) noteLoginPromptMatch\(\);/.test(fonteMain.slice(ini, fim)), '_startGame não conta a partida');
-  assert(/onReady:ready=>initLoginPrompt\(\{\.\.\.ready,skip:Boolean\(inspectionScreen \|\| testMode \|\| params\.get\('sala'\)(?: \|\| params\.get\('perfil'\))?\)/.test(fonteMain), 'convite não pendurado no onReady da conta');
+  assert(/onReady:ready=>initLoginPrompt\(\{\.\.\.ready,skip:Boolean\(inspectionScreen \|\| testMode \|\| params\.get\('sala'\)(?: \|\| (?:params\.get\('perfil'\)|perfilCompartilhado))?\)/.test(fonteMain), 'convite não pendurado no onReady da conta');
   assert(/sendJsonKeepalive\('\/api\/funnel', \{ step, sessionId: getSessionId\(\), \.\.\.data \}\)/.test(fonteMain), 'transporte fora do funil');
   const h = fonteConta.indexOf('  await hydrate();\n'), r = fonteConta.indexOf('onReady({auth,config,accountBusy:()=>dialog.open || dismissed || wantsPrompt()});');
   assert(h > 0 && r > h, 'onReady tem de vir depois do hydrate (e do maybePrompt dele)');
