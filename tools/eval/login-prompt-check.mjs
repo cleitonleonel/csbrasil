@@ -4,7 +4,7 @@
  * simulada e mede o popup de verdade (deslogado, logado, embed, partida, consentimento, intervalo, foco,
  * Esc, telemetria) e grava as capturas em SHOTS se definido.
  * Mutantes (cada um tem de ficar VERMELHO): --mutante=sem-login | sem-embed | sem-partida | sem-conta |
- * sem-sessao | sem-intervalo | sem-contagem | telemetria-sem-consentimento */
+ * sem-sessao | sem-intervalo | sem-contagem | empilha | telemetria-sem-consentimento */
 import assert from 'node:assert/strict';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
@@ -23,6 +23,7 @@ const MUTANTES = {
   'sem-conta': ['login-prompt', '  if(accountBusy)return false;\n', ''],
   'sem-sessao': ['login-prompt', '  if(seen)return false;\n', ''],
   'sem-intervalo': ['login-prompt', '  if(record && record.matches<LOGIN_PROMPT_MATCHES && now-record.dismissedAt<LOGIN_PROMPT_COOLDOWN_MS)return false;\n', ''],
+  'empilha': ['login-prompt', "    if(document.querySelector('dialog[open]'))return;", ''],
   'sem-contagem': ['main', '  if (!continuaPartida) noteLoginPromptMatch();', ''],
   'telemetria-sem-consentimento': ['login-prompt', '  if(!analyticsAllowed())return;\n  try{track(step,data);}', '  try{track(step,data);}'],
 };
@@ -252,6 +253,14 @@ if (BROWSER) {
       assert(b.funil.some((f) => f.step === 'login_prompt_provider_click' && f.provider === 'discord'), 'provider_click sem provedor');
       assert.equal(await aberto(b.page), true, 'erro do provedor fechou o convite');
     } finally { await b.ctx.close(); }
+  });
+  await caso('LB9', 'browser: outro diálogo aberto (apresentação da loja) adia o convite', async () => {
+    const { ctx, page } = await abre({ antes: (p) => p.evaluate(() => { const d = document.createElement('dialog'); d.id = 'lp-outro'; document.body.append(d); d.showModal(); }) });
+    try {
+      assert.equal(await aberto(page), false, 'empilhou sobre outro diálogo');
+      await page.evaluate(() => { document.getElementById('lp-outro').close(); document.body.append(document.createElement('div')); });
+      await page.waitForFunction(() => document.getElementById('login-prompt').open, null, { timeout: 10000 });
+    } finally { await ctx.close(); }
   });
   await caso('LB8', 'browser: mobile 390x844 cabe sem rolagem lateral', async () => {
     const { ctx, page } = await abre({ viewport: { width: 390, height: 844 } });

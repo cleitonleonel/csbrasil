@@ -84,8 +84,9 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
     if(config.email)list.append(button('account-button account-provider login-prompt-email','Continuar com e-mail','email',async()=>{dialog.close();document.getElementById('hub-account-login')?.click();}));
   };
   const maybeShow=()=>{
-    if(dialog.open || document.getElementById('boot-splash'))return;
+    if(document.getElementById('boot-splash'))return;
     dialog.dataset.ready='true';   // decidiu com a splash fora; a régua espera isto
+    if(document.querySelector('dialog[open]'))return;   // não empilha (passo de entrada, loja TRETA)
     if(!loginPromptDue({auth,config,embedded:isEmbedded(),playing:inMatch(),accountBusy:accountBusy(),seen:seenThisVisit(),record:readRecord()}))return;
     markSeen();draw();previousFocus=document.activeElement;
     dialog.showModal();
