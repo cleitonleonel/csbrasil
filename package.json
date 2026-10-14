@@ -210,6 +210,7 @@
     "eval:ctfwin": "node tools/eval/ctf-win-check.mjs",
     "eval:switchteam": "node tools/eval/switchteam-check.mjs",
     "eval:mp-rotulo-lado": "node tools/eval/mp-rotulo-lado-check.mjs",
+    "eval:mp-cor-lado": "node tools/eval/mp-cor-lado-check.mjs",
     "eval:pool-lado": "node tools/eval/pool-lado-check.mjs",
     "eval:awpscope": "node tools/eval/awp-scope-check.mjs",
     "eval:tracer3p": "node tools/eval/tracer-3p-check.mjs",
