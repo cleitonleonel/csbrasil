@@ -41,7 +41,7 @@ export const prerender = false;
 // prioridade/frequência: sinal fraco pro Google, mas o Bing e os crawlers de
 // IA ainda leem. Custa nada e ajuda a ordenar o rastreio.
 //
-// Só URL final e indexável: `/ranking` responde 302 para o hub e fica fora; os
+// Só URL final e indexável: `/ranking` (hub) entra só com RANKING_ON; os
 // perfis `/u/*` só entram com `RANKING_ON`. Sem data real de modificação, sem <lastmod>.
 export const STATIC: [string, string, string][] = [
   ['/',            '1.0', 'daily'],
@@ -62,7 +62,7 @@ export const STATIC: [string, string, string][] = [
   ['/mapa',        '0.6', 'daily'],
   /* Rotas fixas do hub marcadas indexáveis em public/js/rotas.js (/loja, /comunidade).
      As outras telas do hub são estado do app e ficam fora (noindex). ADR 0008. */
-  ...ROTAS_HUB.filter((r) => r.indexavel).map((r) => [r.caminho, '0.6', 'daily'] as [string, string, string]),
+  ...ROTAS_HUB.filter((r) => r.indexavel && (!r.dependeDoRanking || RANKING_ON)).map((r) => [r.caminho, '0.6', 'daily'] as [string, string, string]),
   ['/changelog',   '0.5', 'weekly'],
   ...PT_EN_PAIRS.map(([, en]) => [en, '0.5', 'weekly'] as [string, string, string]),
 ];

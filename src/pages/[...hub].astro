@@ -3,9 +3,10 @@
 // devolver 200 com 0 bytes (docs/adr/0008-rotas-fixas.md).
 import Hub from './index.astro';
 import { ROTAS_HUB } from '../../public/js/rotas.js';
+import { RANKING_ON } from '../lib/site';
 
 export function getStaticPaths() {
-  return ROTAS_HUB.map((rota) => ({ params: { hub: rota.caminho.slice(1) }, props: { rota } }));
+  return ROTAS_HUB.map((rota) => ({ params: { hub: rota.caminho.slice(1) }, props: { rota: rota.dependeDoRanking ? { ...rota, indexavel: RANKING_ON } : rota } }));
 }
 const { rota } = Astro.props;
 ---

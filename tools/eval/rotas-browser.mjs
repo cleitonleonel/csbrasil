@@ -102,6 +102,7 @@ try {
       ['/jogar/mapas', { aba: 'jogar', rede: 'sp', modal: 'hub-map-modal' }],
       ['/loja', { aba: 'loja', lojaAba: 'skins' }],
       ['/loja/quests', { aba: 'loja', lojaAba: 'quests' }],
+      ['/ranking', { aba: 'ranking' }],
       ['/comunidade/amigos', { aba: 'comunidade', social: 'friends' }],
       ['/guia/mapas', { aba: 'sobre', guia: 'mapas' }],
       ['/configuracoes', { configuracoes: true }],
@@ -133,6 +134,10 @@ try {
     confere('clique aba QUESTS', await tela(page), { caminho: '/loja/quests', lojaAba: 'quests' });
     await page.goBack(); await page.waitForTimeout(300);
     confere('voltar para SKINS', await tela(page), { caminho: '/loja', lojaAba: 'skins' });
+    await page.click('[data-hub-tab="ranking"]');
+    confere('clique RANKING', await tela(page), { caminho: '/ranking', aba: 'ranking' });
+    await page.goBack(); await page.waitForTimeout(300);
+    confere('voltar para LOJA depois do RANKING', await tela(page), { caminho: '/loja', aba: 'loja' });
     await page.click('[data-hub-tab="comunidade"]');
     confere('clique COMUNIDADE', await tela(page), { caminho: '/comunidade', aba: 'comunidade' });
     await page.click('.social-tabs button[data-tab="friends"]');

@@ -342,6 +342,24 @@
       ],
       "destination": "/apoiar",
       "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "secao",
+          "value": "ranking"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "perfil"
+        }
+      ],
+      "destination": "/ranking",
+      "statusCode": 301
     }
   ],
   "headers": [

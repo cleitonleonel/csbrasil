@@ -1,5 +1,5 @@
-// Rotas fixas do hub: tabela única do jogo e do build. Por que perfil= e secao=ranking
-// ficam na query até o PR pareado com o backend: docs/adr/0008-rotas-fixas.md.
+// Rotas fixas do hub: tabela única do jogo e do build. Por que perfil= fica na query
+// (iframe de /u e régua do backend): docs/adr/0008-rotas-fixas.md.
 
 const GUIAS = ['sobre', 'como-jogar', 'personagens', 'armas', 'mapas', 'mapa', 'changelog', 'apoie',
   'privacidade', 'termos', 'excluir-dados', 'regras-de-uso', 'clans'];
@@ -30,6 +30,9 @@ export const ROTAS_HUB = [
     descricao: 'Skins de personagem da CORO SOLTO. Ganhe TRETA$ jogando e vista sua próxima treta. Skin não dá vantagem na partida.' },
   { caminho: '/loja/quests', estado: { secao: 'loja', loja: 'quests' }, titulo: 'Quests: ganhe TRETA$' },
   { caminho: '/loja/acessorios', estado: { secao: 'loja', loja: 'acessorios' }, titulo: 'Acessórios da loja' },
+  /* /ranking indexável só com o ranking ligado: o build troca `indexavel` por RANKING_ON. */
+  { caminho: '/ranking', estado: { secao: 'ranking' }, titulo: 'Ranking', indexavel: true, dependeDoRanking: true,
+    descricao: 'Placar da rua da CORO SOLTO: cada abate soma um ponto. Veja quem lidera a treta e onde você está.' },
   ...Object.entries(ABAS_SOCIAIS).map(([social, slug]) => ({
     caminho: slug ? `/comunidade/${slug}` : '/comunidade',
     estado: { secao: 'comunidade', social },
@@ -61,6 +64,7 @@ export function caminhoDoEstado(estado = {}, { perfilNoCaminho = false } = {}) {
     return MODAIS_JOGAR.includes(janela) ? `/jogar/${janela}` : '/';
   }
   if (secao === 'loja') return Object.hasOwn(ABAS_LOJA, loja) ? `/loja/${loja}` : '/loja';
+  if (secao === 'ranking') return '/ranking';
   if (secao === 'comunidade') {
     if (perfil) return perfilNoCaminho ? `/u/${encodeURIComponent(perfil)}` : null;
     const slug = ABAS_SOCIAIS[social || 'profile'];

@@ -11,9 +11,8 @@
    O que pode quebrar, e o que cada item mede:
    RT1  ida e volta: o caminho de cada rota da tabela (public/js/rotas.js) volta ao mesmo
         estado, e o estado volta ao mesmo caminho. Se não volta, o deep-link abre outra tela.
-   RT2  link antigo: cada URL com ?secao= vira o caminho novo no cliente. `perfil=` e
-        `secao=ranking` ficam na query de propósito (iframe de /u e 302 de /ranking são
-        lidos pela régua do backend, api/reguas/ranking-check.mjs).
+   RT2  link antigo: cada URL com ?secao= vira o caminho novo no cliente. `perfil=` fica na
+        query de propósito (iframe de /u, lido pela régua do backend, api/reguas/ranking-check.mjs).
    RT3  301 do servidor: o vercel.json redireciona cada link antigo para o MESMO caminho
         que o cliente calcula, e não toca em nada com `perfil=` (senão o iframe de /u
         recarrega a página SSR dentro dele mesmo).
@@ -86,7 +85,7 @@ const LEGADO = [
   ['/?secao=feedback', '/feedback'],
   ['/?secao=apoie', '/apoiar'],
   ['/?secao=comunidade&social=profile&perfil=11111111-1111-4111-8111-111111111111', null],
-  ['/?secao=ranking', null],
+  ['/?secao=ranking', '/ranking'],
 ];
 
 // RT2
@@ -134,7 +133,7 @@ const LEGADO = [
   const erros = [];
   for (const [antiga, nova] of LEGADO) {
     const achado = destino(antiga);
-    if (nova === null) { if (achado) erros.push(`${antiga} é redirecionado para ${achado.d}, e não pode (iframe de /u ou 302 de /ranking)`); continue; }
+    if (nova === null) { if (achado) erros.push(`${antiga} é redirecionado para ${achado.d}, e não pode (iframe de /u)`); continue; }
     if (nova === '/') { if (achado) erros.push(`${antiga} redireciona para ${achado.d}: com a query preservada vira laço`); continue; }
     if (!achado) erros.push(`${antiga} sem 301 no vercel.json`);
     else {
@@ -220,7 +219,8 @@ if (DIST) {
     const esperado = SITE + (rota.canonical || rota.caminho);
     if (canonical !== esperado) erros.push(`${rota.caminho}: canonical ${canonical}, esperado ${esperado}`);
     if (ogUrl !== SITE + rota.caminho) erros.push(`${rota.caminho}: og:url ${ogUrl}`);
-    if (rota.indexavel !== !robots.includes('noindex')) erros.push(`${rota.caminho}: robots "${robots}" com indexavel=${rota.indexavel}`);
+    const indexavel = rota.dependeDoRanking ? process.env.RANKING_ON === 'true' : rota.indexavel;
+    if (indexavel !== !robots.includes('noindex')) erros.push(`${rota.caminho}: robots "${robots}" com indexavel=${indexavel}`);
     if (!html.includes('<base href="/">')) erros.push(`${rota.caminho}: sem <base href="/">`);
     if (!/<title>[^<]*CORO SOLTO/.test(html) || !html.includes(rota.titulo)) erros.push(`${rota.caminho}: title sem "${rota.titulo}"`);
     if (!html.includes('id="hub-community"')) erros.push(`${rota.caminho}: não é o hub (sem #hub-community)`);
@@ -229,7 +229,7 @@ if (DIST) {
   if (!home.includes(`<link rel="canonical" href="${SITE}/"`)) erros.push('home perdeu o canonical /');
   if (!home.includes('"VideoGame"')) erros.push('home perdeu o JSON-LD VideoGame');
   const sitemap = readFileSync('src/pages/sitemap.xml.ts', 'utf8');
-  if (!/ROTAS_HUB\.filter\(\(r\) => r\.indexavel\)/.test(sitemap)) erros.push('sitemap.xml.ts não lista as rotas indexáveis de rotas.js');
+  if (!/ROTAS_HUB\.filter\(\(r\) => r\.indexavel && \(!r\.dependeDoRanking \|\| RANKING_ON\)\)/.test(sitemap)) erros.push('sitemap.xml.ts não lista as rotas indexáveis de rotas.js');
   item('RT6', !erros.length, `build fora do contrato (${erros.length}): ${erros.slice(0, 5).join('; ')}`);
 }
 
