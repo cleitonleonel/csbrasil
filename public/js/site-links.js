@@ -18,8 +18,8 @@ const loading = panel?.querySelector('[role="status"]');
 let observer;
 let currentUrl;
 const contentPaths = new Set([...Object.keys(pairs), ...Object.values(pairs), '/mapa', '/apoie']);
-// Documentos legais não têm subtab própria, mas também abrem no lobby.
-const documents = { '/privacidade': 'PRIVACIDADE', '/termos': 'TERMOS DE USO', '/excluir-dados': 'EXCLUIR DADOS', '/regras-de-uso': 'REGRAS DE USO' };
+// Páginas internas sem subtab própria (documentos legais, clãs) também abrem no lobby.
+const documents = { '/privacidade': 'PRIVACIDADE', '/termos': 'TERMOS DE USO', '/excluir-dados': 'EXCLUIR DADOS', '/regras-de-uso': 'REGRAS DE USO', '/clans': 'CLÃS' };
 const documentGuide = pathname => (documents[pathname] ? pathname.slice(1) : null);
 for (const pathname of Object.keys(documents)) contentPaths.add(pathname);
 function openFrame(href, title) {
@@ -111,7 +111,7 @@ frame?.addEventListener('load', () => {
     if (url.pathname === '/') {
       event.preventDefault();
       document.querySelector('.hub-tabs [data-hub-tab="jogar"]')?.click();
-    } else if (contentPaths.has(url.pathname) || url.pathname.startsWith('/faccoes/')) {
+    } else if (contentPaths.has(url.pathname) || url.pathname.startsWith('/faccoes/') || url.pathname.startsWith('/clans/')) {
       if (LANG === 'en' && pairs[url.pathname]) url.pathname = pairs[url.pathname];
       url.searchParams.set('embed', '1');
       link.href = url.href;
