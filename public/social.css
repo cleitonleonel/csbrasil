@@ -86,3 +86,6 @@ body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{displa
 .login-prompt :focus-visible{outline:2px solid #d0ee7d;outline-offset:3px}
 @media(max-width:480px){.login-prompt-card{padding:18px 18px 14px}.login-prompt h2{font-size:38px}}
 .social-inline-status{min-height:20px;margin:-6px 0 14px;color:#b4d92e;font:600 14px/1.4 system-ui,sans-serif}.social-inline-status:empty{display:none}
+/* Perfil: ADICIONAR AMIGO em destaque e estado da amizade como selo. */
+.community button.social-primary{border-color:#d7f085;background:#b4d92e;color:#15190e}
+.social-chip{display:inline-flex;align-items:center;min-height:42px;box-sizing:border-box;padding:10px 14px;border:1px solid #b4d92e;color:#b4d92e;font:700 13px/1.3 var(--font);letter-spacing:.6px}
