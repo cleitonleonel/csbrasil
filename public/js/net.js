@@ -39,6 +39,16 @@ export const resolvePlayerSide = (team) => (team === 'B' ? 'B' : 'E');
 // Lado local velho (REINICIAR/REVANCHE) monta o elenco do servidor do avesso: 6×5 (#785).
 export const ladoOnline = (team, net) => (net && (net.yourTeam === 'E' || net.yourTeam === 'B') ? net.yourTeam : team);
 
+/* Regra do personagem no MP (docs/adr/0007-personagem-escolhido.md): pede o escolhido se ele joga no
+   lado; se não joga, avisa e oferece a troca. Nunca troca calado. */
+export function decidirPersonagemMp({ escolhido, atual, lado, espectador, aceita, podeNoLado }) {
+  if (espectador || (lado !== 'E' && lado !== 'B') || !escolhido) return { acao: 'nada' };
+  if (escolhido.id === atual) return { acao: 'ok' };
+  if (!podeNoLado(escolhido, lado)) return { acao: 'avisar-lado', outroLado: lado === 'E' ? 'B' : 'E' };
+  if (!aceita) return { acao: 'avisar-servidor' };
+  return { acao: 'pedir', id: escolhido.id };
+}
+
 export async function transitionSlot(m, meta, current, validChar, remount) {
   const next = { ...current, spectator: !!m.espectador };
   if (!next.spectator && (m.yourTeam === 'E' || m.yourTeam === 'B')) {
@@ -107,9 +117,10 @@ function observaRede(url) {
     obs.observe({ type: 'resource' });
   } catch { obs = null; }
   return async (t0) => {
-    for (let i = 0; obs && duracao == null && i < 5; i++) await new Promise((r) => setTimeout(r, 20));
+    const fim = performance.now();
+    for (let i = 0; obs && duracao == null && i < 2; i++) await new Promise((r) => setTimeout(r, 20));
     obs?.disconnect();
-    return duracao ?? performance.now() - t0;
+    return duracao ?? fim - t0;
   };
 }
 

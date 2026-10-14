@@ -19,13 +19,18 @@
          não tem segredo e quem tem segredo não compila. Os dois arquivos existem e o
          contrato deles é guardado em detalhe pelo `scripts/ci/workflow_security_check.py`
          (PRV1/PRV2/PRV3); aqui só se confere que o par não sumiu.
+   DG4 · o contexto obrigatório `build` da main sai de UM job só, o `build` do
+         ci.yml (pr-fast). O ruleset exige o contexto pelo NOME, sem amarrar a
+         workflow, então qualquer outro job chamado `build` conta para ele. Medido
+         em 13/10: o job do preview-build.yml também se chamava `build`, e o PR
+         ficava com dois `build` (um deles só o build do preview) no mesmo contexto.
 
    Uso: node tools/eval/deploy-gate-check.mjs [--mutante=<nome>]
    ============================================================================ */
 import { readFileSync, readdirSync } from 'node:fs';
 
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-const MUTANTES = { 'ci-sem-build': 'DG1', 'download-sem-retry': 'DG2', 'preview-sem-par': 'DG3' };
+const MUTANTES = { 'ci-sem-build': 'DG1', 'download-sem-retry': 'DG2', 'preview-sem-par': 'DG3', 'preview-vira-build': 'DG4' };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
 const ler = (p) => { try { return readFileSync(p, 'utf8'); } catch { return ''; } };
@@ -64,6 +69,31 @@ if (MUT === 'preview-sem-par') { /* nome antigo do mutante: agora derruba o par 
 const par = (MUT === 'preview-sem-par') ? '' : (temBuild && temDeploy);
 if (!par) {
   falhas.push('DG3 falta preview-build.yml ou preview-deploy.yml — sem o par, preview de fork volta a depender de aprovação humana');
+}
+
+/* ---- DG4: só o pr-fast responde pelo contexto obrigatório `build` ---- */
+/* Nome do check run = `name:` do job, ou o id do job quando não há `name:`. Lido por
+   indentação, como a wftimeout: id com 2 espaços dentro de `jobs:`, chaves com 4. */
+const nomesDeJob = (fonte) => {
+  const nomes = [];
+  let dentro = false;
+  for (const linha of fonte.split('\n')) {
+    if (/^jobs:\s*$/.test(linha)) { dentro = true; continue; }
+    if (!dentro) continue;
+    if (/^\S/.test(linha)) { dentro = false; continue; }
+    const id = /^ {2}([A-Za-z0-9_-]+):\s*$/.exec(linha);
+    if (id) { nomes.push(id[1]); continue; }
+    const nome = /^ {4}name:\s*['"]?([^'"#\n]+?)['"]?\s*$/.exec(linha);
+    if (nome) nomes[nomes.length - 1] = nome[1];
+  }
+  return nomes;
+};
+for (const arq of readdirSync('.github/workflows').filter((f) => /\.ya?ml$/.test(f))) {
+  let fonte = ler(`.github/workflows/${arq}`);
+  if (MUT === 'preview-vira-build' && arq === 'preview-build.yml') fonte = fonte.replace(/^ {2}preview:\s*$/m, '  build:');
+  const nomes = nomesDeJob(fonte);
+  if (arq === 'ci.yml' && !nomes.includes('build')) falhas.push('DG4 ci.yml não tem mais o job `build` — o contexto obrigatório da main ficaria sem dono');
+  if (arq !== 'ci.yml' && nomes.includes('build')) falhas.push(`DG4 ${arq} tem um job \`build\` — ele conta para o contexto obrigatório \`build\` da main junto com o pr-fast`);
 }
 
 for (const f of falhas) console.log(`  \x1b[31m✗\x1b[0m ${f}`);

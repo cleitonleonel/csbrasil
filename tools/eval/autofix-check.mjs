@@ -33,6 +33,14 @@
          releases em 20 horas e cada um reabre conflito em todo PR aberto; sem o
          gatilho de push o bot só conserta quem empurra commit — ou seja, nunca
          quem está parado esperando revisão, que é justamente quem precisa.
+   AF8 · a base só sobe para o PR quando faz falta. Medido em 13/10: o bot trazia a
+         main para todo PR atrasado, mesmo sem conflito (58 merges num dia, 18% dos
+         minutos de CI), e cada merge reinicia o CI inteiro do PR. A varredura dispara
+         só para `CONFLICTING`, depois de esperar o GitHub calcular o `mergeable`. No
+         job, merge limpo fica SÓ LOCAL (não acende `mesclou`): os geradores rodam na
+         árvore mesclada e ele só sobe se a regeneração mudar algo. É o cenário A/B:
+         dois PRs somam 1 à mesma contagem, A entra, o merge de B junta limpo com o
+         número errado, e B fica vermelho MERGEABLE, fora do alcance da varredura.
    AF5 · o resolvedor de conflito passa pela MESMA trava e ABORTA quando sobra
          conflito fora dela. Resolver conflito de arquivo gerado é mecânico (todo
          `chore(release)` reabre um em cada PR aberto); resolver conflito de código
@@ -61,6 +69,11 @@ const MUTANTES = {
   'workflow-fora-do-registro': 'AF7',
   'registro-orfao': 'AF7',
   'trava-do-pr': 'AF5',
+  'varredura-dispara-atrasado': 'AF8',
+  'varredura-sem-espera': 'AF8',
+  'merge-limpo-commita': 'AF8',
+  'merge-limpo-descartado': 'AF8',
+  'push-sem-trava': 'AF8',
 };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
@@ -197,10 +210,54 @@ for (const nome of WORKFLOWS) {
 if (MUT === 'sem-varredura-pos-release') wf = wf.replace(/\n  push:\n    branches: \[main\]/, '');
 const temPush = /^\s{2}push:\n\s{4}branches: \[main\]/m.test(wf);
 const temVarredura = /varredura:\n\s+if: github\.event_name == 'push'/.test(wf);
-const filtraAtrasado = /mergeable != "MERGEABLE"/.test(wf) && /gh workflow run autofix\.yml/.test(wf);
+const filtraAtrasado = /"CONFLICTING"/.test(wf) && /gh workflow run autofix\.yml/.test(wf);
 if (!temPush) falhas.push('AF6 autofix.yml não acorda quando a main anda — PR parado esperando revisão nunca é consertado');
 else if (!temVarredura) falhas.push('AF6 o gatilho de push existe mas não há job de varredura');
-else if (!filtraAtrasado) falhas.push('AF6 a varredura não seleciona os PRs desatualizados nem dispara o autofix de cada um');
+else if (!filtraAtrasado) falhas.push('AF6 a varredura não seleciona os PRs em conflito nem dispara o autofix de cada um');
+
+/* ---- AF8: a base só entra quando há conflito ---- */
+if (MUT === 'varredura-dispara-atrasado') wf = wf.replace(`awk '$2 == "CONFLICTING"`, `awk '$2 != "MERGEABLE"`);
+if (MUT === 'varredura-sem-espera') wf = wf.replace(/\n\s*\[ "\$tentativa" = 4 \] \|\| sleep 30/, '');
+/* merge-limpo-commita: o merge limpo volta a subir sempre (os 58 merges de 13/10).
+   merge-limpo-descartado: o merge limpo é desfeito antes de regenerar (o cenário A/B).
+   push-sem-trava: o push deixa de depender da trava ter achado regeneração. */
+const AVISO_LIMPO = 'echo "Sem conflito com a base: merge só local; sobe apenas se a regeneração mudar algo."';
+if (MUT === 'merge-limpo-commita') wf = wf.replace(AVISO_LIMPO, `${AVISO_LIMPO}\n            echo "mesclou=1" >> "$GITHUB_OUTPUT"`);
+if (MUT === 'merge-limpo-descartado') wf = wf.replace(AVISO_LIMPO, `git reset -q --hard 'HEAD@{1}'\n            ${AVISO_LIMPO}`);
+if (MUT === 'push-sem-trava') wf = wf.replace("(steps.trava.outputs.commitar == '1' || steps.merge.outputs.mesclou == '1') && env.PODE_EDITAR == 'true'", "env.PODE_EDITAR == 'true'");
+{
+  const ini = wf.indexOf('\n  varredura:');
+  const varredura = ini < 0 ? '' : wf.slice(ini, wf.indexOf('\n  autofix:', ini));
+  /* Quem dispara é a linha ANTES do `gh workflow run`; o que vale é o filtro final,
+     não a listagem (a listagem tem de enxergar UNKNOWN para saber se espera). */
+  const filtro = varredura.slice(0, varredura.indexOf('gh workflow run'));
+  if (!/\$2 == "CONFLICTING"|\.mergeable == "CONFLICTING"/.test(filtro)) {
+    falhas.push('AF8 a varredura não filtra só `CONFLICTING` — PR só atrasado ganha merge da base e CI inteiro à toa');
+  }
+  if (/!= "MERGEABLE"|\$2 != /.test(filtro)) {
+    falhas.push('AF8 a varredura dispara para quem não está MERGEABLE (inclui UNKNOWN e atraso sem conflito)');
+  }
+  if (!/UNKNOWN/.test(filtro) || !/sleep \d+/.test(filtro)) {
+    falhas.push('AF8 a varredura não espera o GitHub calcular o `mergeable` antes de escolher quem dispara');
+  }
+  const ini2 = wf.indexOf('id: merge');
+  const merge = ini2 < 0 ? '' : wf.slice(ini2, wf.indexOf('diff-filter=U', ini2));
+  const tentativa = /if git merge[^\n]*(?:\\\n[^\n]*)*FETCH_HEAD; then\n([\s\S]*?)\n\s*fi\n/.exec(merge);
+  if (!tentativa) {
+    falhas.push('AF8 não achei o caminho do merge limpo no passo `id: merge` — a régua ficou cega');
+  } else {
+    if (/mesclou=1/.test(tentativa[1])) {
+      falhas.push('AF8 merge limpo acende `mesclou` — a base sobe para todo PR atrasado, mesmo sem nada a regenerar');
+    }
+    if (/--abort|reset[^\n]*--hard|--no-commit/.test(tentativa[0])) {
+      falhas.push('AF8 merge limpo é desfeito antes dos geradores — no cenário A/B a árvore mesclada fica com a contagem errada e o PR vermelho');
+    }
+  }
+  const push = /- name: Empurra o conserto\n\s+if: ([^\n]+)/.exec(wf)?.[1] || '';
+  if (!push.includes("steps.trava.outputs.commitar == '1'")) {
+    falhas.push('AF8 o push do autofix não depende da trava ter achado regeneração — merge limpo local subiria sem motivo');
+  }
+}
 
 /* ---- AF4: e nenhum outro workflow mergeia tampouco ---- */
 for (const nome of WORKFLOWS) {
