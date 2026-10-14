@@ -49,7 +49,7 @@ const avatar=p?.avatar_url===`/api/social-avatar?id=${p?.id}`?p.avatar_url:https
     {profileSocialLinks(p).length>0 && <nav class="socials" aria-label="Redes públicas do jogador">{profileSocialLinks(p).map(s=><a href={s.url} target="_blank" rel="noopener noreferrer nofollow" title={s.label} aria-label={`${s.label} (abre em nova aba)`}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d={s.path}/></svg><span>{s.label}</span></a>)}</nav>}
     <a class="play profile-action" href={game}>VER PERFIL NO JOGO ▸</a>
   </div>
-  {character?<figure class="profile-character"><img src={character.portrait} alt={character.nome} width="480" height="580"/><figcaption><span>Último personagem</span><strong>{character.nome}</strong></figcaption></figure>:<div class="character-empty"><p>Nenhum personagem disponível para mostrar.</p><span>A próxima treta começa no jogo.</span></div>}
+  {character?<figure class="profile-character"><img src={character.portrait} alt={character.nome} width="480" height="580"/><figcaption><span>Último personagem</span><strong>{character.nome}</strong></figcaption></figure>:<div class="character-empty"><p>Personagem não compartilhado.</p><span>O jogador escolhe se mostra o último personagem, e só rodada confirmada pelo servidor conta.</span></div>}
 </article>:<section class="unavailable"><h1>Perfil indisponível</h1><p>{description}</p><a class="play" href={game}>VOLTAR AO JOGO ▸</a></section>}
 </main>
 <footer><span>CORO SOLTO: TRETA SUPREMA</span><nav aria-label="Informações do jogo"><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a></nav></footer>
