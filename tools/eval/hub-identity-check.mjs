@@ -11,12 +11,15 @@ const read=path=>readFileSync(new URL(path,root),'utf8');
 const mutant=process.argv.find(arg=>arg.startsWith('--mutante='))?.slice(10);
 let entry=read('public/js/account-entry.js');
 let index=read('src/pages/index.astro');
+let social=read('public/social.css');const treta=read('public/treta.css');
 const mutation=(source,before,after)=>{assert(source.includes(before),'MUTANTE NÃO APLICOU: trecho ausente');return source.replace(before,after);};
 const mutants={
   'sem-handle':()=>{entry=mutation(entry,"mine?.handle?'@'+mine.handle:profile.nick","profile.nick");},
   'sem-convite':()=>{entry=mutation(entry,":'Reivindique seu perfil';",":'ENTRAR';");},
   'ver-perfil-sempre':()=>{entry=mutation(entry,'if(view)view.hidden=!profile;','if(view)view.hidden=false;');},
   'minha-conta':()=>{index=mutation(index,'<b id="hub-identity-name">Reivindique seu perfil</b>','<b id="hub-identity-name">Reivindique seu perfil</b></button><button class="hub-header-action" type="button">MINHA CONTA');},
+  'chip-62px':()=>{social=mutation(social,'html[data-home-ui=hub] .hub-identity-wrap #hub-account-login{max-width:136px','.hub-identity{max-width:136px');},
+  'convite-uma-linha':()=>{social=mutation(social,'[data-state=guest] b{max-width:64px;white-space:normal','[data-state=guest] b{max-width:64px');},
   'lembrete-volta':()=>{index=mutation(index,'<a id="hub-view-profile"','<details id="account-completion"><summary>COMPLETE SEU PERFIL</summary></details><a id="hub-view-profile"');},
 };
 if(mutant){assert(mutants[mutant],'mutante desconhecido: '+mutant);mutants[mutant]();}
@@ -82,7 +85,26 @@ const tests=[
     const visible=[...header.matchAll(/<button\b([^>]*)>/g)].map(m=>m[1]).filter(a=>!/\shidden(\s|$)/.test(a)&&!/hub-music|hub-settings|hub-social-resume|hub-treta-wallet|role="tab"/.test(a));
     assert.equal(visible.length,1,'mais de um botão de conta visível no topo: '+visible.join(' | '));
   }],
+  ['a 390 px o chip cabe o @handle e o convite (cascata social.css + treta.css)',()=>{
+    const won=(target,prop)=>winner([['social.css',social],['treta.css',treta]],target,prop,390);
+    const max=won('chip','max-width');assert(max,'nenhuma regra de max-width para o chip');
+    assert(max.value==='none' || parseFloat(max.value)>=120,`a 390 px vence ${max.file} "${max.selector}" com max-width:${max.value}: corta o @handle e o convite`);
+    const ws=won('guestName','white-space');assert.equal(ws?.value,'normal',`a 390 px o convite fica numa linha só (vence ${ws?.file} "${ws?.selector}")`);
+  }],
 ];
+// Cascata estática: regras que valem a 390 px, ordem dos <link> (social.css antes de treta.css), especificidade.
+const targets={chip:/#hub-account-login$|\.hub-identity$/,guestName:/(#hub-account-login|\.hub-identity)(\[data-state=guest\])?\s+b$/};
+function specificity(sel){const s=sel.replace(/::?[\w-]+(\([^)]*\))?/g,m=>m.startsWith('::')?' x':' .p');return [(s.match(/#[\w-]+/g)||[]).length,(s.match(/\.[\w-]+|\[[^\]]+\]/g)||[]).length,(s.replace(/#[\w-]+|\.[\w-]+|\[[^\]]+\]/g,'').match(/(^|[\s>+~])[a-z][\w-]*/gi)||[]).length];}
+function rules(file,css,width){const out=[];const strip=css.replace(/\/\*[\s\S]*?\*\//g,'');let i=0;
+  const walk=(text,applies)=>{const re=/([^{}]+)\{/g;let m;let pos=0;while((m=re.exec(text))){const head=m[1].trim();let depth=1,j=re.lastIndex;while(depth&&j<text.length){if(text[j]==='{')depth++;else if(text[j]==='}')depth--;j++;}const body=text.slice(re.lastIndex,j-1);re.lastIndex=j;
+    if(head.startsWith('@media')){const mx=head.match(/max-width:\s*(\d+)px/),mn=head.match(/min-width:\s*(\d+)px/);const ok=!/prefers-reduced-motion|print/.test(head)&&(!mx||width<=+mx[1])&&(!mn||width>=+mn[1]);walk(body,applies&&ok);continue;}
+    if(head.startsWith('@'))continue;
+    for(const sel of head.split(',').map(x=>x.trim()))for(const d of body.split(';')){const k=d.indexOf(':');if(k<0)continue;out.push({file,selector:sel,prop:d.slice(0,k).trim(),value:d.slice(k+1).trim().replace(/!important/,''),important:/!important/.test(d),applies,order:i++});}}};
+  walk(strip,true);return out;}
+function winner(files,target,prop,width){
+  const hits=files.flatMap(([f,css])=>rules(f,css,width)).map((r,order)=>({...r,order})).filter(r=>r.applies&&r.prop===prop&&targets[target].test(r.selector.replace(/:(hover|focus-visible|active)\b.*$/,'##'))&&!/\[data-state=(?!guest)/.test(r.selector)&&(target!=='chip'||!/\[data-state=guest\]$/.test(r.selector)||true));
+  const cmp=(a,b)=>(a.important-b.important)||specificity(a.selector).reduce((acc,v,i)=>acc||v-specificity(b.selector)[i],0)||(a.order-b.order);
+  return hits.sort(cmp).at(-1)||null;}
 let passed=0;
 for(const [name,run] of tests){try{await run();passed++;console.log('PASS '+name);}catch(e){console.log('RED '+name+': '+e.message.split('\n')[0]);}}
 console.log(`hub identity: ${passed}/${tests.length}; mutante=${mutant||'nenhum'}`);
