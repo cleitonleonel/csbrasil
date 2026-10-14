@@ -26,6 +26,7 @@ com código 1 em falha crítica.
 | `shader-budget-check.mjs` | Deriva do GLB real o orçamento de varyings da urna e protege fog/triplanar no piso WebGL1. | `npm run eval:shaderbudget` |
 | `lajes-cache-check.mjs` | Duas builds reais de Lajes: paridade dos buffers e da sequência RNG, colisores, navegação e oclusores; 49 geometrias compartilhadas nas 9162 caixas, descarte único e isolamento entre builds. | `npm run eval:lajes-cache` |
 | `map-rotation-check.mjs` | Sugestão inicial de mapa: link manda, escolha do carrossel fica, e quem não escolhe roda pelos 5 mapas. | `npm run eval:maprotate` |
+| `perfil-mobile-check.mjs` | Perfil mobile de qualidade (lane glm/peso): degrau inicial rasteiro (sem SSAO, sombra baixa, dpr ≤0,7, mato ≤0,5), teto de textura min(1024, MAX_TEXTURE_SIZE) e o clamp `clampTexturasGL` do GLTFLoader vendido reduzindo imagem acima do teto; mutante `teto-frouxo` sobe o teto e a régua acende. | `npm run eval:perfilmobile` |
 | `../gen-arch.mjs` | (fora deste diretório) Gera e valida o `ARCH.md`. `--check` reprova se estiver desatualizado. | `npm run arch` |
 
 ## 2. Documentos — leitura, não execução

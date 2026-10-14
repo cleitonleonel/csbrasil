@@ -13,6 +13,20 @@ export const DEGRAUS = Object.freeze([
   { nome: 'minimo', dpr: 0.6, ssao: false, aa: false, sombra: 'baixa', charmask: false, mato: 0.3 },
 ]);
 
+/* Perfil mobile (pointer:coarse): degrau inicial sustentável + teto de textura.
+   Fiação e detecção de pointer são do main.js; procedência no PR da lane glm/peso. */
+export const PERFIL_MOBILE = Object.freeze({ degrauInicial: 5, texturaMax: 1024 });
+
+export function tetoTextura({ pointerCoarse = false, maxTextureSize = Infinity } = {}) {
+  if (!pointerCoarse) return 0;
+  return Math.max(1, Math.min(PERFIL_MOBILE.texturaMax, maxTextureSize || Infinity));
+}
+
+export function perfilInicial({ pointerCoarse = false, software = false } = {}) {
+  if (software) return DEGRAUS.length - 1;
+  return pointerCoarse ? PERFIL_MOBILE.degrauInicial : 0;
+}
+
 // Nenhum degrau pode mexer em JOGABILIDADE (arma no chão, alcance, inimigo legível, HUD):
 // quem perde quadro não pode perder também a informação de que precisa para jogar.
 export const CAMPOS_PERMITIDOS = Object.freeze(['nome', 'dpr', 'ssao', 'aa', 'sombra', 'charmask', 'mato']);
