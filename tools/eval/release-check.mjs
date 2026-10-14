@@ -22,7 +22,8 @@
  *       diferentes mesclam limpo e deixam contagem velha na main; com o DOCS1 reprovando o push,
  *       o embarque (que exige pr-fast verde) nunca saía, e o trem é quem regenera. No push da
  *       main, docs:check, arch:check e a autoria só rodam no commit `chore(release):`; no PR
- *       docs:check e arch:check continuam valendo sempre, e o release regenera os dois.
+ *       docs:check e arch:check continuam valendo sempre (desde 14/10 só a estrutura; o commit
+ *       do release confere tudo com docs:check:release e arch:check:release).
  *
  * RLS11-RLS16: RELEASE EM LOTE (14/10/2026, decisão do dono). Horário fixo travava o
  *       desenvolvimento; o trem sai quando entra na main um PR de LOTE (label `release`, ou
@@ -47,7 +48,7 @@
  *       push`), qualquer outro `completed*` é vermelho, e sem resposta ela desiste no prazo.
  *       O prazo cabe no `timeout-minutes` do job, e cabeça que já é `chore(release):` aborta.
  *
- * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | autoria-trava-trem | autoria-desligada | release-sem-arch | cron-de-volta | sem-dispatch | lote-ignorado | sem-rotulo | sem-filtro-lote | qualquer-merge | pr-aberto | concurrency-no-topo | sem-concurrency | grupo-sem-portao | bump-cancelavel | bump-mesmo-grupo | sem-aviso | loop | injecao | sem-retry | retry-infinito | push-forcado | publica-sem-conferir | sha-solto | falha-vira-verde | funcao-curta | sem-commit | cabeca-release-segue | prazo-longo.
+ * Mutações: --mutante=nome-antigo | semcreditos | semdco | semdocs | semrollback | deploy-duplo | deploy-yaml | sem-anims-deploy | cancelar-bot | ignora-sem-filtro | gerado-trava-trem | gerado-fora-do-pr | release-confere-so-estrutura | release-sem-modo | autoria-trava-trem | autoria-desligada | release-sem-arch | cron-de-volta | sem-dispatch | lote-ignorado | sem-rotulo | sem-filtro-lote | qualquer-merge | pr-aberto | concurrency-no-topo | sem-concurrency | grupo-sem-portao | bump-cancelavel | bump-mesmo-grupo | sem-aviso | loop | injecao | sem-retry | retry-infinito | push-forcado | publica-sem-conferir | sha-solto | falha-vira-verde | funcao-curta | sem-commit | cabeca-release-segue | prazo-longo.
  */
 import { readFileSync, readdirSync, mkdtempSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -142,20 +143,22 @@ const validaTrem = () => {
 };
 let tremRelease = validaTrem();
 
-/* RLS10 — o passo de gerado roda no PR sempre e, no push, só no commit do release. */
+/* RLS10 — gerado confere no PR sempre (só estrutura) e, no push, só no commit do release (inteiro). */
 let workflowCi = readFileSync('.github/workflows/ci.yml', 'utf8');
-const SO_PR_OU_RELEASE = "if: github.event_name == 'pull_request' || startsWith(github.event.head_commit.message, 'chore(release):')";
+const SO_PR = "if: github.event_name != 'push'";
 /* Igualdade EXATA, não "contém": `if: false && startsWith(...)` contém o startsWith e
    desliga a conferência de vez; sem o `event_name == 'push'` o job roda onde não deve. */
 const AUTORIA_SO_RELEASE = "if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'chore(release):')";
 const validaGerados = () => {
   const passo = (script) => new RegExp(`- name: [^\\n]+\\n\\s+(if: [^\\n]+)\\n\\s+run: npm run ${script}\\n`).exec(workflowCi)?.[1];
   const autoria = /^  autoria-na-main:\n    (if: [^\n]+)$/m.exec(workflowCi)?.[1] || '';
-  return passo('docs:check') === SO_PR_OU_RELEASE
-    && passo('arch:check') === SO_PR_OU_RELEASE
+  return passo('docs:check') === SO_PR
+    && passo('arch:check') === SO_PR
+    && passo('docs:check:release') === AUTORIA_SO_RELEASE
+    && passo('arch:check:release') === AUTORIA_SO_RELEASE
     && autoria === AUTORIA_SO_RELEASE
-    && /node tools\/gen-docs\.mjs/.test(workflowRelease)
-    && /node tools\/gen-arch\.mjs/.test(workflowRelease);
+    && /node tools\/gen-docs\.mjs --release\b/.test(workflowRelease)
+    && /node tools\/gen-arch\.mjs --release\b/.test(workflowRelease);
 };
 let geradosNoTrem = validaGerados();
 
@@ -364,11 +367,11 @@ if (mutante) {
     tremRelease = validaTrem();
   }
   else if (mutante === 'gerado-trava-trem') {
-    workflowCi = workflowCi.replace(`${SO_PR_OU_RELEASE}\n        run: npm run docs:check`, 'run: npm run docs:check');
+    workflowCi = workflowCi.replace(`${SO_PR}\n        run: npm run docs:check\n`, 'run: npm run docs:check\n');
     geradosNoTrem = validaGerados();
   }
   else if (mutante === 'gerado-fora-do-pr') {
-    workflowCi = workflowCi.replace(`${SO_PR_OU_RELEASE}\n        run: npm run arch:check`, "if: startsWith(github.event.head_commit.message, 'chore(release):')\n        run: npm run arch:check");
+    workflowCi = workflowCi.replace(`${SO_PR}\n        run: npm run arch:check\n`, "if: startsWith(github.event.head_commit.message, 'chore(release):')\n        run: npm run arch:check\n");
     geradosNoTrem = validaGerados();
   }
   else if (mutante === 'autoria-trava-trem') {
@@ -377,6 +380,14 @@ if (mutante) {
   }
   else if (mutante === 'autoria-desligada') {
     workflowCi = workflowCi.replace(AUTORIA_SO_RELEASE, "if: false && startsWith(github.event.head_commit.message, 'chore(release):')");
+    geradosNoTrem = validaGerados();
+  }
+  else if (mutante === 'release-confere-so-estrutura') {
+    workflowCi = workflowCi.replace('run: npm run docs:check:release\n', 'run: npm run docs:check\n');
+    geradosNoTrem = validaGerados();
+  }
+  else if (mutante === 'release-sem-modo') {
+    workflowRelease = workflowRelease.replace(/node tools\/gen-docs\.mjs --release/g, 'node tools/gen-docs.mjs');
     geradosNoTrem = validaGerados();
   }
   else if (mutante === 'release-sem-arch') {

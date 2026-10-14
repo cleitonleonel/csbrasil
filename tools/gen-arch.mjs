@@ -13,8 +13,9 @@
 // O ARCH.md antigo cravava frente -> linha, misturando os dois prazos de validade.
 //
 // USO
-//   node tools/gen-arch.mjs            reescreve o bloco gerado do ARCH.md
-//   node tools/gen-arch.mjs --check    sai 1 se o ARCH.md estiver desatualizado (para CI)
+//   node tools/gen-arch.mjs            modo PR: reescreve a estrutura (símbolos, frentes); linha e tamanho ficam
+//   node tools/gen-arch.mjs --check    modo PR: sai 1 se a estrutura do ARCH.md estiver velha
+//   node tools/gen-arch.mjs --release [--check]   tudo, inclusive linhas e tamanhos (trem de release)
 //   node tools/gen-arch.mjs --json     imprime o índice em JSON (para outras ferramentas)
 //
 // O texto FORA dos marcadores BEGIN/END é preservado — os "Levers por frente" e as notas de
@@ -23,9 +24,11 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
+import { v, limpa, mesclar } from './gerado-modo.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ARCH = join(ROOT, 'tools/eval/ARCH.md');
+const RELEASE = process.argv.includes('--release');
 const BEGIN = '<!-- BEGIN:GERADO — não edite à mão, rode `npm run arch` -->';
 const END = '<!-- END:GERADO -->';
 
@@ -129,7 +132,7 @@ function bloco() {
   const L = [];
   const agora = readFileSync(join(ROOT, 'public/js/version.js'), 'utf8').match(/'([^']+)'/);
   L.push(`> Gerado por \`node tools/gen-arch.mjs\`. **Não edite este bloco à mão.**`);
-  L.push(`> Versão do jogo: ${agora ? agora[1] : '?'} · \`npm run arch\` para regenerar · \`npm run arch:check\` no CI.`);
+  L.push(`> Versão do jogo: ${v(agora ? agora[1] : '?')} · \`npm run arch\` para regenerar · \`npm run arch:check\` no CI.`);
   L.push('');
 
   // --- tamanho dos arquivos
@@ -137,7 +140,7 @@ function bloco() {
   L.push('');
   L.push('| Arquivo | Linhas | Símbolos |');
   L.push('|---|---:|---:|');
-  for (const f of idx) L.push(`| \`${f.rel}\` | ${f.total} | ${f.simbolos.length} |`);
+  for (const f of idx) L.push(`| \`${f.rel}\` | ${v(f.total)} | ${v(f.simbolos.length)} |`);
   L.push('');
 
   // --- os maiores métodos: onde o risco de conflito mora
@@ -145,13 +148,13 @@ function bloco() {
   const somaG = grandes.reduce((a, s) => a + s.tam, 0);
   L.push(`## Maiores métodos de \`game.js\` — onde o conflito mora`);
   L.push('');
-  L.push(`Os 15 maiores somam **${somaG} linhas (${Math.round((100 * somaG) / game.total)}% do arquivo)**. Método grande = PR irrevisável e merge conflitante.`);
+  L.push(`Os 15 maiores somam **${v(somaG)} linhas (${v(Math.round((100 * somaG) / game.total))}% do arquivo)**. Método grande = PR irrevisável e merge conflitante.`);
   L.push('');
   L.push('| Linhas | Início | Método | |');
   L.push('|---:|---:|---|---|');
   for (const s of grandes) {
     const flag = ZONA_VERMELHA.includes(s.nome) ? '🔴 append-only' : s.tam > 300 ? '⚠️ candidato a extração' : '';
-    L.push(`| ${s.tam} | ${s.linha} | \`${s.nome}()\` | ${flag} |`);
+    L.push(`| ${v(s.tam)} | ${v(s.linha)} | ${v(`\`${s.nome}()\``)} | ${v(flag)} |`);
   }
   L.push('');
 
@@ -176,14 +179,14 @@ function bloco() {
       if (u && f.linha - u.fim <= 12) { u.fim = Math.max(u.fim, f.fim); u.nomes.push(f.sim); }
       else fundidas.push({ ini: f.linha, fim: f.fim, nomes: [f.sim] });
     }
-    const txt = fundidas.length
+    const txt = v(fundidas.length
       ? fundidas.map((f) => `\`${f.ini}–${f.fim}\``).join(' ')
-      : '—';
+      : '—');
     L.push(`| **${nome}** | ${txt} | ${def.arquivos.map((a) => `\`${a}\``).join(' ') || '—'} |`);
   }
   L.push('');
   L.push(`**🔴 Zonas vermelhas (append-only, qualquer frente pode precisar):** ${ZONA_VERMELHA
-    .map((n) => { const s = acharNoGame(n); return s ? `\`${n}()\` ${s.linha}–${s.fim}` : `\`${n}()\` (ausente)`; })
+    .map((n) => { const s = acharNoGame(n); return s ? `\`${n}()\` ${v(`${s.linha}–${s.fim}`)}` : `\`${n}()\` (ausente)`; })
     .join(' · ')}`);
   L.push('');
 
@@ -211,14 +214,14 @@ function bloco() {
     L.push('');
     L.push('| Frentes | Linhas em comum |');
     L.push('|---|---:|');
-    for (const [k, v] of [...conflitos].sort((a, b) => b[1] - a[1])) L.push(`| ${k} | ${v} |`);
+    for (const [k, n] of [...conflitos].sort((a, b) => b[1] - a[1])) L.push(`| ${k} | ${v(n)} |`);
     L.push('');
   } else {
     L.push('Nenhuma sobreposição entre frentes — todas as faixas são disjuntas. ✓');
     L.push('');
   }
   const cobertas = donos.size;
-  L.push(`Cobertura: **${cobertas} de ${game.total} linhas (${Math.round((100 * cobertas) / game.total)}%)** do \`game.js\` têm dono declarado. O resto é território neutro — declare a frente mesmo assim.`);
+  L.push(`Cobertura: **${v(cobertas)} de ${v(game.total)} linhas (${v(Math.round((100 * cobertas) / game.total))}%)** do \`game.js\` têm dono declarado. O resto é território neutro — declare a frente mesmo assim.`);
   L.push('');
 
   // --- índice completo
@@ -228,7 +231,7 @@ function bloco() {
   L.push('|---:|---|---:|');
   for (const s of game.simbolos) {
     if (s.tam < 3 && s.tipo === 'topo') continue;
-    L.push(`| ${s.linha} | ${s.tipo === 'metodo' ? `\`${s.nome}()\`` : `\`${s.nome}\``} | ${s.tam} |`);
+    L.push(`| ${v(s.linha)} | ${s.tipo === 'metodo' ? `\`${s.nome}()\`` : `\`${s.nome}\``} | ${v(s.tam)} |`);
   }
   L.push('');
   L.push('</details>');
@@ -241,7 +244,7 @@ function bloco() {
   const quebrados = [];
   for (const [, arq, ln] of refs) {
     const alvo = idx.find((x) => x.rel.endsWith(arq) || x.rel.endsWith('/' + arq));
-    if (alvo && +ln > alvo.total) quebrados.push(`${arq}:${ln} (arquivo tem ${alvo.total} linhas)`);
+    if (alvo && +ln > alvo.total) quebrados.push(`${arq}:${ln} (arquivo tem ${v(alvo.total)} linhas)`);
   }
   L.push('## Validação dos ponteiros escritos à mão');
   L.push('');
@@ -261,10 +264,12 @@ if (process.argv.includes('--json')) {
   process.exit(0);
 }
 
-const novo = bloco();
 const atual = existsSync(ARCH) ? readFileSync(ARCH, 'utf8') : '';
+const comBloco = atual.includes(BEGIN) && atual.includes(END);
+const modelo = bloco();
+const novo = RELEASE || !comBloco ? limpa(modelo) : mesclar(modelo, atual.slice(atual.indexOf(BEGIN) + BEGIN.length, atual.indexOf(END)));
 let saida;
-if (atual.includes(BEGIN) && atual.includes(END)) {
+if (comBloco) {
   saida = atual.slice(0, atual.indexOf(BEGIN)) + BEGIN + '\n\n' + novo + '\n' + END + atual.slice(atual.indexOf(END) + END.length);
 } else {
   // primeira execução: injeta o bloco depois do H1 e preserva TODO o resto
@@ -275,13 +280,18 @@ if (atual.includes(BEGIN) && atual.includes(END)) {
 }
 
 if (process.argv.includes('--check')) {
+  const gerado = comBloco ? atual.slice(atual.indexOf(BEGIN), atual.indexOf(END)) : '';
+  if (/^(<{7}|>{7})( |$)|^={7}$/m.test(gerado)) {
+    console.error('✗ ARCH1  marcador de conflito de merge dentro do bloco gerado do ARCH.md. Resolva e rode: npm run arch');
+    process.exit(1);
+  }
   if (saida !== atual) {
     console.error('✗ ARCH1  ARCH.md está DESATUALIZADO em relação ao código.');
     console.error('         game.js tem ' + game.total + ' linhas; o índice do ARCH.md não bate.');
-    console.error('         Rode: npm run arch');
+    console.error(`         Rode: npm run ${RELEASE ? 'arch:release' : 'arch'}`);
     process.exit(1);
   }
-  console.log('✓ ARCH1  ARCH.md em dia (game.js ' + game.total + ' linhas, ' + game.simbolos.length + ' símbolos)');
+  console.log(`✓ ARCH1  ARCH.md em dia (${game.simbolos.length} símbolos; ${RELEASE ? 'release: linhas e tamanhos conferidos' : 'PR: só estrutura, linhas ficam para o release'})`);
   process.exit(0);
 }
 
