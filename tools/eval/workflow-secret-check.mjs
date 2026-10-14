@@ -17,6 +17,9 @@
    O QUE ESTA RÉGUA EXIGE: se o job pode ser disparado por gatilho cego, ele precisa
    de um `if:` que o exclua desse caso. O guard de secret continua podendo existir e
    continuar falhando alto onde o secret DEVERIA estar lá.
+   A defesa é medida POR JOB (14/10/2026): lida no arquivo inteiro, o `if:` de outro job
+   cobria o job sem defesa, e os mutantes guard-sem-if e gatilho-cego-novo saíam verdes
+   (o vermelho deles vinha só da trava de mutação cega).
 
    WSEC2 · o csbrasil-bot-automerge sem CSBRASIL_BOT_TOKEN avisa (`::warning` "Bot
            inerte") e pula num PASSO de guarda, não num job separado. O job `bot-token`
@@ -41,13 +44,32 @@ const CEGOS = ['pull_request', 'pull_request_review', 'pull_request_review_comme
 const arquivos = readdirSync(DIR).filter((f) => f.endsWith('.yml') || f.endsWith('.yaml'));
 const falhas = [];
 
-for (const nome of arquivos) {
-  let texto = readFileSync(join(DIR, nome), 'utf8');
+/* Corpo de cada job por indentação (id com 2 espaços dentro de `jobs:`). */
+function jobsDe(texto) {
+  const out = {};
+  let dentro = false;
+  let atual = null;
+  for (const linha of texto.split('\n')) {
+    if (/^jobs:\s*$/.test(linha)) { dentro = true; continue; }
+    if (!dentro) continue;
+    if (/^\S/.test(linha)) { dentro = false; continue; }
+    const id = /^ {2}([A-Za-z0-9_-]+):\s*$/.exec(linha);
+    if (id) { atual = id[1]; out[atual] = ''; continue; }
+    if (atual) out[atual] += `${linha}\n`;
+  }
+  return out;
+}
+
+const fontes = arquivos.map((nome) => [nome, readFileSync(join(DIR, nome), 'utf8')]);
+/* gatilho-cego-novo: um workflow novo escuta review de PR e reprova sem o secret,
+   sem `if:` que exclua o fork. É a forma exata do vermelho do classify em 21/08. */
+if (MUT === 'gatilho-cego-novo') {
+  fontes.push(['mutante-cego.yml', "on:\n  pull_request_review:\n    types: [submitted]\njobs:\n  rotula:\n    runs-on: ubuntu-latest\n    env:\n      GH_TOKEN: ${{ secrets.CSBRASIL_BOT_TOKEN }}\n    steps:\n      - run: |\n          if [ -z \"$GH_TOKEN\" ]; then\n            exit 1\n          fi\n"]);
+}
+
+for (let [nome, texto] of fontes) {
   if (MUT === 'guard-sem-if' && nome === 'csbrasil-bot-pr-classify.yml') {
     texto = texto.replace(/    if: >-\n(      github\.event_name[^\n]*\n)+/, '');
-  }
-  if (MUT === 'gatilho-cego-novo' && nome === 'preview-bot.yml') {
-    texto = texto.replace('  pull_request_target:', '  pull_request_review:\n    types: [submitted]\n  pull_request_target:');
   }
 
   /* O bloco `on:` vai até a primeira chave de topo seguinte (coluna zero). Ler o
@@ -59,15 +81,19 @@ for (const nome of arquivos) {
   const cegos = CEGOS.filter((g) => new RegExp(`^\\s{2}${g}:`, 'm').test(bloco));
   if (!cegos.length) continue;
 
-  /* Guard de secret = o job aborta quando a variável de secret está vazia. */
-  const temGuard = /-z "\$GH_TOKEN"|-z "\$\{?[A-Z_]*TOKEN/.test(texto) && /exit 1/.test(texto);
-  if (!temGuard) continue;
-
-  /* A defesa aceita: um `if:` de job que amarre o event_name ou compare o repo da
-     head com o repositório - as duas formas de dizer "aqui eu tenho secret". */
-  const temDefesa = /if:[\s\S]{0,400}?(github\.event_name\s*==|head\.repo\.full_name\s*==)/.test(texto);
-  if (!temDefesa) {
-    falhas.push(`WSEC1 ${nome}: guard de secret + gatilho cego (${cegos.join(', ')}) sem \`if:\` que exclua o caso de fork`);
+  /* Por JOB, não por arquivo: o `if:` de defesa tem de estar no job que tem a guarda.
+     Lido no arquivo inteiro, o `if:` de OUTRO job (o sweep do classify) cobria o job sem
+     defesa, e os dois mutantes desta régua ficavam verdes calados. */
+  for (const [job, corpo] of Object.entries(jobsDe(texto))) {
+    /* Guarda de secret = o job aborta quando a variável de secret está vazia. */
+    const temGuard = /-z "\$GH_TOKEN"|-z "\$\{?[A-Z_]*TOKEN/.test(corpo) && /exit 1/.test(corpo);
+    if (!temGuard) continue;
+    /* A defesa aceita: um `if:` DE JOB que amarre o event_name ou compare o repo da
+       head com o repositório - as duas formas de dizer "aqui eu tenho secret". */
+    const ifJob = /^ {4}if:([^\n]*\n(?: {6,}[^\n]*\n)*)/m.exec(corpo)?.[1] || '';
+    if (!/github\.event_name\s*==|head\.repo\.full_name\s*==/.test(ifJob)) {
+      falhas.push(`WSEC1 ${nome} · job \`${job}\`: guard de secret + gatilho cego (${cegos.join(', ')}) sem \`if:\` de job que exclua o caso de fork`);
+    }
   }
 }
 
