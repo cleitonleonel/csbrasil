@@ -3,6 +3,7 @@ import { HOME_FAQ, HOME_FAQ_EN } from '../data/home-faq';
 import pkg from '../../package.json';
 import Community from '../components/Community.astro';
 import AccountEntry from '../components/AccountEntry.astro';
+import LoginPrompt from '../components/LoginPrompt.astro';
 import TretaStore from '../components/TretaStore.astro';
 import TretaDialogs from '../components/TretaDialogs.astro';
 import '../styles/career-rank.css';
@@ -844,6 +845,7 @@ window.__GEO_LANG__ = (function () {
   </div>
 
   <AccountEntry />
+  <LoginPrompt />
   <div id="hub-quick" class="hub-modal" hidden>
     <div class="hub-modal-card" role="dialog" aria-modal="true" aria-labelledby="hub-quick-title">
       <header><small>ÚLTIMO CORTE</small><h2 id="hub-quick-title">PRONTO PRA TRETA?</h2><button id="hub-quick-close" type="button" aria-label="Fechar">ESC ✕</button></header>
