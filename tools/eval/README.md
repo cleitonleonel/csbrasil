@@ -41,7 +41,9 @@ com código 1 em falha crítica.
 ## 3. Verificadores de mapa, modo e UI
 
 TRETA: `npm run eval:treta-rewards` valida fila, saldo e dedup por conta com três mutações. `npm run eval:treta-skins` valida os arquivos reais, pesos, clipes e duas
-mutações. `npm run eval:treta-classic` mede o giro/reveal da moeda Saci no loader
+mutações. `npm run eval:treta-video` confere os vídeos de hover das skins (webm VP9, mp4 H.264, poster, até 400 KB) com quatro
+mutações; `npm run eval:treta-video-hover` (browser, `BASE=` explícito) mede que nenhum vídeo baixa no boot, que o hover, o foco por teclado
+e o primeiro toque tocam o vídeo e que prefers-reduced-motion não baixa nada, com três mutações. `npm run eval:treta-classic` mede o giro/reveal da moeda Saci no loader
 do jogo e duas mutações. `treta-integration-browser.mjs` roda compra/equipamento,
 recarga e SP/MP no Astro/API/Supabase locais, com contas e saldo temporários.
 Use `--backend=<lane> --env=<JSON privado> --fotos=<pasta de evidência>`; a régua
