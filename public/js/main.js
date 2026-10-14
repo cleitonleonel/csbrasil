@@ -1,6 +1,7 @@
 // Boot, menus, settings, logo, main loop.
 import * as THREE from 'three';
 import {initAccountEntry,mountProfilePreferences} from './account-entry.js';
+import {initLoginPrompt,noteLoginPromptMatch} from './login-prompt.js';
 import {analyticsAllowed} from './privacy-preferences.js';
 import { initTextures, ajustarAnisotropia } from './textures.js';
 import { CHARACTERS, buildCharacter, charWeapon, ladosDe, podeNoLado } from './characters.js';
@@ -1512,6 +1513,11 @@ function _funnelLand() {
   _funnel('land');      // funil: chegou (017)
 }
 addEventListener('cs-privacy-change', _funnelLand);
+// Convite de login (login-prompt.js) no mesmo pipeline do funil; o consentimento é conferido lá.
+function _loginPromptTrack(step, data) {
+  if (testMode) return;
+  sendJsonKeepalive('/api/funnel', { step, sessionId: getSessionId(), ...data });
+}
 _funnelLand();
 _sendPerf();          // perf de cliente 1x por sessão (018)
 // funil 'menu': 1ª interação real COM consentimento — o clique que consente não conta como uso.
@@ -1568,6 +1574,7 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
   const continuaPartida = online && telemetryGameContext.gameType === 'multiplayer'
     && telemetryGameContext.roomId === (metaMp.room || salaMp.id || salaMp.room || null) && game?._mapId === currentMap;
   if (!continuaPartida) sendTelemetry();   // revanche/reinício e mapa girando no MP fecham a anterior
+  if (!continuaPartida) noteLoginPromptMatch();   // convite de login recusado volta depois de N partidas
   telemetryGameContext = online ? {
     gameType: 'multiplayer',
     node: String(metaMp.regiao || sessao?.no?.ticketNode || sessao?.no?.id || '').toLowerCase() || null,
@@ -4697,7 +4704,7 @@ if (HUB_ENABLED) {
 }
 window.__CS_MAIN_READY__ = true;
 window.__gameLaunch?.ready('boot');
-void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}renderPlayerPlate();}});
+void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onReady:ready=>initLoginPrompt({...ready,skip:Boolean(inspectionScreen || testMode || params.get('sala')),track:_loginPromptTrack}),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}renderPlayerPlate();}});
 if (inspectionScreen) {
   openInspectionScreen(inspectionScreen).catch((error) => window.__gameLaunch?.fail(error, 'screen-query'));
 } else if (testMode && params.get('auto')) {
