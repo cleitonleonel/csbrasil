@@ -557,8 +557,8 @@
     "//eval:game-pages": "Contrato do HTML de todas as páginas do lobby e cobertura AEO, com mutações que quebram canonical, shell e índice.",
     "eval:telemetria-coorte": "node tools/eval/telemetria-coorte-check.mjs",
     "eval:personagem-escolhido": "node tools/eval/personagem-escolhido-check.mjs",
-    "//eval:hub-factions": "A grade de grupos do SOBRE O JOGO lista exatamente os grupos com personagem em characters.js. BASE obrigatório.",
-    "eval:hub-factions": "node tools/eval/hub-factions-browser.mjs && ! node tools/eval/hub-factions-browser.mjs --mutante=sem-politicos",
+    "//eval:hub-factions": "A grade de grupos do SOBRE O JOGO lista exatamente os grupos com personagem em characters.js e cabe em 390, 780 e 1536 px. BASE obrigatório.",
+    "eval:hub-factions": "node tools/eval/hub-factions-browser.mjs && ! node tools/eval/hub-factions-browser.mjs --mutante=lista-fixa && ! node tools/eval/hub-factions-browser.mjs --mutante=brasoes-58",
     "eval:game-pages": "node tools/eval/game-pages-check.mjs && node tools/eval/game-pages-check.mjs --mutate",
     "eval:wfconcurrency": "node tools/eval/workflow-concurrency-check.mjs"
   },
