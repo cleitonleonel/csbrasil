@@ -45,7 +45,7 @@ const BASE = arg('base') || `http://127.0.0.1:${PORTA}`;
 const MAPAS = { leve: 'piscina_treta', pesado: 'velho_oeste' };
 const CENARIOS = {
   desktop: { viewport: { width: 1600, height: 900 }, rede: null, cpu: 1 },
-  '4g': { viewport: { width: 390, height: 844 }, rede: { download: 1_600_000 / 8, upload: 750_000 / 8, latency: 150 }, cpu: 4 },
+  '4g': { viewport: { width: 390, height: 844 }, rede: { downloadThroughput: 1_600_000 / 8, uploadThroughput: 750_000 / 8, latency: 150 }, cpu: 4 },
 };
 
 const tipo = (u) =>
@@ -63,12 +63,30 @@ const srv = arg('base') ? null : spawn('node', ['tools/eval/serve.mjs', PORTA], 
 process.on('exit', () => srv?.kill());
 if (srv) {
   await new Promise((r) => setTimeout(r, 800));
-  // Aquecimento: a 1ª requisição compila o index.astro no dev server do Astro.
-  // Sem isto a jornada desktop/leve paga compilação como se fosse peso do jogo.
-  for (let i = 0; i < 30; i++) {
-    try { await fetch(`${BASE}/`); break; } catch { await new Promise((r) => setTimeout(r, 1000)); }
+  // Aquecimento: a 1ª requisição compila o index.astro no dev server. `fetch` só
+  // lança em erro de REDE: sem o `ok`, um 500 do Astro vira "aquecido" e a
+  // jornada inteira mede uma página de erro (lição 5: falha silenciosa).
+  let pronta = false;
+  for (let i = 0; i < 60 && !pronta; i++) {
+    try { const resp = await fetch(`${BASE}/`); pronta = resp.ok && (await resp.text()).includes('importmap'); } catch {}
+    if (!pronta) await new Promise((r) => setTimeout(r, 1000));
   }
+  if (!pronta) { console.error(`servidor não respondeu OK em ${BASE}/`); process.exit(1); }
 }
+
+const browser = await chromium.launch(
+  process.env.CHROME_BIN
+    ? { executablePath: process.env.CHROME_BIN, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--headless=new', '--mute-audio'] }
+    : { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--mute-audio'] },
+);
+
+const fmtMB = (b) => (b / 1e6).toFixed(2);
+const soma = (reqs) => reqs.reduce((s, r) => s + r.bytes, 0);
+const porTipo = (reqs) => {
+  const t = {};
+  for (const r of reqs) (t[r.tipo] || (t[r.tipo] = { n: 0, bytes: 0 })).n++, t[r.tipo].bytes += r.bytes;
+  return Object.fromEntries(Object.entries(t).sort((a, b) => b[1].bytes - a[1].bytes));
+};
 
 
 /* Payload de JOGO = arquivo servido de public/ (js, vendor, models, img, áudio…).
@@ -89,6 +107,9 @@ async function jornada(nome, cenario, url, marcos, tetoS) {
   const cfg = CENARIOS[cenario];
   const ctx = await browser.newContext({ viewport: cfg.viewport });
   const page = await ctx.newPage();
+  const erros = [];
+  page.on('pageerror', (e) => { if (erros.length < 5) erros.push(String(e?.message || e)); });
+  page.on('console', (m) => { if (m.type() === 'error' && erros.length < 5) erros.push(m.text().slice(0, 200)); });
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Network.enable');
   await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });   // jornada = 1ª visita
@@ -97,15 +118,22 @@ async function jornada(nome, cenario, url, marcos, tetoS) {
 
   const reqs = [];
   const abertos = new Map();
+  const onReq = (e) => abertos.set(e.requestId, e.request.url);
   const onFim = (e) => {
     const u = abertos.get(e.requestId);
     if (u !== undefined) reqs.push({ url: u, tipo: tipo(u), jogo: ehJogo(u), bytes: e.encodedDataLength || 0, t: Date.now() });
     abertos.delete(e.requestId);
   };
+  cdp.on('Network.requestWillBeSent', onReq);
+  cdp.on('Network.loadingFinished', onFim);
+  cdp.on('Network.loadingFailed', (e) => abertos.delete(e.requestId));
+
 
   const t0 = Date.now();
   const resultado = { cenario, nome, marcos: {} };
-  await page.goto(url, { waitUntil: 'load', timeout: 300_000 });
+  // 'commit': nenhum evento de load serve no 4G (o grafo ES module segura tanto
+  // DOMContentLoaded quanto load por minutos); quem espera são os marcos abaixo.
+  await page.goto(url, { waitUntil: 'commit', timeout: 60_000 });
   for (const [chave, fn] of Object.entries(marcos)) {
     try {
       await page.waitForFunction(fn, null, { timeout: tetoS * 1000 });
@@ -115,7 +143,7 @@ async function jornada(nome, cenario, url, marcos, tetoS) {
       console.log(`  ${chave.padEnd(14)} ${((t - t0) / 1000).toFixed(1).padStart(6)} s  ${fmtMB(soma(ate)).padStart(7)} MB  ${String(ate.length).padStart(4)} req`);
     } catch {
       resultado.marcos[chave] = null;
-      console.log(`  ${chave.padEnd(14)} TIMEOUT (${tetoS}s)`);
+      console.log(`  ${chave.padEnd(14)} TIMEOUT (${tetoS}s)${erros.length ? ' · erros: ' + erros.slice(0, 2).join(' | ') : ''}`);
     }
   }
   // poeira baixar: lazy que chega depois do último marco entra na conta da jornada
@@ -141,7 +169,8 @@ for (const cenario of listaCenarios) {
   relatorio.jornadas.push(await jornada('menu', cenario, `${BASE}/?debug=1`, {
     menu: () => window.__CS_MAIN_READY__ === true,
     splash: () => !!document.getElementById('splash-enter') && !document.getElementById('splash-enter').classList.contains('hidden'),
-  }, cenario === '4g' ? 180 : 90));
+  }, cenario === '4g' ? 300 : 90));
+  if (JSON_OUT) writeFileSync(JSON_OUT, JSON.stringify(relatorio, null, 2));
   for (const chave of listaMapas) {
     relatorio.jornadas.push(await jornada(`partida-${chave}`, cenario,
       `${BASE}/?debug=1&auto=P,mst&map=${MAPAS[chave]}`, {
@@ -149,6 +178,7 @@ for (const cenario of listaCenarios) {
         partida: () => window.__game && window.__game.state === 'live',
       }, cenario === '4g' ? 900 : 300));
   }
+  if (JSON_OUT) writeFileSync(JSON_OUT, JSON.stringify(relatorio, null, 2));
 }
 
 const resumo = {};
