@@ -35,7 +35,9 @@ critério de aceite; compare com as issues existentes antes de abrir outra.
    (`scripts/ci/vercel-ignore.sh`) só deixa buildar produção no commit `chore(release):`.
    Empilhe os PRs e feche num PR de lote: o `release.yml` sai quando entra na `main` um PR
    com a label `release` ou com branch `lote-*`, `claude/lote-*` ou `*/lote-*`, e só com o
-   `pr-fast` verde nesse merge. PR comum não dispara release. Hotfix:
+   `pr-fast` verde nesse merge. PR comum não dispara release. PR de lote entra por
+   **merge commit** (não squash nem rebase): o job `lote` lê o PR associado ao commit que
+   chegou na `main`, e é o merge commit que aponta para o lote. Hotfix:
    `gh workflow run release.yml`. O caminho manual por tag (`deploy-prod.yml`) continua
    de pé como fallback.
 3. **Preview de fork exige revisão humana**: o `cs-brasil-ai-bot` (`preview-bot.yml`)
