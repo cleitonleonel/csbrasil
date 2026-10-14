@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { dev } from 'astro';
 import { moduleCacheManifest } from '../../scripts/module-cache.mjs';
+import { rotaDoCaminho } from '../../public/js/rotas.js';
 
 const PORT = parseInt(process.argv[2] || '8123', 10);
 const ROOT = 'public';
@@ -40,7 +41,8 @@ async function currentRenderer() {
 const server = http.createServer(async (req, res) => {
   try {
     const p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-    if (p === '/' || /^\/(?:@|src\/|node_modules\/)/.test(p)) {
+    // Rotas fixas do hub (/loja, /jogar/multiplayer...) saem do mesmo renderer, como no build (ADR 0008).
+    if (p === '/' || rotaDoCaminho(p) || /^\/(?:@|src\/|node_modules\/)/.test(p)) {
       const renderer = await currentRenderer();
       renderer.handle(req, res);
       return;
