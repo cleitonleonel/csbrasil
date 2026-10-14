@@ -14,7 +14,8 @@ import { fileURLToPath } from 'node:url';
 const PORTA = 4521;
 const MUTANTE = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || null;
 const MUTANTES = {
-  ranking: ['sitemap.xml.ts', "  ['/',            '1.0', 'daily'],", "  ['/',            '1.0', 'daily'],\n  ['/ranking', '0.9', 'hourly'],"],
+  // /ranking deixou de redirecionar (ADR 0008, aba do hub); o mutante usa uma página que ainda redireciona.
+  ranking: ['sitemap.xml.ts', "  ['/',            '1.0', 'daily'],", "  ['/',            '1.0', 'daily'],\n  ['/clans/sem-id', '0.9', 'hourly'],"],
   hoje: ['sitemap.xml.ts', 'changefreq: freq, priority: prio', 'lastmod: new Date().toISOString().slice(0, 10), changefreq: freq, priority: prio'],
   'hoje-perfil': ['sitemap.xml.ts', "changefreq: 'weekly',", "lastmod: new Date().toISOString(), changefreq: 'weekly',"],
   'hoje-indice': ['sitemap.xml.ts', '.xml` })', '.xml`, lastmod: new Date().toISOString() })'],

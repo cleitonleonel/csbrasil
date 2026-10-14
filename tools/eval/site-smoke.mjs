@@ -60,7 +60,7 @@ const BASE = EXTERNO || `http://127.0.0.1:${PORTA}`;
 // O CONTRATO. Uma linha por rota. `checa` recebe { status, corpo, headers }.
 // ---------------------------------------------------------------------------
 // 8 páginas indexáveis hoje; /ranking entra na conta só com o ranking ligado —
-// desligado ele é noindex (ranking.astro), e noindex no sitemap é contradição.
+// desligado a cópia do hub em /ranking é noindex, e noindex no sitemap é contradição.
 const XML_LOC_MIN = RANKING_ON ? 9 : 8;
 
 const CONTRATO = [
@@ -73,22 +73,14 @@ const CONTRATO = [
       return null;
     } },
 
-  // O contrato da issue #45 pedia o texto "não configurado". Depois ele virou o
-  // aviso de "desligado durante o alpha" — outro texto, MESMA propriedade: degrada
-  // com recado em vez de estourar. Com a comunidade (807), /ranking é um redirect
-  // 302 para o hub (/?secao=comunidade&social=ranking) e o recado de degradação
-  // passou a viver nos estados da home (tools/eval/ranking-home-status.mjs, 38
-  // casos + mutantes). Aqui ficam as duas formas válidas — redirect para o hub ou
-  // aviso no corpo; 5xx continua reprovando.
-  { rota: '/ranking', redirect: 'manual', esperado: 'redirect para o hub ou aviso de degradação (nunca 500)',
-    checa: ({ status, corpo, headers }) => {
+  // /ranking é a aba RANKING do hub, numa cópia estática com head próprio (ADR 0008).
+  // Antes era um 302 para a comunidade; o recado de degradação vive em ranking-home-status.mjs.
+  { rota: '/ranking', esperado: '200 + hub com canonical /ranking (nunca 500)',
+    checa: ({ status, corpo }) => {
       if (status >= 500) return `status ${status} — é exatamente o que este portão existe pra pegar`;
-      const loc = headers?.get?.('location') || '';
-      if (status >= 301 && status <= 308 && /secao=comunidade/.test(loc)) return null;
       if (status !== 200) return `status ${status}`;
-      const avisos = ['não configurado', 'desligado', 'Ainda ninguém na arena'];
-      if (!avisos.some((a) => corpo.includes(a)))
-        return `200 sem redirect do hub nem aviso de degradação (${avisos.map((a) => JSON.stringify(a)).join(' | ')})`;
+      if (!/<link rel="canonical" href="https:\/\/www\.corosolto\.com\.br\/ranking"/.test(corpo)) return 'sem canonical /ranking';
+      if (!corpo.includes('id="hub-ranking"')) return 'não é o hub (sem #hub-ranking)';
       return null;
     } },
 
