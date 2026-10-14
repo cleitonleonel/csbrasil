@@ -5,7 +5,7 @@ import { ligarCompartilhar, linkCompartilhavel, textoDaPartida, origemPublica } 
 import {initAccountEntry,mountProfilePreferences} from './account-entry.js';
 import {initLoginPrompt,noteLoginPromptMatch} from './login-prompt.js';
 import {analyticsAllowed} from './privacy-preferences.js';
-import {initTretaStore,equippedTretaSkin,equippedTretaEyewear} from './treta-store.js';
+import {initTretaStore,equippedTretaSkin,equippedTretaEyewear,tretaVitrine} from './treta-store.js';
 import { initTextures, ajustarAnisotropia } from './textures.js';
 import { CHARACTERS, buildCharacter, charWeapon, ladosDe, podeNoLado } from './characters.js';
 import { preloadEyewearAssets } from './eyewear.js';
@@ -4843,6 +4843,9 @@ window.__gameLaunch?.ready('boot');
 void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}syncPlayState();},onReady:ready=>initLoginPrompt({...ready,skip:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),track:_loginPromptTrack})});
 initTretaStore({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),onEquipped:skin=>{currentChar=skin.character;const def=CHARACTERS.find(c=>c.id===currentChar);currentTeam=ladoValido(def,currentTeam);currentFaction=currentTeam;localStorage.setItem('csbr-home-character',currentChar);localStorage.setItem('csbr-home-side',currentTeam);syncHomeCharacter();hubNavigate({personagem:currentChar},true);}});
 document.addEventListener('cs-treta-inventory-change',()=>syncHomeCharacter());
+// Vitrine SKINS NOVAS: o módulo só baixa quando a loja responde com skin à venda.
+const abrirVitrine=()=>{if(!tretaVitrine()?.length)return;document.removeEventListener('cs-treta-state',abrirVitrine);void import('./treta-vitrine.js').then(m=>m.iniciarVitrine()).catch(()=>{});};
+document.addEventListener('cs-treta-state',abrirVitrine);
 if (inspectionScreen) {
   openInspectionScreen(inspectionScreen).catch((error) => window.__gameLaunch?.fail(error, 'screen-query'));
 } else if (testMode && params.get('auto')) {
