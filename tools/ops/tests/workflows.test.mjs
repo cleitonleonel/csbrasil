@@ -33,6 +33,31 @@ test('portao-browser.yml: eval:boot e os cenários de navegador do selftest roda
   for (const p of ['public/js/main.js', 'public/js/ops.js', 'src/pages/index.astro', 'tools/eval/boot-check.mjs', 'tools/ops/**']) assert.ok(s.includes(`- '${p}'`), `paths sem ${p}`);
 });
 
+/* O portão LENTO em dois jobs paralelos (14/10/2026): o Sertão sozinho custava 8,7 a 12,9 min
+   de um job de 18,7 a 27,7. Separar só vale se nenhum passo sair no caminho, e se o Sertão não
+   esperar o resto (sem `needs:` entre os dois). */
+test('portao-browser.yml: Sertão em job próprio e paralelo, e nenhum passo do portão saiu', () => {
+  const s = wf('portao-browser.yml');
+  const jobs = {};
+  let atual = null;
+  for (const l of s.slice(s.indexOf('\njobs:\n')).split('\n').slice(2)) {
+    const id = /^ {2}([\w-]+):\s*$/.exec(l);
+    if (id) { atual = id[1]; jobs[atual] = ''; } else if (atual) jobs[atual] += `${l}\n`;
+  }
+  const PASSOS = ['npm run eval:grafite', 'npm run eval:select', 'npm run eval:entrada', 'npm run eval:armas', 'npm run eval:boot', 'node tools/ops/selftest.mjs --so=navegador', 'npm run eval:sertao-livestock-runtime', 'npm run eval:grafite:ar'];
+  const todos = Object.values(jobs).join('');
+  for (const p of PASSOS) assert.ok(new RegExp(`run: ${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\s|$)`).test(todos), `passo sumiu: ${p}`);
+  const sertao = Object.entries(jobs).find(([, c]) => c.includes('run: npm run eval:sertao-livestock-runtime'));
+  assert.ok(sertao, 'sem job com o Sertão');
+  assert.ok(!/run: npm run eval:(grafite|select|entrada|armas|boot)\b/.test(sertao[1]), 'o Sertão divide job com o resto do portão');
+  assert.doesNotMatch(sertao[1], /^ {4}needs:.*\bportao\b/m, 'o Sertão espera o resto do portão');
+  for (const [nome, corpo] of Object.entries(jobs)) {
+    if (!/run: npm run eval:/.test(corpo)) continue;
+    assert.match(corpo, /run: npm run eval:serve/, `${nome} roda eval:* sem subir o eval:serve`);
+    assert.match(corpo, /CHROME_BIN=/, `${nome} roda eval:* sem resolver o CHROME_BIN`);
+  }
+});
+
 test('package.json: ops:aquecer existe e aponta para o script', () => {
   const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('../../../package.json', import.meta.url)), 'utf8'));
   assert.equal(pkg.scripts['ops:aquecer'], 'node tools/ops/aquecer.mjs');
