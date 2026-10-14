@@ -616,7 +616,7 @@ class Netcode {
         pt.ring.material.opacity = pt.contested ? 0.95 : 0.5 + 0.45 * (pt.prog || (pt.owner ? 1 : 0));
       }
       if (pt.flag && pt.flag.material) {
-        const fac = pt.owner ? game._factionOf(pt.owner) : null;
+        const fac = pt.owner || null;   // pano do LADO dono: online a facção do jogador é a categoria do corpo
         if (pt._flagFac !== fac) { pt._flagFac = fac; pt.flag.material.map = game._flagTexFor(fac); pt.flag.material.needsUpdate = true; }
         pt.flag.material.color.set(pt.owner ? 0xe6e6e6 : 0xaaaaaa);
       }

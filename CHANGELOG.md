@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.90`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.92`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,179 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.92] — 2026-10-14
+
+### Mudado
+- Lote 3: perfil e lobby no jogo, card OG, rodadas e próximo mapa do MP, time pelo lado (#919)
+- Medir espera do chat no relógio do jogo
+- Regenerate generated blocks for lote 3
+- Mandar pronto mesmo com erro na troca e limpar o aviso
+- Cobrar pronto em qualquer caminho e onProximo sem erro solto
+- Regenerate docs counts
+- Focus the guide frame after it is shown
+- Leave mailto links in embedded pages to the browser
+- Route embedded /?secao= links to the requested hub section
+- Open the clans page inside the lobby
+- Cover links inside embedded legal pages and CLÃS
+- Fit the social links comment in two lines
+- Paint the MP player's team with its side color
+- Fit the faction grid on narrow screens
+- Measure faction grid fit at 390, 780 and 1536 px
+- Measure radar ally vs amber contrast by hue
+- Add MP team color ruler for the player's own side
+- Drop perfil from the URL when switching social tab
+- Check that switching social tab drops perfil from the URL
+- Fix stale _teamName note in the faction name map
+- Derive the loading chip's enemy side from the player's side
+- Raise the MP CTF flag of the owning side, not the body
+- Regenerate generated docs blocks
+- Regenerate generated docs blocks
+- Check profile social links with mutants
+- Show social icons on the public profile page
+- Show social icons on the in-game profile
+- Add public social links with icons for profiles
+- Check profile views display with mutants
+- Show profile views on the public profile page
+- Show and count profile views in the game
+- Strip control characters from card nickname
+- Show NÍVEL — when the profile has no level
+- Wrap long nicknames instead of shrinking them
+- Require legible long nicknames on profile card
+- Check the served profile card carries the logo
+- Show game logo and rank badge on profile OG card
+- Require logo and level badge in profile card contract
+- Pré-carregar o próximo mapa durante o placar
+- Regenerate generated docs blocks
+- Check the profile page opens in game with SEO intact
+- Open the public profile page inside the game
+- Send social login out of a same-origin frame
+- Collapse the account panel on a shared profile
+- Skip the account prompt on a shared profile arrival
+- Avisar o nó quando o mapa novo estiver montado
+- Cobrar próximo mapa no placar no cliente
+- Regenerate docs counts for the FAQ maps check
+- List all playable maps in the home FAQ
+- Add check that the home FAQ names every map
+- Open hub footer legal links inside the lobby
+- Cover hub footer links in the lobby links check
+- Usar teto de rodadas da sala no HUD online
+- Cobrar teto de rodadas do servidor no HUD online
+- Name the MP player's team by its side, not its body
+- Regenerate docs counts for the profile link check
+- Open player profiles in the lobby community pane
+- Add browser check for player profile links in the lobby
+- Regenerate docs counts for the faction grid check
+- List every playable group in the lobby about panel
+- Add browser check for lobby faction grid
+- Regenerate docs counts for the new lobby check
+- Open privacy and terms pages inside the lobby
+- Add browser check for lobby about-panel links
+- Add MP team label ruler for the player's own side
+
+## [2.1.0-alpha.91] — 2026-10-14
+
+### Mudado
+- feat(treta): separar itens para revisão gradual, desativados por padrão (#825)
+- Preservar personagem da skin equipada ao recarregar (#831)
+- Adicionar clãs, convites e tags no perfil e placar (#817)
+- fix(treta): publicar primeiro a loja só com personagens aprovados (#824)
+- Trigger release on batch PR merge instead of cron (#893)
+- Require merge commit for batch PRs in contributing
+- Warn when a main push has no associated PR
+- Never cancel a release bump in progress
+- Regenerar SIM_HASH após o merge da main
+- Keep plain merges out of the release concurrency group
+- Describe batch release in contributing and comments
+- Trigger release on batch PR merge instead of cron
+- Cover batch release triggers in eval:release
+- Regenerar SIM_HASH após o merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Regenerar SIM_HASH após o merge da main
+- Atualiza o SIM_HASH depois do merge da main
+- Regenerar SIM_HASH após o merge da main
+- Corrigir número da migration dos clãs no registro
+- Regenerar docs e contagens
+- Registrar estado dos clãs após a limpeza da fila
+- Mostrar tag do clã no perfil público
+- Adicionar régua de sessão dos clãs
+- Pedir clã da conta Auth sem exigir convidado
+- Rotear clãs pelo proxy com sessão do site
+- Pass eyewear id into launch-race spawn fixture
+- Fix equipped skin character after reload
+- docs(treta): record split items validation and regenerate inventories
+- assets(treta): preserve six eyewear candidates without fit approval
+- test(treta): guard disabled items and preserve cosmetic contracts
+- feat(treta): isolate eyewear runtime with default-off activation
+- docs(treta): record character-only store validation
+- fix(treta): keep store focused on approved character skins
+- test: cobrir explicação TRETA na jornada de convidado
+- fix: exibir avisos TRETA fora dos menus ocultos
+- fix(treta): indicar API indisponível durante rollout
+- fix(treta): apply 250 daily cap and preserve private profile responses
+- feat(treta): show authoritative quests in the skin store
+- chore(shop): move internal process artifacts out of product (4/4)
+- chore(shop): move internal process artifacts out of product (3/4)
+- chore(shop): move internal process artifacts out of product (2/4)
+- chore(shop): move internal process artifacts out of product (1/4)
+- docs(shop): checkpoint common item research publication
+- docs(shop): plan 30 common wearables and character fitting
+- Registrar drafts pareados de clãs
+- docs(shop): record clothing category preview checks
+- feat(shop): include clothing and sneaker accessory proposals
+- docs(shop): checkpoint verified local TRETA game integration
+- test(shop): verify real skin commerce and SP MP integration
+- feat(shop): connect TRETA skins and classic coin to game
+- feat(shop): add real skin portraits and classic Saci coin art
+- feat(shop): add rigged TRETA skin runtime assets
+- docs(shop): record final UI review handoff
+- fix(shop): expose retry and validate skin previews
+- feat(shop): organize skins, wallet and proposed packs
+- docs(shop): checkpoint authorized game integration
+- docs(shop): record owner feedback and verified asset inventory
+- feat(assets): preserve classic Saci style proof and sampled review
+- fix(assets): engrave coin reverse and preserve Rodin matrix review
+- docs(shop): preserve rejected Mint conversion and recovery route
+- docs(shop): record approved Mint profile study and single model job
+- docs(shop): adopt classic profile coin direction and preserve rejected study
+- feat(shop): prototype minted Saci coin after design rejection
+- docs(shop): reject coin design and define minted relief revision
+- docs(shop): record final portrait coin review and validation
+- assets(shop): replace seven coins with portrait and value faces
+- feat(shop): mint portrait coins with denomination on reverse
+- docs(shop): verify and package eight Mint rigs with Idle
+- docs(shop): checkpoint eight rigged GLB exports and UI handoff
+- docs(shop): prepare isolated UI and currency pack workflow
+- docs: deliver eight final Mint skins and forty eight completed clips
+- docs: checkpoint seven completed animation batches with final asset links
+- docs: checkpoint eight approved final models and last animation jobs
+- docs: checkpoint six completed Mint animation batches and download permission blocker
+- docs: checkpoint model reviews corrections and six Mint animation requests
+- docs: preserve Mint batch two preview review and model requests
+- docs: checkpoint eight Mint cyborg and mandrake skin requests
+- docs: entregue cinco skins Mint rigadas e trinta clipes
+- docs: confirme correntes pesadas no modelo Mint
+- docs: registre quatro pacotes Mint rigados concluídos
+- docs: confirme lentes corrigidas no modelo Mint
+- docs: confirme grillz dourados no modelo Mint
+- docs: registre primeiro GLB rigado e seis clipes Mint
+- docs: registre acabamento e animações Mint em andamento
+- docs: registra entrega dos cinco modelos Mint e revisão visual
+- docs: registra cinco modelos TRETA em geração no Mint
+- docs: registra geração 3D e correções faciais no Mint
+- docs: checkpoint da revisão das prévias Mint
+- docs: checkpoint five authorized Mint skin preview requests
+- docs: record validated Treta checkpoints and remaining asset work
+- feat: add Treta skin store, wallet and animated reward receipts
+- Feche o checkpoint local dos clãs com evidências e pendências
+- Sincronize índices após o ajuste do carregamento
+- Registre evidência local e continuidade dos clãs
+- Espere leituras completas antes de liberar ações do clã
+- Atualize os índices gerados para as páginas de clãs
+- Mostre a tag do clã no perfil e no placar
+- Adicione criação e gestão de clãs na comunidade
+- docs: registrar escopo da loja TRETA
 
 ## [2.1.0-alpha.90] — 2026-10-14
 
