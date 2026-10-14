@@ -87,7 +87,7 @@ class Element {
 const all=n=>[n,...n.children.filter(c=>typeof c==='object').flatMap(all)];
 const words=n=>[n.textContent,...n.children.map(c=>typeof c==='string'?c:words(c))].join(' ');
 async function ui(authenticated=false,{nick='Guest',bootSplash=false,runCommunity=true,authGate=null,tab='profile',profileValues={},providers=required}={}) {
-  const ids=Object.fromEntries(['community','social-status','social-account','social-content','social-unread','hub-social-unread','account-entry-dialog','account-entry-body','account-entry-close','hub-account-login','account-completion','account-completion-copy','main-menu'].map(id=>[id,new Element(id==='account-completion'?'details':'div')]));
+  const ids=Object.fromEntries(['community','social-status','social-account','social-content','social-unread','hub-social-unread','account-entry-dialog','account-entry-body','account-entry-close','hub-account-login','account-completion','account-completion-copy','main-menu','social-hello','social-logout'].map(id=>[id,new Element(id==='account-completion'?'details':'div')]));
   ids['main-menu'].classList={contains:()=>false};
   if(bootSplash)ids['boot-splash']=new Element('div');
   ids.community.dataset.tab=tab;ids.community.dataset.site='https://www.corosolto.com.br';
@@ -218,7 +218,7 @@ await check('G01','guest action stays inside game',async()=> {
   const u=await ui();const action=all(u.ids['social-account']).find(n=>/JOGAR COMO CONVIDADO|CONTINUAR COMO CONVIDADO/.test(n.textContent));assert(action,'guest alternative absent');assert.equal(action.tagName,'BUTTON','guest action is a page navigation');assert.equal(u.calls.filter(c=>c.action==='newsletter').length,0);
 });
 await check('G02','logout preserves anonymous progress and ownership',async()=> {
-  const u=await ui(true);const b=all(u.ids['social-account']).find(n=>n.tagName==='BUTTON' && /SAIR DA CONTA/.test(n.textContent));assert(b,'logout action absent');await b.onclick();
+  const u=await ui(true);const b=u.ids['social-logout'];assert(b && !b.hidden && b.onclick,'logout action absent');await b.onclick();
   for(const key of ['cs_anon','awpbr_token','awpbr_stats'])assert.equal(u.storage.get(key),u.before[key],`logout destroys guest ${key}`);
 });
 await check('N01','account newsletter consent is separate and initially unchecked',async()=> {

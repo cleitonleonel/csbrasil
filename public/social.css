@@ -1,6 +1,6 @@
 .community{max-width:1180px;color:#f0f0ed;font-family:var(--font)}
 body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{display:none}
-.social-heading{display:flex;justify-content:space-between;gap:16px;margin-bottom:16px}.social-heading h2{margin:8px 0;font:400 clamp(32px,4vw,58px)/.95 'Bebas Neue',Impact,sans-serif;letter-spacing:1px}
+.social-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 16px;margin-bottom:12px}.social-heading h2{overflow-wrap:anywhere}.community .social-logout{min-height:36px;padding:6px 0;border:0;background:none;box-shadow:none;color:#c6e956;font:600 14px/1.4 system-ui,sans-serif;text-decoration:underline;text-underline-offset:3px}.community .social-logout:active:not(:disabled){transform:none;box-shadow:none}.social-logout[hidden]{display:none}.social-workspace:has(>.social-account-panel[hidden]){grid-template-columns:minmax(0,1fr)}.social-heading h2{margin:8px 0;font:400 clamp(32px,4vw,58px)/.95 'Bebas Neue',Impact,sans-serif;letter-spacing:1px}
 .social-status{min-height:22px;margin:8px 0;color:#b4d92e;font:14px/1.4 system-ui,sans-serif}
 .social-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 24px;border-bottom:1px solid #555746;padding-bottom:10px}
 .social-tabs button,.community button,.social-button,.account-button{min-height:42px;padding:10px 16px;border:1px solid #45463e;background:#141619e6;color:#dddcd8;cursor:pointer;font:700 13px/1.3 var(--font);letter-spacing:.6px;text-decoration:none}

@@ -145,7 +145,7 @@ class Element {
 const tree=node=>[node,...(node.children||[]).flatMap(tree)];
 async function runtime({auth=account,state=stateBase,tab='notifications',peer=null,messages=[],inboxData={conversations:[],unread_count:0},failSend=0}={}){
   assert(questList,'Não foi possível medir: helper ausente');
-  const dom=Object.fromEntries(['community','social-status','social-account','social-content','social-unread','hub-social-unread'].map(id=>[id,new Element('div')]));
+  const dom=Object.fromEntries(['community','social-status','social-account','social-content','social-unread','hub-social-unread','social-hello'].map(id=>[id,new Element('div')]));
   dom.community.dataset={tab,profile:tab==='profile'?peer?.id||'':''};
   const nav=[...read('src/components/Community.astro').matchAll(/<button\b[^>]*data-tab="([^"]+)"[^>]*>([^<]*)/g)].map(match=>Object.assign(new Element('button'),{dataset:{tab:match[1]},textContent:match[2]}));
   const calls=[],navigation=[],events={};
@@ -273,7 +273,7 @@ test('troca de conta remove imediatamente o DOM privado mesmo se refresh falhar'
   try{
     ui.events['cs-account-change']({detail:nextAccount});assert.equal(held.entered(),1,'Refresh não está realmente pendente');
     assertNoPreviousPrivateDom(ui);for(const id of ['social-unread','hub-social-unread'])assert.equal(ui.dom[id].textContent,'','Badge da conta anterior permaneceu antes da rede responder');
-    assert(ui.dom['social-account'].textContent.includes(nextAccount.profile.nick),'Identidade visual não mudou imediatamente');
+    assert(ui.dom['social-hello'].textContent.includes(nextAccount.profile.nick),'Identidade visual não mudou imediatamente');
     held.reject(new Error('Fixture refresh offline'));await settle();assertNoPreviousPrivateDom(ui);
   }finally{held.resolve();held.restore();await settle();}
 });
@@ -290,8 +290,8 @@ test('401 de requisição da conta anterior não revoga a conta atual',async()=>
   const ui=await runtime({state:messageState,tab:'friends',peer,messages:[incoming]});await openPeer(ui);
   const held=holdRequests(ui,path=>new URL(path,'https://fixture.test').searchParams.get('action')==='conversation',{ok:false,json:async()=>({error:'session_expired'})}),oldRender=ui.ctx.__inboxTest.render();assert.equal(held.entered(),1,'Requisição antiga não está em voo');
   try{
-    prepareNextAccount(ui);ui.events['cs-account-change']({detail:nextAccount});await settle();assert(ui.dom['social-account'].textContent.includes(nextAccount.profile.nick),'Conta atual não entrou antes do 401 antigo');
-    held.resolve();await oldRender;await settle();assert(ui.dom['social-account'].textContent.includes(nextAccount.profile.nick),'401 antigo revogou a conta atual');assert(!ui.dom['social-account'].textContent.includes('ENTRAR NA CONTA'),'401 antigo substituiu sessão atual por login');
+    prepareNextAccount(ui);ui.events['cs-account-change']({detail:nextAccount});await settle();assert(ui.dom['social-hello'].textContent.includes(nextAccount.profile.nick),'Conta atual não entrou antes do 401 antigo');
+    held.resolve();await oldRender;await settle();assert(ui.dom['social-hello'].textContent.includes(nextAccount.profile.nick),'401 antigo revogou a conta atual');assert(!ui.dom['social-account'].textContent.includes('ENTRAR NA CONTA'),'401 antigo substituiu sessão atual por login');
   }finally{held.resolve();held.restore();await oldRender;}
 });
 test('campo fica bloqueado durante envio e falha reativa o mesmo rascunho e retry',async()=>{

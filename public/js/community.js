@@ -42,23 +42,20 @@ if(root) {
   function clearConversation(){conversation=null;conversationBefore=null;messageDraft='';messageClientId=null;pendingSend=null;}
   async function openConversation(p){clearConversation();conversation={id:p.id,nick:p.nick};inboxSection='messages';tab='notifications';await render();}
   async function action(name,target,data={}) {const out=await api('/api/social',{action:name,...(target?{target}:{}),...data});await refresh();await render();return out;}
+  // Saudação no topo da Comunidade; com perfil, o painel de conta some e sobra só o "Sair da conta".
   function renderGreeting() {
-    const hello=document.getElementById('social-hello'),p=auth?.profile;
+    const hello=document.getElementById('social-hello'),logout=document.getElementById('social-logout'),panel=account.closest?.('details'),p=auth?.profile;
     const handle=p && state?.profile?.id===p.id?state.profile.handle:null;
     if(hello)hello.textContent=p?`Olá, ${handle?'@'+handle:p.nick}`:'Olá';
+    if(panel)panel.hidden=!!p;
+    if(logout){logout.hidden=!p;logout.onclick=async()=>{logout.disabled=true;try{await logoutAccount(auth);auth=null;state=null;profileId='';clearConversation();await boot();}catch(e){message(errors[e.message] || 'Não deu certo agora. Tente de novo.');}finally{logout.disabled=false;}};}
   }
   function renderAccount() {
     account.replaceChildren();renderGreeting();
+    if(auth?.profile)return;
     if(auth?.authenticated) {
-      account.append(el('h2',auth.profile?`Salve, ${auth.profile.nick}.`:'Sua conta entrou. Falta o nome na camisa.'));
-      if(!auth.profile) {
-        mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onAuthenticated:boot,message});
-      } else {
-        account.append(empty('Sua conta e seu progresso ficam salvos no servidor. O modo offline continua disponível.'));
-        const buttons=el('div','','social-actions');
-        buttons.append(link('SEU PERFIL',state?.profile?.url || `/u/${auth.profile.id}/${encodeURIComponent(auth.profile.nick)}`));
-        buttons.append(button('SAIR DA CONTA',async()=>{await logoutAccount(auth);auth=null;state=null;profileId='';clearConversation();await boot();}));account.append(buttons);
-      }
+      account.append(el('h2','Sua conta entrou. Falta o nome na camisa.'));
+      mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onAuthenticated:boot,message});
       return;
     }
     mountAccountEntry(account,{auth,config:loginConfig,returnTo:'community',onGuest:()=>document.querySelector('[data-hub-tab=jogar]')?.click(),onAuthenticated:boot,message});
