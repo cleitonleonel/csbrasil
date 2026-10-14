@@ -547,6 +547,7 @@
     "eval:map-local-fabrication": "node tools/eval/map-local-fabrication-check.mjs --self-test",
     "eval:map-surface-allocation": "node tools/eval/map-surface-allocation-check.mjs --self-test",
     "eval:green-cover-pattern": "node tools/eval/green-cover-pattern-check.mjs --self-test",
+    "eval:treta-fila": "node tools/eval/treta-fila-check.mjs && node tools/eval/treta-fila-check.mjs --mutations",
     "eval:treta-eyewear": "node tools/eval/treta-eyewear-adversarial-check.mjs && node tools/eval/treta-eyewear-loader-check.mjs && node tools/eval/treta-eyewear-assets-check.mjs && node tools/eval/treta-items-off-check.mjs && node tools/eval/treta-items-off-check.mjs --mutations",
     "eval:treta-equip-route": "node tools/eval/treta-equip-route-check.mjs && node tools/eval/treta-equip-route-check.mjs --mutations",
     "eval:treta-rewards": "node tools/eval/treta-rewards-check.mjs && node tools/eval/treta-rewards-check.mjs --mutations",

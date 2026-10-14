@@ -65,6 +65,8 @@ jobs:
         run: npm run eval:error-console
       - name: UUID compatível com navegadores antigos
         run: npm run eval:uuid
+      - name: Loja sem fila de próximas skins
+        run: npm run eval:treta-fila
       - name: Acúmulo de armas no chão tem teto
         run: npm run eval:drop
       - name: Proxy de captura grava só dentro da pasta de saída
