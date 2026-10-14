@@ -3340,7 +3340,7 @@ function loadStats() {
     JSON.parse(localStorage.getItem(STATS_KEY) || '{}'));
 }
 async function recordMatchStats(s) {
-  document.dispatchEvent(new CustomEvent('cs-match-end'));
+  document.dispatchEvent(new CustomEvent('cs-match-end', { detail: { mode: mpSessao ? 'multiplayer' : 'singleplayer' } }));
   submitted = true;
   sendTelemetry();   // ANTES do guard de nick lá embaixo: telemetria cobre quem não registrou
   sendMatchEvent(s?.won ? 'won' : 'lost');   // evento rico anônimo (feat/telemetria, 016)
