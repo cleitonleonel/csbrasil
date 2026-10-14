@@ -125,6 +125,8 @@ const HUB_ENABLED = new URLSearchParams(location.search).get('home') !== 'legacy
 /* A tela mora no CAMINHO (public/js/rotas.js, ADR 0008): /jogar/multiplayer, /loja,
    /comunidade/amigos... Parâmetro que não é tela (map, personagem, sala) segue na query. */
 const TELA = new Set([...CHAVES_DE_TELA, 'origem', 'perfil']);
+// Perfil vira /u/<perfil> só na janela de cima: no iframe de /u um reload cairia na página SSR.
+const ROTA_OPCOES = { perfilNoCaminho: window.top === window.self };
 function hubNavigate(changes, replace = false) {
   if (!HUB_ENABLED) return;
   const estado = { ...(estadoDaUrl(location.href) || {}) };
@@ -135,7 +137,7 @@ function hubNavigate(changes, replace = false) {
     if (menu.hubTab === 'jogar' && menu.hubNet === 'mp') { estado.partida = 'multiplayer'; estado.servidor = menu.hubMpTab === 'private' ? 'privado' : 'publico'; }
   }
   for (const [key, value] of Object.entries(changes)) if (TELA.has(key)) { if (value == null) delete estado[key]; else estado[key] = value; }
-  const url = urlDoEstado(estado, location.href);
+  const url = urlDoEstado(estado, location.href, ROTA_OPCOES);
   for (const [key, value] of Object.entries(changes)) {
     if (TELA.has(key)) continue;
     if (value == null) url.searchParams.delete(key);
@@ -2381,7 +2383,7 @@ if (HUB_ENABLED) {
     const lida = estadoDaUrl(location.href);
     const rota = lida || {};
     // Link antigo (/?secao=loja) vira o caminho novo (/loja) sem recarregar.
-    const nova = lida && urlDoEstado(lida, location.href);
+    const nova = lida && urlDoEstado(lida, location.href, ROTA_OPCOES);
     if (nova && nova.href !== location.href) history.replaceState(history.state, '', nova);
     const section = rota.secao;
     const tab = Object.prototype.hasOwnProperty.call(panes, section) ? section : 'jogar';

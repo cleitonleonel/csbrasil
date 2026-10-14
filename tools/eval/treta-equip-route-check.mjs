@@ -12,7 +12,7 @@ const required=(source,re,label)=>{const match=source.match(re);assert(match,`${
 const roster=required(characters,/export const CHARACTERS = \[.*?\n\];/s,'roster').replace('export ','');
 const sides=required(characters,/export const ladosDe = .*?;\nexport const podeNoLado = .*?;/s,'lados').replaceAll('export ','');
 const boot=required(main,/const routeChar = .*?const initialSide = .*?;/s,'boot');
-const tela=required(main,/const TELA = .*?;/s,'chaves de tela');
+const tela=required(main,/const TELA = [^\n]*;\n(?:\/\/[^\n]*\n)*const ROTA_OPCOES = [^\n]*;/,'chaves de tela');
 let navigate=required(main,/function hubNavigate\(changes, replace = false\) \{.*?\n\}/s,'navegação');
 let equip=required(main,/initTretaStore\(\{skipPrompt:.*?onEquipped:skin=>\{.*?\}\}\);/s,'callback');
 const mutation=process.argv.find(a=>a.startsWith('--mutante='))?.split('=')[1];
@@ -28,7 +28,7 @@ if(mutation){
  const before=equip+navigate;
  if(mutation==='sem-url')equip=equip.replace(/hubNavigate\(\{personagem:currentChar\},true\);/,'');
  else if(mutation==='push-history')equip=equip.replace('hubNavigate({personagem:currentChar},true);','hubNavigate({personagem:currentChar},false);');
- else if(mutation==='perde-query')navigate=navigate.replace('urlDoEstado(estado, location.href)','urlDoEstado(estado, location.origin)');
+ else if(mutation==='perde-query')navigate=navigate.replace('urlDoEstado(estado, location.href, ROTA_OPCOES)','urlDoEstado(estado, location.origin, ROTA_OPCOES)');
  else throw new Error('Mutante desconhecido');
  assert(before!==equip+navigate,'MUTANTE NÃO APLICOU');
 }
@@ -40,7 +40,7 @@ function exercise(skin,side,legacy=false){
  const calls=[];
  const history=Object.fromEntries(['replaceState','pushState'].map(method=>[method,(_state,_title,url)=>{calls.push(method);location.href=String(url);location.search=url.search;} ]));
  let callback,sync=0;
- const context=vm.createContext({...ROTAS,URL,URLSearchParams,location,history,HUB_ENABLED:!legacy,inspectionScreen:null,testMode:false,params:new URLSearchParams(location.search),
+ const context=vm.createContext({...ROTAS,window:{},URL,URLSearchParams,location,history,HUB_ENABLED:!legacy,inspectionScreen:null,testMode:false,params:new URLSearchParams(location.search),
   localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
   initTretaStore:options=>{callback=options.onEquipped;},syncHomeCharacter:()=>{sync++;}});
  vm.runInContext(roster+'\n'+sides+'\n'+boot+'\nlet currentChar=initialChar.id,currentTeam=initialSide,currentFaction=initialSide;\n'+tela+'\n'+navigate+'\n'+equip,context);

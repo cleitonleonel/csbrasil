@@ -5,6 +5,9 @@ const GUIAS = ['sobre', 'como-jogar', 'personagens', 'armas', 'mapas', 'mapa', '
   'privacidade', 'termos', 'excluir-dados', 'regras-de-uso', 'clans'];
 const ABAS_SOCIAIS = { profile: '', friends: 'amigos', ranking: 'ranking', notifications: 'notificacoes', feed: 'feed', settings: 'configuracoes' };
 const MODAIS_JOGAR = ['perfil', 'mapas', 'personagens', 'confirmar'];
+/* Abas da página pública /u/<perfil>/<aba>. Outro segundo segmento é o nick da forma antiga. */
+export const ABAS_PERFIL = { conquistas: 'Conquistas', partidas: 'Partidas', privacidade: 'Privacidade' };
+const PERFIL = /^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/[^/]*)?\/?$/i;
 /* Chaves de tela na query antiga. Saem da URL quando a tela vira caminho. */
 export const CHAVES_DE_TELA = ['secao', 'partida', 'servidor', 'janela', 'social', 'guia'];
 
@@ -45,8 +48,8 @@ export function rotaDoCaminho(caminho) {
   return POR_CAMINHO.get(limpo(caminho)) || null;
 }
 
-/** Caminho de uma tela. null quando a tela ainda mora na query (perfil, ranking). */
-export function caminhoDoEstado(estado = {}) {
+/** Caminho de uma tela. null quando a tela ainda mora na query (ranking; perfil dentro do iframe de /u). */
+export function caminhoDoEstado(estado = {}, { perfilNoCaminho = false } = {}) {
   const { secao, partida, servidor, janela, social, guia, perfil } = estado;
   if (janela === 'configuracoes') return '/configuracoes';
   if (!secao || secao === 'jogar') {
@@ -55,7 +58,7 @@ export function caminhoDoEstado(estado = {}) {
   }
   if (secao === 'loja') return '/loja';
   if (secao === 'comunidade') {
-    if (perfil) return null;
+    if (perfil) return perfilNoCaminho ? `/u/${encodeURIComponent(perfil)}` : null;
     const slug = ABAS_SOCIAIS[social || 'profile'];
     if (slug === undefined) return '/comunidade';
     return slug ? `/comunidade/${slug}` : '/comunidade';
@@ -72,6 +75,8 @@ export function estadoDaUrl(url) {
   const rota = rotaDoCaminho(u.pathname);
   const q = u.searchParams;
   if (rota) return { ...rota.estado, ...(q.get('origem') ? { origem: q.get('origem') } : {}) };
+  const perfil = PERFIL.exec(u.pathname)?.[1];
+  if (perfil) return { secao: 'comunidade', social: 'profile', perfil };
   if (u.pathname !== '/') return null;
   const estado = {};
   for (const chave of [...CHAVES_DE_TELA, 'origem', 'perfil']) if (q.get(chave)) estado[chave] = q.get(chave);
@@ -79,9 +84,9 @@ export function estadoDaUrl(url) {
 }
 
 /** URL nova para um estado, mantendo os parâmetros que não são tela (sala, map, personagem...). */
-export function urlDoEstado(estado, base) {
+export function urlDoEstado(estado, base, opcoes) {
   const atual = new URL(base);
-  const caminho = caminhoDoEstado(estado);
+  const caminho = caminhoDoEstado(estado, opcoes);
   const destino = new URL(atual.href);
   const telaNaQuery = caminho === null;
   destino.pathname = telaNaQuery ? '/' : caminho;
