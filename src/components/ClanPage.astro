@@ -1,8 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
-const { clanId = '' } = Astro.props;
+import { SITE } from '../lib/site';
+const { clanId = '', clan = null } = Astro.props;
+const membros = clan && Number.isSafeInteger(clan.member_count) ? `${clan.member_count} ${clan.member_count === 1 ? 'membro' : 'membros'}` : null;
+const titulo = clan ? `[${clan.tag}] ${clan.name} · Clãs` : 'Clãs | CSBrasil';
+const descricao = clan
+  ? [typeof clan.description === 'string' && clan.description.trim() ? clan.description.trim().slice(0, 160) : `Clã [${clan.tag}] ${clan.name} na CORO SOLTO.`, membros].filter(Boolean).join(' · ')
+  : 'Monte sua turma, convide amigos e leve a tag do seu clã para a arena.';
+const jsonld = clan ? [{ '@type': 'Organization', name: clan.name, alternateName: `[${clan.tag}]`, url: `${SITE}/clans/${clan.id}`, ...(typeof clan.description === 'string' && clan.description.trim() ? { description: clan.description.trim() } : {}) }] : [];
 ---
-<Layout title="Clãs | CSBrasil" description="Monte sua turma, convide amigos e leve a tag do seu clã para a arena.">
+<Layout title={titulo} description={descricao} jsonld={jsonld} noindex={Boolean(clanId) && !clan}>
   <main id="clans-app" data-clan-id={clanId}>
     <p class="eyebrow">SUA TURMA NA ARENA</p>
     <h1>Clãs</h1>
