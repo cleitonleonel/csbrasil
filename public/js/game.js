@@ -860,7 +860,7 @@ export class Game {
     // primary/secondary remember the last weapon of each slot for the 1/2 keys.
     const startWeapon = charWeapon(playerCharId);
     this.player = {
-      isPlayer: true, name: (nickname || '').trim().slice(0, 14) || tr('VOCÊ'), def: this.playerDef, team: playerTeam,
+      isPlayer: true, name: (nickname || '').trim().slice(0, 32) || tr('VOCÊ'), def: this.playerDef, team: playerTeam,
       pos: new THREE.Vector3(), vel: new THREE.Vector3(),
       yaw: 0, pitch: 0, hp: 100, alive: true, respawnAt: 0, crouchF: 0,
       weapon: startWeapon, scoped: false, reloadUntil: 0, nextShotAt: 0, drawUntil: 0,
