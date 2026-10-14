@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.93`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.95`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,104 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.95] — 2026-10-14
+
+### Mudado
+- Lote CI 2: automerge, checkout leve e retry do release (#937)
+- Regenerate generated blocks for lote CI 2
+- Regenerate generated blocks for lote CI 2
+- Atualiza comentários do release que citavam o pull --rebase
+- Executa a pr_fast_verde do release na RLS17
+- Publica o release só sobre SHA com pr-fast verde
+- Renumera a cláusula do retry para RLS17 e cobra o SHA aprovado
+- Faz checkout leve no job autofix
+- Cobra checkout leve no job autofix
+- Tira o job autofix do checkout leve deste PR
+- Devolve a eval:wfcheckout ao package.json depois do merge da main
+- Mede a defesa do WSEC1 por job
+- Tenta de novo o push do trem de release
+- Cobra retry limitado no push do trem de release
+- Troca o job bot-token do automerge por passo de guarda
+- Cobra a guarda do token do automerge como passo
+- Roda a eval:wfcheckout no pr-fast
+- Faz checkout leve nos jobs que só leem histórico
+- Cobra checkout leve nos jobs que só leem histórico
+
+## [2.1.0-alpha.94] — 2026-10-14
+
+### Mudado
+- Agent: Claude (#906)
+- Agent: Claude (#910)
+- Agent: Claude (#913)
+- Agent: Claude (#911)
+- Agent: Claude (#923)
+- Agent: Claude (#924)
+- Agent: Claude (#929)
+- Agent: Claude (#926)
+- Agent: Claude (#927)
+- Agent: Claude (#928)
+- Agent: Claude (#925)
+- Lote 4: conta, convite de login, loja, vitória e perfil (#938)
+- Regenera as contagens da documentação
+- Regenera contagem de linhas nas docs
+- Login do convite sai do quadro como o da conta
+- Põe o onReady do convite depois do onSession
+- Alinha o convite aos botões oficiais do #910
+- Adiciona régua da arte de resultado no check:fast
+- Pula o convite no perfil compartilhado
+- Medir que a loja não volta a mostrar a fila
+- Rerenderiza a arte de resultado de cinco Míticos
+- Devolve a derrota do Barbudo e da Julia ao par
+- Medir vídeo de hover da loja com mutantes
+- Tocar o vídeo da skin no hover do card
+- Adicionar vídeos de hover das 12 skins aprovadas
+- Gerar vídeo de hover das skins pelo GLB real
+- Vestir skin da loja no gerador de vídeo
+- Regenerate generated docs blocks
+- Check the profile weapons display with mutants
+- Show the most used weapons on the profile
+- Regenerate generated docs blocks
+- Check the hidden character copy with mutants
+- Explain a hidden character on the public profile page
+- Explain a hidden character on the in-game profile
+- Regenerate generated docs blocks
+- Check profile achievements with mutants
+- Say why profile activity is empty
+- Base profile achievements on the shown totals
+- Regenerate generated docs blocks
+- Check friend request feedback with mutants
+- Explain a friend request beside the button
+- Tirar a fila de novas skins da loja
+- Espera o convite abrir e diz por que não abriu
+- Tira o falso verde do LB4 e do LB9
+- Check the 390px chip cascade in hub-identity
+- Fit the identity chip in the 390px hub header
+- Marca a apresentação da loja como vista na régua
+- Regenera contagem de linhas nas docs
+- Não abre o convite sobre outro diálogo
+- Abre o passo de entrada sozinho só sem nick
+- Marca o convite pronto só depois da splash
+- Regenera contagem de linhas nas docs
+- Sinaliza a decisão do convite para a régua
+- Encurta comentário do convite de login
+- Exempt the TRETA wallet from the one-account check
+- Keep the FAQ parser inside one details block
+- Add community header gate with mutants
+- Turn community tabs into an underlined tablist
+- Drop the duplicate account card on community
+- Greet by @handle on the community page
+- Regenera docs e ARCH com o convite de login
+- Adiciona régua do convite de login
+- Mostra convite de login na abertura do jogo
+- Expõe ícones e prontidão do passo de entrada
+- Keep account modal edits off lobby PR lines
+- Add account modal gate with mutants
+- Greet by @handle and keep one primary action
+- Show linked logins as state rows
+- Use official provider buttons in account entry
+- Add hub identity gate with mutants
+- Show @handle or profile invite in lobby header
 
 ## [2.1.0-alpha.93] — 2026-10-14
 
