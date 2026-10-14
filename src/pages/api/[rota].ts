@@ -10,13 +10,14 @@ const SEGREDO = import.meta.env.API_PROXY_SECRET || '';
 
 const MIGRADAS = new Set([
   'treta',
-  'social','social-auth','social-avatar','acquisition', 'avatar', 'feedback', 'funnel', 'health', 'heartbeat', 'jserror',
+  'social','social-auth','social-avatar','acquisition', 'avatar', 'clans', 'feedback', 'funnel', 'health', 'heartbeat', 'jserror',
   'leaderboard', 'map-plays', 'match', 'mp-ticket', 'online', 'perf', 'pick', 'presence', 'register',
   'submit-match', 'telemetry', 'train-frames',
 ]);
 
 // Social e avatar usam 404 para perfis ausentes ou privados; preservar esse status.
-const EM_ROLLOUT = ['social-auth','treta'];
+// clans (backend#72) ainda depende do rollout: 404 upstream vira 503.
+const EM_ROLLOUT = ['social-auth','treta','clans'];
 
 const handler: APIRoute = async ({ params, url, request, clientAddress }) => {
   const rota = String(params.rota || '').replace(/\/+$/, '');
@@ -30,7 +31,7 @@ const handler: APIRoute = async ({ params, url, request, clientAddress }) => {
     `${BACKEND.replace(/\/$/, '')}/api/${rota}${url.search}`,
     clientAddress,
     fetch,
-    { segredo: SEGREDO, session: ['treta','social','social-auth','social-avatar','register','avatar','mp-ticket'].includes(rota) },
+    { segredo: SEGREDO, session: ['treta','social','social-auth','social-avatar','register','avatar','mp-ticket','clans'].includes(rota) },
   );
   if (resposta.status === 404 && EM_ROLLOUT.includes(rota)) {
     await resposta.body?.cancel().catch(() => {});

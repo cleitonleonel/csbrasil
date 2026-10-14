@@ -80,7 +80,7 @@ try {
   let route=stripTypeScriptTypes(redirect).replaceAll('import.meta.env','({})')
     .replace('../../lib/api-proxy.mjs','data:text/javascript;base64,'+Buffer.from(proxy).toString('base64'));
   if(mut==='perfil-404')route=route.replace('return resposta;',"return resposta.status===404 ? new Response(null,{status:503}) : resposta;");
-  if(mut==='treta-rollout')route=route.replace("['social-auth','treta']","['social-auth']");
+  if(mut==='treta-rollout')route=route.replace("['social-auth','treta','clans']","['social-auth','clans']");
   const {GET}=await importaFonte(route);
   globalThis.fetch=async()=>new Response('{"error":"not_found"}',{status:404,headers:{'content-type':'application/json'}});
   for(const endpoint of ['social','social-avatar']) {

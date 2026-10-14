@@ -1797,6 +1797,12 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
           updateAvatarVisibility(); renderPlayerPlate();
         }
       }
+      if (game && !game.online) {
+        const currentGame = game;
+        api('/api/clans', { action: 'me', uid: getAnonId(), token: getToken() }).then(result => {
+          if (game === currentGame && !game.online) game.player.clanTag = result?.clan?.tag || null;
+        });
+      }
     });
   }
   /* `mode` faltava, e sem ele metade da pergunta não tem resposta: dá para saber QUE MAPA

@@ -90,6 +90,8 @@ function rotasSSR(dir = 'src/pages', prefixo = '') {
     let rota = `${prefixo}/${nome.name.replace(/\.astro$/, '')}`;
     rota = rota.replace(/\/index$/, '/');
     // rota dinâmica vira um caminho de exemplo — o que importa é que ela RENDERIZE
+    // Clãs valida UUID antes de renderizar; 'exemplo' testa só o redirect, não o corpo SSR.
+    rota = rota.replace('/clans/[id]', '/clans/00000000-0000-4000-8000-000000000001');
     rota = rota.replace(/\[\.\.\.[^\]]+\]/g, 'exemplo').replace(/\[[^\]]+\]/g, 'exemplo');
     out.push(rota);
   }
@@ -164,7 +166,7 @@ for (const rota of rotas) {
 }
 process.chdir(RAIZ);
 
-console.log(`SSR1 · toda página prerender=false devolve corpo (>= ${PISO} bytes), não só status 200`);
+console.log(`SSR1 · toda página prerender=false devolve corpo (>= ${PISO} bytes) com status esperado (sala inexistente:404)`);
 for (const l of linhas) console.log(`   ${l.rota.padEnd(12)} status=${l.status ?? '—'}  ${String(l.bytes).padStart(7)} bytes${l.bytes < PISO ? '  ✗ CORPO VAZIO' : ''}`);
 console.log(`   ${ssr1 ? 'PASSA' : 'FALHA'}\n`);
 
