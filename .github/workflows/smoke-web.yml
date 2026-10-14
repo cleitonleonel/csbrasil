@@ -2,15 +2,6 @@ name: smoke-web
 
 on:
   pull_request:
-    paths:
-      - 'public/**'
-      - 'src/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'playwright.config.mjs'
-      - 'playwright.smoke.config.mjs'
-      - 'tests/smoke/**'
-      - '.github/workflows/smoke-web.yml'
   workflow_dispatch:
 
 permissions:
@@ -23,7 +14,54 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # O FILTRO. Era o `paths:` do `on:`, que deixou 13 PRs de jogo sem smoke em 48 h
+  # (lista por arquivo que ninguém atualizava), não deixava check quando não casava e
+  # o GitHub ignora em PR com mais de 300 arquivos. Agora o padrão mora em
+  # scripts/ci/gatilho.mjs (fonte única, medida pela eval:portaogatilho) e o pulo
+  # aparece como SKIPPED, que o check_automerge aceita. Falha FECHADO: push, dispatch,
+  # erro de diff ou do gatilho = roda. Só `rodar=false` exato pula.
+  decide:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      rodar: ${{ steps.filtro.outputs.rodar }}
+    steps:
+      # Leve: só árvore e commits; os blobs vêm sob demanda (o package.json, se mudou).
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          filter: blob:none
+      - name: O PR toca o que smoke mede?
+        id: filtro
+        env:
+          EVENTO: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENTO" != "pull_request" ]; then
+            echo "rodar=true" >> "$GITHUB_OUTPUT"
+            echo "$EVENTO: roda sempre"; exit 0
+          fi
+          # -z e quotePath=false: nome com acento sai cru, não entre aspas em octal (que
+          # não casaria com nada e pularia o job). A lista vai separada por NUL.
+          if ! git -c core.quotePath=false diff --no-renames --name-only -z "$BASE...$HEAD" > "$RUNNER_TEMP/arquivos.txt"; then
+            echo "::warning::git diff falhou: sem saber o que mudou, smoke roda"
+            echo "rodar=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "$(tr -cd '\0' < "$RUNNER_TEMP/arquivos.txt" | wc -c) arquivo(s) no diff"
+          node scripts/ci/gatilho.mjs smoke < "$RUNNER_TEMP/arquivos.txt" > "$RUNNER_TEMP/veredito.txt" \
+            || echo "rodar=true" > "$RUNNER_TEMP/veredito.txt"
+          if grep -qx 'rodar=false' "$RUNNER_TEMP/veredito.txt"; then
+            echo "rodar=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "rodar=true" >> "$GITHUB_OUTPUT"
+          fi
+
   smoke:
+    needs: decide
+    if: needs.decide.outputs.rodar == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:

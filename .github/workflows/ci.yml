@@ -40,6 +40,10 @@ jobs:
         run: bash -n scripts/*.sh
       - name: Fronteira de confiança dos workflows
         run: python3 scripts/ci/workflow_security_check.py --selftest
+      # O gatilho do portão de navegador e do smoke cobre o fecho do que eles rodam
+      # (scripts/ci/gatilho.mjs). Node puro, < 1 s.
+      - name: Gatilho do portão e do smoke cobre o que eles medem
+        run: npm run eval:portaogatilho
       - name: Contrato do release (nome, créditos e DCO do bot)
         run: npm run eval:release
       - name: Syntax check do jogo (public/js)
