@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Relato de 14/10/2026: no SOBRE O JOGO do lobby, PRIVACIDADE e TERMOS DE USO
-// tiravam o jogador do jogo. Cada link do painel GERAL precisa abrir no próprio
+// tiravam o jogador do jogo. Cada link do painel GERAL e do rodapé do hub precisa abrir no próprio
 // lobby (iframe ?embed=1, sem o cabeçalho do site) ou, se for de outra origem,
 // em nova aba. A régua clica de verdade, como o jogador.
 // Uso: BASE=http://127.0.0.1:4561 node tools/eval/hub-about-links-browser.mjs [--mutante=termos-fora]
@@ -35,17 +35,21 @@ try {
       await page.evaluate(() => document.getElementById('boot-splash')?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
       await page.waitForTimeout(500);
     }
+    await page.addStyleTag({ content: 'astro-dev-toolbar{display:none!important}' });
     await page.click('[data-hub-tab="sobre"]');
     await page.waitForSelector('#hub-about-overview:not([hidden])');
   };
   await openAbout();
-  const links = await page.$$eval('#hub-about-overview a[href]', (items) => items.map((a, index) => ({ index, href: a.href, label: a.textContent.trim().replace(/\s+/g, ' ') })));
+  // Painel GERAL inteiro + rodapé do hub. /docs/ é a documentação de desenvolvimento
+  // (Docusaurus, outro app), fora do lobby de propósito.
+  const selector = '#hub-about-overview a[href], #hub-ui .hub-footer > a[href]:not([href^="/docs"])';
+  const links = await page.$$eval(selector, (items) => items.map((a, index) => ({ index, href: a.href, label: a.textContent.trim().replace(/\s+/g, ' ') })));
   if (links.length < 10) failures.push(`painel GERAL com ${links.length} links; esperado ao menos 10`);
   for (const link of links) {
     await openAbout();
     const url = new URL(link.href);
     const popup = context.waitForEvent('page', { timeout: 3000 }).catch(() => null);
-    await page.locator('#hub-about-overview a[href]').nth(link.index).click({ noWaitAfter: true });
+    await page.locator(selector).nth(link.index).click({ noWaitAfter: true });
     if (url.origin !== new URL(base).origin) {
       const opened = await popup;
       const stayed = new URL(page.url()).pathname === '/';
