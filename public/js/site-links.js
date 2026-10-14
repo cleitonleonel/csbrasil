@@ -109,8 +109,18 @@ frame?.addEventListener('load', () => {
       return;
     }
     if (url.pathname === '/') {
+      // /?secao=... vai para a seção pedida; o roteador do hub (main.js) cuida da comunidade.
       event.preventDefault();
-      document.querySelector('.hub-tabs [data-hub-tab="jogar"]')?.click();
+      const section = url.searchParams.get('secao');
+      if (section === 'comunidade') {
+        const proxy = Object.assign(document.createElement('a'), { href: url.href, hidden: true });
+        document.getElementById('hub-ui').append(proxy);
+        proxy.click();
+        proxy.remove();
+        return;
+      }
+      const hubTab = section && [...document.querySelectorAll('.hub-tabs [data-hub-tab]')].find(item => item.dataset.hubTab === section);
+      (hubTab ?? document.querySelector('.hub-tabs [data-hub-tab="jogar"]'))?.click();
     } else if (contentPaths.has(url.pathname) || url.pathname.startsWith('/faccoes/') || url.pathname.startsWith('/clans/')) {
       if (LANG === 'en' && pairs[url.pathname]) url.pathname = pairs[url.pathname];
       url.searchParams.set('embed', '1');
