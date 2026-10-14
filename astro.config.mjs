@@ -17,6 +17,7 @@ for(const id of Object.keys(SOCIAL_CHARACTERS)){
  SOCIAL_PORTRAITS[id]='data:image/png;base64,'+(await sharp(readFileSync(file)).trim({threshold:1}).resize({height:630}).png().toBuffer()).toString('base64');
 }
 
+const SOCIAL_LOGO='data:image/png;base64,'+(await sharp(readFileSync('public/logo.png')).trim({threshold:10}).resize({height:150}).png().toBuffer()).toString('base64');
 
 /* MANIFESTO DE CACHE CALCULADO NO BUILD, E ESSE É O PONTO.
    ═══════════════════════════════════════════════════════════════════════════════════
@@ -57,6 +58,7 @@ export default defineConfig({
       __MANIFESTO_JS__: JSON.stringify(MANIFESTO_JS),
       __SOCIAL_PORTRAITS__: JSON.stringify(SOCIAL_PORTRAITS),
       __SOCIAL_CHARACTERS__: JSON.stringify(SOCIAL_CHARACTERS),
+      __SOCIAL_LOGO__: JSON.stringify(SOCIAL_LOGO),
     },
     // BUG-75 (achado do dono, 29/08): public/private-assets/viewmodels é symlink
     // para fora da raiz; sem fs.allow explícito um restart do dev server pode

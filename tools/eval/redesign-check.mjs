@@ -194,7 +194,7 @@ css = muta('menu-wall-contain-volta', css,
   '.cs-wallpaper::after{inset:0;z-index:1;background-size:cover}',
   '.cs-wallpaper::after{inset:0;z-index:1;background-size:contain}');
 main = muta('opcoes-mapa-decorativas', main,
-  'roundsMax: sessao ? undefined : matchRounds(),',
+  'roundsMax: sessao ? (sanitizeRounds(sessao.net.meta.roundsMax) || undefined) : matchRounds(),',
   'roundsMax: 5,');
 css = muta('borda-tracejada-volta', css,
   'background:transparent;border:1px solid var(--line);color:var(--ink3);padding:10px}',
@@ -618,8 +618,8 @@ const funcShow = blocoFuncao(main, 'show');
 const funcMap = blocoFuncao(main, 'renderMapScreen');
 const i18nDinamico = /\$\{tr\('MAPA'\)\}[\s\S]{0,100}\$\{tr\('DE'\)\}/.test(main)
   && /tr\(FACTION_NAME\[currentFaction\] \|\| ''\)[\s\S]{0,120}tr\('PERSONAGENS'\)/.test(main)
-  && /a\.textContent = tr\(FACTION_NAME\[currentFaction\] \|\| ''\)/.test(main)
-  && /b\.textContent = tr\(FACTION_NAME\[currentEnemyFaction\] \|\| ''\)/.test(main)
+  && /a\.textContent = tr\(FACTION_NAME\[currentTeam\] \|\| ''\)/.test(main)
+  && /b\.textContent = tr\(FACTION_NAME\[ladoDele\] \|\| ''\)/.test(main)
   && /chip\.textContent = `\$\{n\} \$\{tr\('PERSONAGENS'\)\}`/.test(main)
   && /ms-desc'\)\.textContent = tr\(MAP_DESC\[currentMap\] \|\| ''\)/.test(main)
   && /frase\('escolhaAdversario', tr\(FACTION_NAME\[myFaction\]/.test(main)
@@ -912,7 +912,7 @@ const opcoesPartidaNoMapa = /id="ms-wpn-mode"/.test(astro)
   && /settings\.enemyBots = Math\.max\(1, Math\.min\(8, msEnemy\.value \| 0\)\)/.test(main)
   && /settings\[matchMode === 'ctf' \? 'ctfRounds' : 'rounds'\] = sanitizeRounds\(msRounds\.value\)/.test(main)
   && /function matchRounds\(\)[\s\S]{0,400}settings\.ctfRounds[\s\S]{0,400}settings\.rounds/.test(main)
-  && /roundsMax: sessao \? undefined : matchRounds\(\),/.test(main)
+  && /roundsMax: sessao \? \(sanitizeRounds\(sessao\.net\.meta\.roundsMax\) \|\| undefined\) : matchRounds\(\),/.test(main)
   && /constructor\(\{[^}]*roundsMax/.test(game)
   && /export const sanitizeRounds[\s\S]{0,200}ROUNDS_CUSTOM_MAX \? n : 0;/.test(game)
   && /const requestedRounds = sanitizeRounds\(roundsMax\);/.test(game)
@@ -927,7 +927,7 @@ const personagemNoSplash = /id="splash-character-stage"[^>]*>[\s\S]{0,100}<canva
   && /#splash-character-stage\{[^}]*width:min\(86px,18vw\)[^}]*height:min\(144px,23vh\)/.test(css)
   && /#boot-splash \.splash-frame\{position:relative;z-index:2\}/.test(css)
   && /#splash-enter\{[^}]*font-family:var\(--aaa-font-display\)/.test(css);
-const brasoesNoPlacar = /const crest = \(side\) => String\(this\._factionOf\(side\)/.test(game)
+const brasoesNoPlacar = /const crest = \(side\) => String\(side \|\| 'E'\)\.toLowerCase\(\)/.test(game)
   && /<img class="sb-crest" src="\/\$\{urlDoBrasao\(crest\('E'\)\)\}" alt="">/.test(game)
   && /<img class="sb-crest" src="\/\$\{urlDoBrasao\(crest\('B'\)\)\}" alt="">/.test(game)
   && /<img class="sb-crest" src="\/\$\{urlDoBrasao\(crest\(side\)\)\}" alt="">/.test(game)
@@ -1060,7 +1060,7 @@ const resultados = [
   ['UIR35', 'splash inicial mostra chamada de clique junto do personagem animado', personagemNoSplash,
     'o mesmo canvas Three.js transparente nasce na entrada e é reaproveitado no loading da partida'],
   ['UIR36', 'placar do TAB mostra os brasões das duas facções', brasoesNoPlacar,
-    'cabeçalho geral e cada tabela resolvem /img/brasoes pela facção que ocupa o lado'],
+    'cabeçalho geral e cada tabela resolvem /img/brasoes pelo lado (E/B), não pela categoria do corpo'],
   ['UIR37', 'conteúdo do placar do TAB fica centralizado verticalmente', placarCentralizado,
     'cabeçalho e tabelas formam um único bloco flex centrado no viewport'],
   ['UIR38', 'falha de ranking nunca vaza detalhe de backend na interface', backendSoNoConsole,
