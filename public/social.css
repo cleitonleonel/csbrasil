@@ -86,3 +86,7 @@ body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{displa
 .login-prompt :focus-visible{outline:2px solid #d0ee7d;outline-offset:3px}
 @media(max-width:480px){.login-prompt-card{padding:18px 18px 14px}.login-prompt h2{font-size:38px}}
 .social-inline-status{min-height:20px;margin:-6px 0 14px;color:#b4d92e;font:600 14px/1.4 system-ui,sans-serif}.social-inline-status:empty{display:none}
+/* Saldo TRETA$ no perfil (treta_balance): mesma leitura do ranking geral, número menor. */
+.social-profile-treta{display:flex;align-items:center;gap:16px;margin:-8px 0 20px}
+.social-profile-treta span{font:14px/1.4 var(--mono);color:#bfc3b6}
+.social-profile-treta strong{font:40px/1 'Bebas Neue',Impact,sans-serif;color:#f2c94c}
