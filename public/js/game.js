@@ -4319,7 +4319,7 @@ export class Game {
       // chip = tint da cor CHEIA do time; texto = tinta PÁLIDA do time (ver _teamInk):
       // texto na cor cheia sobre o próprio tint dava 3,2-3,9:1 (ui-check.mjs, UI1)
       const c = this._teamColor(e.team);
-      return `<span class="kf-n" style="background:${c}2e;color:${this._teamInk(e.team)}">${e.isPlayer ? tr('VOCÊ') : escapeClanName(e.name)}</span>`;
+      return `<span class="kf-n${e.isPlayer ? ' kf-voce' : ''}" style="background:${c}2e;color:${this._teamInk(e.team)}">${e.isPlayer ? tr('VOCÊ') : escapeClanName(e.name)}</span>`;
     };
     row.innerHTML = attacker && attacker !== victim
       ? `${cn(attacker)}${head ? this._skullIcon() : ''}${this._killfeedWeaponIcon(weap)}${cn(victim)}`
