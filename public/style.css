@@ -427,6 +427,7 @@ html[data-home-ui="hub"] #menu-setup .hub-sels:not(:empty)+.hub-match-chips{disp
 .hub-footer-social .mf-social svg{width:15px;height:15px;fill:currentColor}
 .hub-rank-profile{margin:8px 0 0;padding:11px 14px;border:1px solid #b4d92e;background:#b4d92e;color:#131313;font:700 12px/1 var(--font);letter-spacing:1px;cursor:pointer}
 .hub-rank-profile:hover,.hub-rank-profile:focus-visible{filter:brightness(1.12);outline:2px solid #f3b958;outline-offset:2px}
+#hub-rank-share{display:block;margin-top:14px;background:transparent;color:#b4d92e}
 @media(max-width:760px){
   html[data-home-ui="hub"]{--hub-mobile-footer-height:72px}
   .hub-header-action .hub-profile-edit{display:none}

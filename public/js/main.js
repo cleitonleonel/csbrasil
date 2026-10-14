@@ -1,6 +1,7 @@
 // Boot, menus, settings, logo, main loop.
 import * as THREE from 'three';
 import { estadoDaUrl, urlDoEstado, CHAVES_DE_TELA } from './rotas.js';
+import { ligarCompartilhar, linkCompartilhavel, textoDaPartida, origemPublica } from './compartilhar.js';
 import {initAccountEntry,mountProfilePreferences} from './account-entry.js';
 import {analyticsAllowed} from './privacy-preferences.js';
 import {initTretaStore,equippedTretaSkin,equippedTretaEyewear} from './treta-store.js';
@@ -2436,6 +2437,9 @@ function openHubQuick(updateRoute = true) {
   if (updateRoute) hubNavigate({ secao: 'jogar', partida: 'singleplayer', janela: 'confirmar', origem: null });
 }
 $('btn-ranking').onclick = () => { sfx.uiClick(); showRanking(); };
+// Pontos de compartilhar do hub (ADR 0008): fim de partida e ranking. Sala e skin ligam onde nascem.
+ligarCompartilhar($('btn-share-match'), () => ({ titulo: 'CORO SOLTO', texto: textoDaPartida({ venceu: $('match-end').classList.contains('win'), mapa: MAPS[currentMap]?.name || 'CORO SOLTO' }), url: linkCompartilhavel(`/?map=${encodeURIComponent(currentMap)}`, 'fim-de-partida') }));
+ligarCompartilhar($('hub-rank-share'), () => ({ titulo: 'Ranking do CORO SOLTO', texto: 'Quem manda na treta essa semana? Olha o ranking do CORO SOLTO.', url: linkCompartilhavel('/comunidade/ranking', 'ranking') }));
 $('ranking-back').onclick = () => { ui.back(); markCurrent(null); show('main-menu'); };
 /* FEEDBACK: email + consentimento obrigatórios ANTES de enviar — a tabela é a
    semente da newsletter (migration 013), então não entra linha sem os dois. */
@@ -4333,6 +4337,7 @@ function mpModalSalaCriada(sala, senha = '') {
   };
   /* WhatsApp: `wa.me/?text=` abre o app no celular e o WhatsApp Web no computador, com a
      mensagem pronta e o link dentro — sem pedir número, a pessoa escolhe o grupo lá. */
+  ligarCompartilhar(mpEl('mp-modal-compartilhar'), () => ({ titulo: 'Sala no CORO SOLTO', texto: `Entra na minha sala ${sala.convite} no CORO SOLTO.`, url: linkDeConvite(sala.convite, origemPublica()) }));
   const zap = mpEl('mp-modal-zap');
   if (zap) {
     zap.href = `https://wa.me/?text=${encodeURIComponent(frase('conviteZap', linkDeConvite(sala.convite)))}`;
