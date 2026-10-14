@@ -17,6 +17,7 @@ const frame = document.getElementById('hub-guide-frame');
 const loading = panel?.querySelector('[role="status"]');
 let observer;
 let currentUrl;
+let focusOnLoad = false;
 const contentPaths = new Set([...Object.keys(pairs), ...Object.values(pairs), '/mapa', '/apoie']);
 // Páginas internas sem subtab própria (documentos legais, clãs) também abrem no lobby.
 const documents = { '/privacidade': 'PRIVACIDADE', '/termos': 'TERMOS DE USO', '/excluir-dados': 'EXCLUIR DADOS', '/regras-de-uso': 'REGRAS DE USO', '/clans': 'CLÃS' };
@@ -81,6 +82,7 @@ frame?.addEventListener('load', () => {
   currentUrl = frame.contentWindow.location.href;
   loading.hidden = true;
   frame.hidden = false;
+  if (focusOnLoad) { focusOnLoad = false; frame.focus(); }
   const resize = () => {
     const height = `${Math.ceil(doc.body.getBoundingClientRect().height) + 2}px`;
     if (frame.style.height !== height) requestAnimationFrame(() => { frame.style.height = height; });
@@ -140,7 +142,7 @@ for (const link of document.querySelectorAll('.hub-link-grid a, a.hub-changelog,
     if (!tab && !documentGuide(url.pathname)) return;
     event.preventDefault();
     document.querySelector('.hub-tabs [data-hub-tab="sobre"]')?.click();
-    if (!tab) { selectDocument(url.pathname); frame.focus(); return; }
+    if (!tab) { focusOnLoad = true; selectDocument(url.pathname); return; }
     select(tab);
     tab.focus();
   });
