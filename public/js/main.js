@@ -38,6 +38,7 @@ import { createMapPreview, VIDEO_MAPS } from './map_preview.js';
    (`new Game({ mpFactory, net })`), e sem sessão de rede nenhuma linha dele executa. */
 import { NOS, NO_RE, ordenarNos, melhorNoParaJogar, mpUrls, sondarNos, listRooms, listMaps, createRoom, NetClient, parseConvite, linkDeConvite, salaPorConvite, httpDoNo, resolvePlayerSide, ladoOnline, transitionSlot, decidirPersonagemMp } from './net.js';
 import { montarChatSala } from './chat-painel.js';
+import { planoPreload, segundosAteVirada, textoProximo } from './mp-proximo.js';
 import { makeNetcode } from './netgame.js';
 
 /* ---------------- settings & nickname ---------------- */
@@ -337,8 +338,9 @@ function showLoading(label, status = 'CARREGANDO MODELOS 3D…', mapName = '') {
   if (vs) {
     const a = $('load-vs-a'), b = $('load-vs-b');
     if (mapName && currentEnemyFaction) {
-      a.textContent = tr(FACTION_NAME[currentFaction] || ''); a.style.color = (PALETA[currentFaction] || {}).base || '#e0762a';
-      b.textContent = tr(FACTION_NAME[currentEnemyFaction] || ''); b.style.color = (PALETA[currentEnemyFaction] || {}).base || '#8258d8';
+      a.textContent = tr(FACTION_NAME[currentTeam] || ''); a.style.color = (PALETA[currentTeam] || {}).base || '#e0762a';
+      const ladoDele = currentTeam === 'B' ? 'E' : 'B';
+      b.textContent = tr(FACTION_NAME[ladoDele] || ''); b.style.color = (PALETA[ladoDele] || {}).base || '#8258d8';
       vs.classList.remove('hidden');
     } else vs.classList.add('hidden');
   }
@@ -1719,9 +1721,9 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
     mpFactory: sessao ? makeNetcode : null,
     net: sessao ? sessao.net : null,
     dedicated: !!(sessao && sessao.net.espectador),
-    /* online: o Room do servidor cria o Game sem roundsMax (padrão 5 / 3) e manda o fim;
-       o teto local (1–15) só vale offline, senão o HUD conta "RODADA n / 15" à toa. */
-    roundsMax: sessao ? undefined : matchRounds(),
+    /* online: o teto é o da sala (meta.roundsMax do servidor; nó antigo sem o campo = padrão
+       5 / 3) e o fim vem do servidor; o teto local (1–15) só vale offline. */
+    roundsMax: sessao ? (sanitizeRounds(sessao.net.meta.roundsMax) || undefined) : matchRounds(),
     onMatchEnd: recordMatchStats,
     recordTraining: trainingEnabled(),
     onTrainingFrames: sendTrainingFrames,
@@ -2255,14 +2257,22 @@ if (HUB_ENABLED) {
     document.dispatchEvent(new CustomEvent('cs-community-open', { detail: { tab: 'friends' } }));
   };
   $('hub-social-resume').onclick = () => { sfx.uiClick(); game?.resume(); };
+  // Links de comunidade e de perfil (/u/<id>) abrem na COMUNIDADE do hub, sem sair do jogo.
+  // O "ABRIR PERFIL PÚBLICO" (data-public-profile) continua indo para a página pública.
   document.addEventListener('click', event => {
     const anchor = event.target.closest('a[href]');
-    if (!anchor || anchor.target === '_blank' || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    if (!anchor || event.defaultPrevented || anchor.target === '_blank' || anchor.dataset.publicProfile === 'true' || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const url = new URL(anchor.href, location.href);
-    if (url.origin !== location.origin || url.pathname !== '/' || url.searchParams.get('secao') !== 'comunidade') return;
+    if (url.origin !== location.origin) return;
+    const profile = url.pathname.match(/^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f-]{36})(?:\/|$)/i)?.[1];
+    if (profile ? !anchor.closest('#main-menu') : url.pathname !== '/' || url.searchParams.get('secao') !== 'comunidade') return;
     event.preventDefault();
-    setHubTab('comunidade', $('main-menu').dataset.socialPaused !== 'true');
-    document.dispatchEvent(new CustomEvent('cs-community-open', { detail: { tab: url.searchParams.get('social') || 'profile' } }));
+    const perfil = profile || url.searchParams.get('perfil');
+    const tab = profile ? 'profile' : url.searchParams.get('social') || 'profile';
+    const paused = $('main-menu').dataset.socialPaused === 'true';
+    setHubTab('comunidade', false);
+    if (!paused) hubNavigate({ secao: 'comunidade', social: tab, perfil: perfil || null, janela: null, origem: null });
+    document.dispatchEvent(new CustomEvent('cs-community-open', { detail: { tab, perfil } }));
   });
   const setHubNet = (net, updateRoute = true) => {
     $('main-menu').dataset.hubNet = net;
@@ -2302,12 +2312,21 @@ if (HUB_ENABLED) {
   new MutationObserver(syncOnline).observe(onlineCount, { childList: true, characterData: true, subtree: true });
   syncOnline();
   const factionGrid = $('hub-factions');
-  for (const fac of ['E', 'B', 'U', 'C', 'F', 'M']) {
+  // Grupos saem do elenco jogável: grupo novo em characters.js aparece aqui sem lista à mão.
+  // Políticos não têm brasão próprio e jogam pelos dois lados, então mostram os dois.
+  const groupOrder = ['E', 'B', 'P', 'U', 'C', 'F', 'M'];
+  const groups = [...new Set(CHARACTERS.map((c) => c.team))]
+    .sort((a, b) => (groupOrder.indexOf(a) + 1 || 99) - (groupOrder.indexOf(b) + 1 || 99));
+  for (const fac of groups) {
     const item = document.createElement('div');
-    item.style.setProperty('--hub-faction', PALETA[fac]?.base || '#b4d92e');
-    const crest = document.createElement('img'); crest.src = `/img/brasoes/${fac.toLowerCase()}.png`; crest.alt = '';
+    item.dataset.faction = fac;
+    item.style.setProperty('--hub-faction', PALETA[fac]?.base || (fac === 'P' ? '#d6b55a' : '#b4d92e'));
+    const crests = document.createElement('span'); crests.className = 'hub-faction-crests';
+    for (const letter of fac === 'P' ? ['e', 'b'] : [fac.toLowerCase()]) {
+      const crest = document.createElement('img'); crest.src = `/img/brasoes/${letter}.png`; crest.alt = ''; crests.appendChild(crest);
+    }
     const name = document.createElement('span'); name.textContent = tr(FACTION_NAME[fac] || fac);
-    item.append(crest, name); factionGrid.appendChild(item);
+    item.append(crests, name); factionGrid.appendChild(item);
   }
   const legacyPlay = $('btn-jogar').onclick;
   $('btn-jogar').onclick = () => {
@@ -3965,7 +3984,7 @@ function mpMostrarIdentidade(estado) {
   // O personagem usado para preload é um fallback técnico; não anunciá-lo como atribuição.
   const nome = espectador ? 'Espectador' : def?.name || 'Personagem não identificado';
   const detalhe = espectador ? 'Aguardando vaga em um time'
-    : def ? tr(FACTION_NAME[def.team] || def.team) : 'O servidor ainda não informou seu personagem';
+    : def ? tr(FACTION_NAME[corpo.team] || corpo.team) : 'O servidor ainda não informou seu personagem';
   for (const id of ['mp-identity-toast', 'mp-identity-pause']) {
     const card = document.getElementById(id);
     if (!card) continue;
@@ -4573,18 +4592,59 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
       ...net.meta, yourEnt: net.yourEnt, yourTeam: net.yourTeam, espectador: net.espectador,
     });
   };
+  // Próximo mapa anunciado no início do placar: pré-carrega enquanto o placar está na tela.
+  net.onProximo = (m) => {
+    if (mpSessao?.net !== net) return;
+    // erro síncrono aqui não pode subir: no WebTransport ele derrubaria o laço de leitura
+    try { mpPreCarregarProximo(m); } catch (e) { console.warn('[mp] próximo mapa falhou (a virada carrega):', e && e.message); }
+  };
   // Nova partida no servidor (mapa girou): mesmo conteúdo do welcome, remonta por cima.
   // Sem isto o cliente ficava no mapa velho com ids mortos — BUG-112 (KNOWN-BUGS.md).
   net.onPartida = async (m) => {
     if (mpSessao?.net !== net) return;
-    mpSessao.chat?.aoMudarMeta(net.meta);
-    if (noServeMapaParado(m.map, net)) return;
-    mpGuardarEscolhaSp();
-    if (MAPS[m.map]) currentMap = m.map;
-    matchMode = m.ctf ? 'ctf' : 'rounds';
-    await mpMontarPartida(net, m);
+    // o nó segura o round 1 até o `pronto` (teto de 10 s lá): ele sai por qualquer caminho
+    try {
+      mpPararContagemProximo();
+      mpSessao.chat?.aoMudarMeta(net.meta);
+      if (noServeMapaParado(m.map, net)) return;
+      mpGuardarEscolhaSp();
+      if (MAPS[m.map]) currentMap = m.map;
+      matchMode = m.ctf ? 'ctf' : 'rounds';
+      await mpMontarPartida(net, m);
+    } finally { if (mpSessao?.net === net) net.avisarPronto(m.partida); }
   };
   await mpMontarPartida(net, welcome);
+}
+
+/* PRÓXIMO MAPA NO PLACAR: os mesmos carregadores do _startGame, em segundo plano, com os
+   ids que o nó anunciou; o _startGame da virada encontra tudo em cache. A tela de fim troca
+   "PRÓXIMO MAPA CARREGANDO…" pelo nome e pela contagem; VOLTAR AO MENU segue ao lado. */
+let mpContagemProximo = null;
+function mpPararContagemProximo() {
+  clearInterval(mpContagemProximo); mpContagemProximo = null;
+  // partida seguinte sem `proximo` (nó antigo) não pode herdar o nome do mapa de agora
+  const rotulo = $('match-next');
+  if (rotulo) rotulo.textContent = tr('PRÓXIMO MAPA CARREGANDO…');
+}
+function mpPreCarregarProximo(m) {
+  const plano = planoPreload(m, { maps: MAPS, glbChars: GLB_CHARS, weaponIds: WEAPON_IDS });
+  if (!plano) return;
+  const nome = tr(m.mapNome || MAPS[plano.mapId].name || plano.mapId);
+  const rotulo = $('match-next');
+  const pinta = () => { if (rotulo) rotulo.textContent = textoProximo(nome, segundosAteVirada(m), LANG); };
+  mpPararContagemProximo();
+  pinta();
+  mpContagemProximo = setInterval(pinta, 250);
+  const armas = [...new Set([charWeapon(currentChar), ...plano.weapons])].filter(Boolean);
+  if (plano.seed != null) setHavanCarSeed(plano.seed);
+  Promise.all([
+    plano.chars.length ? preloadCharacterAssets(plano.chars, { weapons: armas }) : null,
+    sfx.preloadWeaponSamples(armas),
+    preloadMapProps([...MAP_PROPS, ...plano.props]),
+    preloadAmbientLife(plano.ambience),
+    MAPS[plano.mapId]?.preload?.(),
+    preloadAuthoredFamilies(authoredBootFamilies(armas)),
+  ]).catch((e) => console.warn('[mp] pré-carga do próximo mapa falhou (a virada carrega):', e && e.message));
 }
 
 /* Monta (ou remonta) a partida a partir de um welcome/partida: lado, facções e personagem
@@ -4647,6 +4707,7 @@ function mpAvisoPersonagem(texto, oferta = null) {
    o jogador precisa SABER, porque o corpo dele já voltou a ser bot no servidor. */
 function mpDesconectou() {
   if (!mpSessao) return;
+  mpPararContagemProximo();
   mpLimparIdentidade();
   try { if (game) { sendTelemetry(); sendMatchEvent('quit'); } } catch { /* diagnóstico não bloqueia a saída */ }
   mpSessao.chat?.destruir();
@@ -4747,8 +4808,9 @@ if (HUB_ENABLED) {
 window.__CS_MAIN_READY__ = true;
 window.__gameLaunch?.ready('boot');
 contagem.evento('game_loaded');
-void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}syncPlayState();}});
-initTretaStore({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala')),onEquipped:skin=>{currentChar=skin.character;const def=CHARACTERS.find(c=>c.id===currentChar);currentTeam=ladoValido(def,currentTeam);currentFaction=currentTeam;localStorage.setItem('csbr-home-character',currentChar);localStorage.setItem('csbr-home-side',currentTeam);syncHomeCharacter();hubNavigate({personagem:currentChar},true);}});
+// Convite de sala e perfil compartilhado (/u/<perfil>) chegam com destino: nem o convite de conta nem o da loja cobrem esse destino.
+void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}syncPlayState();}});
+initTretaStore({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),onEquipped:skin=>{currentChar=skin.character;const def=CHARACTERS.find(c=>c.id===currentChar);currentTeam=ladoValido(def,currentTeam);currentFaction=currentTeam;localStorage.setItem('csbr-home-character',currentChar);localStorage.setItem('csbr-home-side',currentTeam);syncHomeCharacter();hubNavigate({personagem:currentChar},true);}});
 document.addEventListener('cs-treta-inventory-change',()=>syncHomeCharacter());
 if (inspectionScreen) {
   openInspectionScreen(inspectionScreen).catch((error) => window.__gameLaunch?.fail(error, 'screen-query'));
