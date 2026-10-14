@@ -127,9 +127,6 @@ jobs:
           ref: ${{ env.HEAD_REF }}
           token: ${{ secrets.CSBRASIL_BOT_TOKEN }}
           fetch-depth: 0
-          # Leve (CL1): a história vem sem blob; o merge e o checkout buscam sob demanda
-          # só os blobs que tocam, pela mesma origem autenticada.
-          filter: blob:none
 
       - name: Traz a base e resolve conflito de arquivo gerado
         if: env.pular != '1'

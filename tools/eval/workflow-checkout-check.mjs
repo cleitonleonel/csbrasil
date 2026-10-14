@@ -30,7 +30,7 @@ const REGISTRO = {
   'pr-gates.yml': ['versao-bumpada', 'ratchet'],
   'csbrasil-bot-automerge.yml': ['automerge'],
   'csbrasil-bot-pr-classify.yml': ['classify'],
-  'autofix.yml': ['varredura', 'autofix'],
+  'autofix.yml': ['varredura'],
   'ui-regression.yml': ['classify'],
 };
 if (MUT === 'registro-orfao') REGISTRO['ci.yml'] = [...REGISTRO['ci.yml'], 'job-que-sumiu'];
