@@ -1,5 +1,5 @@
-/* Convite de login na abertura (dono, 14/10/2026): não bloqueia, 1x por visita, cede ao passo de entrada.
- * Recusado volta após 3 partidas ou 24 h. Régua: tools/eval/login-prompt-check.mjs. */
+/* Convite de login depois da partida (dono, 14/10/2026): nada abre antes da 1ª partida terminar.
+ * Não bloqueia, 1x por visita; recusado volta após 3 partidas ou 24 h. Régua: tools/eval/login-prompt-check.mjs. */
 import {analyticsAllowed,privacyChoice} from './privacy-preferences.js';
 import {PROVIDER_ICONS,socialApi,guestProof,accountError,leaveTo} from './account-entry.js';
 
@@ -36,7 +36,8 @@ export function inMatch() {
   return !!document.getElementById('main-menu')?.classList.contains('hidden');
 }
 /* Decisão pura: cada guarda é uma linha para o mutante da régua conseguir apagá-la. */
-export function loginPromptDue({auth,config,embedded,playing,accountBusy,seen,record,now=Date.now()}) {
+export function loginPromptDue({auth,config,ended,embedded,playing,accountBusy,seen,record,now=Date.now()}) {
+  if(!ended)return false;
   if(auth?.authenticated)return false;
   if(embedded)return false;
   if(playing)return false;
@@ -56,7 +57,9 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
   const dialog=document.getElementById('login-prompt');
   if(!dialog || skip)return;
   const list=document.getElementById('login-prompt-providers'),status=document.getElementById('login-prompt-status');
-  let previousFocus=null;
+  let previousFocus=null,ended=false,owed=false;
+  // Fim da decisão pós-partida (mostrou e fechou, ou não era a vez): a apresentação da loja vem depois.
+  const settle=()=>{if(!owed)return;owed=false;document.dispatchEvent(new CustomEvent('cs-pos-partida'));};
   const hide=reason=>{
     if(!dialog.open)return;
     if(reason){writeRecord({dismissedAt:Date.now(),matches:0});emit(track,'login_prompt_dismissed',{reason});}
@@ -86,8 +89,11 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
   const maybeShow=()=>{
     if(document.getElementById('boot-splash'))return;
     dialog.dataset.ready='true';   // decidiu com a splash fora; a régua espera isto
+    if(!ended || inMatch())return;   // espera a volta ao menu depois da tela de resultado
     if(document.querySelector('dialog[open]'))return;   // não empilha (passo de entrada, loja TRETA)
-    if(!loginPromptDue({auth,config,embedded:isEmbedded(),playing:inMatch(),accountBusy:accountBusy(),seen:seenThisVisit(),record:readRecord()}))return;
+    const due=loginPromptDue({auth,config,ended,embedded:isEmbedded(),playing:inMatch(),accountBusy:accountBusy(),seen:seenThisVisit(),record:readRecord()});
+    ended=false;owed=true;
+    if(!due){settle();return;}
     markSeen();draw();previousFocus=document.activeElement;
     dialog.showModal();
     list.querySelector('button')?.focus();
@@ -97,7 +103,11 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
   document.getElementById('login-prompt-guest').onclick=()=>hide('guest');
   dialog.addEventListener('cancel',e=>{e.preventDefault();hide('esc');});
   dialog.addEventListener('click',e=>{if(e.target===dialog)hide('backdrop');});
+  dialog.addEventListener('close',settle);
+  document.addEventListener('cs-match-end',()=>{ended=true;});
   document.addEventListener('cs-account-change',e=>{auth=e.detail;if(auth?.authenticated && dialog.open)dialog.close();});
   new MutationObserver(maybeShow).observe(document.body,{childList:true});
+  const menu=document.getElementById('main-menu');
+  if(menu)new MutationObserver(maybeShow).observe(menu,{attributes:true,attributeFilter:['class']});
   maybeShow();
 }
