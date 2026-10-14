@@ -4809,7 +4809,7 @@ if (HUB_ENABLED) {
 window.__CS_MAIN_READY__ = true;
 window.__gameLaunch?.ready('boot');
 // Convite de sala e perfil compartilhado (/u/<perfil>) chegam com destino: nem o convite de conta nem o da loja cobrem esse destino.
-void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),onReady:ready=>initLoginPrompt({...ready,skip:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),track:_loginPromptTrack}),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}syncPlayState();}});
+void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),onSession:auth=>{if(auth?.profile){nickEl.value=auth.profile.nick;nickEl.readOnly=true;}else{nickEl.value=localStorage.getItem(NICK_KEY) || '';nickEl.readOnly=false;}syncPlayState();},onReady:ready=>initLoginPrompt({...ready,skip:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),track:_loginPromptTrack})});
 initTretaStore({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala') || params.get('perfil')),onEquipped:skin=>{currentChar=skin.character;const def=CHARACTERS.find(c=>c.id===currentChar);currentTeam=ladoValido(def,currentTeam);currentFaction=currentTeam;localStorage.setItem('csbr-home-character',currentChar);localStorage.setItem('csbr-home-side',currentTeam);syncHomeCharacter();hubNavigate({personagem:currentChar},true);}});
 document.addEventListener('cs-treta-inventory-change',()=>syncHomeCharacter());
 if (inspectionScreen) {
