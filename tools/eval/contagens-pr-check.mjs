@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // CPR: contagem gerada não entra em PR (dois PRs abertos conflitavam no "N scripts"); só o release a reescreve.
-// Uso: node tools/eval/contagens-pr-check.mjs [--mutante=volatil-vira-estrutural|release-pula-volatil|arch-sem-mascara|autofix-release]
+// Uso: node tools/eval/contagens-pr-check.mjs [--mutante=volatil-vira-estrutural|release-pula-volatil|arch-sem-mascara|mesclar-com-cursor|autofix-release]
 import { execFileSync, spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -11,6 +11,7 @@ const MUTANTES = {
   'volatil-vira-estrutural': ['tools/gen-docs.mjs', "  numeros: 'volatil',", "  numeros: 'estrutural',"],
   'release-pula-volatil': ['tools/gen-docs.mjs', "classe === 'volatil' && !RELEASE &&", "classe === 'volatil' &&"],
   'arch-sem-mascara': ['tools/gen-arch.mjs', "const RELEASE = process.argv.includes('--release');", 'const RELEASE = true;'],
+  'mesclar-com-cursor': ['tools/gerado-modo.mjs', '(velha, k) => !usadas.has(k) && re.test(velha)', '(velha, k) => k > Math.max(-1, ...usadas) && re.test(velha)'],
   'autofix-release': ['.github/workflows/autofix.yml', 'node tools/gen-docs.mjs   ||', 'node tools/gen-docs.mjs --release ||'],
 };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
@@ -69,6 +70,24 @@ try {
   trocar('public/js/game.js', /^/, '  _contagensPr() {\n');
   if (passa('arch')) falhas.push('CPR3 método novo no game.js e o arch:check do PR passou: a lista de símbolos é estrutura');
   voltar('public/js/game.js');
+
+  // ---- método que muda de lugar: o PR reescreve a linha dele, não o índice inteiro
+  trocar('public/js/game.js', (t) => {
+    const g = t.split('\n');
+    const ini = g.findIndex((l) => /^ {2}_dmgArc\(/.test(l));
+    let fim = ini + 1;
+    while (fim < g.length && !/^ {2}[_a-zA-Z]\w*\s*\([^)]*\)\s*\{/.test(g[fim])) fim++;
+    if (ini < 0) return t;
+    const metodo = g.splice(ini, fim - ini);
+    g.splice(g.findIndex((l) => /^ {2}_dom\(/.test(l)), 0, ...metodo);
+    return g.join('\n');
+  });
+  spawnSync('node', [T(GEN.arch)], { cwd: TMP, encoding: 'utf8' });
+  const sobra = new Map();
+  for (const l of base.get('tools/eval/ARCH.md').split('\n')) sobra.set(l, (sobra.get(l) || 0) + 1);
+  const mexidas = lerT('tools/eval/ARCH.md').split('\n').filter((l) => !(sobra.get(l) > 0 && sobra.set(l, sobra.get(l) - 1))).length;
+  if (mexidas > 2) falhas.push(`CPR6 mover um método reescreve ${mexidas} linhas do ARCH.md no PR: o alinhamento perdeu o lugar e as linhas voltam a conflitar`);
+  voltar('public/js/game.js'); voltar('tools/eval/ARCH.md');
 
   // ---- cada bloco volátil: o PR não confere, o release confere
   const classes = Object.fromEntries([...fonte['tools/gen-docs.mjs'].match(/const CLASSE = \{([\s\S]*?)\n\};/)[1]
