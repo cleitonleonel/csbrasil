@@ -153,7 +153,8 @@ export class NetClient {
   constructor(url, { nome = null, room = null, codigo = null, pw = '', team = 'auto', ticket = '', wt = '', wtHashes = null, csha = '' } = {}) {
     // `sp` leva o subprotocolo para o gateway: quem escolhe a versão do snapshot é quem
     // vai decodificá-la, e no caminho WebTransport não existe handshake para negociar
-    const qs = new URLSearchParams({ team, ...(codigo ? { codigo } : room ? { room } : {}), ...(pw ? { pw } : {}), ...(nome ? { nome } : {}), ...(ticket ? { ticket } : {}), ...(/^[a-f0-9]{7,40}$/.test(csha) ? { csha } : {}) });
+    // `pronto=1`: este cliente avisa quando montou o mapa novo (o nó segura o round 1, com teto)
+    const qs = new URLSearchParams({ team, ...(codigo ? { codigo } : room ? { room } : {}), ...(pw ? { pw } : {}), ...(nome ? { nome } : {}), ...(ticket ? { ticket } : {}), ...(/^[a-f0-9]{7,40}$/.test(csha) ? { csha } : {}), pronto: '1' });
     this.url = `${url}${url.includes('?') ? '&' : '?'}${qs}`;
     this.wtUrl = wt ? `${wt}${wt.includes('?') ? '&' : '?'}${qs}&sp=${encodeURIComponent(SNAPSHOT_PROTOCOLS[0])}` : '';
     this.wtHashes = wtHashes;
@@ -172,6 +173,7 @@ export class NetClient {
     this.prev = null;
     this.seq = 0;
     this.onWelcome = null; this.onSnapshot = null; this.onSlot = null; this.onPartida = null; this.onClose = null;
+    this.proximo = null; this.onProximo = null;   // próximo mapa anunciado no placar (nó antigo nunca manda)
     this.onPersonagem = null;
     this.onChat = null; this._chatFila = [];
     // ── diagnóstico de rede (overlay do jogo) ──
@@ -272,7 +274,13 @@ export class NetClient {
           this.meta = m; this.yourEnt = m.yourEnt; this.yourTeam = m.yourTeam; this.espectador = !!m.espectador;
           this.snap = null; this.prev = null;   // snapshots do jogo velho não servem para o novo
           this.events.length = 0;               // eventos do jogo velho idem
+          this.proximo = null;
           this.onPartida?.(m);
+        } else if (m.type === 'proximo') {
+          if (typeof m.map === 'string' && m.map) {
+            this.proximo = { ...m, recebidoEm: Date.now() };
+            this.onProximo?.(this.proximo);
+          }
         } else if (m.type === 'slot') {
           // entrou em campo / virou espectador (o servidor confirma; a UI nunca decide sozinha)
           this.yourEnt = m.yourEnt; this.yourTeam = m.yourTeam; this.espectador = !!m.espectador;
@@ -339,6 +347,11 @@ export class NetClient {
   /* Só servidor que anuncia o recurso troca o corpo; servidor antigo ignora tipo desconhecido. */
   aceitaPersonagem() { return Array.isArray(this.meta?.recursos) && this.meta.recursos.includes('personagem'); }
   pedirPersonagem(id) { if (typeof id === 'string') this.tp?.enviar(JSON.stringify({ type: 'personagem', id })); }
+  /* Mapa novo montado: libera o round 1 no nó. Sem `partida` na meta (nó antigo) não há o que avisar. */
+  avisarPronto(partida) {
+    if (!Number.isInteger(partida)) return false;
+    return !!this.tp?.enviar(JSON.stringify({ type: 'pronto', partida }));
+  }
   // sair de campo e assistir: o corpo volta a ser bot e a partida segue cheia.
   espectar() { this.tp?.enviar(JSON.stringify({ type: 'espectar' })); }
 
