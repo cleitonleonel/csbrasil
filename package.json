@@ -25,6 +25,8 @@
     "docs": "node tools/gen-docs.mjs",
     "docs:check": "node tools/gen-docs.mjs --check",
     "docs:check:autoria": "node tools/gen-docs.mjs --check --autoria",
+    "docs:release": "node tools/gen-docs.mjs --release",
+    "docs:check:release": "node tools/gen-docs.mjs --check --release",
     "eval:docsautoria": "node tools/eval/docs-autoria-check.mjs",
     "eval:contagens-pr": "node tools/eval/contagens-pr-check.mjs",
     "syntax": "for f in public/js/*.js public/js/botbrain/*.js; do node --input-type=module --check < \"$f\" || exit 1; done",
