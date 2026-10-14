@@ -22,8 +22,10 @@ if(root) {
     if(!r.ok) {if(data.error==='session_expired' && requestAuth===auth){auth=null;state=null;profileId='';clearConversation();content.replaceChildren();document.getElementById('social-unread').textContent='';document.getElementById('hub-social-unread').textContent='';renderAccount();}throw new Error(data.error || 'social_unavailable');}
     return data;
   }
-  function button(text,fn,cls='') {
-    const b=el('button',text,cls);b.type='button';b.onclick=async()=>{b.disabled=true;message('Só um instante…');try{await fn();message('Tá anotado.');}catch(e){message(errors[e.message] || 'Não deu certo agora. Tente de novo.');}finally{b.disabled=false;}};return b;
+  // `feedback`: aviso ao lado do botão. O #social-status fica no topo da comunidade e some da tela quando o perfil rola.
+  function button(text,fn,cls='',feedback=null) {
+    const say=t=>{message(t);if(feedback)feedback.textContent=t;};
+    const b=el('button',text,cls);b.type='button';b.onclick=async()=>{b.disabled=true;say('Só um instante…');try{await fn();say('Tá anotado.');}catch(e){say(errors[e.message] || 'Não deu certo agora. Tente de novo.');}finally{b.disabled=false;}};return b;
   }
   function link(text,href) {const a=el('a',text);a.href=href;return a;}
   const empty=(text)=>el('p',text,'social-muted');
@@ -32,6 +34,13 @@ if(root) {
   function input(value='',max=280,type='text') {const i=el('input');i.type=type;i.value=value;if(Number.isInteger(max))i.maxLength=max;return i;}
   const date=(value)=>value?new Date(value).toLocaleString('pt-BR'):'Ainda sem atividade';
   function presenceText(p) {if(!p)return 'Presença privada';if(p.game)return `Jogando ${p.game.mode==='ctf'?'CAPTURA':'ABATE'} · ${p.game.map}`;return p.online?'Online na resenha':`Offline · ${date(p.last_active_at)}`;}
+  // Pedido de amizade: o banco só aceita alvo com conta (social_action, 040). Perfil de histórico sem conta responde not_found.
+  let profileNotice=null;const noAccountTargets=new Set();
+  async function requestFriend(p){
+    try{const out=await api('/api/social',{action:'request',target:p.id});profileNotice={id:p.id,text:out?.state==='accepted'?'Pedido aceito: agora vocês são amigos.':'Pedido de amizade enviado. Ele aparece na CENTRAL de quem recebe.'};}
+    catch(e){if(e.message!=='not_found')throw e;noAccountTargets.add(p.id);profileNotice={id:p.id,text:'Este jogador ainda não tem conta na resenha, então não recebe pedido de amizade.'};}
+    await refresh();await render();
+  }
   const names={first_kill:'Primeiro abate confirmado',ten_kills:'Dez abates na conta',first_win:'Primeira vitória',one_hour:'Uma hora de arena ativa'};
   async function refresh(){
     const owner=auth?.profile?.id,next=owner?await api('/api/social'):null;if(owner!==auth?.profile?.id)return;
@@ -78,16 +87,17 @@ if(root) {
     const character=profileCharacterCard(p.last_character);c.append(character || empty('Nenhum personagem disponível para mostrar.'));
     const stats=el('div','','social-stats');
     for(const [label,value] of [['PONTOS',p.points],['PARTIDAS',p.matches],['RODADAS GANHAS',p.round_wins ?? p.wins],['RODADAS PERDIDAS',p.round_losses ?? p.losses],['ABATES',p.kills],['MORTES',p.deaths],['K/D',p.kd],['HORAS ATIVAS CONFIRMADAS',(Number(p.verified_play_seconds ?? p.play_seconds)/3600).toFixed(2)]]){const s=el('div','','social-stat');s.append(el('strong',String(value)),el('span',label));stats.append(s);}c.append(stats,empty(p.source==='historical_plus_server_verified'?`Histórico preservado: ${p.legacy_points} pontos. Após a atualização: ${p.verified_points} pontos confirmados pelo servidor. Rodadas ganhas e horas ativas são métricas confirmadas; o tempo antigo fica no histórico.`:'Estatísticas confirmadas pelo servidor. Tempo no menu, espectador e AFK não contam.'),empty(presenceText(p.presence)));
+    const notice=el('p',profileNotice?.id===p.id?profileNotice.text:'','social-inline-status');notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
     const buttons=el('div','','social-actions');buttons.append(button('COPIAR LINK',async()=>navigator.clipboard.writeText(`${root.dataset.site}${p.url}`)));
     if(p.visibility==='public'){const publicLink=link('ABRIR PERFIL PÚBLICO ↗',p.url);publicLink.dataset.publicProfile='true';buttons.append(publicLink);}
     if(auth?.profile && auth.profile.id!==p.id) {
-      if(p.relationship==='friend'){if(state?.messages_enabled)buttons.append(button('MANDAR MENSAGEM',()=>openConversation(p)));buttons.append(button('CHAMAR PARA A SALA',()=>action('invite',p.id)),button('REMOVER AMIGO',()=>action('remove',p.id)));}
-      else if(p.relationship==='incoming')buttons.append(button('ACEITAR AMIZADE',()=>action('accept',p.id)),button('RECUSAR',()=>action('decline',p.id)));
-      else if(p.relationship==='outgoing')buttons.append(button('CANCELAR PEDIDO',()=>action('cancel',p.id)));
-      else buttons.append(button('PEDIR AMIZADE',()=>action('request',p.id)));
-      buttons.append(button('BLOQUEAR',async()=>{await action('block',p.id);profileId='';await render();},'social-danger'),button('DENUNCIAR',()=>showReport(p)));
+      if(p.relationship==='friend'){if(state?.messages_enabled)buttons.append(button('MANDAR MENSAGEM',()=>openConversation(p),'',notice));buttons.append(button('CHAMAR PARA A SALA',()=>action('invite',p.id),'',notice),button('REMOVER AMIGO',()=>action('remove',p.id),'',notice));}
+      else if(p.relationship==='incoming')buttons.append(button('ACEITAR AMIZADE',()=>action('accept',p.id),'',notice),button('RECUSAR',()=>action('decline',p.id),'',notice));
+      else if(p.relationship==='outgoing')buttons.append(button('CANCELAR PEDIDO',()=>action('cancel',p.id),'',notice));
+      else if(!noAccountTargets.has(p.id))buttons.append(button('PEDIR AMIZADE',()=>requestFriend(p),'',notice));
+      buttons.append(button('BLOQUEAR',async()=>{await action('block',p.id);profileId='';await render();},'social-danger',notice),button('DENUNCIAR',()=>showReport(p),'',notice));
     }
-    c.append(buttons);
+    c.append(buttons,notice);
     if(p.socials?.length || p.social_link){const socials=profileSocialLinks(p);if(socials.length){const row=el('nav','','profile-socials');row.setAttribute('aria-label','Redes públicas');for(const s of socials)row.append(profileSocialLink(s));c.append(row);}}
     c.append(el('h3','Conquistas'));
     const achievements=el('ul','','social-list');for(const a of p.achievements)achievements.append(el('li',`${names[a.key] || a.key} · ${date(a.at)}`));c.append(p.achievements.length?achievements:empty('A primeira conquista vem da primeira treta confirmada.'));
