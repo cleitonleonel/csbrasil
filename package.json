@@ -31,6 +31,7 @@
     "prod:coherence": "node tools/eval/prod-coherence.mjs",
     "eval:modgraph": "node tools/eval/module-graph-check.mjs && node tools/eval/module-graph-check.mjs --mutante=06-09",
     "eval:convidaamigos": "node tools/eval/convida-amigos-check.mjs && node tools/eval/convida-amigos-check.mjs --mutante=sem-whatsapp",
+    "eval:placamamigo": "node tools/eval/placar-amigo-check.mjs && node tools/eval/placar-amigo-check.mjs --mutante=sem-botao && node tools/eval/placar-amigo-check.mjs --mutante=sem-pid && node tools/eval/placar-amigo-check.mjs --mutante=clique-mudo",
     "ops:diag": "node tools/ops/diagnose.mjs",
     "ops:diag:local": "node tools/ops/diagnose.mjs --local",
     "ops:selftest": "node tools/ops/selftest.mjs",
