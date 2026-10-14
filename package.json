@@ -556,6 +556,8 @@
     "//eval:game-pages": "Contrato do HTML de todas as páginas do lobby e cobertura AEO, com mutações que quebram canonical, shell e índice.",
     "eval:telemetria-coorte": "node tools/eval/telemetria-coorte-check.mjs",
     "eval:personagem-escolhido": "node tools/eval/personagem-escolhido-check.mjs",
+    "//eval:hub-about-links": "Clica cada link do SOBRE O JOGO no lobby: guia abre no iframe ?embed=1, link de outra origem em nova aba. BASE obrigatório.",
+    "eval:hub-about-links": "node tools/eval/hub-about-links-browser.mjs && ! node tools/eval/hub-about-links-browser.mjs --mutante=termos-fora",
     "eval:game-pages": "node tools/eval/game-pages-check.mjs && node tools/eval/game-pages-check.mjs --mutate",
     "eval:wfconcurrency": "node tools/eval/workflow-concurrency-check.mjs"
   },
