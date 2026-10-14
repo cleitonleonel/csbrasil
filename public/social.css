@@ -64,7 +64,7 @@ body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{displa
 .profile-socials{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.profile-social{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 12px;border:1px solid #454b40;background:#0d1116;color:#eff0e9;text-decoration:none;font:600 13px/1 system-ui,sans-serif}.profile-social:hover,.profile-social:focus-visible{border-color:#b4d92e;color:#b4d92e}.profile-social-icon{display:inline-flex;flex:none;width:18px;height:18px}.profile-social-icon svg{width:100%;height:100%;fill:currentColor}
 .social-profile-views{margin:-6px 0 18px;color:#c3ccbb;font:600 13px/1.4 system-ui,sans-serif;letter-spacing:.2px}
 
-/* Convite de login na abertura (login-prompt.js): os botões são os .account-provider oficiais do
+/* Convite de login pós-partida (login-prompt.js): os botões são os .account-provider oficiais do
    modal de conta (#910); aqui só o tamanho do convite. */
 .login-prompt .account-button{width:100%;min-height:52px}
 .login-prompt{box-sizing:border-box;width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:0;border:1px solid #535846;border-top:4px solid #b4d92e;background:#0d1115f7;color:#f0f0ed;box-shadow:0 30px 100px #000b;font-family:var(--font)}
@@ -83,6 +83,13 @@ body:has(#main-menu:not(.hidden)[data-hub-tab=comunidade]) #rotate-prompt{displa
 .login-prompt-guest{display:block;width:100%;min-height:44px;margin:12px 0 0;padding:10px;border:0;background:none;color:#e4e6df;font:600 15px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
 .login-prompt-guest:hover{color:#c6e956}
 .login-prompt-card>.login-prompt-note{margin:4px 0 0;color:#a9ada3;font:13px/1.5 system-ui,sans-serif;text-align:center}
+.login-prompt-treta{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start;margin:4px 0 14px;padding:14px;border:1px solid #6b5a1e;background:#1b1708}
+.login-prompt-treta[hidden]{display:none}
+.login-prompt-treta img{width:64px;height:64px;object-fit:contain}
+.login-prompt-treta p{margin:0;color:#f3e7b8;font:600 15px/1.4 system-ui,sans-serif}
+.login-prompt-treta ul{margin:8px 0 0;padding:0;list-style:none;color:#d9dbd2;font:14px/1.6 system-ui,sans-serif}
+.login-prompt-treta b{color:#f5c400;font-weight:700}
+.login-prompt-treta .login-prompt-treta-cap{margin-top:6px;color:#b9bcb1;font:500 13px/1.4 system-ui,sans-serif}
 .login-prompt :focus-visible{outline:2px solid #d0ee7d;outline-offset:3px}
-@media(max-width:480px){.login-prompt-card{padding:18px 18px 14px}.login-prompt h2{font-size:38px}}
+@media(max-width:480px){.login-prompt-card{padding:18px 18px 14px}.login-prompt h2{font-size:38px}.login-prompt-treta{grid-template-columns:48px 1fr;gap:12px;padding:12px}.login-prompt-treta img{width:48px;height:48px}}
 .social-inline-status{min-height:20px;margin:-6px 0 14px;color:#b4d92e;font:600 14px/1.4 system-ui,sans-serif}.social-inline-status:empty{display:none}
