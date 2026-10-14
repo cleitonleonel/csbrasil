@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.99`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.100`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,42 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.100] — 2026-10-14
+
+### Mudado
+- Lote automação: fila de merge e contagens fora dos PRs (#975)
+- Regenera os blocos gerados do lote de automação
+- Regenera blocos gerados depois da mescla da main
+- Lê o on: do MGQ1 linha a linha, com forma inline
+- Junta o cabeçalho duplicado da RLS10
+- Roda a régua das contagens no pr-fast
+- Exige a régua das contagens no pr-fast (PI3)
+- Adiciona mutante que aceita marcador de conflito
+- Reprova marcador de conflito no bloco gerado do ARCH.md
+- Reprova marcador de conflito em qualquer bloco gerado
+- Cobra na régua marcador de conflito em bloco gerado
+- Isola o git da cópia da régua do GIT_DIR do hook
+- Alinha valor volátil sem cursor no modo PR
+- Cobra na régua que mover um método não reescreve o ARCH.md
+- Mede a régua das contagens numa cópia da árvore
+- Reprova o ratchet quando o git log do lote falha
+- Tira portão e smoke do lote da fila
+- Cobra portão e smoke fora do lote da fila
+- Regenera os blocos gerados em modo release
+- Atualiza o comentário do autofix para o modo PR
+- Confere gerado inteiro só no commit do release
+- Regenera os blocos gerados em modo release no trem
+- Deixa linhas e tamanhos do ARCH.md para o release
+- Deixa contagens voláteis do gen-docs para o release
+- Adiciona régua das contagens geradas fora do PR
+- Regenera blocos gerados com a régua da fila
+- Proíbe segredo e escrita em workflow do lote da fila
+- Filtra portão e smoke pelo diff do lote da fila
+- Cobra o filtro do lote da fila no gatilho do portão
+- Roda versao-bumpada e ratchet no lote da fila
+- Roda build e dco no lote da fila de merge
+- Adiciona régua da fila de merge nos checks obrigatórios
 
 ## [2.1.0-alpha.99] — 2026-10-14
 
