@@ -56,7 +56,7 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
   const dialog=document.getElementById('login-prompt');
   if(!dialog || skip)return;
   const list=document.getElementById('login-prompt-providers'),status=document.getElementById('login-prompt-status');
-  let previousFocus=null;
+  let previousFocus=null,recovery=null;
   const hide=reason=>{
     if(!dialog.open)return;
     if(reason){writeRecord({dismissedAt:Date.now(),matches:0});emit(track,'login_prompt_dismissed',{reason});}
@@ -66,17 +66,24 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
     const b=document.createElement('button');b.type='button';b.className=cls;b.dataset.provider=provider;
     if(PROVIDER_ICONS[provider]){const i=document.createElement('span');i.className='account-provider-icon';i.innerHTML=PROVIDER_ICONS[provider];b.append(i);}
     b.append(document.createTextNode(label));
-    b.onclick=async()=>{b.disabled=true;emit(track,'login_prompt_provider_click',{provider});try{await fn();}catch(e){status.textContent=accountError(e);b.disabled=false;}};
+    b.onclick=async()=>{b.disabled=true;emit(track,'login_prompt_provider_click',{provider});try{await fn(true);}catch(e){
+      status.textContent=accountError(e);b.disabled=false;
+      if(e.message==='guest_invalid'){
+        if(!recovery){recovery=document.createElement('button');recovery.type='button';recovery.className='account-button';recovery.textContent='Entrar sem vincular o convidado';list.append(recovery);}
+        recovery.onclick=async()=>{recovery.disabled=true;try{await fn(false);}catch(error){status.textContent=accountError(error);recovery.disabled=false;}};
+      }
+    }};
     return b;
   };
   const draw=()=>{
-    list.replaceChildren();status.textContent='';
+    list.replaceChildren();recovery=null;status.textContent='';
     for(const [id,name] of PROVIDERS) {
       const provider=providerId(id,config);
       if(!config.providers?.includes(provider))continue;
-      list.append(button('account-button account-provider login-prompt-provider',`Continuar com ${name}`,provider,async()=>{
+      list.append(button('account-button account-provider login-prompt-provider',`Continuar com ${name}`,provider,async linkGuest=>{
         const choice=privacyChoice();
-        const out=await socialApi('/api/social-auth',{action:'start',provider,returnTo:'game',newsletter:false,...(choice?{analytics:choice.analytics}:{}),...(guestProof()?{guest:guestProof()}:{})});
+        const proof=linkGuest?guestProof():null;
+        const out=await socialApi('/api/social-auth',{action:'start',provider,returnTo:'game',newsletter:false,...(choice?{analytics:choice.analytics}:{}),...(proof?{guest:proof}:{})});
         leaveTo(out.url);
       }));
     }
