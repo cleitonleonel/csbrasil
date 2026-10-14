@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { casa } from '../../../scripts/ci/gatilho.mjs';
 
 const wf = (n) => readFileSync(fileURLToPath(new URL(`../../../.github/workflows/${n}`, import.meta.url)), 'utf8');
 
@@ -30,7 +31,9 @@ test('prod-watch.yml: aquece o edge depois do purge, só no deployment_status, s
 test('portao-browser.yml: eval:boot e os cenários de navegador do selftest rodam no PR que toca o boot', () => {
   const s = wf('portao-browser.yml');
   assert.match(s, /run: npm run eval:boot/); assert.match(s, /run: node tools\/ops\/selftest\.mjs --so=navegador/);
-  for (const p of ['public/js/main.js', 'public/js/ops.js', 'src/pages/index.astro', 'tools/eval/boot-check.mjs', 'tools/ops/**']) assert.ok(s.includes(`- '${p}'`), `paths sem ${p}`);
+  // O filtro saiu do `paths:` para scripts/ci/gatilho.mjs (job `decide`): o contrato é o mesmo.
+  assert.match(s, /node scripts\/ci\/gatilho\.mjs portao/);
+  for (const p of ['public/js/main.js', 'public/js/ops.js', 'src/pages/index.astro', 'tools/eval/boot-check.mjs', 'tools/ops/selftest.mjs']) assert.ok(casa('portao', p), `gatilho sem ${p}`);
 });
 
 /* O portão LENTO em dois jobs paralelos (14/10/2026): o Sertão sozinho custava 8,7 a 12,9 min
