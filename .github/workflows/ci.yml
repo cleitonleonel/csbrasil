@@ -52,6 +52,9 @@ jobs:
       # aqui verde. O runner roda todas e só reprova no fim (PI3 cobra esta lista).
       - name: Réguas de workflow, release, privacidade e escolha (node puro)
         run: node tools/eval/runner.mjs eval:wfsecret eval:wflocal eval:wftimeout eval:wfconcurrency eval:deploygate eval:autofix eval:mutcega eval:portaointeiro eval:release eval:privacy eval:noescolha
+      # Job que só lê histórico ou poucos arquivos faz checkout leve (CL1). Node puro.
+      - name: Checkout leve nos jobs que só leem histórico
+        run: npm run eval:wfcheckout
       - name: Syntax check do jogo (public/js)
         run: npm run syntax
       - name: Grafo de módulos da árvore fecha (import nomeado tem export, #524)
@@ -266,9 +269,11 @@ jobs:
     timeout-minutes: 5
     if: github.event_name == 'pull_request'
     steps:
+      # Leve: o dco lê mensagem de commit (`git log`/`git show -s`), nunca blob (CL1).
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
+          filter: blob:none
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.13'
