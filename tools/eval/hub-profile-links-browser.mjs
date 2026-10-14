@@ -87,6 +87,13 @@ try {
   // 3. Chegada pelo CTA "VER PERFIL NO JOGO" da página pública.
   await enter(`&secao=comunidade&social=profile&perfil=${ID}`);
   await profileInHub('chegada por ?perfil=', ID);
+
+  // 4. Trocar de aba social limpa o perfil=, senão recarregar volta ao perfil alheio.
+  await page.click('.social-tabs button[data-tab="friends"]');
+  await page.waitForTimeout(300);
+  const after = new URL(page.url()).searchParams;
+  if (after.has('perfil')) failures.push(`aba AMIGOS manteve perfil=${after.get('perfil')} na URL`);
+  else console.log('  ok aba AMIGOS limpou perfil= da URL');
 } finally {
   await browser.close();
 }
