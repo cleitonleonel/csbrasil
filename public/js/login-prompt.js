@@ -1,7 +1,8 @@
-/* Convite de login na abertura (dono, 14/10/2026): não bloqueia, 1x por visita, cede ao passo de entrada.
- * Recusado volta após 3 partidas ou 24 h. Régua: tools/eval/login-prompt-check.mjs. */
+/* Convite de login depois da partida (dono, 14/10/2026): nada abre antes da 1ª partida terminar.
+ * Não bloqueia, 1x por visita; recusado volta após 3 partidas ou 24 h. Régua: tools/eval/login-prompt-check.mjs. */
 import {analyticsAllowed,privacyChoice} from './privacy-preferences.js';
 import {PROVIDER_ICONS,socialApi,guestProof,accountError,leaveTo} from './account-entry.js';
+import {TRETA_DEFAULT_REWARDS,TRETA_COIN_ART} from './treta-catalog.js';
 
 export const LOGIN_PROMPT_KEY='cs_login_prompt';
 export const LOGIN_PROMPT_SESSION_KEY='cs_login_prompt_seen';
@@ -36,7 +37,8 @@ export function inMatch() {
   return !!document.getElementById('main-menu')?.classList.contains('hidden');
 }
 /* Decisão pura: cada guarda é uma linha para o mutante da régua conseguir apagá-la. */
-export function loginPromptDue({auth,config,embedded,playing,accountBusy,seen,record,now=Date.now()}) {
+export function loginPromptDue({auth,config,ended,embedded,playing,accountBusy,seen,record,now=Date.now()}) {
+  if(!ended)return false;
   if(auth?.authenticated)return false;
   if(embedded)return false;
   if(playing)return false;
@@ -50,13 +52,43 @@ function emit(track,step,data) {
   if(!analyticsAllowed())return;
   try{track(step,data);}catch{ /* medição nunca derruba o convite */ }
 }
+const money=value=>`T$\u00a0${new Intl.NumberFormat('pt-BR').format(value)}`;   // espaço fixo: o valor não quebra longe do T$
+/* Valores da campanha que o servidor paga (/api/treta). Fora da janela de quests ou sem resposta, o convite não promete T$. */
+export function tretaPitch(campaign,mode,now=Date.now()) {
+  if(!campaign)return null;
+  const c={...TRETA_DEFAULT_REWARDS,...campaign};
+  if(!(now>=Date.parse(c.starts_at) && now<Date.parse(c.ends_at)))return null;
+  if(![c.mp_reward,c.sp_reward,c.email_reward,c.daily_match_cap].every(v=>Number.isSafeInteger(v) && v>0))return null;
+  return {
+    headline:mode==='multiplayer'?`Logado, essa partida multiplayer podia render ${money(c.mp_reward)}.`:`Essa foi de treino. Logado, cada partida solo premiada rende ${money(c.sp_reward)}.`,
+    items:[[money(c.mp_reward),'por partida multiplayer'],[money(c.sp_reward),'por partida solo premiada'],[money(c.email_reward),'ao confirmar o e-mail, uma vez só']],
+    cap:`Até ${money(c.daily_match_cap)} por dia em partidas. Os T$ viram skin na LOJA.`,
+  };
+}
 const providerId=(id,config)=>id==='x' && config.providers?.includes('twitter') && !config.providers?.includes('x')?'twitter':id;
 
 export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,skip=false,track=()=>{}}={}) {
   const dialog=document.getElementById('login-prompt');
   if(!dialog || skip)return;
   const list=document.getElementById('login-prompt-providers'),status=document.getElementById('login-prompt-status');
-  let previousFocus=null,recovery=null;
+  const title=document.getElementById('login-prompt-title'),kicker=dialog.querySelector('header small'),treta=document.getElementById('login-prompt-treta');
+  const plain={title:title?.textContent,kicker:kicker?.textContent};
+  let previousFocus=null,recovery=null,ended=false,owed=false,mode='singleplayer',campaign=null,pitched=false;
+  // Fim da decisão pós-partida (mostrou e fechou, ou não era a vez): a apresentação da loja vem depois.
+  const settle=()=>{if(!owed)return;owed=false;document.dispatchEvent(new CustomEvent('cs-pos-partida',{detail:{treta:pitched}}));pitched=false;};
+  const drawTreta=()=>{
+    const pitch=tretaPitch(campaign,mode);
+    pitched=!!pitch;
+    if(title)title.textContent=pitch?'Jogar logado rende T$':plain.title;
+    if(kicker)kicker.textContent=pitch?'FIM DE PARTIDA · SUA CONTA':plain.kicker;
+    if(!treta)return;
+    treta.hidden=!pitch;
+    if(!pitch)return;
+    const img=treta.querySelector('img');if(img && !img.getAttribute('src'))img.src=TRETA_COIN_ART.poster;
+    document.getElementById('login-prompt-treta-headline').textContent=pitch.headline;
+    document.getElementById('login-prompt-treta-list').replaceChildren(...pitch.items.map(([value,label])=>{const li=document.createElement('li'),b=document.createElement('b');b.textContent=value;li.append(b,document.createTextNode(` ${label}`));return li;}));
+    document.getElementById('login-prompt-treta-cap').textContent=pitch.cap;
+  };
   const hide=reason=>{
     if(!dialog.open)return;
     if(reason){writeRecord({dismissedAt:Date.now(),matches:0});emit(track,'login_prompt_dismissed',{reason});}
@@ -93,9 +125,12 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
   const maybeShow=()=>{
     if(document.getElementById('boot-splash'))return;
     dialog.dataset.ready='true';   // decidiu com a splash fora; a régua espera isto
+    if(!ended || inMatch())return;   // espera a volta ao menu depois da tela de resultado
     if(document.querySelector('dialog[open]'))return;   // não empilha (passo de entrada, loja TRETA)
-    if(!loginPromptDue({auth,config,embedded:isEmbedded(),playing:inMatch(),accountBusy:accountBusy(),seen:seenThisVisit(),record:readRecord()}))return;
-    markSeen();draw();previousFocus=document.activeElement;
+    const due=loginPromptDue({auth,config,ended,embedded:isEmbedded(),playing:inMatch(),accountBusy:accountBusy(),seen:seenThisVisit(),record:readRecord()});
+    ended=false;owed=true;
+    if(!due){settle();return;}
+    markSeen();draw();drawTreta();previousFocus=document.activeElement;
     dialog.showModal();
     list.querySelector('button')?.focus();
     emit(track,'login_prompt_shown',{});
@@ -104,7 +139,14 @@ export function initLoginPrompt({auth=null,config=null,accountBusy=()=>false,ski
   document.getElementById('login-prompt-guest').onclick=()=>hide('guest');
   dialog.addEventListener('cancel',e=>{e.preventDefault();hide('esc');});
   dialog.addEventListener('click',e=>{if(e.target===dialog)hide('backdrop');});
+  dialog.addEventListener('close',settle);
+  document.addEventListener('cs-match-end',e=>{
+    ended=true;mode=e.detail?.mode==='multiplayer'?'multiplayer':'singleplayer';
+    socialApi('/api/treta').then(out=>{campaign=out?.campaign || null;if(dialog.open)drawTreta();}).catch(()=>{});
+  });
   document.addEventListener('cs-account-change',e=>{auth=e.detail;if(auth?.authenticated && dialog.open)dialog.close();});
   new MutationObserver(maybeShow).observe(document.body,{childList:true});
+  const menu=document.getElementById('main-menu');
+  if(menu)new MutationObserver(maybeShow).observe(menu,{attributes:true,attributeFilter:['class']});
   maybeShow();
 }

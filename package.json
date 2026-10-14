@@ -571,6 +571,8 @@
     "eval:treta-nomes": "node tools/eval/treta-nomes-reais-check.mjs && node tools/eval/treta-nomes-reais-check.mjs --mutations",
     "eval:treta-video": "node tools/eval/treta-skin-video-check.mjs && node tools/eval/treta-skin-video-check.mjs --mutations",
     "eval:treta-video-hover": "node tools/eval/treta-video-hover-browser.mjs && node tools/eval/treta-video-hover-browser.mjs --mutations",
+    "//eval:treta-vitrine": "Vitrine SKINS NOVAS na aba JOGAR com a API da loja simulada. Precisa de BASE com tools/eval/serve.mjs numa porta própria.",
+    "eval:treta-vitrine": "node tools/eval/treta-vitrine-browser.mjs && node tools/eval/treta-vitrine-browser.mjs --mutations",
     "eval:treta-coins": "node tools/eval/treta-coins-art-check.mjs && node tools/eval/treta-coins-art-check.mjs --mutations",
     "eval:treta-classic": "node tools/eval/treta-classic-coin-check.mjs && node tools/eval/treta-classic-coin-check.mjs --mutations",
     "// ranking-home": "Relato: status SSR contradizia o ranking carregado; 38 estados dos renderers reais, sem browser/rede.",

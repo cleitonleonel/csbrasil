@@ -200,7 +200,8 @@ export async function initAccountEntry({onSession=()=>{},onReady=()=>{},skipProm
   const view=document.getElementById('hub-view-profile');
   if(view)view.onclick=event=>{event.preventDefault();document.querySelector('[data-hub-tab=comunidade]')?.click();document.dispatchEvent(new CustomEvent('cs-community-open',{detail:{tab:'profile'}}));};
   const failedReturn=new URLSearchParams(location.search).has('auth_error');
-  const wantsPrompt=()=>failedReturn || (auth?.authenticated?!auth.profile:!localStorage.getItem('awpbr_nick')?.trim());
+  // Só abre sozinho para quem já pediu entrada: link expirado ou conta sem nick. Visitante joga primeiro.
+  const wantsPrompt=()=>failedReturn || (auth?.authenticated && !auth.profile);
   const maybePrompt=()=>{if(loading || skipPrompt || dismissed || dialog.open || document.getElementById('boot-splash') || document.getElementById('main-menu')?.classList.contains('hidden'))return;if(wantsPrompt()){show();if(failedReturn)body.append(node('p','Esse link de entrada expirou ou foi aberto em outro navegador. Peça um novo link.','account-entry-status'));}};
   const observer=new MutationObserver(maybePrompt);observer.observe(document.body,{childList:true});
   async function hydrate(){loading=true;loadError=null;if(dialog.open)draw();try{[auth,config]=await Promise.all([loadAccount(),loadAuthOptions()]);acceptAccount(auth);onSession(auth);await identity();}catch(e){loadError=e;}finally{loading=false;if(dialog.open)draw();maybePrompt();}}
