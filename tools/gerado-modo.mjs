@@ -8,21 +8,17 @@ export const limpa = (t) => t.replace(/[\u0001\u0002]/g, '');
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const esqueleto = (linha) => new RegExp(`^${linha.split(/\u0001[^\u0002]*\u0002/).map(esc).join('.*?')}$`);
 
-/* Alinha o modelo com o texto atual linha a linha, em ordem: linha com valor volátil cujo
-   esqueleto casa uma linha atual fica com a atual; sem par, sai com o valor medido. */
+/* Linha com valor volátil fica com a primeira linha atual AINDA LIVRE de mesmo esqueleto
+   (sem cursor: símbolo que muda de lugar não arrasta o resto); sem par, sai com o valor medido. */
 export function mesclar(modelo, atual) {
   const antigas = (atual || '').split('\n');
-  let cursor = 0;
+  const usadas = new Set();
   return modelo.split('\n').map((linha) => {
-    if (!linha.includes(ABRE)) {
-      const i = antigas.indexOf(linha, cursor);
-      if (i >= 0) cursor = i + 1;
-      return linha;
-    }
+    if (!linha.includes(ABRE)) return linha;
     const re = esqueleto(linha);
-    for (let i = cursor; i < antigas.length; i++) {
-      if (re.test(antigas[i])) { cursor = i + 1; return antigas[i]; }
-    }
-    return limpa(linha);
+    const i = antigas.findIndex((velha, k) => !usadas.has(k) && re.test(velha));
+    if (i < 0) return limpa(linha);
+    usadas.add(i);
+    return antigas[i];
   }).join('\n');
 }
