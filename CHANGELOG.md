@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.96`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.97`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,31 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.97] — 2026-10-14
+
+### Mudado
+- Agent: Claude (#918)
+- Agent: Claude (#945)
+- Agent: Claude (#946)
+- Agent: Claude (#947)
+- Agent: Claude (#946)
+- Lote loja: moedas, nomes das skins, LOJA e privacidade (#951)
+- Dar nomes de paródia às skins das primeiras-damas
+- Regenera as contagens da documentação
+- Regenerar contagens da documentação
+- Medir o rótulo da aba da loja com mutantes
+- Trocar o rótulo LOJA T$ do hub por LOJA
+- Regenerar contagens da documentação
+- Reprovar nome de político real na loja
+- Dar às skins o nome do personagem do jogo
+- Regenerar contagens da documentação
+- Medir as sete moedas da loja com mutantes
+- Mostrar as sete moedas com arte na loja
+- Adicionar arte das seis moedas TRETA$ que faltavam
+- Recortar moeda TRETA$ crua no formato da do Saci
+- Renomear a moeda Zé Gotinha para Zé da Gotinha
+- Disclose anonymous aggregate counting in privacy
 
 ## [2.1.0-alpha.96] — 2026-10-14
 
