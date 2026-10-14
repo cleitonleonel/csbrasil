@@ -4569,19 +4569,25 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
     });
   };
   // Próximo mapa anunciado no início do placar: pré-carrega enquanto o placar está na tela.
-  net.onProximo = (m) => { if (mpSessao?.net === net) mpPreCarregarProximo(m); };
+  net.onProximo = (m) => {
+    if (mpSessao?.net !== net) return;
+    // erro síncrono aqui não pode subir: no WebTransport ele derrubaria o laço de leitura
+    try { mpPreCarregarProximo(m); } catch (e) { console.warn('[mp] próximo mapa falhou (a virada carrega):', e && e.message); }
+  };
   // Nova partida no servidor (mapa girou): mesmo conteúdo do welcome, remonta por cima.
   // Sem isto o cliente ficava no mapa velho com ids mortos — BUG-112 (KNOWN-BUGS.md).
   net.onPartida = async (m) => {
     if (mpSessao?.net !== net) return;
-    mpPararContagemProximo();
-    mpSessao.chat?.aoMudarMeta(net.meta);
-    if (noServeMapaParado(m.map, net)) return;
-    mpGuardarEscolhaSp();
-    if (MAPS[m.map]) currentMap = m.map;
-    matchMode = m.ctf ? 'ctf' : 'rounds';
-    // o nó segura o round 1 até este aviso (teto de 10 s lá); vai mesmo se a montagem falhar
-    try { await mpMontarPartida(net, m); } finally { if (mpSessao?.net === net) net.avisarPronto(m.partida); }
+    // o nó segura o round 1 até o `pronto` (teto de 10 s lá): ele sai por qualquer caminho
+    try {
+      mpPararContagemProximo();
+      mpSessao.chat?.aoMudarMeta(net.meta);
+      if (noServeMapaParado(m.map, net)) return;
+      mpGuardarEscolhaSp();
+      if (MAPS[m.map]) currentMap = m.map;
+      matchMode = m.ctf ? 'ctf' : 'rounds';
+      await mpMontarPartida(net, m);
+    } finally { if (mpSessao?.net === net) net.avisarPronto(m.partida); }
   };
   await mpMontarPartida(net, welcome);
 }
@@ -4590,7 +4596,12 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
    ids que o nó anunciou; o _startGame da virada encontra tudo em cache. A tela de fim troca
    "PRÓXIMO MAPA CARREGANDO…" pelo nome e pela contagem; VOLTAR AO MENU segue ao lado. */
 let mpContagemProximo = null;
-function mpPararContagemProximo() { clearInterval(mpContagemProximo); mpContagemProximo = null; }
+function mpPararContagemProximo() {
+  clearInterval(mpContagemProximo); mpContagemProximo = null;
+  // partida seguinte sem `proximo` (nó antigo) não pode herdar o nome do mapa de agora
+  const rotulo = $('match-next');
+  if (rotulo) rotulo.textContent = tr('PRÓXIMO MAPA CARREGANDO…');
+}
 function mpPreCarregarProximo(m) {
   const plano = planoPreload(m, { maps: MAPS, glbChars: GLB_CHARS, weaponIds: WEAPON_IDS });
   if (!plano) return;
