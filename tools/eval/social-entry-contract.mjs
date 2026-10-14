@@ -130,9 +130,10 @@ await check('E01','community rendered in game root',()=> {
   const fora=[...index.matchAll(/<a\b[^>]*href=["'](\/comunidade[^"']*)["']/g)].map(m=>m[1]).filter(href=>!rotaDoCaminho(href.split('?')[0]));
   assert.deepEqual(fora,[],'game menu still navigates outside game');
 });
-await check('E02','no-nick account prompt opens after boot inside game',async()=> {
+await check('E02','no-nick visitor reaches the menu without the account prompt (owner, 14/10/2026); manual entry keeps the guest choice',async()=> {
   assert(entrySource,'shared account entry is absent');const main=read(path.join(root,'public/js/main.js'));assert.match(main,/initAccountEntry\(/,'game boot never calls account entry');
-  const u=await ui(false,{nick:'',bootSplash:true,runCommunity:false});await u.entry.initAccountEntry();assert.equal(u.ids['account-entry-dialog'].open,false,'account prompt covers boot splash');delete u.ids['boot-splash'];for(const fn of u.observers)fn();assert.equal(u.ids['account-entry-dialog'].open,true,'no-nick menu does not prompt');
+  const u=await ui(false,{nick:'',bootSplash:true,runCommunity:false});await u.entry.initAccountEntry();assert.equal(u.ids['account-entry-dialog'].open,false,'account prompt covers boot splash');delete u.ids['boot-splash'];for(const fn of u.observers)fn();assert.equal(u.ids['account-entry-dialog'].open,false,'account prompt opens before the first match');
+  u.ids['hub-account-login'].onclick();assert.equal(u.ids['account-entry-dialog'].open,true,'manual entry does not open');
   const b=all(u.ids['account-entry-body']).find(n=>n.tagName==='BUTTON' && /CONVIDADO/.test(n.textContent));assert(b,'opening prompt has no guest choice');await b.onclick();assert.equal(u.ids['account-entry-dialog'].open,false);assert.equal(u.navigation.length,0,'guest choice navigated');for(const key of ['cs_anon','awpbr_token','awpbr_stats'])assert.equal(u.storage.get(key),u.before[key]);
 });
 await check('E03','existing nick skips automatic prompt but login stays accessible',async()=> {
