@@ -52,7 +52,11 @@ jobs:
       GH_TOKEN: ${{ secrets.CSBRASIL_BOT_TOKEN }}
       REPO: ${{ github.repository }}
     steps:
+      # Leve (CL1): a varredura só fala com a API (`gh --repo`); não lê arquivo do repositório.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          filter: blob:none
+          sparse-checkout: .github
       - name: Dispara o autofix de quem ficou para trás
         run: |
           if [ -z "$GH_TOKEN" ]; then
@@ -123,6 +127,10 @@ jobs:
           ref: ${{ env.HEAD_REF }}
           token: ${{ secrets.CSBRASIL_BOT_TOKEN }}
           fetch-depth: 0
+          # Leve (CL1): a história vem sem blob; o merge e o checkout buscam sob demanda
+          # só os blobs que tocam, pela mesma origem autenticada. PR próprio de propósito:
+          # este caminho só roda depois do merge, e o rollback é reverter este PR.
+          filter: blob:none
 
       - name: Traz a base e resolve conflito de arquivo gerado
         if: env.pular != '1'
