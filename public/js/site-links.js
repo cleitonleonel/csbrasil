@@ -119,7 +119,7 @@ frame?.addEventListener('load', () => {
   });
 });
 // Cards de guias e changelog abrem a subtab correspondente dentro do lobby.
-for (const link of document.querySelectorAll('.hub-link-grid a, a.hub-changelog, #hub-ui a[href="/mapa"], .menu-footer a')) {
+for (const link of document.querySelectorAll('.hub-link-grid a, a.hub-changelog, #hub-ui a[href="/mapa"], .menu-footer a, .hub-footer a')) {
   link.addEventListener('click', event => {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || new URLSearchParams(location.search).get('home') === 'legacy') return;
     const url = new URL(link.href);
