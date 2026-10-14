@@ -18,12 +18,12 @@
  *       verdade com as três mensagens que importam). 126 releases em 130 merges era o motor
  *       do churn de bot; desde 14/10 o push na main só vira release se for de lote (RLS13/14).
  *
- * RLS10 (14/10): no PR o docs:check/arch:check conferem só estrutura; o release regenera e confere tudo.
  * RLS10: GERADO VELHO NÃO TRAVA O TREM (13/10/2026, c2ca685). Dois PRs testados sobre bases
  *       diferentes mesclam limpo e deixam contagem velha na main; com o DOCS1 reprovando o push,
  *       o embarque (que exige pr-fast verde) nunca saía, e o trem é quem regenera. No push da
  *       main, docs:check, arch:check e a autoria só rodam no commit `chore(release):`; no PR
- *       docs:check e arch:check continuam valendo sempre, e o release regenera os dois.
+ *       docs:check e arch:check continuam valendo sempre (desde 14/10 só a estrutura; o commit
+ *       do release confere tudo com docs:check:release e arch:check:release).
  *
  * RLS11-RLS16: RELEASE EM LOTE (14/10/2026, decisão do dono). Horário fixo travava o
  *       desenvolvimento; o trem sai quando entra na main um PR de LOTE (label `release`, ou
