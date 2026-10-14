@@ -65,3 +65,24 @@ test('package.json: ops:aquecer existe e aponta para o script', () => {
   const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('../../../package.json', import.meta.url)), 'utf8'));
   assert.equal(pkg.scripts['ops:aquecer'], 'node tools/ops/aquecer.mjs');
 });
+
+/* O smoke em dois jobs paralelos (14/10/2026): o roteiro desktop do chat custa ~14,5 min dos
+   12,7 a 27,7 do job inteiro. A partição tem de ser EXATA: a mesma string no `--grep` de um
+   job e no `--grep-invert` do outro, e os três specs presentes. Teste que caísse entre os dois
+   filtros sumiria do CI sem vermelho nenhum. */
+test('smoke-web.yml: chat desktop em job próprio, partição exata, nenhum spec saiu', () => {
+  const s = wf('smoke-web.yml');
+  const execs = [...s.matchAll(/run: npx playwright test ([^\n]+)/g)].map((m) => m[1]);
+  assert.ok(execs.length >= 2, 'o smoke ainda roda num job só');
+  const SPECS = ['tests/smoke/web-smoke.spec.js', 'tests/smoke/web-assets.spec.js', 'tests/smoke/chat-sala.spec.js'];
+  for (const spec of SPECS) assert.ok(execs.some((e) => e.includes(spec)), `spec sumiu: ${spec}`);
+  const grep = execs.map((e) => /--grep "([^"]+)"/.exec(e)?.[1]).filter(Boolean);
+  const invert = execs.map((e) => /--grep-invert "([^"]+)"/.exec(e)?.[1]).filter(Boolean);
+  assert.equal(grep.length, 1, 'um job, e só um, filtra o chat desktop');
+  assert.deepEqual(invert, grep, 'o --grep-invert do outro job tem de ser a mesma string do --grep');
+  const comGrep = execs.find((e) => e.includes('--grep "'));
+  assert.ok(comGrep.includes('tests/smoke/chat-sala.spec.js'), 'o --grep do chat desktop não roda o chat-sala.spec.js');
+  const comInvert = execs.find((e) => e.includes('--grep-invert'));
+  for (const spec of SPECS) assert.ok(comInvert.includes(spec), `o job do --grep-invert perdeu ${spec}`);
+  for (const e of execs) assert.match(e, /--config=playwright\.smoke\.config\.mjs/);
+});

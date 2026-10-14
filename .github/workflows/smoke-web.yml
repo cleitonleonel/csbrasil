@@ -59,7 +59,51 @@ jobs:
             echo "rodar=true" >> "$GITHUB_OUTPUT"
           fi
 
+  # DOIS JOBS EM PARALELO (14/10/2026). O roteiro desktop do chat de sala custa ~14,5 min
+  # dos 12,7 a 27,7 min do smoke inteiro; separado, o relógio de parede cai para o maior
+  # dos dois. A partição é por título: o mesmo texto no `--grep` de um job e no
+  # `--grep-invert` do outro (conferido com `--list`: 24 + 4 = 28 testes, nenhum nos
+  # dois). O teste em tools/ops/tests/workflows.test.mjs cobra a partição e os specs.
   smoke:
+    needs: decide
+    if: needs.decide.outputs.rodar == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start dev server
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4321 >/tmp/csbrasil-dev.log 2>&1 &
+      - name: Wait for app
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:4321/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/csbrasil-dev.log
+          exit 1
+      - name: Run smoke test (web + chat no toque)
+        run: npx playwright test --config=playwright.smoke.config.mjs tests/smoke/web-smoke.spec.js tests/smoke/web-assets.spec.js tests/smoke/chat-sala.spec.js --grep-invert "chat de sala desktop:" --reporter=list --trace=on --output=test-results
+      - name: Upload smoke artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: smoke-web-artifacts
+          path: |
+            /tmp/csbrasil-dev.log
+            test-results
+          if-no-files-found: ignore
+
+  chat-desktop:
     needs: decide
     if: needs.decide.outputs.rodar == 'true'
     runs-on: ubuntu-latest
@@ -86,13 +130,13 @@ jobs:
           done
           cat /tmp/csbrasil-dev.log
           exit 1
-      - name: Run smoke test
-        run: npx playwright test --config=playwright.smoke.config.mjs tests/smoke/web-smoke.spec.js tests/smoke/web-assets.spec.js tests/smoke/chat-sala.spec.js --reporter=list --trace=on --output=test-results
+      - name: Run smoke test (chat de sala, roteiro desktop)
+        run: npx playwright test --config=playwright.smoke.config.mjs tests/smoke/chat-sala.spec.js --grep "chat de sala desktop:" --reporter=list --trace=on --output=test-results
       - name: Upload smoke artifacts
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: smoke-web-artifacts
+          name: smoke-chat-desktop-artifacts
           path: |
             /tmp/csbrasil-dev.log
             test-results
