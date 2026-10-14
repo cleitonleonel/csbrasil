@@ -2232,14 +2232,22 @@ if (HUB_ENABLED) {
     document.dispatchEvent(new CustomEvent('cs-community-open', { detail: { tab: 'friends' } }));
   };
   $('hub-social-resume').onclick = () => { sfx.uiClick(); game?.resume(); };
+  // Links de comunidade e de perfil (/u/<id>) abrem na COMUNIDADE do hub, sem sair do jogo.
+  // O "ABRIR PERFIL PÚBLICO" (data-public-profile) continua indo para a página pública.
   document.addEventListener('click', event => {
     const anchor = event.target.closest('a[href]');
-    if (!anchor || anchor.target === '_blank' || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    if (!anchor || event.defaultPrevented || anchor.target === '_blank' || anchor.dataset.publicProfile === 'true' || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const url = new URL(anchor.href, location.href);
-    if (url.origin !== location.origin || url.pathname !== '/' || url.searchParams.get('secao') !== 'comunidade') return;
+    if (url.origin !== location.origin) return;
+    const profile = url.pathname.match(/^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f-]{36})(?:\/|$)/i)?.[1];
+    if (profile ? !anchor.closest('#main-menu') : url.pathname !== '/' || url.searchParams.get('secao') !== 'comunidade') return;
     event.preventDefault();
-    setHubTab('comunidade', $('main-menu').dataset.socialPaused !== 'true');
-    document.dispatchEvent(new CustomEvent('cs-community-open', { detail: { tab: url.searchParams.get('social') || 'profile' } }));
+    const perfil = profile || url.searchParams.get('perfil');
+    const tab = profile ? 'profile' : url.searchParams.get('social') || 'profile';
+    const paused = $('main-menu').dataset.socialPaused === 'true';
+    setHubTab('comunidade', false);
+    if (!paused) hubNavigate({ secao: 'comunidade', social: tab, perfil: perfil || null, janela: null, origem: null });
+    document.dispatchEvent(new CustomEvent('cs-community-open', { detail: { tab, perfil } }));
   });
   const setHubNet = (net, updateRoute = true) => {
     $('main-menu').dataset.hubNet = net;

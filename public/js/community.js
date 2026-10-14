@@ -207,6 +207,6 @@ if(root) {
   const query=new URLSearchParams(location.search);if(['profile','friends','ranking','notifications','feed','settings'].includes(query.get('social')))tab=query.get('social');
   root.addEventListener('click',event=>{const a=event.target.closest('a');if(!a || a.dataset.publicProfile==='true')return;const url=new URL(a.href,location.href),match=url.pathname.match(/^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f-]{36})(?:\/|$)/i);if(url.origin!==location.origin || !match)return;event.preventDefault();profileId=match[1];tab='profile';void render();});
   document.addEventListener('cs-account-change',event=>{const changed=auth?.profile?.id!==event.detail?.profile?.id;auth=event.detail;if(changed){clearConversation();state=null;loadVersion++;content.replaceChildren();for(const id of ['social-unread','hub-social-unread'])document.getElementById(id).textContent='';renderAccount();}void refresh().then(()=>{renderAccount();return render();}).catch(e=>message(errors[e.message] || 'Sua sessão está indisponível.'));});
-  document.addEventListener('cs-community-open',event=>{if(event.detail?.tab)tab=event.detail.tab;void boot();});
+  document.addEventListener('cs-community-open',event=>{if(event.detail?.tab)tab=event.detail.tab;if(event.detail?.perfil)profileId=event.detail.perfil;void boot();});
   void boot();
 }
