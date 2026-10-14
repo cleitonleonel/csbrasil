@@ -4,6 +4,7 @@ import {careerRankBadge,careerRankTitle} from './career-rank.js';
 import {questList} from './community-inbox.js';
 import {accountVerifiedBadge} from './account-verified.js';
 import {profileCharacterCard} from './profile-character.js';
+import {WEAPONS} from './data/weapons.js';
 const root=document.getElementById('community');
 if(root) {
   const status=document.getElementById('social-status'),account=document.getElementById('social-account'),content=document.getElementById('social-content');
@@ -103,6 +104,12 @@ if(root) {
     if(own && p.settings?.share_character===false)c.append(empty('Só você e seus amigos veem seu personagem. Para mostrar a todos, marque "Mostrar meu último personagem no perfil público" em PRIVACIDADE.'));
     const stats=el('div','','social-stats');
     for(const [label,value] of [['PONTOS',p.points],['PARTIDAS',p.matches],['RODADAS GANHAS',p.round_wins ?? p.wins],['RODADAS PERDIDAS',p.round_losses ?? p.losses],['ABATES',p.kills],['MORTES',p.deaths],['K/D',p.kd],['HORAS ATIVAS CONFIRMADAS',(Number(p.verified_play_seconds ?? p.play_seconds)/3600).toFixed(2)]]){const s=el('div','','social-stat');s.append(el('strong',String(value)),el('span',label));stats.append(s);}c.append(stats,empty(p.source==='historical_plus_server_verified'?`Histórico preservado: ${p.legacy_points} pontos. Após a atualização: ${p.verified_points} pontos confirmados pelo servidor. Rodadas ganhas e horas ativas são métricas confirmadas; o tempo antigo fica no histórico.`:'Estatísticas confirmadas pelo servidor. Tempo no menu, espectador e AFK não contam.'),empty(presenceText(p.presence)));
+    // Armas mais usadas (backend 068): abates confirmados pelo nó em partida multiplayer. Sem o campo, a seção não aparece.
+    if(Array.isArray(p.top_weapons)){
+      const top=p.top_weapons.filter(w=>typeof w?.weapon==='string' && Number.isSafeInteger(w.kills) && w.kills>0).slice(0,3),list=el('ol','','social-list profile-weapons');
+      for(const w of top)list.append(el('li',`${WEAPONS[w.weapon]?.name || w.weapon.toUpperCase()} · ${w.kills.toLocaleString('pt-BR')} ${w.kills===1?'abate':'abates'}`));
+      c.append(el('h3','Armas que mais usa'),top.length?list:empty('As armas aparecem a partir das partidas multiplayer confirmadas pelo servidor.'));
+    }
     const notice=el('p',profileNotice?.id===p.id?profileNotice.text:'','social-inline-status');notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
     const buttons=el('div','','social-actions');buttons.append(button('COPIAR LINK',async()=>navigator.clipboard.writeText(`${root.dataset.site}${p.url}`)));
     if(p.visibility==='public'){const publicLink=link('ABRIR PERFIL PÚBLICO ↗',p.url);publicLink.dataset.publicProfile='true';buttons.append(publicLink);}
