@@ -20,6 +20,8 @@
 #   · eval:grafite  — cobertura de parede pintada por mapa contra o META declarado em
 #                     graffiti-census.mjs; o census agora SAI != 0 abaixo da meta.
 #   · eval:select   — a silhueta/pose da tela de seleção contra os personagens elogiados.
+#   · entrada, armas, boot e ops no mesmo job; a criação do Sertão no job `sertao`, em
+#     paralelo (era o passo mais caro).
 #   Em falha: anexa os JSON (número) e roda eval:grafite:ar --fotos (imagem do porquê).
 name: portao-browser
 
@@ -165,18 +167,6 @@ jobs:
       - name: ops:selftest — cenários de navegador
         if: ${{ !cancelled() }}
         run: node tools/ops/selftest.mjs --so=navegador
-      - name: Criação do Sertão (GLBs servidos, caminhada, percurso e contato)
-        if: ${{ !cancelled() }}
-        run: npm run eval:sertao-livestock-runtime
-
-      - name: Evidência visual da criação do Sertão
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: sertao-livestock-runtime
-          path: artifacts/sertao-astra/livestock-runtime/
-          if-no-files-found: warn
-
       # Número diz que caiu; imagem diz por quê. Só quando algum passo acima reprova.
       - name: Fotos das piores células (só em falha)
         if: failure()
@@ -195,4 +185,66 @@ jobs:
             tools/eval/select_inflate.json
             /tmp/graffiti-audit/**
             /tmp/eval-serve.log
+          if-no-files-found: ignore
+
+  # O SERTÃO EM JOB PRÓPRIO (14/10/2026). Era o passo mais caro do portão: 8,7 a 12,9 min
+  # de um job de 18,7 a 27,7 min (4 runs verdes de 13/10). Em paralelo com o resto, o
+  # relógio de parede do portão cai para o maior dos dois (~15 min). Mesmo passo, mesmo
+  # servidor (eval:serve na 8123), mesmo Chromium; o teste em
+  # tools/ops/tests/workflows.test.mjs cobra que nenhum passo saiu e que ele não espera
+  # o job `portao`.
+  sertao:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BASE: http://localhost:8123
+      PLAYWRIGHT_BROWSERS_PATH: /opt/pw-browsers
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Instala Chromium + libs do sistema
+        run: npx playwright install --with-deps chromium
+
+      - name: Resolve CHROME_BIN (Chromium do Playwright)
+        run: |
+          BIN="$(node -e "console.log(require('playwright').chromium.executablePath())")"
+          test -x "$BIN" || { echo "CHROME_BIN não resolveu para um executável: [$BIN]"; exit 1; }
+          echo "CHROME_BIN=$BIN" >> "$GITHUB_ENV"
+
+      - name: Sobe o eval:serve em background
+        run: npm run eval:serve >/tmp/eval-serve.log 2>&1 &
+
+      - name: Espera o servidor responder
+        run: |
+          for _ in $(seq 1 60); do
+            if curl -fsS http://localhost:8123/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/eval-serve.log
+          exit 1
+
+      - name: Criação do Sertão (GLBs servidos, caminhada, percurso e contato)
+        run: npm run eval:sertao-livestock-runtime
+
+      - name: Evidência visual da criação do Sertão
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sertao-livestock-runtime
+          path: artifacts/sertao-astra/livestock-runtime/
+          if-no-files-found: warn
+
+      - name: Log do servidor (só em falha)
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: portao-sertao-serve-log
+          path: /tmp/eval-serve.log
           if-no-files-found: ignore
