@@ -93,3 +93,12 @@ colisão ou toda consulta de mundo.
 sem carregar mapas. A régua cobre rotação, pai transformado, escala, incidência
 oblíqua, malha aberta/deformada, material em array, recorte de faces, dois sólidos
 sobrepostos/adjacentes, primeiro alvo e as guardas de arma/modo online.
+
+## Direção dos bots
+
+O caminho NN aplica ao raio os mesmos desvios horizontal/vertical que sorteia
+para a precisão. Antes, decidia miss pelo erro sorteado, mas desenhava e consultava
+um raio central. A transformação de direção é compartilhada com o bot normal,
+sem alterar seu consumo de aleatoriedade, rajada ou multiplicadores de dificuldade.
+`eval:bot-shot-direction` mede o consumidor NN e o mutante do raio central.
+A unificação da geometria e dos pellets é tratada separadamente desta direção.

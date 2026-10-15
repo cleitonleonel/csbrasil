@@ -40,7 +40,7 @@ import { urlDoBrasao } from './brasoes_versao.js';
 import { WEAPONS } from './data/weapons.js';
 import { perfilArma } from './data/weapon-profiles.js';
 export { perfilArma };
-import { saidaPenetracao } from './ballistics.js';
+import { saidaPenetracao, direcaoDesviada } from './ballistics.js';
 export { saidaPenetracao };
 // Reexporta pra não quebrar quem já consumia a tabela daqui: server/room.js (servidor
 // autoritativo) e tools/eval/botdiag.mjs. Consumidor novo importa de data/weapons.js.
@@ -7439,14 +7439,7 @@ export class Game {
         // absoluto de 7% — sem isso o bot 'bom' virava o cheater que o dono descreveu.
         const hsChance = BOT_FAIR ? Math.min(BOT_HS_MAX, 0.05 * b.skill) : 0.16 * b.skill;
         const head = hit && off < halfAng * 0.35 && Math.random() < hsChance;
-        const dir = teye.clone().sub(from).normalize();
-        {   // aplica o desvio na base direita/cima do próprio tiro
-          const rt = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0));
-          if (rt.lengthSq() < 1e-6) rt.set(1, 0, 0);
-          rt.normalize();
-          const up = new THREE.Vector3().crossVectors(rt, dir).normalize();
-          dir.addScaledVector(rt, Math.tan(ox)).addScaledVector(up, Math.tan(oy)).normalize();
-        }
+        const dir = direcaoDesviada(from, teye, ox, oy);
         // tracer & world impact
         this.ray.set(from, dir); this.ray.far = 200;
         const hitsW = this.ray.intersectObjects(this.world.occluders, false)[0];
@@ -7986,16 +7979,17 @@ export class Game {
     const from = this._botEye(b);
     const teye = e.isPlayer ? this.camera.position.clone() : this._botEye(e);
     const tdist = Math.max(1, from.distanceTo(teye));
-    const dir = teye.clone().sub(from).normalize();
     // desvio de mira por skill (a rede diz "atira"; a precisão fina segue o tier do bot)
     const err = 0.02 + 0.03 / Math.max(0.4, b.skill || 1);
     const gs = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
-    const off = Math.hypot(gs() * err, gs() * err);
+    const ox = gs() * err, oy = gs() * err;
+    const off = Math.hypot(ox, oy);
+    const dir = direcaoDesviada(from, teye, ox, oy);
     let hit = off < Math.atan2(0.5, tdist);
     this.ray.set(from, dir); this.ray.far = 200;
     const hw = this.ray.intersectObjects(this.world.occluders, false)[0];
     if (hw && hw.distance < tdist - 0.4) hit = false;   // parede na frente: bala morre lá
-    const end = hit ? teye : (hw ? hw.point : from.clone().add(dir.clone().multiplyScalar(120)));
+    const end = hit ? from.clone().addScaledVector(dir, tdist) : (hw ? hw.point : from.clone().add(dir.clone().multiplyScalar(120)));
     this.world.ambience?.onShot(from, end);
     if (hit) {
       let dmg = (Wb.dmg || 30) * (Wb.pellets ? Math.min(Wb.pellets, 6) * 0.55 : 1);

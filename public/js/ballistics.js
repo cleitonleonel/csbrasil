@@ -1,5 +1,14 @@
 import * as THREE from 'three';
 
+export function direcaoDesviada(origem, alvo, horizontal, vertical) {
+  const dir = alvo.clone().sub(origem).normalize();
+  const direita = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0));
+  if (direita.lengthSq() < 1e-6) direita.set(1, 0, 0);
+  direita.normalize();
+  const cima = new THREE.Vector3().crossVectors(direita, dir).normalize();
+  return dir.addScaledVector(direita, Math.tan(horizontal)).addScaledVector(cima, Math.tan(vertical)).normalize();
+}
+
 const EPS = 1e-6;
 function caixaCompleta(objeto) {
   const g = objeto.geometry, p = g?.parameters;

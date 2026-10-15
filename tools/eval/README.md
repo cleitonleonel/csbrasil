@@ -78,6 +78,9 @@ verificados por `npm run eval:weapon-profiles`, com mutantes que removem cada v�
 `npm run eval:penetration-geometry` mede a travessia real em caixas rotacionadas,
 fechadas e sobrepostas, com mutantes de AABB global, validação e oclusão.
 
+`npm run eval:bot-shot-direction` mede o raio e o rastro efetivos do caminho NN,
+com mutante que restaura o raio central apesar do erro sorteado.
+
 ## 4. Viewmodel e rig — a família mais densa
 
 | Arquivo | O que faz |
