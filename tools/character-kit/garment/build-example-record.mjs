@@ -1,8 +1,7 @@
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
-import {pathToFileURL} from 'node:url';
-import {resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {exampleBytes, dependencies, recipeFiles} from './synthetic-profile.mjs';
 import {inspectBindBytes} from '../bind-inspector.mjs';
 import {prepareLoadedGarment} from './core.mjs';
@@ -39,5 +38,9 @@ export async function main(args) {
     fs.writeFileSync(new URL('garment.glb', directory), exampleBytes(true), {flag: 'wx'});
   }
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href)
-  main(process.argv.slice(2)).catch(e => {console.error(e.message); process.exitCode = 1;});
+const isMain = () => {
+  if (!process.argv[1]) return false;
+  try {return fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));}
+  catch {return false;}
+};
+if (isMain()) main(process.argv.slice(2)).catch(e => {console.error(e.message); process.exitCode = 1;});
