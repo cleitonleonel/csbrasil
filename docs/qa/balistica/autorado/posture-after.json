@@ -1,0 +1,188 @@
+[
+  {
+    "file": "after-1200x800-standing.png",
+    "width": 1200,
+    "height": 800,
+    "phase": "after",
+    "mode": "standing",
+    "char": "caminhoneiro",
+    "weapon": "mp5",
+    "isGLB": true,
+    "crouchF": 0,
+    "controllerCrouch": false,
+    "clip": "idle",
+    "headBone": [
+      -0.046046032217945385,
+      1.3674638191329458,
+      -0.004555801821039375
+    ],
+    "headBox": [
+      -0.046046032217945385,
+      1.3674638191329458,
+      -0.004555801821039375
+    ],
+    "eye": [
+      0,
+      1.5,
+      0
+    ],
+    "base": 0,
+    "heapMB": 179.290771484375,
+    "sourceGameSha256": "f2f7507658078eb160e3018a165a414b0b034b8dd5354e015c8202fe81b04906"
+  },
+  {
+    "file": "after-1200x800-transition.png",
+    "width": 1200,
+    "height": 800,
+    "phase": "after",
+    "mode": "transition",
+    "char": "caminhoneiro",
+    "weapon": "mp5",
+    "isGLB": true,
+    "crouchF": 1,
+    "controllerCrouch": true,
+    "clip": "crouch",
+    "headBone": [
+      -0.09969474930715944,
+      1.2376410581826738,
+      0.04564852288731509
+    ],
+    "headBox": [
+      -0.09969474930715944,
+      1.2376410581826738,
+      0.04564852288731509
+    ],
+    "eye": [
+      0,
+      0.98,
+      0
+    ],
+    "base": 0,
+    "heapMB": 179.290771484375,
+    "sourceGameSha256": "f2f7507658078eb160e3018a165a414b0b034b8dd5354e015c8202fe81b04906"
+  },
+  {
+    "file": "after-1200x800-crouched.png",
+    "width": 1200,
+    "height": 800,
+    "phase": "after",
+    "mode": "crouched",
+    "char": "caminhoneiro",
+    "weapon": "mp5",
+    "isGLB": true,
+    "crouchF": 1,
+    "controllerCrouch": true,
+    "clip": "crouch",
+    "headBone": [
+      -0.1394017754616117,
+      0.844792444903801,
+      0.1821628607443348
+    ],
+    "headBox": [
+      -0.1394017754616117,
+      0.844792444903801,
+      0.1821628607443348
+    ],
+    "eye": [
+      0,
+      0.98,
+      0
+    ],
+    "base": 0,
+    "heapMB": 179.290771484375,
+    "sourceGameSha256": "f2f7507658078eb160e3018a165a414b0b034b8dd5354e015c8202fe81b04906"
+  },
+  {
+    "file": "after-1280x720-standing.png",
+    "width": 1280,
+    "height": 720,
+    "phase": "after",
+    "mode": "standing",
+    "char": "caminhoneiro",
+    "weapon": "p90",
+    "isGLB": true,
+    "crouchF": 0,
+    "controllerCrouch": false,
+    "clip": "idle",
+    "headBone": [
+      -0.046046032217945385,
+      1.3674638191329458,
+      -0.004555801821039375
+    ],
+    "headBox": [
+      -0.046046032217945385,
+      1.3674638191329458,
+      -0.004555801821039375
+    ],
+    "eye": [
+      0,
+      1.5,
+      0
+    ],
+    "base": 0,
+    "heapMB": 179.290771484375,
+    "sourceGameSha256": "f2f7507658078eb160e3018a165a414b0b034b8dd5354e015c8202fe81b04906"
+  },
+  {
+    "file": "after-1280x720-transition.png",
+    "width": 1280,
+    "height": 720,
+    "phase": "after",
+    "mode": "transition",
+    "char": "caminhoneiro",
+    "weapon": "p90",
+    "isGLB": true,
+    "crouchF": 1,
+    "controllerCrouch": true,
+    "clip": "crouch",
+    "headBone": [
+      -0.09969494766053308,
+      1.2376403698925418,
+      0.04564877440803379
+    ],
+    "headBox": [
+      -0.09969494766053308,
+      1.2376403698925418,
+      0.04564877440803379
+    ],
+    "eye": [
+      0,
+      0.98,
+      0
+    ],
+    "base": 0,
+    "heapMB": 179.290771484375,
+    "sourceGameSha256": "f2f7507658078eb160e3018a165a414b0b034b8dd5354e015c8202fe81b04906"
+  },
+  {
+    "file": "after-1280x720-crouched.png",
+    "width": 1280,
+    "height": 720,
+    "phase": "after",
+    "mode": "crouched",
+    "char": "caminhoneiro",
+    "weapon": "p90",
+    "isGLB": true,
+    "crouchF": 1,
+    "controllerCrouch": true,
+    "clip": "crouch",
+    "headBone": [
+      -0.1394017754616117,
+      0.844792444903801,
+      0.1821628607443348
+    ],
+    "headBox": [
+      -0.1394017754616117,
+      0.844792444903801,
+      0.1821628607443348
+    ],
+    "eye": [
+      0,
+      0.98,
+      0
+    ],
+    "base": 0,
+    "heapMB": 179.290771484375,
+    "sourceGameSha256": "f2f7507658078eb160e3018a165a414b0b034b8dd5354e015c8202fe81b04906"
+  }
+]

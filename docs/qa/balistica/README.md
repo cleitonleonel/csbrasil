@@ -24,3 +24,11 @@ antigo e reproduz a permanência nesse estado; a correção mantém deslocamento
 contínuo e não produz essas amostras. As trajetórias completas divergem porque
 as decisões de rerrota mudam a partida. É inspeção da simulação, sem renderizar
 personagens; não aprova animações ou substitui o QA com assets autorados.
+
+## QA posterior com assets autorados
+
+A rodada de 15/10/2026 passou a usar os 63 arquivos autorados verificados,
+156 capturas, agachamento animado, ensaio automatizado de TTK/dispersão e
+trace completo das três rajadas curtas. O [relatório e os dados](autorado/README.md)
+registram a correção de postura e as pendências visuais; não substituem este
+registro histórico nem aprovam todas as empunhaduras.
