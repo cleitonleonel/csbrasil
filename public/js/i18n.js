@@ -494,6 +494,12 @@ const DICT = {
   // tp:fim-carregamento
 
   // tp:hud
+  'ABATES': 'KILLS', 'SEQUÊNCIA': 'STREAK', 'vivo': 'alive', 'morto': 'dead',
+  'rádio': 'radio', 'placar': 'scoreboard', 'Ó O CARA ALI!': 'ENEMY THERE!', 'OLHA AQUI': 'LOOK HERE',
+  'Você marcou um inimigo': 'You marked an enemy', 'Você marcou um ponto': 'You marked a spot',
+  'CHAT DA SALA': 'ROOM CHAT', 'Filtrar mensagens': 'Filter messages', 'envia': 'send', 'time / sala': 'team / room', 'fecha': 'close',
+  'Silenciar nesta partida': 'Mute for this match', 'silenciado nesta partida': 'muted for this match',
+  'MIRA': 'AIM', 'AGACHA': 'CROUCH', 'ATIRA': 'FIRE', 'PULA': 'JUMP', 'ARRASTE AQUI PRA MIRAR': 'DRAG HERE TO AIM',
   // tp:fim-hud
 
   // tp:resultado
