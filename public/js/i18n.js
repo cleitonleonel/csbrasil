@@ -484,6 +484,35 @@ const DICT = {
   'Links do jogo': 'Game links', 'Menu principal': 'Main menu', 'Abrir seu perfil': 'Open your profile',
   'Discord do CORO SOLTO': 'CORO SOLTO Discord', 'Telegram do CORO SOLTO': 'CORO SOLTO Telegram',
   'Código no GitHub': 'Source on GitHub',
+  // tp:lobby
+  // tp:fim-lobby
+
+  // tp:modos
+  // tp:fim-modos
+
+  // tp:carregamento
+  // tp:fim-carregamento
+
+  // tp:hud
+  // tp:fim-hud
+
+  // tp:resultado
+  // tp:fim-resultado
+
+  // tp:loja
+  // tp:fim-loja
+
+  // tp:perfil
+  // tp:fim-perfil
+
+  // tp:social
+  // tp:fim-social
+
+  // tp:servidores
+  // tp:fim-servidores
+
+  // tp:ajustes
+  // tp:fim-ajustes
 };
 
 /* Índice por espaço NORMALIZADO: o mesmo parágrafo quebrado em duas linhas no
