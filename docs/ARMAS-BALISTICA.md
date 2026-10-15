@@ -146,3 +146,27 @@ Seu legado é o raio único do lote anterior com o mesmo orçamento; não repres
 todo o combate antigo. Pellets podem transformar um miss central em dano parcial
 à distância, enquanto dispersam parte do dano de perto. A leitura dessa curva
 precisa de playtest; não é uma conversão de energia física para HP.
+
+
+## Janela de reação e rerrota
+
+BOT4 mantém o limite de três segundos para a média entre primeiro dano efetivo
+com HP cheio e morte. O estimador anterior usava feedback emitido depois de
+`_damage`, perdia o primeiro acerto fatal e reiniciava após silêncio mesmo sem
+cura. `tools/eval/duel-metrics.mjs` observa a queda real de HP: proteção e dano em
+morto não contam; respawn ou recuperação real a HP cheio iniciam outro episódio;
+cura parcial não apaga o início. O universo continua sendo dano direto dos bots,
+incluindo faca; granadas ficam fora da amostra, como no feedback anterior.
+
+A rajada final com intervalo de três segundos continua reportada separadamente,
+com contagem das iniciadas ferido, das saudáveis curtas, dos episódios incompletos
+e das mortes fora da amostra. O verde da média vitalícia não prova que toda rajada
+permita reação. `npm run eval:duel-metrics` testa proteção, fatal em tempo zero,
+nota tardia, cura e respawn; mutantes restauram silêncio, proteção indevida,
+ordem fatal incorreta e ausência de reset por cura. Um acerto fatal saudável
+continua sendo uma amostra válida de zero segundos que reprova BOT4.
+
+Na navegação, destino marcado inalcançável agora libera `repathAt` junto com
+`roamUntil`, preservando o intervalo mínimo de rerrota. A régua autoritativa
+original e seu mutante de prazo antigo medem a regressão sem mudar os tetos.
+Não se alterou dano, dificuldade ou velocidade para fechar estes portões.

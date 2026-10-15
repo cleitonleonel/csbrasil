@@ -24,6 +24,7 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { inspectMovingLoops } from './bot-moving-loops.mjs';
+import { acompanharDuelo } from './duel-metrics.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const JS = path.resolve(HERE, '../../public/js');
@@ -167,23 +168,9 @@ function runMap(mapId, textures, seed) {
     /* MODO DUELO: o jogador fica NO MAPA, parado no spawn, sem atirar, e MORTAL. Mede o que
        o dono reclamou — "matam muito fácil" e "sempre na cabeça" — em números: tiros do bot,
        taxa de acerto, fração de acertos na cabeça, mortes do jogador por minuto e o tempo
-       entre o primeiro tiro que encosta e a morte (a janela que ele tem pra reagir). */
-    D = { shots: 0, hits: 0, hs: 0, deaths: 0, firstHit: 0, lastHit: -99, ttk: 0, ttkN: 0 };
-    const f0 = g._flash.bind(g); g._flash = (...a) => { D.shots++; return f0(...a); };
-    const n0 = g._noteHit.bind(g);
-    g._noteHit = (by, w, dmg, head, dist) => {
-      D.hits++; if (head) D.hs++;
-      // 'janela' = duração da RAJADA que matou: se faz mais de 3 s que ninguém encosta, é
-      // outro engajamento. Sem esse corte a média virava "tempo desde o 1º tiro da vida".
-      if (!D.firstHit || g.time - D.lastHit > 3) D.firstHit = g.time;
-      D.lastHit = g.time;
-      return n0(by, w, dmg, head, dist);
-    };
-    const k0 = g._kill.bind(g);
-    g._kill = (ent, ...a) => {
-      if (ent.isPlayer && ent.alive) { D.deaths++; if (D.firstHit) { D.ttk += g.time - D.firstHit; D.ttkN++; } D.firstHit = 0; }
-      return k0(ent, ...a);
-    };
+       desde o primeiro dano efetivo com HP cheio até a morte. Silêncio não cura;
+       rajada final é diagnosticada separadamente. Faca entra, granada não, como no _noteHit anterior. */
+    D = acompanharDuelo(g);
   } else {
     // tira o jogador do jogo: queremos medir NAVEGAÇÃO, não o duelo com o player parado
     g.player.pos.set(0, -400, 0); g.player.hp = 1e9; g.player.alive = true;
@@ -317,7 +304,8 @@ function runMap(mapId, textures, seed) {
     // SOMAS CRUAS da janela (ver o comentário do pooling lá embaixo): sem elas a média de
     // médias contava "0 s" para toda semente/mapa em que NINGUÉM MORREU — ou seja, o caso
     // mais justo possível pontuava como o mais injusto, e melhorar a justiça PIORAVA o número.
-    ttkSum: D.ttk, ttkN: D.ttkN,
+    ttkSum: D.ttk, ttkN: D.ttkN, burstSum: D.burstSum, burstN: D.burstN,
+    woundedBursts: D.woundedBursts, incompleteLives: D.incompleteLives + +(D.firstHit !== null), deathsWithoutHit: D.deathsWithoutHit, healthyFastBursts: D.healthyFastBursts,
   };
   return {
     map: mapId, bots: nb,
@@ -364,7 +352,7 @@ for (const id of ids) {
     // JANELA = média POOLED (soma dos tempos / número de mortes), não média de médias:
     // semente sem morte não tem amostra de "tempo até morrer" e não pode entrar como zero.
     const ts = ok.reduce((a, r) => a + r.ttkSum, 0), tn = ok.reduce((a, r) => a + r.ttkN, 0);
-    out.push({ map: id, tirosBot: m('tirosBot'), acertos: m('acertos'), taxaAcerto: m('taxaAcerto'), fracCabeca: m('fracCabeca'), mortesPorMin: m('mortesPorMin'), janelaAteMorrer: +(tn ? ts / tn : 0).toFixed(2), ttkSum: ts, ttkN: tn }); continue;
+    out.push({ map: id, tirosBot: m('tirosBot'), acertos: m('acertos'), taxaAcerto: m('taxaAcerto'), fracCabeca: m('fracCabeca'), mortesPorMin: m('mortesPorMin'), janelaAteMorrer: +(tn ? ts / tn : 0).toFixed(2), ttkSum: ts, ttkN: tn, ...Object.fromEntries(['burstSum', 'burstN', 'woundedBursts', 'incompleteLives', 'deathsWithoutHit', 'healthyFastBursts'].map(k => [k, ok.reduce((a, r) => a + r[k], 0)])) }); continue;
   }
   out.push({ map: id, bots: ok[0].bots, latFlips: m('latFlips'), latFlipsCombat: m('latFlipsCombat'), latShare: m('latShare'), fwdFlips: m('fwdFlips'), fwdFlipsCombat: m('fwdFlipsCombat'), spinTurns: m('spinTurns'), spinRoam: m('spinRoam'), stuckPct: m('stuckPct'), eff: m('eff'), laneSpread: m('laneSpread'), laneTargetSpread: m('laneTargetSpread'), roamDepthSpread: m('roamDepthSpread') });
 }
@@ -379,6 +367,9 @@ if (DUEL) {
   const ts = ok.reduce((a, o) => a + o.ttkSum, 0), tn = ok.reduce((a, o) => a + o.ttkN, 0);
   console.log('MEDIA taxaAcerto', avg('taxaAcerto'), '| fracCabeca', avg('fracCabeca'), '| mortes/min', avg('mortesPorMin'),
     '| janela ate morrer (s)', +(tn ? ts / tn : 0).toFixed(3), '| mortes amostradas', tn);
+  console.log('DIAGNOSTICO rajada final (s)', ok.reduce((a, r) => a + r.burstSum, 0) / Math.max(1, ok.reduce((a, r) => a + r.burstN, 0)),
+    '| rajadas iniciadas ferido', ok.reduce((a, r) => a + r.woundedBursts, 0), '| vidas incompletas', ok.reduce((a, r) => a + r.incompleteLives, 0),
+    '| mortes fora da amostra de dano direto dos bots', ok.reduce((a, r) => a + r.deathsWithoutHit, 0), '| rajadas saudáveis menores que 3 s', ok.reduce((a, r) => a + r.healthyFastBursts, 0));
   process.exit(process.exitCode || 0);
 }
 console.log('MEDIA latFlips/min', avg('latFlips'), '| fwdFlips/min', avg('fwdFlips'), '| latShare', avg('latShare'), '| spin voltas/min', avg('spinTurns'), '| spinRoam', avg('spinRoam'), '| stuck%', avg('stuckPct'), '| eff', avg('eff'));

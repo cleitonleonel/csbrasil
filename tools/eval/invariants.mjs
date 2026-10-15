@@ -72,6 +72,7 @@ import { readFileSync, existsSync, mkdirSync, writeFileSync, lstatSync, rmSync, 
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { freshReport } from './fresh-report.mjs';
+import { DUEL_REACTION_SECONDS } from './duel-metrics.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -1465,7 +1466,9 @@ PRE_DISPARO = false;
     const acc = dval('taxaAcerto');
     const mpm = dval('mortes/min');
     /* BOT4 — "o bot me mata do nada". A janela entre o primeiro tiro que encosta
-       e a morte é o número que traduz "deu pra reagir". Abaixo de 3 s o jogador
+       e a morte é o número que traduz "deu pra reagir". O início é dano aplicado
+       desde HP cheio; silêncio sem cura não reinicia HP. A rajada final fica em
+       diagnóstico separado no botsim. Abaixo de 3 s o jogador
        não tem tempo de virar a câmera, procurar cobertura e responder.
 
        ⚠ ESTE ESTIMADOR É INSTÁVEL COM 3 SEMENTES — MEDIDO, não suspeitado (rodada de
@@ -1483,7 +1486,7 @@ PRE_DISPARO = false;
        CONSEQUÊNCIA PRÁTICA: BOT4 vermelho depois de um commit que mexeu em textura/material
        NÃO é prova de regressão de bot. Reproduza com `SEEDS` maior no botsim.mjs antes de
        culpar alguém — ou conserte o estimador, que é o certo e não coube naquela rodada. */
-    if (ttk !== null) put('BOT4', 'janela entre o 1º tiro e a morte ≥ 3 s', ttk >= 3, `${num(ttk, 2)} s`);
+    if (ttk !== null) put('BOT4', 'janela entre o 1º tiro e a morte ≥ 3 s', ttk >= DUEL_REACTION_SECONDS, `${num(ttk, 2)} s`);
     // BOT5 — "atira sempre na cabeça". Fração dos acertos do bot que são na cabeça.
     if (hs !== null) put('BOT5', 'fração de headshot do bot ≤ 10%', hs <= 0.10, `${num(hs, 3)}`);
     // BOT6 — pontaria sobre-humana. Um bot com taxa de acerto acima de ~22% em

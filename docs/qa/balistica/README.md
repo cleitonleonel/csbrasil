@@ -12,3 +12,15 @@ Para repetir, na raiz do cliente, inicie Astro em 127.0.0.1:4387 com devToolbar 
 ![Postura analítica agachada, 3:2](1200x800-agachado.png)
 ![Em pé, 16:9](1280x720-em-pe.png)
 ![Postura analítica agachada, 16:9](1280x720-agachado.png)
+
+
+## Rerrota após destino inalcançável
+
+![Trajetória do Room antes e depois](reroute-before-after.png)
+
+Trilhas de 109–120 s do mesmo bot, mapa e semente da régua autoritativa.
+Rosa indica as amostras de rota unitária. O mutante restaura somente o prazo
+antigo e reproduz a permanência nesse estado; a correção mantém deslocamento
+contínuo e não produz essas amostras. As trajetórias completas divergem porque
+as decisões de rerrota mudam a partida. É inspeção da simulação, sem renderizar
+personagens; não aprova animações ou substitui o QA com assets autorados.
