@@ -3795,14 +3795,18 @@ export class Game {
     }
     if (e.isPlayer) this._noteHit(b, W.short || 'FACA', dmg, false, d);
   }
-  /* Dano de um tiro: base × falloff por classe × multiplicador de headshot. O servidor usa a
-     MESMA conta — duas cópias envelheceriam separadas. Ver docs/MULTIPLAYER.md. */
+  _distanceDamage(dmg, wid, dist) {
+    const fo = DMG_FALLOFF[BALL_CLASS[wid] || 'rifle'];
+    if (!fo) return dmg;
+    const [inicio, fim, minimo] = fo;
+    const progresso = Math.max(0, Math.min(1, (dist - inicio) / (fim - inicio)));
+    return dmg * (1 - (1 - minimo) * progresso);
+  }
   _shotDamage(dmg, wid, dist, head) {
     let d = dmg;
     if (GUNFEEL && wid) {
       const bc = BALL_CLASS[wid] || 'rifle';
-      const fo = DMG_FALLOFF[bc];
-      if (fo) { const [s0, s1, mn] = fo; d *= Math.max(mn, Math.min(1, 1 - (dist - s0) / (s1 - s0))); }
+      d = this._distanceDamage(dmg, wid, dist);
       if (head) d *= HS_MUL[bc] ?? 4;
     } else if (head && d < 100) d = 100;
     return d;
@@ -7472,8 +7476,7 @@ export class Game {
         if (hit) {
           end = teye;
           let dmg = (Wb.dmg || 30) * (Wb.pellets ? Math.min(Wb.pellets, 6) * 0.55 : 1);
-          const fo = DMG_FALLOFF[bcls];   // mesma tabela do jogador: P90 a 60m não mata como AWP
-          if (fo) { const t = Math.max(0, Math.min(1, (tdist - fo[0]) / (fo[1] - fo[0]))); dmg *= 1 - (1 - fo[2]) * t; }
+          dmg = this._distanceDamage(dmg, b.weapon, tdist);
           // tabela de cabeça PRÓPRIA do bot (ver BOT_HS_MUL): rifle na cabeça = 72, não 115.
           if (head) dmg *= BOT_FAIR ? (BOT_HS_MUL[bcls] || 2.0) : (HS_MUL[bcls] || 3) * 0.8;
           const dmgMul = e.isPlayer ? (BOT_FAIR ? this._botDmgPlayer : BOT_DMG_PLAYER) : 1;
@@ -7995,7 +7998,6 @@ export class Game {
   // Tiro do bot-NN: honesto (arma real, falloff, teto no jogador, sem acerto atrás de parede).
   _botShootNN(b, e) {
     const Wb = WEAPONS[b.weapon] || WEAPONS.ak;
-    const bcls = BALL_CLASS[b.weapon] || 'rifle';
     b.mag--;
     b.revealedAt = this.time;
     b.nextShotAt = this.time + Math.max(Wb.rate || 0.1, (Wb.auto ? 0.12 : 0.4)) ;
@@ -8016,8 +8018,7 @@ export class Game {
     this.world.ambience?.onShot(from, end);
     if (hit) {
       let dmg = (Wb.dmg || 30) * (Wb.pellets ? Math.min(Wb.pellets, 6) * 0.55 : 1);
-      const fo = DMG_FALLOFF[bcls];
-      if (fo) { const t = Math.max(0, Math.min(1, (tdist - fo[0]) / (fo[1] - fo[0]))); dmg *= 1 - (1 - fo[2]) * t; }
+      dmg = this._distanceDamage(dmg, b.weapon, tdist);
       const dmgMul = e.isPlayer ? (BOT_FAIR ? this._botDmgPlayer : BOT_DMG_PLAYER) : 1;
       dmg = Math.max(6, Math.min(e.isPlayer ? 100 : 130, Math.round(dmg * dmgMul)));
       this._damage(e, dmg, b, Wb.short || 'ARMA', false, teye);
