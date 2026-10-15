@@ -485,6 +485,26 @@ const DICT = {
   'Discord do CORO SOLTO': 'CORO SOLTO Discord', 'Telegram do CORO SOLTO': 'CORO SOLTO Telegram',
   'Código no GitHub': 'Source on GitHub',
   // tp:lobby
+  'Seções': 'Sections', 'LOJA': 'SHOP', 'ARMÁRIO': 'LOCKER', 'CARREIRA': 'CAREER', 'CLÃ': 'CLAN',
+  'MAIS': 'MORE', 'Mais opções': 'More options', 'AMIGOS': 'FRIENDS', 'AJUSTES': 'SETTINGS',
+  'PRIVACIDADE': 'PRIVACY', 'TERMOS DE USO': 'TERMS OF USE', 'EXCLUIR DADOS': 'DELETE DATA', 'MAPA AO VIVO': 'LIVE MAP',
+  'QUESTS DA TRETA': 'TRETA QUESTS', 'VER TODAS AS QUESTS ▸': 'SEE ALL QUESTS ▸', 'Quests e novidades': 'Quests and news',
+  'CONCLUÍDA': 'DONE', 'ENTRE PARA GANHAR T$ ▸': 'SIGN IN TO EARN T$ ▸',
+  'Não deu pra consultar as quests agora.': 'Could not load the quests right now.',
+  'Consultando as quests…': 'Loading quests…', 'Nenhuma quest ativa agora.': 'No active quests right now.',
+  'Confirme seu email': 'Confirm your email', 'Chame sua turma': 'Call your crew',
+  'Conclua uma partida solo': 'Finish a solo match', 'Conclua uma partida multiplayer': 'Finish a multiplayer match',
+  'NOVIDADES': 'NEWS', 'O QUE MUDOU NA ARENA': 'WHAT CHANGED IN THE ARENA', 'VER NOVIDADES ▸': 'SEE WHAT IS NEW ▸',
+  'Amigos online': 'Friends online', 'AMIGOS ONLINE': 'FRIENDS ONLINE', 'CONVIDAR': 'INVITE', '+ CONVIDAR': '+ INVITE',
+  'Ainda não dá pra ver quem está online. Chame a turma com o link de uma sala.':
+    'You cannot see who is online yet. Call your crew with a room link.',
+  'VER AMIGOS ▸': 'SEE FRIENDS ▸', 'Tipo de partida': 'Match type', 'PRIVADA': 'PRIVATE',
+  'CONVIDAR PRA PARTY': 'INVITE TO PARTY', 'TROCAR ▸': 'CHANGE ▸',
+  'TROCAR PERSONAGEM ▸': 'CHANGE CHARACTER ▸',
+  'INSTALAR O APP': 'INSTALL THE APP', 'GIRE O CELULAR': 'ROTATE YOUR PHONE', 'INSTALAR O APP (TELA CHEIA)': 'INSTALL THE APP (FULL SCREEN)',
+  'A treta é na horizontal. Gire pra entrar direto no lobby; o progresso continua de onde parou.':
+    'The fight is in landscape. Rotate to go straight to the lobby; your progress picks up where it left off.',
+  'Entrando na mesma conta, o progresso é o mesmo do PC.': 'Sign in to the same account and your progress matches the PC.',
   // tp:fim-lobby
 
   // tp:modos
