@@ -7736,6 +7736,7 @@ export class Game {
           if (b.path.length <= 1 && from !== b.roamIdx) {
             (b._unreach || (b._unreach = new Set())).add(b.roamIdx);
             b.roamUntil = 0;
+            b.repathAt = 0;
           }
         }
       }
