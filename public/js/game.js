@@ -3646,7 +3646,7 @@ export class Game {
     st.last = this.time;
     st.sh = Math.min(0.020, st.sh + g * 0.22);
   }
-  _tryShoot() {
+  _tryShoot(continuo = false) {
     const p = this.player, w = WEAPONS[p.weapon];
     if (this.espectando()) return;   // quem assiste não tem corpo: o tiro sairia do nada
     if (!p.alive || this.state !== 'live') return;
@@ -3658,7 +3658,9 @@ export class Game {
     const a = p.ammo[p.weapon];
     if (a.mag <= 0) { this.sfx.dryFire(); this._startReload(); return; }
     a.mag--;
-    p.nextShotAt = this.time + w.rate;
+    // #969: conserva a fase da rajada; interrupções longas não acumulam tiros.
+    p.nextShotAt = continuo && this.time - p.nextShotAt < w.rate
+      ? p.nextShotAt + w.rate : this.time + w.rate;
     p.revealedAt = this.time;
     if (BOT_SENTIDOS) this._botOuve(p.pos, BOT_OUVE_TIRO, 3);   // tiro faz barulho
     this.vm.authored?.shoot(p.weapon);
@@ -6239,7 +6241,7 @@ export class Game {
        input pro servidor, que roda esta MESMA função. */
     if (this.online) this._mp?.stepPlayer(p, _inp, dt);
     // auto-fire (ak/m4/mp5) enquanto o botão está segurado
-    if (perfilArma(p.weapon).segurar && this.mouseDown0 && p.alive) this._tryShoot();
+    if (perfilArma(p.weapon).segurar && this.mouseDown0 && p.alive) this._tryShoot(true);
     this.bloom = Math.max(0, (this.bloom || 0) - dt * 1.8);
     // camera: crouch drop + landing dip (decays) + recoil recovery (decays) + speed bob
     p.landDip = (p.landDip || 0) + (0 - (p.landDip || 0)) * Math.min(1, dt * 7);
