@@ -114,12 +114,16 @@ async function abrir({ w = 1536, h = 1024, flag = true, lang = 'pt', mutante = '
 const visivel = (sel) => `[...document.querySelectorAll(${JSON.stringify(sel)})].filter((e)=>e.checkVisibility())`;
 
 /* O defeito de hoje: LOJA no topo e a aba da loja sublinhadas juntas. Na tela inteira só pode haver um
-   sublinhado (borda inferior ou risco de até 6 px); o indicador da loja é o .tp-abas__risco, alinhado à aba. */
+   sublinhado (borda, sombra interna ou risco de até 6 px); o indicador da loja é o .tp-abas__risco, alinhado à aba. */
 async function abas(page) {
   return page.evaluate(() => {
     const vis = (e) => e.checkVisibility();
     const todas = [...document.querySelectorAll('[role=tab]')].filter(vis);
-    const sublinhadas = todas.filter((t) => { const cs = getComputedStyle(t); return parseFloat(cs.borderBottomWidth) > 0 && !/rgba\(\d+, \d+, \d+, 0\)|transparent/.test(cs.borderBottomColor); }).map((t) => t.textContent.trim());
+    const sublinhadas = todas.filter((t) => {
+      const cs = getComputedStyle(t);
+      const borda = parseFloat(cs.borderBottomWidth) > 0 && !/rgba\(\d+, \d+, \d+, 0\)|transparent/.test(cs.borderBottomColor);
+      return borda || /inset.*\s-\d|-\d+px[^,]*inset/.test(cs.boxShadow);
+    }).map((t) => t.textContent.trim());
     const riscosFinos = [...document.querySelectorAll('.tp-abas__risco')].filter((r) => vis(r) && r.getBoundingClientRect().height <= 6).length;
     const tabs = [...document.querySelectorAll('.tp-loja [role=tab]')].filter(vis);
     const sel = tabs.filter((t) => t.getAttribute('aria-selected') === 'true');
@@ -136,7 +140,7 @@ async function secaoV3(mutante, add) {
   const a0 = await abas(page);
   if (!mutante) { mkdirSync(OUT, { recursive: true }); await page.screenshot({ path: `${OUT}/loja-1536x1024.png` }); }
   const cabeca = await page.evaluate(() => {
-    const t = document.querySelector('.tp-loja__titulo'), destaque = t?.querySelector('em,span');
+    const t = document.querySelector('.tp-loja__titulo'), destaque = t?.querySelector('em');
     const v = document.querySelector('.tp-loja__saldo');
     return { fonte: t ? getComputedStyle(t).fontFamily : '', cor: destaque ? getComputedStyle(destaque).color : '', palavra: destaque?.textContent || '',
       saldo: v?.textContent || '', saldoFonte: v ? getComputedStyle(v).fontFamily : '', saldoCor: v ? getComputedStyle(v).color : '' };
