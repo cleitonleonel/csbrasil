@@ -146,6 +146,8 @@
     "eval:ui-v3:browser": "node tools/eval/ui-v3-browser.mjs && node tools/eval/ui-v3-browser.mjs --mutantes",
     "//eval:ui-v3:splash": "Splash Treta Pop (tela 01) no Chrome: arte em cover no primeiro quadro sem JS, etapas iguais aos sinais reais, JOGAR/ENTER, PT e EN, 4 telas e logo inteiro nas 6 artes; --mutantes prova cada cláusula.",
     "eval:ui-v3:splash": "node tools/eval/ui-v3-splash.mjs && node tools/eval/ui-v3-splash.mjs --mutantes",
+    "//eval:ui-v3:carregamento": "Carregamento VS Treta Pop (telas 04, 14, 20) no Chrome com a partida real e os GLBs presos: forma por tamanho de time, elenco sorteado, barra única do LoadingManager, 4 telas, PT e EN, vagas online; --mutantes prova cada cláusula.",
+    "eval:ui-v3:carregamento": "node tools/eval/ui-v3-carregamento.mjs && node tools/eval/ui-v3-carregamento.mjs --mutantes",
     "eval:resultado-arte": "node tools/eval/resultado-arte-check.mjs",
     "eval:screenquery": "node tools/eval/screen-query-check.mjs",
     "eval:screenquery:browser": "node tools/eval/screen-query-browser.mjs",
