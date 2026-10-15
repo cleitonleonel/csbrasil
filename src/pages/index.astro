@@ -14,6 +14,8 @@ import { SITE, abs, DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPO
    (astro.config.mjs): esta página também renderiza no SSR de /u/<perfil>, sem `public/`. */
 declare const __CSS_REV__: { style: string; social: string; treta: string };
 const { social: SOCIAL_CSS_REV, treta: TRETA_CSS_REV, style: CSS_REV } = __CSS_REV__;
+declare const __TP_CSS__: { arquivos: string[]; rev: string };
+const TP_CSS = __TP_CSS__;
 
 /* ESTÁTICA de propósito: o Stateloop não publica SSR e `prerender = false` aqui
    fazia o build não emitir dist/client/index.html. Idioma por país: /api/geo-lang. */
@@ -692,6 +694,14 @@ window.__GEO_LANG__ = (function () {
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href={`/map-preview.css?v=${V}-${JS_REV}`}>
 <link rel="stylesheet" href={`/style.css?v=${V}-${CSS_REV}`}>
+<script is:inline define:vars={{ TP_CSS }}>
+/* Folhas por tela da Treta Pop: depois do style.css na cascata, e só com a flag. */
+if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(function (f) {
+  var l = document.createElement('link');
+  l.rel = 'stylesheet'; l.href = '/css/tp/' + f + '?v=' + TP_CSS.rev; l.setAttribute('blocking', 'render');
+  document.head.appendChild(l);
+});
+</script>
 <!-- Todo módulo local precisa passar pelo import map versionado. -->
 <script type="importmap" is:inline set:html={IMPORTMAP}></script>
 <link rel="stylesheet" href={`/map-preview.css?v=${V}-${JS_REV}`} />

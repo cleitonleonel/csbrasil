@@ -302,7 +302,10 @@ function _splashSetReady() {
   if (se) se.classList.remove('hidden');
 }
 setTimeout(_splashSetReady, 20000);   // failsafe: nunca prende o jogador na splash
-if (document.documentElement.dataset.ui === 'v3') import('./splash-v3.js').then((m) => m.ligarSplashV3()).catch(() => {});
+if (document.documentElement.dataset.ui === 'v3') {
+  import('./splash-v3.js').then((m) => m.ligarSplashV3()).catch(() => {});
+  import('./tp/ligar.js').then((m) => m.ligarTelas()).catch((e) => console.error('[treta-pop]', e));
+}
 // overlay de loading de partida/personagens (cobre a cena montando — sem "minecraft")
 const _lo = {
   box: document.getElementById('load-overlay'), fill: document.getElementById('load-bar-fill'),
