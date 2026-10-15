@@ -22,6 +22,10 @@ A observação completa contém quatro sequências por piloto: salto isolado, in
 
 `npm run eval:tpjumpownership` mede o controlador, rigs e clipes reais em CPU, com textura branca. Cobre seleção/retorno, guards, ausência de clipes, revive, ordem inversa tiro/salto e controles idle/tiro. Na integração deste branch, o baseline reproduz 18/40; o candidato, 40/40. Remover apenas o cancelamento em `_to` deixa 32/40. Uma revisão independente adicional verificou recusas e mesma ação, além do contrato de tiro anterior. O contrato de tiro foi reexecutado neste branch: 179/179.
 
+Na execução completa deste branch, `npm run check:deploy` passou 67/67 (55,531 s) e `npm run build` terminou com exit 0 (11,893 s). `npm run check:fast` ficou **243/254, exit 1** (1.054,523 s): falharam `eval:mapid`, `audio:check`, `eval:grafite`, `eval:grafite:ar`, `eval:grafite-editorial`, `eval:audiofablocal`, `eval:audiovoicemix`, `eval:decal-ink`, `eval:texture-quality-sampler`, `eval:backendhints` e `eval:mansao`. São os mesmos nomes registrados em F; isso não comprova igualdade de ambiente nem torna a suíte verde. O relatório de pickup gerado foi preservado fora do Git e restaurado seletivamente.
+
+O `SIM_HASH` consultado sem `--write` mudou de `316b75ec32f55fdb` (F) para `72b8e81df72cda0a` (G). O grafo inclui glbchars; diferença de fingerprint não demonstra divergência física. Uma release futura precisa da sincronização normal cliente/backend. Não houve bump ou alteração do hash de release nesta camada.
+
 A revisão visual independente aceitou somente um candidato funcional para draft. Nas amostras, o retorno aparece no corpo e não houve regressão óbvia no salto isolado. **Empunhadura, passada, suavidade, aterrissagem e sombra de contato continuam sem aprovação geral.** A Gotinha mantém a pistola junto de uma palma aberta; o retorno a run expõe essa limitação existente.
 
 Esta camada não liga salto no Game, não adiciona recarga corporal, ação de faca ou mira específica. Também não comprova desempenho, câmera de gameplay, multiplayer humano ou igualdade de interpolação CPU/browser. O diagnóstico numérico anterior continua separado e vermelho.
