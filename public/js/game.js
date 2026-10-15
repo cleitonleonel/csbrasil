@@ -40,6 +40,8 @@ import { urlDoBrasao } from './brasoes_versao.js';
 import { WEAPONS } from './data/weapons.js';
 import { perfilArma } from './data/weapon-profiles.js';
 export { perfilArma };
+import { saidaPenetracao } from './ballistics.js';
+export { saidaPenetracao };
 // Reexporta pra não quebrar quem já consumia a tabela daqui: server/room.js (servidor
 // autoritativo) e tools/eval/botdiag.mjs. Consumidor novo importa de data/weapons.js.
 export { WEAPONS };
@@ -3834,9 +3836,9 @@ export class Game {
       else if (Math.random() < 0.3) this.sfx.ricochet();
       const pen = this._penetrationExit(hW, dir, wid, surf);
       if (pen) {
-        const nextWorld = hitsWorld.find(hit => hit.distance > pen.exitDistance + 0.005);
-        const hP = hitsChar.find(hit => hit.distance > pen.exitDistance + 0.005
-          && (!nextWorld || hit.distance < nextWorld.distance - 0.005));
+        const nextWorld = hitsWorld.find(hit => hit.object !== hW.object);
+        const hP = hC && hC.distance > pen.exitDistance
+          && (!nextWorld || hC.distance < nextWorld.distance) ? hC : null;
         if (hP) {
           const { bot, head } = this._targetFromHit(hP);
           if (bot && bot.team !== shooter.team) {
@@ -3885,19 +3887,7 @@ export class Game {
   _penetrationExit(hit, dir, wid, surf) {
     const cfg = WEAPONS[wid]?.penetration;
     if (!cfg || this.online || !cfg.surfaces.includes(surf)) return null;
-    const box = new THREE.Box3().setFromObject(hit.object);
-    if (box.isEmpty()) return null;
-    const origin = hit.point.clone().addScaledVector(dir, 1e-4);
-    let exit = Infinity;
-    for (const axis of ['x', 'y', 'z']) {
-      const d = dir[axis], p = origin[axis], lo = box.min[axis], hi = box.max[axis];
-      if (Math.abs(d) < 1e-8) { if (p < lo || p > hi) return null; continue; }
-      const t0 = (lo - p) / d, t1 = (hi - p) / d;
-      exit = Math.min(exit, Math.max(t0, t1));
-    }
-    const thickness = exit + 1e-4;
-    if (!(thickness > 0 && thickness <= cfg.maxThickness)) return null;
-    return { exitDistance: hit.distance + thickness, damageMul: cfg.damageMul };
+    return saidaPenetracao(hit, dir, cfg, this.world.occluders);
   }
   // MATERIAL da superfície atingida, inferido do material do mesh (os mapas não marcam
   // userData.surf; quando marcarem, ela ganha prioridade). Cache em WeakMap — o raycast roda

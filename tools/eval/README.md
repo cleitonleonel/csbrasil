@@ -75,6 +75,9 @@ Os perfis explícitos do arsenal e seus consumidores de dano, entrada e saque s�
 verificados por `npm run eval:weapon-profiles`, com mutantes que removem cada vínculo.
 `npm run eval:weapon-matrix` reprova a matriz quando diverge do consumidor de dano.
 
+`npm run eval:penetration-geometry` mede a travessia real em caixas rotacionadas,
+fechadas e sobrepostas, com mutantes de AABB global, validação e oclusão.
+
 ## 4. Viewmodel e rig — a família mais densa
 
 | Arquivo | O que faz |

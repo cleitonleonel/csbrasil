@@ -65,3 +65,31 @@ O tiro é hitscan: decide interseção por raio, enquanto o traçante é efeito 
 Não há trajetória física com tempo de voo, gravidade, arrasto ou zeragem. A queda
 de dano por distância é uma curva de gameplay e não queda vertical do projétil.
 Os perfis explicitam decisões; não acrescentam uma simulação física externa.
+
+## Travessia conservadora
+
+A autorização continua limitada à AWP e às superfícies configuradas em
+`public/js/data/weapons.js`. A espessura é medida ao longo do raio no espaço
+local da malha, preservando metros do mundo mesmo com rotação e escala não
+uniforme. Só caixas completas, de material único e geometria canônica, são
+autorizadas. Caixas abertas, deformadas, com recorte de drawRange, instâncias,
+skinning ou morfologia desconhecida bloqueiam. A saída não pode ser confundida
+com uma entrada observada de dentro da própria caixa.
+
+Outra caixa delimitadora que toque o trecho atravessado bloqueia conservadoramente.
+Isso evita atravessar um segundo sólido cuja entrada esteja antes da saída do
+primeiro. Em malhas irregulares ou unidas, a caixa delimitadora pode bloquear
+um corredor que os triângulos deixariam livre; não há inferência de espessura
+nesses volumes ambíguos. Depois da saída, o próximo bloqueador continua vencendo
+um combatente mais distante. Só o primeiro combatente recebe dano.
+
+O cliente online continua sem aplicar dano ou prever travessia local. A consulta
+não resolve genericamente um atirador já dentro de uma malha arbitrária quando
+o combatente aparece antes da primeira superfície raycastada; o resolvedor
+de travessia rejeita entrada interna, sem afirmar que substitui o sistema de
+colisão ou toda consulta de mundo.
+
+`eval:penetration-geometry` mede o consumidor de tiro real em cenas primitivas,
+sem carregar mapas. A régua cobre rotação, pai transformado, escala, incidência
+oblíqua, malha aberta/deformada, material em array, recorte de faces, dois sólidos
+sobrepostos/adjacentes, primeiro alvo e as guardas de arma/modo online.
