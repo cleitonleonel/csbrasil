@@ -509,6 +509,24 @@ const DICT = {
   // tp:fim-social
 
   // tp:servidores
+  'CRIAR SALA PRIVADA': 'CREATE PRIVATE ROOM', 'JOGO RÁPIDO': 'QUICK PLAY', 'Região': 'Region',
+  'Região · escolhida pelo menor ping': 'Region · picked by lowest ping', 'TODOS OS MODOS': 'ALL MODES',
+  'COM VAGA': 'HAS ROOM', 'SEM SENHA': 'NO PASSWORD', 'Código da sala': 'Room code', 'SITUAÇÃO': 'STATUS',
+  'ENTRAR NO LADO': 'JOIN SIDE', 'Entrar no lado': 'Join side', 'Atualiza sozinho a cada 5 s': 'Refreshes by itself every 5 s',
+  'medindo o ping dos servidores…': 'measuring server ping…', 'jogando': 'playing', 'jogando agora em': 'playing now in',
+  'sala': 'room', 'salas': 'rooms', 'fora do ar agora': 'offline right now', 'fora do ar': 'offline',
+  'Servidores fora do ar': 'Servers offline', 'Tentando de novo em': 'Trying again in',
+  'Enquanto isso, dá pra treinar contra bots.': 'Meanwhile, you can train against bots.',
+  'Se os outros caírem também, dá pra treinar contra bots.': 'If the others go down too, you can train against bots.',
+  'TENTAR AGORA': 'TRY NOW', 'TREINAR CONTRA BOTS': 'TRAIN AGAINST BOTS',
+  'Esperando gente': 'Waiting for players', 'Com vaga': 'Open slots', 'Lotada': 'Full', 'assistindo': 'watching',
+  'Esse servidor não mandou a lista de salas. Tente outra região.': 'This server did not send its room list. Try another region.',
+  'Procurando salas…': 'Looking for rooms…', 'Nenhuma sala aberta. Crie a sua ou entre no jogo rápido.': 'No open rooms. Create yours or hit quick play.',
+  'Nenhuma sala passa nesse filtro.': 'No room matches this filter.', 'Captura': 'Capture', 'Mata-mata': 'Deathmatch',
+  'Copiar o link de convite desta sala': 'Copy this room invite link', 'ASSISTIR': 'WATCH',
+  'Brasil · São Paulo': 'Brazil · São Paulo', 'EUA · Carolina do Sul': 'USA · South Carolina', 'Europa · Madri': 'Europe · Madrid',
+  'Nenhum servidor no ar agora. A lista volta quando um responder.': 'No server is up right now. The list comes back when one answers.',
+  'SALA': 'ROOM', 'LINK COPIADO': 'LINK COPIED', 'ESQUERDA × DIREITA': 'LEFT × RIGHT', 'CAPTURA · MAPAS SORTEADOS': 'CAPTURE · RANDOM MAPS',
   // tp:fim-servidores
 
   // tp:ajustes
