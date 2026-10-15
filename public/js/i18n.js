@@ -500,6 +500,7 @@ const DICT = {
     'You cannot see who is online yet. Call your crew with a room link.',
   'VER AMIGOS ▸': 'SEE FRIENDS ▸', 'Tipo de partida': 'Match type', 'PRIVADA': 'PRIVATE',
   'CONVIDAR PRA PARTY': 'INVITE TO PARTY', 'TROCAR ▸': 'CHANGE ▸',
+  'O multiplayer não respondeu agora. Tente de novo em um minuto.': 'Multiplayer did not answer just now. Try again in a minute.',
   'TROCAR PERSONAGEM ▸': 'CHANGE CHARACTER ▸',
   'INSTALAR O APP': 'INSTALL THE APP', 'GIRE O CELULAR': 'ROTATE YOUR PHONE', 'INSTALAR O APP (TELA CHEIA)': 'INSTALL THE APP (FULL SCREEN)',
   'A treta é na horizontal. Gire pra entrar direto no lobby; o progresso continua de onde parou.':

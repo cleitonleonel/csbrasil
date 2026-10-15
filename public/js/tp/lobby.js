@@ -267,13 +267,15 @@ function montarEsquerda(play) {
   redesenhar();
 }
 
-/* Convite: o mesmo do JOGAR COM AMIGOS (#mp-amigos), que cria a sala só por código e abre o #mp-modal. */
+/* Convite: o mesmo do JOGAR COM AMIGOS (#mp-amigos), que cria a sala só por código e abre o #mp-modal.
+   Sem servidor, o aviso diz o que houve — clique nenhum pode morrer em silêncio (relato do dono 15/10). */
 async function convidar() {
   if (menu()?.dataset.hubNet !== 'mp') $('hub-mp')?.click();
   const estado = $('mp-estado');
   const t0 = Date.now();
   while (estado?.dataset.s === 'sondando' && Date.now() - t0 < 12000) await new Promise((r) => setTimeout(r, 200));
-  if (estado?.dataset.s !== 'erro') $('mp-amigos')?.click();
+  if (estado?.dataset.s === 'erro') { mostrarAviso(tr('O multiplayer não respondeu agora. Tente de novo em um minuto.')); return; }
+  $('mp-amigos')?.click();
 }
 
 function montarDireita(play) {
