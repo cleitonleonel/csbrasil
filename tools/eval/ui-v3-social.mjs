@@ -77,15 +77,16 @@ async function preparar(page, mutante, { conta = true, registro = [] } = {}) {
   });
   const css = /\/css\/tp\/social\.css/, js = /\/js\/tp\/social\.js/;
   if (mutante === 'vaza-flag') await reescreve(/\/js\/main\.js/, (t) => t.replace("if (document.documentElement.dataset.ui === 'v3') {\n  import('./splash-v3.js')", "if (true) {\n  import('./splash-v3.js')"));
-  if (mutante === 'botao-sobre') await reescreve(css, (t) => t.replace('--tp-resenha-chao:12px', '--tp-resenha-chao:calc(var(--tp-resenha-rodape) + 12px)'));
+  if (mutante === 'botao-sobre') await reescreve(css, (t) => t.replace('--tp-resenha-chao:12px', '--tp-resenha-chao:80px'));
   if (mutante === 'sem-y') await reescreve(js, (t) => t.replace("e.code !== 'KeyY'", "e.code !== 'KeyZ'"));
   if (mutante === 'gaveta-estreita') await reescreve(css, (t) => t.replace('.tp-resenha{width:100vw', '.tp-resenha{width:min(780px,100vw)'));
   if (mutante === 'inventa') await reescreve(js, (t) => t.replace(".filter((f) => f.state === 'accepted')", '.filter((f) => f)'));
   if (mutante === 'bolha-trocada') await reescreve(css, (t) => t.replace('.tp-msg[data-de="eu"]{align-self:flex-end', '.tp-msg[data-de="eu"]{align-self:flex-start'));
   if (mutante === 'zero-visivel') await reescreve(css, (t) => t.replace('.tp-resenha-botao__novas[data-vazio]{display:none}', ''));
-  if (mutante === 'dois-lima') await reescreve(css, (t) => t.replace('.tp-convidar__entrar{', '.tp-convidar__entrar{background:var(--tp-lima);'));
-  if (mutante === 'qr-torto') await reescreve(/\/js\/tp\/qr\.js/, (t) => t.replace('^ 0x5412', '^ 0x5413'));
-  if (mutante === 'cartao-fixo') await reescreve(css, (t) => t.replace('width:min(1120px,calc(100vw - 32px))', 'width:1120px'));
+  if (mutante === 'dois-lima') await reescreve(css, (t) => t.replace('.tp-convidar__entrar{height:52px;padding:0 28px;border-radius:10px;border:2px solid var(--tp-lima);background:none;', '.tp-convidar__entrar{height:52px;padding:0 28px;border-radius:10px;border:2px solid var(--tp-lima);background:var(--tp-lima);'));
+  if (mutante === 'qr-torto') await reescreve(js, (t) => t.replace('qrSvg(publico,', "qrSvg(publico.replace('corosolto','errado'),"));
+  if (mutante === 'cartao-fixo') await reescreve(css, (t) => t.replace('width:min(1120px,calc(100vw - 32px))', 'width:1400px'));
+  if (mutante === 'pwa-por-cima') await reescreve(css, (t) => t.replace(':root[data-ui="v3"] #main-menu:has(.tp-resenha[data-aberta]) .pwa-install{visibility:hidden}', ''));
   if (mutante === 'toque-30') await reescreve(css, (t) => t.replace('@media (pointer:coarse){', '@media (pointer:fine) and (pointer:coarse){'));
   if (mutante === 'en-vaza') await reescreve(/\/js\/i18n\.js/, (t) => t.replace("'Chama a turma': 'Call the crew',", ''));
   if (mutante === 'offline-junto') await reescreve(js, (t) => t.replace('.filter((f) => f.profile?.presence?.online)', '.filter((f) => f)'));
@@ -355,7 +356,13 @@ async function toque(mutante, cap) {
     const p = await page.evaluate(({ r, min }) => [...document.querySelectorAll(`${r} a, ${r} button, ${r} input, ${r} [role=tab]`)]
       .filter((e) => e.checkVisibility() && !e.closest('p'))
       .map((e) => ({ n: (e.id || e.textContent.trim() || e.className).toString().slice(0, 20), b: e.getBoundingClientRect() }))
-      .filter(({ b }) => b.width && (b.height < min - 0.5 || b.width < min - 0.5)).map(({ n, b }) => `${n} ${b.width.toFixed(0)}×${b.height.toFixed(0)}`), { r: raiz, min: TOQUE });
+      .flatMap(({ n, b }) => {
+        const out = [];
+        if (b.width && (b.height < min - 0.5 || b.width < min - 0.5)) out.push(`${n} ${b.width.toFixed(0)}×${b.height.toFixed(0)}`);
+        const e = b.width ? document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) : null;
+        if (e && !document.querySelector(r).contains(e)) out.push(`${n} coberto por ${(e.id || e.className || e.tagName).toString().split(' ')[0]}`);
+        return out;
+      }), { r: raiz, min: TOQUE });
     pequenos.push(...p.map((x) => `${nome}: ${x}`));
   };
   await mede('#main-menu > #tp-resenha-botao', 'botão');
@@ -375,7 +382,7 @@ async function toque(mutante, cap) {
   if (cap) await page.screenshot({ path: `${OUT}/m-convidar-844x390.png` });
   await mede('#mp-modal .mp-modal-card', 'convite');
   await ctx.close();
-  return [{ id: 'SO11', ok: !pequenos.length, msg: pequenos.length ? `abaixo de ${TOQUE} px no toque: ${pequenos.slice(0, 5).join('; ')}` : `844×390 com toque: todo alvo do botão, da gaveta e do convite ≥ ${TOQUE} px` }];
+  return [{ id: 'SO11', ok: !pequenos.length, msg: pequenos.length ? `alvo de toque abaixo de ${TOQUE} px ou coberto: ${pequenos.slice(0, 5).join('; ')}` : `844×390 com toque: todo alvo do botão, da gaveta e do convite ≥ ${TOQUE} px e sem nada por cima` }];
 }
 
 /* F · PT e EN: nenhuma string do outro idioma (mensagens e nicks são conteúdo de jogador). */
@@ -397,7 +404,8 @@ async function idioma(mutante, cap) {
     await page.waitForFunction(() => document.querySelectorAll('#mp-modal [data-amigo]').length > 0, null, { timeout: 8000 }).catch(() => {});
     await page.waitForTimeout(400);
     if (cap && lang === 'en') await page.screenshot({ path: `${OUT}/convidar-en-1536x1024.png` });
-    t += '\n' + await page.evaluate(() => { const c = document.querySelector('#mp-modal .mp-modal-card').cloneNode(true); c.querySelectorAll('[data-amigo] b').forEach((e) => e.remove()); return c.textContent.replace('SALA DO ZE', ''); });
+    /* texto por elemento: o DOM montado por JS cola "CREATEDChama a turmaESC" e o \b não vê a frase */
+    t += '\n' + await page.evaluate(() => { const c = document.querySelector('#mp-modal .mp-modal-card')?.cloneNode(true); if (!c) return ''; c.querySelectorAll('[data-amigo] b, .tp-convidar__link').forEach((e) => e.remove()); const texto = (n) => [...n.childNodes].map((f) => (f.nodeType === 3 ? f.textContent : texto(f))).join(' '); return texto(c).replace('SALA DO ZE', ''); });
     textos[lang] = t;
     await ctx.close();
   }
@@ -411,7 +419,7 @@ const GRUPOS = { semFlag, telas, fluxo, semConta, toque, idioma };
 const MUT = [
   ['vaza-flag', 'SO1', 'semFlag'], ['botao-sobre', 'SO2', 'telas'], ['sem-y', 'SO3', 'fluxo'], ['gaveta-estreita', 'SO4', 'telas'],
   ['inventa', 'SO5', 'fluxo'], ['bolha-trocada', 'SO6', 'fluxo'], ['zero-visivel', 'SO7', 'semConta'], ['dois-lima', 'SO8', 'fluxo'],
-  ['qr-torto', 'SO9', 'fluxo'], ['cartao-fixo', 'SO10', 'telas'], ['toque-30', 'SO11', 'toque'], ['en-vaza', 'SO12', 'idioma'],
+  ['qr-torto', 'SO9', 'fluxo'], ['cartao-fixo', 'SO10', 'telas'], ['toque-30', 'SO11', 'toque'], ['pwa-por-cima', 'SO11', 'toque'], ['en-vaza', 'SO12', 'idioma'],
   ['offline-junto', 'SO13', 'fluxo'], ['codigo-perdido', 'SO15', 'fluxo'],
 ];
 mkdirSync(OUT, { recursive: true });
