@@ -4,7 +4,7 @@
    telas/17-transicoes.html). Cada cláusula tem um mutante que a deixa vermelha:
      node tools/eval/ui-v3-check.mjs              # mede a árvore
      node tools/eval/ui-v3-check.mjs --mutantes   # prova que cada cláusula morde */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -64,8 +64,11 @@ const decl = (corpo, nome) => {
 
 export function medir(arq) {
   const css = arq['public/style.css'];
-  const tp = semComentarios(secao(css));
-  const raiz = bloco(tp, ':root[data-ui="v3"]');
+  const tpSecao = semComentarios(secao(css));
+  /* folhas por tela (public/css/tp) seguem as mesmas regras de paleta e de animação da seção */
+  const folhas = Object.entries(arq.folhas).map(([f, t]) => [f, semComentarios(t)]);
+  const tp = [tpSecao, ...folhas.map(([, t]) => t)].join('\n');
+  const raiz = bloco(tpSecao, ':root[data-ui="v3"]');
   const r = [];
   const add = (id, ok, msg) => r.push({ id, ok: !!ok, msg });
 
@@ -140,8 +143,20 @@ export function medir(arq) {
     semRegra.length ? `componente sem regra: ${semRegra.join(', ')}`
       : !kit ? `${KIT} não existe` : foraDoKit.length ? `kit não exibe: ${foraDoKit.join(', ')}` : !podado ? 'kit não é podado do build' : `${COMPONENTES.length} componentes com regra e no kit; kit fora do deploy`);
 
+  const soltos = [];
+  for (const [f, t] of folhas) {
+    const semBlocos = t.replace(/@keyframes[^{]+\{(?:[^{}]*\{[^}]*\})*[^}]*\}/g, '');
+    for (const m of semBlocos.matchAll(/([^{}]+)\{/g)) {
+      const cab = m[1].trim();
+      if (!cab || cab.startsWith('@')) continue;
+      for (const sel of cab.split(',').map((x) => x.trim()))
+        if (!sel.includes('[data-ui="v3"]') && !sel.startsWith('.tp-')) soltos.push(`${f}: ${sel}`);
+    }
+  }
+  add('TP10', !soltos.length, soltos.length ? `seletor fora da v3 numa folha por tela: ${soltos.slice(0, 4).join('; ')}` : `${folhas.length} folhas por tela, todo seletor escopado à v3`);
+
   /* `//` não é comentário em CSS e já apagou um @keyframes inteiro. */
-  const barras = semComentarios(css).replace(/url\([^)]*\)/g, '').replace(/"[^"]*"|'[^']*'/g, '').match(/(^|[^:])\/\/.*/gm) || [];
+  const barras = [semComentarios(css), ...folhas.map(([, t]) => t)].join('\n').replace(/url\([^)]*\)/g, '').replace(/"[^"]*"|'[^']*'/g, '').match(/(^|[^:])\/\/.*/gm) || [];
   add('TP9', !barras.length, barras.length ? `"//" no CSS: ${barras[0].trim().slice(0, 60)}` : 'nenhum "//" fora de url() e string');
   return r;
 }
@@ -155,6 +170,7 @@ function arquivos() {
     'public/js/main.js': ler('public/js/main.js'),
     'scripts/prune-dist.mjs': ler('scripts/prune-dist.mjs'),
     [KIT]: existsSync(join(ROOT, KIT)) ? ler(KIT) : '',
+    folhas: Object.fromEntries(readdirSync(join(ROOT, 'public/css/tp')).filter((f) => f.endsWith('.css')).sort().map((f) => [f, ler(`public/css/tp/${f}`)])),
     fontes,
   };
 }
@@ -174,6 +190,7 @@ const MUTANTES = {
   TP6: (a) => troca(a, 'public/style.css', /(:root\[data-ui="v3"\]\[data-motion="reduzido"\]\{[^}]*)--tp-mov:0/, '$1--tp-mov:1'),
   TP7: (a) => troca(a, 'src/pages/index.astro', "dataset.ui = 'v3'", "dataset.uiv = 'v3'"),
   TP8: (a) => troca(a, 'scripts/prune-dist.mjs', "'dist/client/ui-v3-kit.html',", ''),
+  TP10: (a) => ({ ...a, folhas: { ...a.folhas, 'lobby.css': `${a.folhas['lobby.css']}\n.btn-big{color:#b4d92e}` } }),
   TP9: (a) => troca(a, 'public/style.css', '.tp-barra{', '// barra de progresso\n.tp-barra{'),
 };
 
