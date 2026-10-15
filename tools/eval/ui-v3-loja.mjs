@@ -31,7 +31,7 @@ const browser = await chromium.launch({
 });
 
 const MUTANTES = {
-  'risco-dobrado': [(u) => u.pathname === '/css/tp/loja.css', (t) => t.replace('.treta-views{display:none}', '.treta-views{display:flex}')],
+  'risco-dobrado': [(u) => u.pathname === '/css/tp/loja.css', (t) => t.replace('.tp-loja__abas .tp-aba[aria-selected="true"]{color:var(--tp-tinta-1)}', '.tp-loja__abas .tp-aba[aria-selected="true"]{color:var(--tp-tinta-1);box-shadow:inset 0 -2px 0 #f3b958}')],
   'modal-sozinho': [(u) => u.pathname === '/js/treta-store.js', (t) => t.replace("if(document.documentElement.dataset.ui==='v3'){stored('cs_treta_intro','v1');return;}", '')],
   'titulo-sem-anton': [(u) => u.pathname === '/css/tp/loja.css', (t) => t.replace('.tp-loja__titulo{font-family:var(--tp-display)', '.tp-loja__titulo{font-family:var(--tp-ui)')],
   'raridade-inventada': [(u) => u.pathname === '/js/tp/loja.js', (t) => t.replace("RARIDADES.has(s.raridade)?s.raridade:''", "RARIDADES.has(s.raridade)?s.raridade:'comum'")],
@@ -43,6 +43,8 @@ const MUTANTES = {
   'en-vaza': [(u) => u.pathname === '/js/i18n.js', (t) => t.replace("'GANHAR MAIS': 'EARN MORE',", '')],
   'sem-flag': [(u) => u.pathname === '/js/main.js', (t) => t.replace("if (document.documentElement.dataset.ui === 'v3') {\n  import('./splash-v3.js')", "if (true) {\n  import('./splash-v3.js')")],
   'meta-fixa': [(u) => u.pathname === '/js/tp/loja.js', (t) => t.replace('d.ganhoHoje/d.tetoDiario', '0.5')],
+  'quest-sem-icone': [(u) => u.pathname === '/js/tp/loja.js', (t) => t.replace('${QUEST_ICONES[c.dataset.quest]||QUEST_ICONE_GERAL}', "''")],
+  'icone-igual': [(u) => u.pathname === '/js/tp/loja.js', (t) => t.replace('QUEST_ICONES[c.dataset.quest]||', '')],
 };
 
 const aplicados = new Set();
@@ -118,18 +120,18 @@ const visivel = (sel) => `[...document.querySelectorAll(${JSON.stringify(sel)})]
 async function abas(page) {
   return page.evaluate(() => {
     const vis = (e) => e.checkVisibility();
-    const todas = [...document.querySelectorAll('[role=tab]')].filter(vis);
+    /* só as abas DA LOJA: os hub-tabs têm sombra inset transparente/lima e não são daqui */
+    const todas = [...document.querySelectorAll('.tp-loja [role=tab]')].filter(vis);
     const sublinhadas = todas.filter((t) => {
       const cs = getComputedStyle(t);
       const borda = parseFloat(cs.borderBottomWidth) > 0 && !/rgba\(\d+, \d+, \d+, 0\)|transparent/.test(cs.borderBottomColor);
       return borda || /inset.*\s-\d|-\d+px[^,]*inset/.test(cs.boxShadow);
     }).map((t) => t.textContent.trim());
-    const riscosFinos = [...document.querySelectorAll('.tp-abas__risco')].filter((r) => vis(r) && r.getBoundingClientRect().height <= 6).length;
     const tabs = [...document.querySelectorAll('.tp-loja [role=tab]')].filter(vis);
-    const sel = tabs.filter((t) => t.getAttribute('aria-selected') === 'true');
     const riscos = [...document.querySelectorAll('.tp-loja .tp-abas__risco')].filter(vis);
+    const sel = tabs.filter((t) => t.getAttribute('aria-selected') === 'true');
     const r = riscos[0]?.getBoundingClientRect(), s = sel[0]?.getBoundingClientRect();
-    return { n: tabs.length, sublinhados: sublinhadas.length + riscosFinos, quais: [...sublinhadas, ...(riscosFinos ? [`${riscosFinos} risco fino`] : [])],
+    return { n: tabs.length, sublinhados: sublinhadas.length, quais: sublinhadas,
       selecionadas: sel.map((t) => t.textContent.trim()), riscos: riscos.length,
       dx: r && s ? Math.abs(r.left - s.left) : 99, dw: r && s ? Math.abs(r.width - s.width) : 99 };
   });
@@ -157,7 +159,8 @@ async function secaoV3(mutante, add) {
   await page.locator('#hub-shop [role=tab][data-tp-aba=armario]').click().catch(() => {});
   await page.waitForTimeout(500);
   const a1 = await abas(page);
-  const okAba = (a) => a.n >= 2 && a.sublinhados === 1 && a.riscos === 1 && a.selecionadas.length === 1 && a.dx <= 2 && a.dw <= 2;
+  /* na loja o risco é o FUNDO da aba ativa (segmento), não um sublinhado: nenhum tab sublinha sozinho */
+  const okAba = (a) => a.n >= 2 && a.sublinhados === 0 && a.riscos === 1 && a.selecionadas.length === 1 && a.dx <= 2 && a.dw <= 2;
   add('LJ1', okAba(a0) && okAba(a1) && a1.selecionadas[0] !== a0.selecionadas[0],
     `loja: ${a0.n} abas, ${a0.sublinhados} sublinhados na tela [${a0.quais.join(', ')}], ${a0.riscos} indicador a ${a0.dx.toFixed(0)}px/${a0.dw.toFixed(0)}px da aba ${a0.selecionadas.join('+') || '?'}; armário: ${a1.sublinhados} sublinhados [${a1.quais.join(', ')}], indicador a ${a1.dx.toFixed(0)}px da aba ${a1.selecionadas.join('+') || '?'}`);
 
@@ -182,6 +185,11 @@ async function secaoV3(mutante, add) {
   await page.locator('#hub-shop [role=tab][data-tp-aba=ganhar]').click().catch(() => {});
   await page.waitForTimeout(500);
   const primQuests = await page.evaluate(`${visivel('#hub-shop .tp-btn--primario')}.length`);
+  const questsIcones = await page.evaluate(() => [...document.querySelectorAll('#treta-quests [data-quest]')].filter((e) => e.checkVisibility()).map((c) => ({
+    id: c.dataset.quest, icone: c.querySelector(':scope > .tp-loja-quest-icone svg')?.innerHTML || '',
+    oculto: c.querySelector(':scope > .tp-loja-quest-icone svg')?.getAttribute('aria-hidden') !== 'true',
+    duplicado: c.querySelectorAll(':scope > .tp-loja-quest-icone').length > 1,
+  })));
   const a2 = await abas(page);
   if (!mutante) await page.screenshot({ path: `${OUT}/ganhar-1536x1024.png` });
   await page.close();
@@ -210,7 +218,9 @@ async function secaoV3(mutante, add) {
   const okEquip = conta.equipou.at(-1) === 'lula-cyborg' && slotDepois.includes(nomeEquipada('lula-cyborg'));
   add('LJ8', okSlots && arm.visual.includes(nomeEquipada('janja')) && okCont && arm.itens === APROVADAS.length && okMeus && okEquip,
     `slots [${arm.slots.join(', ')}] (quer [${SLOTS.join(', ')}]), visual "${arm.visual.trim()}", contagem "${arm.contagem}", ${arm.itens} itens, MEUS [${meus.join(', ')}], equipar → ${conta.equipou.join(',') || 'nada'} / slot "${slotDepois.trim()}"`);
-
+  add('LJ14', questsIcones.length >= 4 && questsIcones.every((q) => q.icone && !q.oculto && !q.duplicado)
+    && new Set(questsIcones.map((q) => q.icone)).size === questsIcones.length,
+    `${questsIcones.length} quests, ${questsIcones.filter((q) => q.icone).length} com ícone, ${new Set(questsIcones.map((q) => q.icone)).size} distintos (um por quest), ${questsIcones.filter((q) => q.duplicado || q.oculto).length} mal montado(s)`);
   const okMeta = meta.length === 2 && meta[0].txt.includes(`${GANHO_HOJE}`) && meta[0].txt.includes(`${TRETA_DEFAULT_REWARDS.daily_match_cap}`)
     && Math.abs(meta[0].p - GANHO_HOJE / TRETA_DEFAULT_REWARDS.daily_match_cap) < 0.01
     && meta[1].txt.includes(`${AMIGOS}`) && Math.abs(meta[1].p - AMIGOS / TRETA_DEFAULT_REWARDS.referral_cap) < 0.01;
@@ -296,7 +306,7 @@ async function secaoLegado(mutante, add) {
   add('LJ11', !ruim.length, ruim.length ? `sem a flag a loja mudou: ${ruim.map((o) => `${o.tp} nós tp-, abas antigas ${o.abas ? 'visíveis' : 'sumiram'}, título ${o.fonte.split(',')[0]}`).join('; ')}` : 'sem a flag a loja é a de hoje (1536 e 844)');
 }
 
-const SECOES = { v3: [secaoV3, ['LJ1', 'LJ3', 'LJ4', 'LJ5', 'LJ7', 'LJ8', 'LJ12', 'LJ13']], modal: [secaoModal, ['LJ2']], idioma: [secaoIdioma, ['LJ10']],
+const SECOES = { v3: [secaoV3, ['LJ1', 'LJ3', 'LJ4', 'LJ5', 'LJ7', 'LJ8', 'LJ12', 'LJ13', 'LJ14']], modal: [secaoModal, ['LJ2']], idioma: [secaoIdioma, ['LJ10']],
   telas: [secaoTelas, ['LJ9']], legado: [secaoLegado, ['LJ11']] };
 
 async function medir(mutante = '', alvo = '') {
@@ -307,7 +317,8 @@ async function medir(mutante = '', alvo = '') {
 }
 
 const MUT = [['risco-dobrado', 'LJ1'], ['modal-sozinho', 'LJ2'], ['titulo-sem-anton', 'LJ3'], ['raridade-inventada', 'LJ4'], ['preco-local', 'LJ5'],
-  ['dois-primarios', 'LJ7'], ['slot-inventado', 'LJ8'], ['grade-larga', 'LJ9'], ['alvo-pequeno', 'LJ9'], ['en-vaza', 'LJ10'], ['sem-flag', 'LJ11'], ['meta-fixa', 'LJ12']];
+  ['dois-primarios', 'LJ7'], ['slot-inventado', 'LJ8'], ['grade-larga', 'LJ9'], ['alvo-pequeno', 'LJ9'], ['en-vaza', 'LJ10'], ['sem-flag', 'LJ11'], ['meta-fixa', 'LJ12'],
+  ['quest-sem-icone', 'LJ14'], ['icone-igual', 'LJ14']];
 let sair = 0;
 if (process.argv.includes('--mutantes')) {
   for (const [mut, alvo] of MUT.filter(([m]) => !process.env.SO || process.env.SO === m)) {
