@@ -54,9 +54,11 @@ novamente antes de qualquer ajuste físico mais específico.
 - [IWI, catálogo 2020](https://iwi.net/wp-content/uploads/2021/03/IWI-2020-Catalog-Web-Ready.pdf) e [Tavor CTAR](https://iwi.us/?p=99669): famílias UZI e Tavor; a ficha não transfere dados de UZI Pro para variantes antigas.
 - [Magnum Research, ficha técnica](https://magnumresearch.com/PDF/ST0313.pdf): Desert Eagle Mark XIX em .50 AE.
 
-A ficha AW/AWP e as variantes históricas G3/G3SG1 ainda precisam de documentação
-primária histórica acessível para detalhar versão, cano ou cadência. Nenhuma
-recalibração desses parâmetros é justificada pela documentação disponível aqui.
+- [Accuracy International, manual histórico AW/AWP](https://www.indaginibalistiche.it/utlities/manuali/accuracy_international_aw_sniper_EN.pdf#page=6): documento do fabricante preservado em espelho; a apresentação identifica a família e a opção 7,62×51/.308 adotada aqui, sem confundir AW/AWP com AWM.
+- [HK, folheto histórico G3 SG/1 e HK 33 SG/1](https://s3.amazonaws.com/hk-manuals/files/Misc/Optics/Sniper_Rifles_G3_SG1_and_HK_33_SG1.pdf#page=1): documento do fabricante preservado em espelho; distingue os modelos e sua relação com a família G3. A ação seletiva não é inferida da luneta.
+
+Esses documentos históricos sustentam as referências adotadas, mas não identificam
+as malhas nem justificam recalibrar cano ou cadência de uma variante não representada.
 Não se atribuem velocidades iniciais ou coeficientes balísticos a malhas genéricas.
 
 ## Limites da simulação
