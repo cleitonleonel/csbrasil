@@ -82,8 +82,8 @@ const encerrar = (page, cen) => page.evaluate(async (c) => {
   const time = g.playerTeam;
   if (c.lado) g.playerTeam = c.lado;
   g._endMatch();
-  g.playerTeam = time;
   await Promise.resolve();
+  g.playerTeam = time;
   const raiz = document.querySelector('.tp-res');
   const tit = raiz?.querySelector('.tp-res__titulo');
   const num = raiz?.querySelector('.tp-res__stat .tp-res__n');
@@ -134,7 +134,7 @@ const clicar = (page, sel) => page.click(sel, { timeout: 3000 }).then(() => true
 const sai = (page) => page.waitForFunction(() => document.getElementById('match-end').classList.contains('hidden'), null, { timeout: 8000 }).then(() => true, () => false);
 const VIT = { k: 24, d: 8, hs: 9, combo: 3, rounds: { E: 3, B: 1 } };
 const DER = { k: 7, d: 12, hs: 1, combo: 1, botTop: 30, rounds: { E: 1, B: 3 } };
-const PT_VAZA = /\b(VITÓRIA|DERROTA|Jogar de novo|Outro mapa|Abates|Mortes|Duração|Compartilhar|levou|pastel|Abate triplo|da partida)/i;
+const PT_VAZA = /\b(VITÓRIA|DERROTA|Jogar de novo|Outro mapa|Abates|Mortes|Duração|Compartilhar|levou|Abate triplo|da partida)/i;
 const EN_VAZA = /\b(VICTORY|DEFEAT|Play again|Another map|Kills|Deaths|Duration|Share card|took the|Triple kill|of the match)\b/i;
 const tempo = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
@@ -202,6 +202,7 @@ async function medir(mutante = '') {
     await page.setViewportSize({ width: 1536, height: 1024 });
 
     await encerrar(page, { ...VIT, lado: 'B', rounds: { E: 1, B: 3 } });
+    await page.keyboard.press('Shift');
     const inv = await ler(page);
     add('RS2', inv.titulo === 'VITÓRIA' && inv.placar === '3 × 1', `jogador na Direita, rodadas E 1 × B 3: "${inv.titulo}" ${inv.placar}`);
 
@@ -221,6 +222,8 @@ async function medir(mutante = '') {
     add('RS13', u && u.searchParams.get('utm_source') === 'compartilhar' && u.searchParams.get('utm_medium') === 'fim-de-partida' && /^Ganhei/.test(p.text || ''),
       p ? `Web Share: "${p.text}" ${p.url}` : 'COMPARTILHAR CARD não chamou o Web Share');
 
+    await encerrar(page, VIT);
+    await page.waitForTimeout(900);
     const antes = await page.evaluate(() => window.__game);
     await page.keyboard.press('Enter');
     const reinicia = await sai(page) && await page.waitForFunction((g0) => window.__game && window.__game !== g0 && window.__game.state !== 'matchEnd', antes, { timeout: 60000 }).then(() => true, () => false);
