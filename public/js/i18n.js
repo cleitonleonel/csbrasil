@@ -530,6 +530,20 @@ const DICT = {
   // tp:fim-servidores
 
   // tp:ajustes
+  'MIRA': 'CROSSHAIR', 'ACESSIBILIDADE': 'ACCESSIBILITY', 'PRIVACIDADE': 'PRIVACY', 'REDUZIR ANIMAÇÕES': 'REDUCE MOTION',
+  'Seu sistema já pede menos movimento: as telas trocam só com esmaecimento.': 'Your system already asks for less motion: screens change with a fade only.',
+  'Troca deslizamentos e zooms das telas por um esmaecimento curto.': 'Swaps screen slides and zooms for a short fade.',
+  'Newsletter e cookies': 'Newsletter and cookies',
+  'Permitir cookies/dados opcionais para medir uso e desempenho do jogo. Opcional; posso retirar a permissão a qualquer momento.':
+    'Allow optional cookies/data to measure game usage and performance. Optional; I can withdraw permission at any time.',
+  'Sessão, segurança, preferências e progresso usam armazenamento necessário para jogar e manter a conta.':
+    'Session, security, preferences and progress use storage needed to play and keep the account.',
+  'Quero receber novidades por e-mail. Opcional; preciso entrar na conta e confirmar meu e-mail.':
+    'I want news by email. Optional; I need to sign in and confirm my email.',
+  'ENTRAR OU CRIAR CONTA': 'SIGN IN OR CREATE ACCOUNT', 'Receber novidades do Coro Solto por e-mail': 'Get Coro Solto news by email',
+  'Sua escolha é opcional e separada da conta.': 'Your choice is optional and separate from the account.',
+  'Falta confirmar seu e-mail para receber novidades.': 'Confirm your email to get news.',
+  'Cancelar inscrição pendente': 'Cancel pending signup',
   // tp:fim-ajustes
 };
 
