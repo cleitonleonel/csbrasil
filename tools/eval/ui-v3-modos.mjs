@@ -28,6 +28,7 @@ const browser = await chromium.launch({
 const MUTANTES = {
   'sem-tela-cheia': [/\/css\/tp\/modos\.css/, (t) => t.replace('#hub-map-modal{padding:0', '#hub-map-modal{padding:12vh 20vw')],
   'modo-nao-aplica': [/\/js\/tp\/modos\.js/, (t) => t.replace("document.getElementById(m.botao)?.click();", ';')],
+  'privada-nao-abre': [/\/js\/tp\/modos\.js/, (t) => t.replace("if (m.id === 'privada') $('hub-mp-private')?.click();", ';')],
   'mapa-fecha': [/\/js\/tp\/modos\.js/, (t) => t.replace('api().irMapa(id);', "api().irMapa(id); document.getElementById('hub-map-close')?.click();")],
   'busca-morta': [/\/js\/tp\/modos\.js/, (t) => t.replace('if (busca && !normal(m.nome).includes(busca)) return false;', '')],
   'favorito-volatil': [/\/js\/tp\/modos\.js/, (t) => t.replace('localStorage.setItem(CHAVE_FAV, JSON.stringify([...favs]));', ';')],
@@ -36,7 +37,7 @@ const MUTANTES = {
   'passo-mentiroso': [/\/js\/tp\/modos\.js/, (t) => t.replace('sel.value = String(v); sel.onchange?.();', ';')],
   'dois-primarios': [/\/js\/tp\/modos\.js/, (t) => t.replace("voltar.classList.add('tp-modos__voltar');", "voltar.classList.add('tp-modos__voltar', 'tp-btn', 'tp-btn--primario');")],
   'jogar-morto': [/\/js\/tp\/modos\.js/, (t) => t.replace("document.getElementById('hub-quick-confirm')?.click();", ';')],
-  'painel-vaza': [/\/css\/tp\/modos\.css/, (t) => t.replace('.tp-modos__cfg{flex:1;min-height:0;overflow-y:auto;', '.tp-modos__cfg{flex:none;')],
+  'filtros-no-celular': [/\/css\/tp\/modos\.css/, (t) => t.replace('  .tp-modos__filtros,.tp-modos__fav{display:none}', '  .tp-modos__fav{display:none}')],
   'alvo-pequeno': [/\/css\/tp\/modos\.css/, (t) => t.replace('--tp-modos-alvo:44px', '--tp-modos-alvo:30px')],
   'en-vaza': [/\/js\/i18n\.js/, (t) => t.replace("'MAPA ALEATÓRIO': 'RANDOM MAP',", '')],
   'gancho-sem-flag': [/\/js\/main\.js/, (t) => t.replace("if (document.documentElement.dataset.ui === 'v3') window.__tpModos = {", 'window.__tpModos = {')],
@@ -45,9 +46,9 @@ const MUTANTES = {
   'online-inventado': [/\/js\/tp\/modos\.js/, (t) => t.replace('const n = box && !box.hidden ? parseInt(box.textContent, 10) || 0 : 0;', 'const n = 42;')],
 };
 const ALVO = {
-  'sem-tela-cheia': 'MO1', 'modo-nao-aplica': 'MO2', 'mapa-fecha': 'MO3', 'busca-morta': 'MO4', 'favorito-volatil': 'MO5', 'novo-inventado': 'MO6',
+  'sem-tela-cheia': 'MO1', 'modo-nao-aplica': 'MO2', 'privada-nao-abre': 'MO2', 'mapa-fecha': 'MO3', 'busca-morta': 'MO4', 'favorito-volatil': 'MO5', 'novo-inventado': 'MO6',
   'aleatorio-repete': 'MO7', 'passo-mentiroso': 'MO8', 'dois-primarios': 'MO9', 'jogar-morto': 'MO10', 'escalacao-inventada': 'MO11',
-  'online-inventado': 'MO12', 'painel-vaza': 'MO13', 'alvo-pequeno': 'MO14', 'en-vaza': 'MO15', 'gancho-sem-flag': 'MO16', 'pino-cobre': 'MO17',
+  'online-inventado': 'MO12', 'filtros-no-celular': 'MO13', 'alvo-pequeno': 'MO14', 'en-vaza': 'MO15', 'gancho-sem-flag': 'MO16', 'pino-cobre': 'MO17',
 };
 const GRUPO = { MO13: 'telas', MO14: 'telas', MO15: 'idioma', MO16: 'semflag', MO17: 'escalacao' };
 
@@ -107,9 +108,12 @@ async function interativo(mutante, add) {
   const m1 = await modos(), e1 = await estado();
   await p.click('.tp-modos__modo[data-modo="rounds"]'); await p.waitForTimeout(300);
   const e2 = await estado();
+  await p.click('.tp-modos__modo[data-modo="privada"]'); await p.waitForTimeout(400);
+  const mp = await ev(() => ({ fechou: document.getElementById('hub-map-modal').hidden, net: document.getElementById('main-menu').dataset.hubNet, aba: document.getElementById('main-menu').dataset.hubMpTab }));
+  await ev(() => { document.getElementById('hub-sp')?.click(); document.getElementById('hub-map-change')?.click(); }); await p.waitForTimeout(500);
   const marcado = (lista) => lista.filter(([, v]) => v === 'true').map(([k]) => k).join(',');
-  add('MO2', m0.length >= 4 && marcado(m0) === e0.modo && e1.modo === 'ctf' && marcado(m1) === 'ctf' && e2.modo === 'rounds',
-    `${m0.length} cartões (${m0.map(([k]) => k).join(' ')}); marcado ${marcado(m0)} com modo ${e0.modo}; CAPTURA → ${e1.modo} (marcado ${marcado(m1)}); MATA-MATA → ${e2.modo}`);
+  add('MO2', m0.length >= 4 && marcado(m0) === e0.modo && e1.modo === 'ctf' && marcado(m1) === 'ctf' && e2.modo === 'rounds' && mp.fechou && mp.net === 'mp' && mp.aba === 'private',
+    `${m0.length} cartões (${m0.map(([k]) => k).join(' ')}); marcado ${marcado(m0)} com modo ${e0.modo}; CAPTURA → ${e1.modo} (marcado ${marcado(m1)}); MATA-MATA → ${e2.modo}; SALA PRIVADA → ${mp.fechou ? '' : 'tela aberta, '}aba ${mp.net}/${mp.aba}`);
 
   /* MO3: um cartão por mapa do menu, arte carregada, seleção = mapa da partida, e escolher não fecha a tela. */
   await imagensProntas(p);
@@ -126,6 +130,7 @@ async function interativo(mutante, add) {
   const g1 = await ev((id) => ({ mapa: window.__tpModos.estado().mapa, aberto: !document.getElementById('hub-map-modal').hidden,
     nome: document.querySelector('.tp-modos__nome')?.innerText || '', esperado: window.__tpModos.mapas().find((m) => m.id === id)?.nome || '',
     marcado: [...document.querySelectorAll('.tp-modos__mapa')].filter((c) => c.querySelector('.tp-modos__mapa-btn')?.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.id) }), alvo);
+  if (!g1.aberto) { await ev(() => document.getElementById('hub-map-change').click()); await p.waitForTimeout(500); }
   add('MO3', g0.n && g0.cards.length === g0.n && !g0.semArte.length && g0.marcado.join() === e0.mapa && g1.mapa === alvo && g1.aberto && g1.nome.toUpperCase() === g1.esperado.toUpperCase() && g1.marcado.join() === alvo,
     g0.cards.length !== g0.n ? `${g0.cards.length} cartões para ${g0.n} mapas` : g0.semArte.length ? `sem arte: ${g0.semArte.join(', ')}` : g0.marcado.join() !== e0.mapa ? `marcado ${g0.marcado.join()} com mapa ${e0.mapa}`
       : !g1.aberto ? 'escolher o mapa fechou a tela' : g1.mapa !== alvo ? `clique em ${alvo} deixou ${g1.mapa}` : `${g0.n} mapas com arte; ${alvo} escolhido, painel "${g1.nome}", tela segue aberta`);
@@ -251,7 +256,12 @@ async function telas(mutante, add) {
       const inteiros = [...(r?.querySelectorAll('.tp-modos__mapa') || [])].map(cx).filter((c) => c && grade && c.t >= grade.t - 1 && c.b <= grade.b + 1).length;
       const cortados = [...(r?.querySelectorAll('.tp-modos__modo .tp-disp, .tp-modos__nome') || [])].filter((e) => e.checkVisibility() && e.scrollWidth > e.clientWidth + 1).map((e) => e.innerText);
       const alvos = [...(r?.querySelectorAll('button, input') || [])].filter((e) => e.checkVisibility()).map((e) => ({ t: e.innerText || e.getAttribute('aria-label') || e.className, h: e.getBoundingClientRect().height, w: e.getBoundingClientRect().width }));
-      return { vw: innerWidth, vh: innerHeight, sw: document.documentElement.scrollWidth, jogar: q('.tp-modos__jogar'), painel: q('.tp-modos__painel'), acervo: q('.tp-modos__acervo'),
+      const pn = r?.querySelector('.tp-modos__painel')?.getBoundingClientRect();
+      const invadem = [...(r?.querySelectorAll('.tp-modos__acervo button, .tp-modos__acervo input, .tp-modos__modos button, .tp-modos__topo button') || [])].filter((e) => e.checkVisibility()).filter((e) => {
+        const b = e.getBoundingClientRect();
+        return b.left < -0.5 || b.right > innerWidth + 0.5 || (pn && b.right > pn.left + 0.5 && b.left < pn.right - 0.5 && b.bottom > pn.top + 0.5 && b.top < pn.bottom - 0.5);
+      }).map((e) => (e.innerText || e.getAttribute('aria-label') || e.className).replace(/\s+/g, ' ').slice(0, 20));
+      return { vw: innerWidth, vh: innerHeight, sw: document.documentElement.scrollWidth, invadem, jogar: q('.tp-modos__jogar'), painel: q('.tp-modos__painel'), acervo: q('.tp-modos__acervo'),
         modos: q('.tp-modos__modos'), topo: q('.tp-modos__topo'), inteiros, cortados, alvos };
     });
     const nome = `${w}x${h}`;
@@ -265,6 +275,7 @@ async function telas(mutante, add) {
     if (g.sw > g.vw) falhas.push(`${nome}: rolagem lateral (${g.sw} > ${g.vw})`);
     if (g.inteiros < 4) falhas.push(`${nome}: só ${g.inteiros} mapas inteiros à vista`);
     if (g.cortados.length) falhas.push(`${nome}: texto cortado: ${g.cortados.join(', ')}`);
+    if (g.invadem.length) falhas.push(`${nome}: controle fora da tela ou por baixo do painel: ${g.invadem.slice(0, 4).join(', ')}`);
     if (w === 844) alvosMedidos = g.alvos.length;
     if (w === 844) for (const a of g.alvos) if (a.h < 44 || a.w < 44) toque.push(`${String(a.t).replace(/\s+/g, ' ').slice(0, 24)} ${a.w.toFixed(0)}×${a.h.toFixed(0)}`);
   }
@@ -279,8 +290,14 @@ async function idioma(mutante, add) {
     txt[lang] = await p.evaluate(() => {
       const r = document.querySelector('#hub-map-modal .tp-modos');
       if (!r) return '';
-      const rotulos = [...r.querySelectorAll('[aria-label],[placeholder]')].map((e) => `${e.getAttribute('aria-label') || ''} ${e.getAttribute('placeholder') || ''}`);
-      return `${r.innerText}\n${rotulos.join('\n')}`;
+      /* nome de mapa é nome próprio e fica em português nos dois idiomas, como na tela de hoje */
+      const nomes = [...r.querySelectorAll('.tp-modos__mapa-nome, .tp-modos__nome')];
+      nomes.forEach((e) => { e.dataset.regua = e.textContent; e.textContent = ''; });
+      const mapas = window.__tpModos?.mapas().map((m) => m.nome) || [];
+      const rotulos = [...r.querySelectorAll('[aria-label],[placeholder]')].map((e) => `${e.getAttribute('aria-label') || ''} ${e.getAttribute('placeholder') || ''}`.replace(new RegExp(mapas.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') || '$^', 'g'), ''));
+      const texto = `${r.innerText}\n${rotulos.join('\n')}`;
+      nomes.forEach((e) => { e.textContent = e.dataset.regua; });
+      return texto;
     });
     if (lang === 'en' && !mutante) await p.screenshot({ path: `${OUT}/modos-en-1536x1024.png` });
     await p.close();
