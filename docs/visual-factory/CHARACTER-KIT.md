@@ -88,6 +88,27 @@ explicitamente revisadas. Unsupported slots exigem revisão do contrato.
 
 ## Fábrica futura e fronteiras
 
+### Empunhadura como requisito de entrega
+
+O diagnóstico de 15/10 encontrou Curl_L/R ponderados em sertanejo e mst, porém
+tracks de identidade nos packs de animação apagavam o fechamento a cada frame.
+O loader também renomeia duplicados como Curl_R_1. O corpo armado agora preserva
+esses atuadores em cópias de clipes, sem modificar os originais usados pelos
+braços FP e personagens desarmados. `eval:tpgripcurl` mede deformação ponderada,
+persistência e preservação dos outros canais; `eval:tpeventstate` cobre eventos
+e retorno após morte durante salto. Esses gates não aprovam a arte.
+
+Um pacote de skin precisa declarar quem controla os dedos e evitar disputa entre
+clipes e pose de empunhadura. O perfil de cada arma/rig deve incluir encaixe do
+cabo, orientação de punho, apoio no guarda-mão e poses de mira, tiro e recarga.
+Medir a âncora do mount ou atingir um alvo de IK não prova contato com a superfície
+da arma. Exigir vistas dos dois lados das mãos e revisão de polegar, índice,
+dedos de apoio e clipping durante as transições antes de promover o pacote.
+
+Primeiro A/B teve melhora parcial de 3 para 4/10 pelo crítico independente:
+dedos direitos mais curvos, mas apoio da AK e mão esquerda do revólver continuam
+ruins. Nenhum perfil artístico final ou sistema de sockets por arma foi entregue.
+
 1. Artista prepara corpo padrão, pose de repouso e sockets em arquivo Blender
    versionado. Entrega envelope de proporções e conjunto de poses de teste.
 2. Nova skin escolhe família existente ou abre família nova. Fazer rig/weights,
@@ -127,3 +148,27 @@ existente; não valida compatibilidade desse personagem com o contrato draft.
 Próximo passo: revisão adversarial independente desta fundação, depois piloto
 artístico real e exportador de bind; coordenador mantém commits e andamento em
 [CONTINUATION.md](CONTINUATION.md). Sem commit/push pelo autor desta subfrente.
+
+## Sidecar de empunhadura: marco15/10
+
+O formato `cs-grip-profile/1` em `tools/character-kit/grip-profile.mjs` adiciona
+contrato offline sem relaxar ou modificar o pacote legado. O exemplo reproduzível
+e os comandos de validação estão no README da ferramenta. São104 testes no total,
+incluindo47 legados; revisão independente também verificou os casos adversariais.
+
+Cada mão declara anatomia humana, pata ou mascote separadamente de fechamento
+baked/weighted/none. Regiões pertencem ao hash do corpo/arma e declaram espaço,
+normal e quaternion; atuadores e ownership são explícitos. Corpo, família, fit,
+rig e rest-pose precisam concordar na composição. Essas declarações ainda não
+provam a geometria: nenhum perfil real dos seis personagens foi aprovado.
+
+O código rejeita política de apoio de duas mãos para arma declarada de uma mão,
+ownership incompatível com fechamento assado, constrained IK ainda não implementado, hashes errados,
+escape por symlink e JSON ambíguo/duplicado. A falta de cobertura de fases é
+reportada; sucesso estrutural nunca habilita runtime nem aprova contato ou fit.
+
+Próximo gate da fábrica: importar regiões semânticas reais por hash de topologia,
+executar skinning e normalização no mesmo loader do jogo e medir contato contra
+triângulos de arma em todas as fases. Depois validar luvas/roupas que cobrem mãos
+e transições de recarga/soltura. Perfil por família não autoriza herança automática
+entre armas ou proporções diferentes.
