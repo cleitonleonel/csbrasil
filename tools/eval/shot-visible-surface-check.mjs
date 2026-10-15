@@ -23,10 +23,13 @@ await preloadPropGeometry(activeCases.length?[...new Set([...COMMON_MAP_PROPS,..
 const textures=await initTextures();let failures=0;
 const check=(ok,label)=>{console.log(`${ok?'PASS':'FAIL'} ${label}`);if(!ok)failures++;};
 function fire(world,from,dir,distance){
- const group=new THREE.Group(),body=new THREE.Mesh(new THREE.BoxGeometry(.02,.02,.02),new THREE.MeshBasicMaterial());group.add(body);group.position.copy(from).addScaledVector(dir,distance);group.updateMatrixWorld(true);
- const enemy={team:'B',alive:true,pos:group.position,mesh:{group,parts:{}}};group.userData.botOwner=enemy;
+ const enemy=combatenteNoRaio(from,dir,distance);
  const game=Object.create(Game.prototype);Object.assign(game,{world,ray:new THREE.Raycaster(),bots:[enemy],playerTeam:'E',online:false,damage:0,_damage(){this.damage++;},_fleshImpact(){},_puff(){},_impactSfx(){},sfx:{ricochet(){}}});
  game._fireHitscan({team:'E'},from,dir,40,false,'AK',null,false);return game.damage;
+}
+function combatenteNoRaio(from,dir,entrada){
+ // Torso canônico: raio 0,45 m; a fixture posiciona a entrada, não o centro visual.
+ return {team:'B',alive:true,pos:from.clone().addScaledVector(dir,entrada+.45).add(new THREE.Vector3(0,-1,0))};
 }
 function massWitness(world,model){
  const meshes=new Set();model.traverse(m=>{if(m.isMesh)meshes.add(m);});
@@ -43,8 +46,7 @@ function massWitness(world,model){
 
 for(const c of activeCases){
  seedRandom(12345);grafiteNoDedicado(true);const raw=process.argv.includes('--mutante=hidden-proxy'),w=(raw?c.build:MAPS[c.id].build)(new THREE.Scene(),textures);w.root.updateMatrixWorld(true);
- const from=new THREE.Vector3(...c.from),dir=new THREE.Vector3(...c.dir),group=new THREE.Group(),body=new THREE.Mesh(new THREE.BoxGeometry(.02,.02,.02),new THREE.MeshBasicMaterial());group.add(body);group.position.copy(from).addScaledVector(dir,3);group.updateMatrixWorld(true);
- const enemy={team:'B',alive:true,pos:group.position,mesh:{group,parts:{}}};group.userData.botOwner=enemy;
+ const from=new THREE.Vector3(...c.from),dir=new THREE.Vector3(...c.dir),enemy=combatenteNoRaio(from,dir,3);
  const game=Object.create(Game.prototype);Object.assign(game,{world:w,ray:new THREE.Raycaster(),bots:[enemy],playerTeam:'E',online:false,damage:0,_damage(){this.damage++;},_fleshImpact(){},_puff(){},_impactSfx(){},sfx:{ricochet(){}}});
  const end=game._fireHitscan({team:'E'},from,dir,40,false,'AK',null,false),distance=from.distanceTo(end),ok=game.damage===1&&distance>2.98&&distance<3.02;
  console.log(`${ok?'PASS':'FAIL'} VISIBLE ${c.id}: damage=${game.damage}, impact=${distance.toFixed(6)}m, original proxy=${raw}`);if(!ok)failures++;
