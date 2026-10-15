@@ -322,6 +322,7 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   // Apresentação só depois da 1ª partida, quando o convite pós-partida (login-prompt.js) já decidiu.
   document.addEventListener('cs-pos-partida',event=>{
     if(event.detail?.treta){stored('cs_treta_intro','v1');return;}   // o convite já mostrou os T$
+    if(document.documentElement.dataset.ui==='v3'){stored('cs_treta_intro','v1');return;}   // Treta Pop: a carteira só abre por clique
     if(skipPrompt || stored('cs_treta_intro') || $('main-menu')?.classList.contains('hidden') || document.querySelector('dialog[open]'))return;
     explain();
   });
