@@ -135,3 +135,6 @@ browser170 used different assets and actual controller normalization; its PNGs
 are context only, not proof that this synthetic profile is equivalent or that
 fit/art/license were approved. See the [continuation](../../docs/visual-factory/GARMENT-LIBRARY-CONTINUATION.md)
 for boundaries and pending review.
+
+Capturas locais do exemplo anexado/removido e o SHA do código observado estão em
+[Preview do mecanismo](../../docs/visual-factory/evidence/garment-library/README.md).

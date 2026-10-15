@@ -52,3 +52,16 @@ screenshots and an independent pixel critic; focused checks with correct local
 server, then normal hooks/push and a draft PR stacked on986. No merge/deploy.
 Evidence directories179/180/185/187/184 retain source pins, original failures and
 focused logs. No claim of human garment fit, nonhuman grip or playable game quality.
+
+Browser milestone184 at source HEAD4789a909a9e07446d548c793c45b3e4ec928ea5d:
+one real Chrome preview passed with11 exact resources,errors[],browserClosed.
+Root viewed all three RAW pages:blue attachment,gray retained body,blue reattachment.
+Initial state loaded no GLB or canvas; all four control states were checked.
+Attached/reattached canvas bytes match,disposed differs. This is a mechanical
+synthetic example, not a human fit, animation or Game benchmark.
+Independent191 accepted SYNTHETIC_PREVIEW_MECHANICS_ONLY, manifest
+9ee8968f88225d5d2306bb4967abbc23da5f797c9a9889080b3104bd35d6ddf4.
+Core142 was not regraded by its author. Root read that report and accepted only
+this limited preview. Two unchanged RAW screenshots are in evidence/garment-library/.
+This checkpoint adds documentation/images only; the11 preview input pins remain
+exactly those captured at4789a. Focused193 and normal pre-push still precede PR.
