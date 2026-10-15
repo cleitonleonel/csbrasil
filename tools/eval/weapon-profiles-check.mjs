@@ -20,6 +20,17 @@ if (mutante === 'ignora-perfil') {
 } else if (mutante && mutante !== 'saque-fallback') throw Error('mutante desconhecido');
 let falhas = 0;
 const cobrar = (ok, msg) => { console.log(`${ok ? 'OK' : 'FALHA'} ${msg}`); if (!ok) falhas++; };
+{
+  const native = Object.hasOwn;
+  let compatible = false;
+  try {
+    Object.hasOwn = undefined;
+    compatible = perfilArma('awp') === PERFIS_ARMAS.awp;
+    try { perfilArma('__proto__'); compatible = false; } catch {}
+  } catch {}
+  finally { Object.hasOwn = native; }
+  cobrar(compatible, 'ficha carrega sem Object.hasOwn e rejeita chaves herdadas');
+}
 cobrar(Object.keys(WEAPONS).sort().join() === Object.keys(PERFIS_ARMAS).sort().join(), 'todo ID tem exatamente uma ficha explícita');
 for (const [id, p] of Object.entries(PERFIS_ARMAS)) {
   cobrar(p.referencia && p.cartucho && p.acao && typeof p.segurar === 'boolean' && p.perfilDano && p.saque > 0,
