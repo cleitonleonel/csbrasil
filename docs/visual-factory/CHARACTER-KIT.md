@@ -90,13 +90,13 @@ explicitamente revisadas. Unsupported slots exigem revisão do contrato.
 
 ### Empunhadura como requisito de entrega
 
-O diagnóstico de 15/10 encontrou Curl_L/R ponderados em sertanejo e mst, porém
-tracks de identidade nos packs de animação apagavam o fechamento a cada frame.
-O loader também renomeia duplicados como Curl_R_1. O corpo armado agora preserva
-esses atuadores em cópias de clipes, sem modificar os originais usados pelos
-braços FP e personagens desarmados. `eval:tpgripcurl` mede deformação ponderada,
-persistência e preservação dos outros canais; `eval:tpeventstate` cobre eventos
-e retorno após morte durante salto. Esses gates não aprovam a arte.
+A investigação separada de 15/10 encontrou Curl_L/R ponderados em sertanejo e
+mst e tracks de identidade que apagavam o fechamento a cada frame. Um experimento
+na branch `codex/visual-factory-20261014` preserva esses atuadores em cópias de
+clipes e usa gates próprios de deformação/eventos. Esses ajustes de runtime e
+seus gates ainda não fazem parte desta camada de ferramentas. O ensaio visual
+continuou abaixo do aceite e a política de canais precisa preservar animações
+autorais de futuras skins antes de promoção.
 
 Um pacote de skin precisa declarar quem controla os dedos e evitar disputa entre
 clipes e pose de empunhadura. O perfil de cada arma/rig deve incluir encaixe do
@@ -105,7 +105,7 @@ Medir a âncora do mount ou atingir um alvo de IK não prova contato com a super
 da arma. Exigir vistas dos dois lados das mãos e revisão de polegar, índice,
 dedos de apoio e clipping durante as transições antes de promover o pacote.
 
-Primeiro A/B teve melhora parcial de 3 para 4/10 pelo crítico independente:
+O primeiro A/B da investigação separada teve melhora parcial de 3 para 4/10 pelo crítico independente:
 dedos direitos mais curvos, mas apoio da AK e mão esquerda do revólver continuam
 ruins. Nenhum perfil artístico final ou sistema de sockets por arma foi entregue.
 
@@ -133,7 +133,7 @@ continuam fora do pacote artístico e são definidos no servidor/admin autorizad
 
 ## Evidência deste marco
 
-47 testes locais cobrem fixture válida, falhas de paths/symlink/proveniência,
+A fundação inicial tinha47testes de fixture válida e falhas de paths/symlink/proveniência,
 symlinks pendentes no gerador de exemplo, NaN/infinito, slots/camadas/máscaras, famílias/fit/rig incompatíveis, conflito de
 outfit e GLBs quebrados mesmo com SHA atualizado. Executar o comando do README
 para reproduzir; aprovação visual permanece pendente.
@@ -145,16 +145,17 @@ Inspeção real, somente leitura: `client/public/models/dollynho_dance.glb`,
 requerida `EXT_texture_webp`. Isso valida utilidade do inspetor sobre arquivo
 existente; não valida compatibilidade desse personagem com o contrato draft.
 
-Próximo passo: revisão adversarial independente desta fundação, depois piloto
-artístico real e exportador de bind; coordenador mantém commits e andamento em
-[CONTINUATION.md](CONTINUATION.md). Sem commit/push pelo autor desta subfrente.
+A camada atual reúne148testes(104de pacote/sidecar e44do inspetor geométrico),
+com revisão independente registrada. Piloto artístico real e exportador de bind
+continuam pendentes. Commits, gates e publicação desta camada estão em
+[STACK-CONTINUATION.md](STACK-CONTINUATION.md).
 
 ## Sidecar de empunhadura: marco15/10
 
 O formato `cs-grip-profile/1` em `tools/character-kit/grip-profile.mjs` adiciona
 contrato offline sem relaxar ou modificar o pacote legado. O exemplo reproduzível
-e os comandos de validação estão no README da ferramenta. São104 testes no total,
-incluindo47 legados; revisão independente também verificou os casos adversariais.
+e os comandos de validação estão no README da ferramenta. O marco do sidecar chegou a104testes,
+incluindo47legados; revisão independente também verificou os casos adversariais.
 
 Cada mão declara anatomia humana, pata ou mascote separadamente de fechamento
 baked/weighted/none. Regiões pertencem ao hash do corpo/arma e declaram espaço,
