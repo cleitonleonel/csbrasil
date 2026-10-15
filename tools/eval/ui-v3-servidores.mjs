@@ -70,7 +70,8 @@ async function contexto(mutante, opcoes = {}, nos = NOS_OK) {
   const m = MUTANTES[mutante];
   if (m) {
     await ctx.route((u) => u.pathname === m[0], async (rt) => {
-      const res = await rt.fetch();
+      /* o servidor de eval derruba conexão sob carga: uma nova tentativa antes de desistir */
+      const res = await rt.fetch().catch(() => rt.fetch());
       const antes = await res.text();
       const depois = m[1](antes);
       if (depois === antes) throw new Error(`mutante ${mutante} não aplicou em ${m[0]}`);
@@ -367,7 +368,7 @@ const medir = async (mutante = '', alvo = '') => [...(!alvo || alvo.startsWith('
 
 let sair = 0;
 if (process.argv.includes('--mutantes')) {
-  for (const [mut, [, , alvo]] of Object.entries(MUTANTES).filter(([k]) => !process.env.SO || process.env.SO === k)) {
+  for (const [mut, [, , alvo]] of Object.entries(MUTANTES).filter(([k], i, todos) => (!process.env.SO || process.env.SO === k) && (!process.env.DESDE || i >= todos.findIndex(([n]) => n === process.env.DESDE)))) {
     const c = (await medir(mut, alvo)).find((x) => x.id === alvo);
     if (c.ok) sair = 1;
     console.log(`${c.ok ? 'CEGO  ' : 'MORDE '} ${alvo} (${mut})  ${c.msg}`);
