@@ -208,3 +208,9 @@ grep -rn "<nome-do-arquivo>" tools/ .github/ package.json
 
 `__pycache__/` estava versionado (12 `.pyc`) e agora está no `.gitignore`.
 Se ele reaparecer no `git status`, é porque alguém removeu a regra.
+
+`npm run eval:bot-crouch-geometry` mede postura lógica/animação, origem, LOS,
+raios, respawn e round dos bots locais, incluindo três mutantes. O ensaio opcional
+`node tools/eval/ballistics-range-playtest.mjs [--fixed-five]` produz dados de
+TTK condicional e dispersão com cinco disparos; método e limites em
+`docs/qa/balistica/autorado/README.md`. Ele não impõe tuning ou teto novo ao gate.

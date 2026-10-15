@@ -917,6 +917,7 @@ export class Game {
         isPlayer: false, name: (this.online || this.dedicated) ? def.name : `[BOT] ${def.name}`, def, team,   // SP rotula aqui; online o snapshot rotula (BUG-124)
         mesh: c, pos: new THREE.Vector3(), yaw: 0, hp: 100, alive: true,
         respawnAt: 0, protUntil: 0, kills: 0, deaths: 0,
+        crouchF: 0,
         target: null, reactAt: 0, nextShotAt: 0, skill: rollBotSkill(this._diffMul) * (0.9 + Math.random() * 0.2), weapon: wpn,
         _meshWeapon: wpn,
         mag: (WEAPONS[wpn] && WEAPONS[wpn].mag) || 30, aimErr: 0.2, burst: 0, alertUntil: 0,
@@ -2873,6 +2874,7 @@ export class Game {
       const botSpawn = place(b, b.team, slots[b.team]++);
       b.yaw = this._spawnYaw(botSpawn, b.team, true);
       b.target = null; b.path = null; b.repathAt = 0;
+      this._posturaBot(b, false);
       b.mesh.group.rotation.set(0, b.yaw, 0);
       b.mesh.group.position.copy(b.pos);
       b.mesh.group.visible = true;
@@ -3822,9 +3824,7 @@ export class Game {
   }
 
   _origemTiroBot(bot) {
-    const olho = this._botEye(bot);
-    olho.y += alturaDoOlho(bot.crouchF || 0, 0);
-    return olho;
+    return this._botEye(bot);
   }
 
   _miraTiroBot(ent) {
@@ -7046,7 +7046,11 @@ export class Game {
     m.halo.visible = true;
     m.halo.position.set(b.pos.x, b.pos.y + 0.05, b.pos.z);
   }
-  _botEye(b) { return new THREE.Vector3(b.pos.x, b.pos.y + BOT_EYE, b.pos.z); }
+  _posturaBot(b, agachar) {
+    b.crouchF = b.mesh?.isGLB && agachar ? 1 : 0;
+    if (b.mesh?.isGLB) b.mesh.ctrl.setCrouch(b.crouchF > 0.5);
+  }
+  _botEye(b) { return new THREE.Vector3(b.pos.x, b.pos.y + alturaDoOlho(b.crouchF || 0, BOT_EYE), b.pos.z); }
   _enemyOf(bot) { return this.combatants.filter(c => c.team !== bot.team && c.alive); }
   /* TURNO DE DUELO (attack token) — ver o comentário de BOT_DUEL_TOKENS.
      POR QUE existe: medido em botdiag, as rajadas que matavam o jogador vinham de 2-3 bots
@@ -7088,6 +7092,7 @@ export class Game {
     b.aimErr = 0.2; b.burst = 0; b.alertUntil = 0; b._hurtAt = 0; b.reloadUntil = 0;
     b.focusUntil = 0; b._spinAcc = 0; b._spinAt = 0; b._sideUntil = 0;   // estado de mira/anti-pirueta da vida anterior
     b.target = null; b.path = null; b.yaw = this._spawnYaw(s, b.team, true);
+    this._posturaBot(b, false);
     // Coluna, rota, juke e rumo são estado de VIDA: herdá-los repete rota e gira no spawn.
     b.laneX = undefined; b.roamUntil = 0;
     b._banNodes = null; b._unreach = null; b._escapeUntil = 0; b._jukeAt = 0;
@@ -7245,6 +7250,8 @@ export class Game {
         if (this.time - b._lostAt > grace) { b.target = null; b._losLost = false; b._lostAt = 0; }
       }
     }
+
+    this._posturaBot(b, !!b.target && b.crouchBias);
 
     // Lane/coluna do bot (sempre definida): usada tanto no roam quanto pela direção de
     // flanco no combate, pra o time ocupar os DOIS lados do mapa (não só a esquerda).
@@ -7902,7 +7909,6 @@ export class Game {
     g.position.copy(b.pos);
     g.rotation.set(0, b.yaw, 0);
     if (b.mesh.isGLB) {
-      b.mesh.ctrl.setCrouch(!!b.target && b.crouchBias);
       // "olhar pra baixo": os clipes de rifle-hold assam ~13° de inclinação da cabeça
       // pra baixo. Passa o pitch vertical olho→olho do alvo (clamp ±15°) pro controller
       // fechar o loop no osso da cabeça; sem alvo, 0 = olhar na horizontal pra onde anda.
@@ -7910,9 +7916,9 @@ export class Game {
         const e = b.target;
         let aim = 0;
         if (e) {
-          const teyeY = e.isPlayer ? this.camera.position.y : e.pos.y + BOT_EYE;
+          const teyeY = e.isPlayer ? this.camera.position.y : this._botEye(e).y;
           const hd = Math.hypot(e.pos.x - b.pos.x, e.pos.z - b.pos.z) || 1;
-          aim = Math.max(-BOT_AIM_PITCH, Math.min(BOT_AIM_PITCH, Math.atan2(teyeY - (b.pos.y + BOT_EYE), hd)));
+          aim = Math.max(-BOT_AIM_PITCH, Math.min(BOT_AIM_PITCH, Math.atan2(teyeY - this._botEye(b).y, hd)));
         }
         b.mesh.ctrl.aimPitch = aim;
       }
@@ -7980,6 +7986,7 @@ export class Game {
       b.target = b._nnMem.target || null;   // p/ o mesh (crouch/aimPitch) e o gate de tiro
     }
     const nn = b._nn || { moveFwd: 0, moveStrafe: 0, dyaw: 0, dpitch: 0, fire: 0, crouch: 0, reload: 0 };
+    this._posturaBot(b, !!b.target && nn.crouch > 0.5);
     const mix = Math.min(1, this.botBrainMix);
 
     // MIRA: aplica o dyaw da rede, limitado pelo teto de giro humano (YAW_CAP)
@@ -8012,12 +8019,11 @@ export class Game {
     g.position.copy(b.pos);
     g.rotation.set(0, b.yaw, 0);
     if (b.mesh.isGLB) {
-      b.mesh.ctrl.setCrouch(!!e && nn.crouch > 0.5);
       let aim = 0;
       if (e) {
-        const teyeY = e.isPlayer ? this.camera.position.y : e.pos.y + BOT_EYE;
+        const teyeY = e.isPlayer ? this.camera.position.y : this._botEye(e).y;
         const hd = Math.hypot(e.pos.x - b.pos.x, e.pos.z - b.pos.z) || 1;
-        aim = Math.max(-BOT_AIM_PITCH, Math.min(BOT_AIM_PITCH, Math.atan2(teyeY - (b.pos.y + BOT_EYE), hd)));
+        aim = Math.max(-BOT_AIM_PITCH, Math.min(BOT_AIM_PITCH, Math.atan2(teyeY - this._botEye(b).y, hd)));
       }
       b.mesh.ctrl.aimPitch = aim;
       const lp = b._lp || { x: b.pos.x, z: b.pos.z };

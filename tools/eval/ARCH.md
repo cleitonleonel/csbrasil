@@ -344,6 +344,7 @@ Cobertura: **3932 de 8488 linhas (46%)** do `game.js` têm dono declarado. O res
 | 6938 | `_trocarPersonagem()` | 19 |
 | 6957 | `_syncRemoteWeapon()` | 23 |
 | 6980 | `_updateTeamMark()` | 7 |
+| 7049 | `_posturaBot()` | 4 |
 | 6987 | `_botEye()` | 1 |
 | 6988 | `_enemyOf()` | 8 |
 | 6996 | `_duelToken()` | 22 |
