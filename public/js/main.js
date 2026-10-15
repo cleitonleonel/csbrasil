@@ -623,6 +623,7 @@ function _ensureMusic() {
     // não casar mais com o número da faixa (some uma no meio e o telemetry mentiria).
     if (!MENU_MUSIC_REVIEW) _pick('musica', _menuTrackId(_url)); }
   menuMusic.loop = true; menuMusic.volume = MENU_MUSIC_VOL;
+  menuMusic.addEventListener('canplaythrough', () => { window.__csMusicaPronta = true; window.dispatchEvent(new Event('cs-musica-pronta')); }, { once: true });
   window.__mm = menuMusic;   // hook de debug/teste (estado da música do menu)
   return menuMusic;
 }
