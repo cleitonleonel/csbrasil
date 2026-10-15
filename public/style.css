@@ -3462,4 +3462,66 @@ html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] .hub-footer{position:r
   color:var(--tp-tinta-1);font:800 13px/1.2 var(--tp-ui);opacity:0;transform:translateY(calc(60px * var(--tp-mov)));
   transition:transform var(--tp-d-painel) var(--tp-ease-saida),opacity var(--tp-d-painel) var(--tp-ease-saida)}
 .tp-toast[data-visivel]{opacity:1;transform:none}
+/* Splash (tela 01): a arte cobre a tela no primeiro quadro, antes de qualquer módulo JS. */
+.tp-splash{display:none}
+:root[data-ui="v3"] #boot-splash{--tp-splash-ajuste:cover;background-color:var(--tp-asfalto)}
+:root[data-ui="v3"] #boot-splash::before,:root[data-ui="v3"] #boot-splash>.splash-frame,:root[data-ui="v3"] #boot-splash>.splash-ver{display:none}
+:root[data-ui="v3"] #boot-splash::after{
+  background-image:linear-gradient(180deg,rgba(9,7,4,0) 50%,rgba(9,7,4,.85) 82%,rgba(9,7,4,.97) 100%),var(--tp-splash-arte,url('/img/loading-1.webp'));
+  background-size:cover,var(--tp-splash-ajuste);background-position:center,var(--tp-splash-foco,50% 25%)}
+/* As 6 artes são 16:9 e o cover corta 7,8% de cada lado em 3:2: o foco puxa o corte para longe do logo.
+   Bordas do logo medidas por arte; a régua SP9 confere as 6 nas 4 telas. */
+:root[data-ui="v3"][data-splash-arte="1"]{--tp-splash-arte:url('/img/loading-1.webp');--tp-splash-foco:70% 25%}
+:root[data-ui="v3"][data-splash-arte="2"]{--tp-splash-arte:url('/img/loading-2.webp');--tp-splash-foco:75% 25%}
+:root[data-ui="v3"][data-splash-arte="3"]{--tp-splash-arte:url('/img/loading-3.webp');--tp-splash-foco:75% 25%}
+:root[data-ui="v3"][data-splash-arte="4"]{--tp-splash-arte:url('/img/loading-4.webp');--tp-splash-foco:80% 25%}
+:root[data-ui="v3"][data-splash-arte="5"]{--tp-splash-arte:url('/img/loading-5.webp');--tp-splash-foco:80% 25%}
+:root[data-ui="v3"][data-splash-arte="6"]{--tp-splash-arte:url('/img/loading-6.webp');--tp-splash-foco:25% 25%}
+:root[data-ui="v3"] .tp-splash{display:block;position:absolute;inset:0;z-index:2;color:var(--tp-tinta-1);font-family:var(--tp-ui)}
+.tp-splash__centro{position:absolute;left:50%;bottom:64px;width:min(640px,calc(100vw - 800px));display:flex;flex-direction:column;align-items:center;gap:16px;transform:translateX(-50%)}
+.tp-splash__progresso{width:100%;display:flex;flex-direction:column;gap:8px}
+.tp-splash__topo{display:flex;justify-content:space-between;align-items:baseline}
+.tp-splash__status{font:700 13px/1.2 var(--tp-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--tp-lima)}
+.tp-splash__topo .tp-num{font-size:14px;font-weight:800}
+.tp-splash__barra{height:6px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden}
+.tp-splash__barra>i{display:block;height:100%;background:linear-gradient(90deg,var(--tp-lima),var(--tp-lima-claro));transform-origin:left;
+  transform:scaleX(var(--p,0));transition:transform var(--tp-d-rapido) var(--tp-ease-saida)}
+.tp-splash__etapas{display:flex;justify-content:space-between;gap:12px;margin:0;padding:0;list-style:none}
+.tp-splash__etapas li{display:flex;align-items:center;gap:8px;font:800 13px/1 var(--tp-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--tp-tinta-2)}
+.tp-splash__etapas svg{width:14px;height:14px;fill:none;stroke:var(--tp-ganho);stroke-width:4;display:none}
+.tp-splash__etapas .tp-gira{width:12px;height:12px;border-radius:50%;border:2px solid var(--tp-ambar);border-top-color:transparent;box-sizing:border-box;animation:tpGira .9s linear infinite}
+.tp-splash__etapas li[data-feito]{color:var(--tp-ganho)}
+.tp-splash__etapas small{display:none;font-weight:700;letter-spacing:.04em;color:var(--tp-tinta-3)}
+.tp-splash__etapas li[data-fundo] small{display:inline}
+.tp-splash__etapas li[data-feito] svg{display:block}
+.tp-splash__etapas li[data-feito] .tp-gira{display:none}
+@keyframes tpGira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.tp-splash__etapas .tp-gira{animation:none}}
+#tp-splash-jogar{height:88px;padding:0 48px;gap:18px;font-size:54px;--tp-corte:polygon(0 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%)}
+/* foco automático: sem anel e sem a película de hover, que clareava o lima para #BDDE47 */
+#tp-splash-jogar[data-auto-foco]:focus-visible{box-shadow:none}
+#tp-splash-jogar[data-auto-foco]:focus-visible::after{opacity:0}
+#tp-splash-jogar kbd{font-size:13px;font-weight:800;letter-spacing:0;padding:3px 7px;border:2px solid rgba(19,19,19,.5);border-radius:6px;background:none}
+.tp-splash__convidado{margin:0;font:700 15px/1.3 var(--tp-ui);color:var(--tp-tinta-2);text-align:center}
+.tp-splash__convidado b{color:var(--tp-ambar)}
+/* reserva a altura desde o primeiro quadro: o bloco ancorado no rodapé não pode pular quando o JS chega */
+.tp-splash [data-vazio]{visibility:hidden}
+.tp-splash__convidado button{padding:0;border:0;background:none;color:inherit;font:inherit;text-decoration:underline;cursor:pointer}
+.tp-splash__dica{position:absolute;left:40px;bottom:40px;width:360px;box-sizing:border-box;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;
+  border-radius:10px;background:rgba(9,7,4,.7);border:1px solid rgba(255,255,255,.1);font:600 15px/1.3 var(--tp-ui)}
+.tp-splash__dica b{flex:none;padding:3px 6px;border-radius:4px;background:var(--tp-ambar);color:var(--tp-lima-tinta);font:800 12px/1.2 var(--tp-num)}
+.tp-splash__canto{position:absolute;right:40px;bottom:40px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.tp-splash__canto button{height:40px;padding:0 14px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(9,7,4,.6);color:var(--tp-tinta-1);
+  font:800 13px/1 var(--tp-ui);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.tp-splash__canto .tp-num{font-size:12px;color:var(--tp-tinta-3)}
+/* Abaixo de 1180 px a dica não cabe ao lado do bloco central: sai, e o bloco ocupa a largura. */
+@media (max-width:1240px){.tp-splash__dica{display:none}.tp-splash__centro{width:min(640px,calc(100vw - 48px))}}
+@media (max-height:520px){
+  /* em tela baixa o bloco sobe até a metade: o escuro tem que começar antes dele */
+  :root[data-ui="v3"] #boot-splash::after{background-image:linear-gradient(180deg,rgba(9,7,4,0) 15%,rgba(9,7,4,.82) 50%,rgba(9,7,4,.96) 100%),var(--tp-splash-arte,url('/img/loading-1.webp'))}
+  .tp-splash__centro{bottom:20px;gap:10px}
+  #tp-splash-jogar{height:60px;padding:0 32px;font-size:38px}
+  .tp-splash__canto{right:16px;bottom:16px}
+  .tp-splash__canto .tp-num{display:none}
+}
 /* END:treta-pop */

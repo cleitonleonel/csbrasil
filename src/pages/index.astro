@@ -60,12 +60,17 @@ const IMPORTMAP = JSON.stringify({
   try {
     if (new URLSearchParams(location.search).get('ui') !== 'v3') return;
     document.documentElement.dataset.ui = 'v3';
-    ['anton-latin-400-normal', 'barlow-semi-condensed-latin-700-normal'].forEach(function (f) {
+    ['anton-latin-400-normal', 'barlow-semi-condensed-latin-700-normal', 'barlow-semi-condensed-latin-800-normal'].forEach(function (f) {
       var l = document.createElement('link');
       l.rel = 'preload'; l.as = 'font'; l.type = 'font/woff2'; l.crossOrigin = 'anonymous';
       l.href = '/fonts/' + f + '.woff2';
       document.head.appendChild(l);
     });
+    var n = 1 + Math.floor(Math.random() * 6);
+    document.documentElement.dataset.splashArte = String(n);
+    var img = document.createElement('link');
+    img.rel = 'preload'; img.as = 'image'; img.href = '/img/loading-' + n + '.webp';
+    document.head.appendChild(img);
   } catch (e) { /* URL inválida: segue na UI atual */ }
 })();
 </script>
@@ -457,7 +462,7 @@ window.__GEO_LANG__ = (function () {
   window.addEventListener('pointerdown', function(e){
     try{
       var alvo = e.target && e.target.closest ? e.target.closest('#boot-splash,#btn-jogar') : null;
-      if (!alvo) return;
+      if (!alvo || e.target.closest('[data-splash-fica]')) return;
       if (alvo.id === 'btn-jogar' && document.documentElement.dataset.homeUi === 'hub') return;
       if (alvo.id === 'boot-splash') {
         var prompt = document.getElementById('splash-enter');
@@ -710,6 +715,23 @@ window.__GEO_LANG__ = (function () {
     <div id="splash-enter" class="hidden">CLIQUE OU PRESSIONE QUALQUER TECLA</div>
   </div>
   <div class="splash-ver" id="splash-ver"></div>
+  <div class="tp-splash">
+    <div class="tp-splash__centro">
+      <div class="tp-splash__progresso">
+        <div class="tp-splash__topo"><span class="tp-splash__status" id="tp-splash-status">CARREGANDO ARENA…</span><span class="tp-num" id="tp-splash-pct">0%</span></div>
+        <div class="tp-splash__barra"><i></i></div>
+        <ul class="tp-splash__etapas">
+          <li data-etapa="lobby"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"></path></svg><i class="tp-gira" aria-hidden="true"></i>LOBBY</li>
+          <li data-etapa="personagem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"></path></svg><i class="tp-gira" aria-hidden="true"></i>SEU PERSONAGEM<small>em segundo plano</small></li>
+          <li data-etapa="audio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"></path></svg><i class="tp-gira" aria-hidden="true"></i>ÁUDIO<small>em segundo plano</small></li>
+        </ul>
+      </div>
+      <button id="tp-splash-jogar" class="tp-btn tp-btn--primario" type="button" disabled><span class="tp-ital">JOGAR</span><kbd>ENTER</kbd></button>
+      <p class="tp-splash__convidado" id="tp-splash-convidado" data-vazio>Você entra como <b>convidado</b></p>
+    </div>
+    <div class="tp-splash__dica"><b>DICA</b><span>Andar com a arma no ombro (tecla F) é mais rápido do que andar mirando.</span></div>
+    <div class="tp-splash__canto"><button id="tp-splash-som" type="button" data-splash-fica data-vazio><span aria-hidden="true">♫ </span><b>MÚSICA LIGADA</b></button><span class="tp-num" id="tp-splash-ver" data-vazio>v0</span></div>
+  </div>
 </div>
 
 <!-- LOADING de partida/personagens: overlay opaco com barra real (THREE.LoadingManager)

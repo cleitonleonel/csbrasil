@@ -41,6 +41,14 @@ const DICT = {
   'CARREGANDO MODELOS 3D…': 'LOADING 3D MODELS…',
   'CARREGANDO…': 'LOADING…',
   'ARENA PRONTA': 'ARENA READY',
+  'SEU PERSONAGEM': 'YOUR CHARACTER',
+  'Você entra como': 'You enter as',
+  'convidado': 'guest',
+  'trocar nick': 'change nick',
+  'escolher nick': 'choose nick',
+  'já tenho conta': 'I have an account',
+  'em segundo plano': 'in the background',
+  'Andar com a arma no ombro (tecla F) é mais rápido do que andar mirando.': 'Carrying your weapon on your shoulder (F key) is faster than walking while aiming.',
   // menu principal
   '// ESCOLHA A TRETA': '// PICK YOUR FIGHT',
   // Os dois modos ficam num submenu sob JOGAR e desembocam na tela cheia de mapas.

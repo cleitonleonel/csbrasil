@@ -302,6 +302,7 @@ function _splashSetReady() {
   if (se) se.classList.remove('hidden');
 }
 setTimeout(_splashSetReady, 20000);   // failsafe: nunca prende o jogador na splash
+if (document.documentElement.dataset.ui === 'v3') import('./splash-v3.js').then((m) => m.ligarSplashV3()).catch(() => {});
 // overlay de loading de partida/personagens (cobre a cena montando — sem "minecraft")
 const _lo = {
   box: document.getElementById('load-overlay'), fill: document.getElementById('load-bar-fill'),
@@ -672,6 +673,7 @@ const _armMusic = () => {
 function dismissSplash(e) {
   const sp = document.getElementById('boot-splash');
   if (!sp || !_splashReady || sp.classList.contains('gone')) return;
+  if (e?.target?.closest?.('[data-splash-fica]')) return;
   e?.preventDefault?.(); e?.stopPropagation?.();
   _entradaEm = performance.now();
   loadingStage.hide();
