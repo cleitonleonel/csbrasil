@@ -29,7 +29,7 @@ const MUTANTES = {
   'abas-velhas': [/\/css\/tp\/lobby\.css/, (t) => t.replace(':root[data-ui="v3"] .hub-header .hub-tabs{display:none}', '')],
   'ajustes-mudo': [/\/js\/tp\/lobby\.js/, (t) => t.replace("const rotuloAjustes = no('span', 'tp-lobby-hdr__rotulo', tr('AJUSTES'));", "const rotuloAjustes = '';")],
   'confirma-de-novo': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (!e.target.closest?.('#btn-jogar') || !temNick()) return;", 'return;')],
-  'enter-do-splash': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (splash && !splash.classList.contains('gone')) return;", '')],
+  'enter-do-splash': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (e.key !== 'Enter' || e.repeat || e.defaultPrevented ||", "if (e.key !== 'Enter' || e.repeat ||")],
   'personagem-no-canto': [/\/css\/tp\/lobby\.css/, (t) => t.replace('left:calc(50% - var(--tp-lobby-heroi) / 2);right:auto;', '')],
   'convite-mudo': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (menu()?.dataset.hubNet !== 'mp') $('hub-mp')?.click();", 'return;')],
   'quest-inventada': [/\/js\/tp\/lobby\.js/, (t) => t.replace("const recompensa = card.querySelector('strong')?.textContent || '';", "const recompensa = 'T$ 10';")],
@@ -54,7 +54,8 @@ async function abrir({ w = 1536, h = 1024, lang = 'pt', flag = true, toque = fal
   if (mutante) {
     const [teste, troca] = MUTANTES[mutante];
     await page.route(teste, async (r) => {
-      const res = await r.fetch();
+      /* o servidor de eval às vezes derruba a conexão sob carga: uma segunda tentativa antes de reprovar */
+      const res = await r.fetch().catch(() => r.fetch());
       const antes = await res.text();
       const depois = troca(antes);
       if (depois === antes) throw new Error(`mutante ${mutante} não aplicou em ${r.request().url()}`);
@@ -243,7 +244,12 @@ async function medir(mutante = '', alvo = '') {
 
   /* Sessão B: o ENTER do splash não inicia partida; o ENTER no lobby inicia. */
   if (quer('LB4')) {
-    const { page, ctx } = await abrir({ mutante });
+    /* sem foco em botão: só a guarda do próprio ENTER pode segurar a partida */
+    const { page, ctx } = await abrir({ mutante, sairSplash: false });
+    await page.evaluate(() => document.activeElement?.blur?.());
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('.tp-lobby-esq', { state: 'attached', timeout: 20000 }).catch(() => {});
+    await page.waitForTimeout(2500);
     const depoisDoSplash = await page.evaluate(() => ({ menu: !document.getElementById('main-menu').classList.contains('hidden'), carga: !document.getElementById('load-overlay')?.classList.contains('hidden') }));
     await page.evaluate(() => document.activeElement?.blur?.());
     await page.keyboard.press('Enter');
@@ -307,12 +313,17 @@ async function medir(mutante = '', alvo = '') {
     for (const lang of ['en', 'pt']) {
       const { page, ctx } = await abrir({ lang, mutante });
       if (lang === 'en') await foto(page, 'lobby-1536x1024-en');
-      vazou[lang] = await page.evaluate(() => [...document.querySelectorAll('.tp-lobby-abas, .tp-lobby-esq, .tp-lobby-dir, .tp-lobby-vaga, #tp-lobby-rede, #tp-lobby-party, #tp-lobby-partida .tp-lobby-partida__rotulo, #tp-lobby-partida .tp-lobby-partida__trocar, #btn-jogar, #hub-settings, #tp-lobby-amigos, #tp-lobby-mais, #tp-lobby-mais-menu, #tp-lobby-online, #rotate-prompt')]
-        .map((e) => e.textContent).join(' | '));
+      vazou[lang] = await page.evaluate(() => {
+        /* DOM montado por JS não tem nó de espaço: textContent cola "PLAYSHOPARMÁRIO…" e a régua
+           não vê a palavra. O texto por elemento separa sem inventar palavra nova. */
+        const texto = (n) => [...n.childNodes].map((f) => (f.nodeType === 3 ? f.textContent : texto(f))).join(' ');
+        return [...document.querySelectorAll('.tp-lobby-abas, .tp-lobby-esq, .tp-lobby-dir, .tp-lobby-vaga, #tp-lobby-rede, #tp-lobby-party, #tp-lobby-partida .tp-lobby-partida__rotulo, #tp-lobby-partida .tp-lobby-partida__trocar, #btn-jogar, #hub-settings, #tp-lobby-amigos, #tp-lobby-mais, #tp-lobby-mais-menu, #tp-lobby-online, #rotate-prompt, #hub-change-character .hub-character-change')]
+          .map(texto).join(' | ');
+      });
       await ctx.close();
     }
-    const PT = /(?<!\p{L})(JOGAR|LOJA|ARMÁRIO|CARREIRA|CLÃ|AMIGOS|AJUSTES|MAIS|CONVIDAR|NOVIDADES|QUESTS DA TRETA|VER TODAS|PRIVADA|TROCAR|PARTIDAS|CONCLUÍDA|Ainda não|Nenhuma|Consultando|SOBRE O JOGO|APOIE|TERMOS|EXCLUIR|MAPA AO VIVO|GIRE|Confirme|Chame|Conclua)(?!\p{L})/u;
-    const EN = /(?<!\p{L})(PLAY|SHOP|LOCKER|CAREER|CLAN|FRIENDS|SETTINGS|MORE|INVITE|NEWS|ROTATE|CHANGE|PRIVATE|MATCHES|Confirm|Finish)(?!\p{L})/u;
+    const PT = /(?<!\p{L})(JOGAR|LOJA|ARMÁRIO|CARREIRA|CLÃ|AMIGOS|AJUSTES|MAIS|CONVIDAR|NOVIDADES|QUESTS DA TRETA|VER TODAS|PRIVADA|TROCAR|PARTIDAS|CONCLUÍDA|Ainda não|Nenhuma|Consultando|SOBRE O JOGO|APOIE|TERMOS|EXCLUIR|MAPA AO VIVO|GIRE|PERSONAGEM|Confirme|Chame|Conclua)(?!\p{L})/u;
+    const EN = /(?<!\p{L})(PLAY|SHOP|LOCKER|CAREER|CLAN|FRIENDS|SETTINGS|MORE|INVITE|NEWS|ROTATE|CHANGE|CHARACTER|PRIVATE|MATCHES|Confirm|Finish)(?!\p{L})/u;
     const em = (vazou.en.match(PT) || [])[0], ep = (vazou.pt.match(EN) || [])[0];
     add('LB12', vazou.en && vazou.pt && !em && !ep, !vazou.en ? 'lobby v3 sem texto para medir' : em || ep ? `idioma misturado: "${em || ep}" ${em ? 'em EN' : 'em PT'}` : 'PT e EN sem string do outro idioma');
   }
