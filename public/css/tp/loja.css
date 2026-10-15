@@ -103,7 +103,10 @@
 :root[data-ui="v3"] .treta-section-heading h3,:root[data-ui="v3"] .treta-dialog h2,:root[data-ui="v3"] .treta-quest h4{font-family:var(--tp-display);font-weight:400;text-transform:uppercase}
 :root[data-ui="v3"] .treta-section-heading p,:root[data-ui="v3"] .treta-quest p,:root[data-ui="v3"] .treta-dialog p,:root[data-ui="v3"] #treta-quest-period,
 :root[data-ui="v3"] #treta-quest-limit{font-family:var(--tp-ui);color:var(--tp-tinta-2)}
-:root[data-ui="v3"] .treta-quest{border:1px solid var(--tp-borda);border-radius:12px}
+:root[data-ui="v3"] .treta-quest{border:1px solid var(--tp-borda);border-radius:12px;display:flex;gap:14px;align-items:flex-start}
+:root[data-ui="v3"] .tp-loja-quest-icone{flex:0 0 auto;display:grid;place-items:center;width:46px;height:46px;border:1px solid var(--tp-borda);border-radius:10px;background:#141008;color:var(--tp-tinta-2)}
+:root[data-ui="v3"] .tp-loja-quest-icone svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:root[data-ui="v3"] .tp-loja-quest-corpo{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
 :root[data-ui="v3"] .treta-quest strong,:root[data-ui="v3"] .treta-detail-copy>strong{font-family:var(--tp-num);font-weight:800;color:var(--tp-ambar)}
 :root[data-ui="v3"] .treta-secondary,:root[data-ui="v3"] .treta-close{border-radius:8px;background:var(--tp-elevado);color:var(--tp-tinta-1);font:800 14px/1.2 var(--tp-ui);letter-spacing:.04em}
 :root[data-ui="v3"] .treta-primary{border-radius:0;clip-path:var(--tp-corte);background:var(--tp-lima);color:var(--tp-lima-tinta);font:400 24px/1 var(--tp-display);text-transform:uppercase}

@@ -17,8 +17,25 @@ let raiz=null,aba='loja',filtro='todos',escolhido=null,equipando=false;
 function botao(cls,texto,acao){const b=el('button',cls,texto);b.type='button';if(acao)b.onclick=acao;return b;}
 function vistaLegada(){return document.querySelector('[data-treta-view=quests]')?.getAttribute('aria-selected')==='true'?'quests':'skins';}
 function entrar(){$('hub-account-login')?.click();}
+/* Ícone por tipo de quest (pedido do dono 15/10): a placa entra pela camada tp, o card continua do treta-store. */
+const QUEST_ICONES={
+  email:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  referral:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M19 8v6M16 11h6"/>',
+  singleplayer:'<circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',
+  multiplayer:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.5c2.3.3 4 1.9 4.6 4.5"/>',
+};
+const QUEST_ICONE_GERAL='<path d="M4 6h16M4 12h10M4 18h7"/>';
+function decorarQuests(){
+  for(const c of document.querySelectorAll('#treta-quests [data-quest]')){
+    if(c.querySelector(':scope > .tp-loja-quest-icone'))continue;
+    const placa=el('span','tp-loja-quest-icone');
+    placa.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${QUEST_ICONES[c.dataset.quest]||QUEST_ICONE_GERAL}</svg>`;
+    const corpo=el('div','tp-loja-quest-corpo');
+    corpo.append(...c.childNodes);
+    c.append(placa,corpo);
+  }
+}
 function raridade(s){return RARIDADES.has(s.raridade)?s.raridade:'';}
-
 function cartao(s,d){
   const b=botao('tp-card tp-loja__cartao','',()=>abrirTretaSkin(s.id));
   b.dataset.skin=s.id;b.style.setProperty('--skin-color',s.color);
@@ -172,5 +189,9 @@ export function ligar(){
   if(!$('hub-shop') || raiz)return;
   montar();
   document.addEventListener('cs-treta-state',render);
+  document.addEventListener('cs-treta-state',decorarQuests);
+  const quests=$('treta-quests');
+  if(quests)new MutationObserver(decorarQuests).observe(quests,{childList:true});
+  decorarQuests();
   render();
 }
