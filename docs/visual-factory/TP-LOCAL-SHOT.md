@@ -22,6 +22,10 @@ Os vídeos foram decodificados integralmente na revisão independente. Incluem c
 
 Na integração local, passaram 179/179 verificações. Remover o encaminhamento deixa 96/149; remover o retorno parado deixa 161/179; reiniciar a fase deixa 167/179; remover a expiração ou antecipá-la deixa 175/179. Os mutantes são cópias externas dos módulos reais, com imports redirecionados ao mesmo checkout. O teste aceita `--game-module` e `--glb-module` para essa reprodução; sem overrides, verifica os fontes reais. `--out` opcional salva observações em arquivo novo antes da saída por reprovação, exceto erro que interrompa a execução.
 
+`npm run build` e `npm run check:deploy` passaram (66/66 no deploy). O `check:fast` completo terminou vermelho: 242/253. Dois checks de grafite recusaram `BASE` ausente antes de abrir browser; os nove outros repetem classes de falha já registradas na base: mapas, áudio, editorial, assets ausentes e fixture de renderer. Os scripts de entrada dos 11 checks são idênticos aos da base imediata. Isso não substitui um teste da base no mesmo ambiente nem torna o resultado geral verde.
+
+O fingerprint de fontes `SIM_HASH` muda porque o grafo inclui Game e o controlador. Uma futura release autorizada precisa seguir a sincronização normal do cliente e do backend. Esta camada não atualiza a versão nem faz deploy.
+
 **A empunhadura continua reprovada.** Na Gotinha, os clipes de tiro e caminhada apresentam a palma aberta ao lado da pistola. Acioná-los pode parecer pior que a pose anterior de espera. A mão ainda precisa de autoria de rig, forma e pose. Esta correção funcional permanece draft; não aprova contato, apoio ou qualidade global das animações.
 
 Os pés, a passada e a suavidade das transições também não estão aprovados. O salto interrompido por tiro em movimento tem uma disputa de estado já existente e continua pendente. Mira corporal, recarga e salto local não foram conectados por esta alteração. A evidência não valida o elenco inteiro, câmera de gameplay, cenário real, multiplayer humano ou desempenho.
