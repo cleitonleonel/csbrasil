@@ -65,3 +65,16 @@ Core142 was not regraded by its author. Root read that report and accepted only
 this limited preview. Two unchanged RAW screenshots are in evidence/garment-library/.
 This checkpoint adds documentation/images only; the11 preview input pins remain
 exactly those captured at4789a. Focused193 and normal pre-push still precede PR.
+
+Focused193 ROOTREAD:eval:grafite and eval:grafite:ar both exit0 with explicit
+BASE=http://127.0.0.1:8138,ChromeMac,Node23.6. Own server/browsers closed; unrelated
+processes preserved. Pickup CPU:18maps/944pickups,PA1/PA2 PASS,report unchanged.
+Manifest d4a4dacd81243502e76c16244ca2add8290653a81d46f864ace9242f0c0789d1.
+Entry scripts of original12 reds match immediate D; ignored packs/dependencies
+are not declared equal. Nine original failures have no passing replacement
+result here(mapid,audio:check,grafite-editorial,audiofablocal,audiovoicemix,
+decal-ink,texture-quality-sampler,backendhints,mansao). They were not rerun by193.
+Original240/252 score remains unchanged; no inferred aggregate score or waiver.
+Root npm run build exit0, external184/build.log, no tracked generated changes.
+Next:normal pre-push hooks and draft stack PR with these limitations, then CI at
+exact published HEAD. No merge/deploy/real garment distribution.
