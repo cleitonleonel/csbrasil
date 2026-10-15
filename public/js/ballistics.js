@@ -70,3 +70,25 @@ export function saidaPenetracao(hit, direcao, cfg, oclusores) {
   }
   return { exitDistance: trecho.saida, damageMul: cfg.damageMul };
 }
+
+export function resolverRaio({ origem, direcao, alvos, paredes, intersectar, alcance, atravessar }) {
+  const parede = paredes[0], limite = parede?.distance ?? Infinity;
+  let primeiro = null;
+  for (const alvo of alvos) {
+    const hit = intersectar(origem, direcao, alvo.pos, alvo.crouchF);
+    if (!hit || hit.dist > alcance) continue;
+    if (!primeiro || hit.dist < primeiro.dist) primeiro = { ent: alvo.ent, ...hit };
+  }
+  const impacto = hit => ({ ...hit, point: origem.clone().addScaledVector(direcao, hit.dist) });
+  if (primeiro && primeiro.dist < limite - EPS) return impacto(primeiro);
+  if (primeiro && parede && atravessar) {
+    const saida = atravessar(parede);
+    const seguinte = paredes.find(p => p.object !== parede.object);
+    if (saida && primeiro.dist > saida.exitDistance + EPS
+      && (!seguinte || primeiro.dist < seguinte.distance - EPS)) {
+      return impacto({ ...primeiro, damageMul: saida.damageMul, atravessou: parede });
+    }
+  }
+  return parede ? { ent: null, head: false, dist: limite, point: parede.point,
+    object: parede.object, n: parede.face?.normal || null } : null;
+}

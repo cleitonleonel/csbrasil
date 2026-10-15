@@ -102,3 +102,24 @@ um raio central. A transformação de direção é compartilhada com o bot norma
 sem alterar seu consumo de aleatoriedade, rajada ou multiplicadores de dificuldade.
 `eval:bot-shot-direction` mede o consumidor NN e o mutante do raio central.
 A unificação da geometria e dos pellets é tratada separadamente desta direção.
+
+## Entrada compartilhada
+
+Jogador, bot normal e bot NN consultam a primeira entrada analítica do torso ou
+da cabeça em `public/js/hitboxes.js`, pelo resolvedor de `ballistics.js`. Malhas
+visuais, armas e acessórios deixam de escolher a hitbox. A parede vence um empate;
+o alcance limita a superfície atingida. Agachamento desloca cabeça, torso e origem
+do tiro, mantendo a convenção anterior dos pés. O ajuste artístico de ombros e pés
+ainda requer confirmação visual com os personagens autorados.
+
+A mira dos bots usa a posição corporal, inclusive em terceira pessoa. Dano,
+dificuldade e efeitos seguem o combatente realmente atingido; o alvo escolhido
+pela IA pode estar atrás dele. Slots humanos remotos recebem o multiplicador
+humano; proxies de NPC e ghosts continuam NPCs. O sorteio de headshot do bot
+normal continua sendo uma limitação de gameplay e exige entrada geométrica na
+cabeça. O caminho NN preserva sua política sem headshots.
+
+`eval:shared-shot` mede entradas, paredes, postura, alcance e os consumidores reais,
+com mutações que quebram esses contratos. A autoridade online aplica o mesmo
+resolvedor às poses históricas. Este lote não unifica golpes corpo a corpo nem
+substitui o multiplicador legado de cartucho dos bots por pellets individuais.

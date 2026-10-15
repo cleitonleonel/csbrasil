@@ -7,7 +7,7 @@ if (mutante) {
   const alterado = mutante === 'raio-central'
     ? original.replace('direcaoDesviada(from, teye, ox, oy)', 'teye.clone().sub(from).normalize()')
     : mutante === 'fim-central'
-      ? original.replace('hit ? from.clone().addScaledVector(dir, tdist)', 'hit ? teye') : original;
+      ? original.replace('resultado?.point || from.clone().addScaledVector(dir, 120)', '(resultado?.ent ? teye : resultado?.point) || from.clone().addScaledVector(dir, 120)') : original;
   if (alterado === original) throw Error('mutante não aplicou');
   Game.prototype._botShootNN = new Function('WEAPONS', 'THREE', 'BOT_FAIR', 'BOT_DMG_PLAYER', 'BLOOD', 'direcaoDesviada', `return function ${alterado}`)(WEAPONS, THREE, true, 1, false, direcaoDesviada);
 }
@@ -22,8 +22,9 @@ let direcao, rastro, danos = 0;
 jogo._flash = (_, dir) => { direcao = dir.clone(); };
 jogo._tracer = (de, ate) => { rastro = [de.clone(), ate.clone()]; };
 jogo._damage = () => danos++;
-const bot = { pos: new THREE.Vector3(), weapon: 'ak', mag: 10, skill: 1, mesh: { isGLB: false } };
+const bot = { pos: new THREE.Vector3(), weapon: 'ak', mag: 10, skill: 1, team: 'E', alive: true, mesh: { isGLB: false } };
 const alvo = { pos: new THREE.Vector3(0, 0, -40), alive: true, team: 'B' };
+jogo.bots = [alvo]; jogo.player = { alive: false, team: 'E' };
 const original = Math.random;
 try {
   Math.random = () => 1; jogo._botShootNN(bot, alvo);

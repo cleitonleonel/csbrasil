@@ -54,9 +54,9 @@ try {
     game._damage = (ent, valor) => { entregue = valor; };
     if (caminho === '_updateBot') game._updateBot(atirador, 0);
     else game._botShootNN(atirador, alvo);
-    cobrar(usado && usado.args[0] === 36 && usado.args[1] === 'ak' && Math.abs(usado.args[2] - 60) < 1e-9,
+    cobrar(usado && usado.args[0] === 36 && usado.args[1] === 'ak' && Math.abs(usado.args[2] - 59.75) < 1e-9,
       `${caminho}: entrega dano, arma e distância efetivos à curva`);
-    cobrar(usado && Math.abs(usado.valor - 34.38) < 1e-9, `${caminho}: queda de AK a 60 m`);
+    cobrar(usado && Math.abs(usado.valor - 34.407) < 1e-9, `${caminho}: queda de AK na entrada da cabeça a 59,75 m`);
     cobrar(entregue === 34, `${caminho}: preserva dano arredondado de AK contra bot`);
   }
 } finally { Math.random = randomOriginal; game.dispose(); }

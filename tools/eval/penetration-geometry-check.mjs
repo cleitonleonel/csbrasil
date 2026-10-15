@@ -3,12 +3,14 @@ import { WEAPONS } from '../../public/js/data/weapons.js';
 import fs from 'node:fs';
 const mutante = process.argv.find(a => a.startsWith('--mutante='))?.split('=')[1];
 if (mutante === 'pula-primeiro') {
-  const original = Game.prototype._fireHitscan.toString();
-  const alterado = original.replace(
-    'const hP = hC && hC.distance > pen.exitDistance\n          && (!nextWorld || hC.distance < nextWorld.distance) ? hC : null;',
-    'const hP = hitsChar.find(h => h.distance > pen.exitDistance && (!nextWorld || h.distance < nextWorld.distance));');
-  if (alterado === original) throw Error('mutante não aplicou');
-  Game.prototype._fireHitscan = new Function('THREE', 'GUNFEEL', 'STATIC_CLASS', `return function ${alterado}`)(THREE, true, {});
+  const fonte = fs.readFileSync(new URL('../../public/js/ballistics.js', import.meta.url), 'utf8');
+  const alterado = fonte.replace('hit.dist < primeiro.dist', 'hit.dist > primeiro.dist');
+  if (alterado === fonte) throw Error('mutante não aplicou');
+  const absoluto = alterado.replace("from 'three'", `from '${new URL('../../public/vendor/three.module.js', import.meta.url).href}'`);
+  const { resolverRaio } = await import('data:text/javascript;base64,' + Buffer.from(absoluto).toString('base64'));
+  const consultar = Game.prototype._consultarTiro.toString();
+  const { entradaCombatente, ALCANCE_TIRO } = await import('../../public/js/hitboxes.js');
+  Game.prototype._consultarTiro = new Function('resolverRaio', 'entradaCombatente', 'ALCANCE_TIRO', `return function ${consultar}`)(resolverRaio, entradaCombatente, ALCANCE_TIRO);
 } else if (mutante) {
   let codigo = fs.readFileSync(new URL('../../public/js/ballistics.js', import.meta.url), 'utf8');
   const original = codigo;
@@ -37,9 +39,9 @@ function disparar(paredes, { online = false, wid = 'awp', doisAlvos = false, alv
   const jogo = Object.create(Game.prototype), cena = new THREE.Scene();
   jogo.ray = new THREE.Raycaster(); jogo.world = { occluders: paredes }; jogo.online = online;
   jogo.playerTeam = 'E'; jogo.bots = []; const danos = [];
-  for (const z of doisAlvos ? (alvoNoTrecho ? [-5.3, -8] : [-6, -8]) : [-6]) {
+  for (const z of doisAlvos ? (alvoNoTrecho ? [-5.4, -8] : [-6, -8]) : [-6]) {
     const group = new THREE.Group(), body = new THREE.Mesh(new THREE.SphereGeometry(.35), new THREE.MeshBasicMaterial());
-    body.position.set(0, 1.5, z); group.add(body);
+    body.position.set(0, 1, z); group.add(body);
     const bot = { team: 'B', alive: true, pos: new THREE.Vector3(0, 0, z), mesh: { group, parts: { head: null } } };
     body.userData.botOwner = bot; jogo.bots.push(bot); cena.add(group);
   }
@@ -47,7 +49,7 @@ function disparar(paredes, { online = false, wid = 'awp', doisAlvos = false, alv
   cena.updateMatrixWorld(true);
   jogo._damage = (alvo, dano) => danos.push([alvo, dano]);
   for (const nome of ['_puff', '_impactSfx', '_fleshImpact']) jogo[nome] = () => {};
-  jogo._fireHitscan({ team: 'E' }, new THREE.Vector3(0, 1.5, 0), new THREE.Vector3(0, 0, -1), 400, false, 'AWP', wid, false);
+  jogo._fireHitscan({ team: 'E' }, new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, -1), 400, false, 'AWP', wid, false);
   cena.traverse(o => { o.geometry?.dispose(); if (Array.isArray(o.material)) o.material.forEach(m => m.dispose()); else o.material?.dispose(); });
   return danos;
 }
@@ -117,7 +119,7 @@ function disparar(paredes, { online = false, wid = 'awp', doisAlvos = false, alv
   const parede = caixa(2, 10, 'madeira', -2); parede.material.side = THREE.DoubleSide;
   parede.updateMatrixWorld(true);
   const dir = new THREE.Vector3(0, 0, -1);
-  const ray = new THREE.Raycaster(new THREE.Vector3(0, 1.5, 0), dir);
+  const ray = new THREE.Raycaster(new THREE.Vector3(0, 1, 0), dir);
   const hit = ray.intersectObject(parede, false)[0];
   const saida = Game.prototype._penetrationExit.call({ online: false, world: { occluders: [parede] } }, hit, dir, 'awp', 'madeira');
   cobrar(hit && saida === null, 'resolvedor rejeita saída vista de dentro como autorização de entrada');

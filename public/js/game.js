@@ -40,8 +40,9 @@ import { urlDoBrasao } from './brasoes_versao.js';
 import { WEAPONS } from './data/weapons.js';
 import { perfilArma } from './data/weapon-profiles.js';
 export { perfilArma };
-import { saidaPenetracao, direcaoDesviada } from './ballistics.js';
-export { saidaPenetracao };
+import { saidaPenetracao, direcaoDesviada, resolverRaio } from './ballistics.js';
+import { entradaCombatente, ALCANCE_TIRO, alturaDoOlho } from './hitboxes.js';
+export { saidaPenetracao, resolverRaio };
 // Reexporta pra não quebrar quem já consumia a tabela daqui: server/room.js (servidor
 // autoritativo) e tools/eval/botdiag.mjs. Consumidor novo importa de data/weapons.js.
 export { WEAPONS };
@@ -3805,52 +3806,79 @@ export class Game {
     return d;
   }
 
+  _consultarTiro(shooter, from, dir, wid) {
+    this.ray.set(from, dir); this.ray.far = ALCANCE_TIRO;
+    const paredes = this.ray.intersectObjects(this.world.occluders, false);
+    const atores = [...(this.bots || []), ...(this.dedicated ? [] : [this.player])];
+    const alvos = atores.filter(e => e && e !== shooter && e.alive && !e._idle && e.team !== shooter.team)
+      .map(ent => ({ ent, pos: ent.pos, crouchF: ent.crouchF || 0 }));
+    const hit = resolverRaio({ origem: from, direcao: dir, alvos, paredes, alcance: ALCANCE_TIRO,
+      intersectar: entradaCombatente,
+      atravessar: parede => this._penetrationExit(parede, dir, wid, this._surfaceOf(parede.object)) });
+    if (hit?.object) hit.sup = this._surfaceOf(hit.object);
+    return hit;
+  }
+
+  _origemTiroBot(bot) {
+    const olho = this._botEye(bot);
+    olho.y += alturaDoOlho(bot.crouchF || 0, 0);
+    return olho;
+  }
+
+  _miraTiroBot(ent) {
+    return this._participanteHumano(ent) ? new THREE.Vector3(ent.pos.x, ent.pos.y + alturaDoOlho(ent.crouchF || 0), ent.pos.z)
+      : this._origemTiroBot(ent);
+  }
+
+  _participanteHumano(ent) {
+    return !!(ent.isPlayer || (ent._remote && ent._remote !== 'ghost' && ent._netBot !== true));
+  }
+
+  _resolverTiroBot(bot, from, dir, W, permiteCabeca = false) {
+    const wid = WEAPONS[bot.weapon] ? bot.weapon : 'ak';
+    const hit = this._consultarTiro(bot, from, dir, wid);
+    if (!hit?.ent) return hit;
+    const alvo = hit.ent, head = !!(hit.head && permiteCabeca), classe = perfilArma(wid).perfilDano;
+    let dano = (W.dmg || 30) * (W.pellets ? Math.min(W.pellets, 6) * .55 : 1);
+    dano = this._distanceDamage(dano, wid, hit.dist);
+    if (head) dano *= BOT_FAIR ? (BOT_HS_MUL[classe] || 2) : (HS_MUL[classe] || 3) * .8;
+    dano *= hit.damageMul ?? 1;
+    const humano = this._participanteHumano(alvo);
+    const mul = humano ? (BOT_FAIR ? this._botDmgPlayer : BOT_DMG_PLAYER) : 1;
+    dano = Math.max(6, Math.min(humano ? 100 : 130, Math.round(dano * mul)));
+    this._damage(alvo, dano, bot, W.short || 'ARMA', head, hit.point);
+    if (hit.atravessou) this._puff(hit.atravessou.point, hit.atravessou.face?.normal || null,
+      this._surfaceOf(hit.atravessou.object), false);
+    if (BLOOD) {
+      if (alvo.isPlayer) this._bloodSpatter(hit.point, dir, head, alvo.pos.y);
+      else this._fleshImpact(hit.point, dir, head, alvo.pos.y, false);
+    }
+    if (alvo.isPlayer) this._noteHit(bot, W.short || 'ARMA', dano, head, hit.dist);
+    return { ...hit, head, dano };
+  }
+
   _fireHitscan(shooter, from, dir, dmg, byPlayer = false, weap = 'AWP', wid = null, tracer = true) {
-    this.ray.set(from, dir); this.ray.far = 200;
-    const enemyGroups = this.bots.filter(b => b.alive && (byPlayer ? b.team !== this.playerTeam : true)).map(b => b.mesh.group);
-    const hitsChar = enemyGroups.length ? this.ray.intersectObjects(enemyGroups, true) : [];
-    const hitsWorld = this.ray.intersectObjects(this.world.occluders, false);
-    const hC = hitsChar[0], hW = hitsWorld[0];
-    let end;
-    if (hC && (!hW || hC.distance < hW.distance)) {
-      const { bot, head } = this._targetFromHit(hC);
-      end = hC.point;
-      if (bot) {
-        if (bot.team === shooter.team) { /* friendly fire off */ }
-        else {
-          /* Online: o cliente desenha o impacto mas NÃO aplica dano — o hp vem no snapshot.
-             Aplicar aqui contaria o dano duas vezes. Ver docs/MULTIPLAYER.md. */
-          if (!this.online) this._damage(bot, this._shotDamage(dmg, wid, hC.distance, head), shooter, weap, head, end);
-          else if (byPlayer) this._acertoPrevisto(bot, this._shotDamage(dmg, wid, hC.distance, head), head, end);
-          this._fleshImpact(end, dir, head, bot.pos ? bot.pos.y : null, byPlayer, this._armoredTarget(bot));
-        }
+    const hit = this._consultarTiro(shooter, from, dir, wid);
+    const end = hit?.point || from.clone().addScaledVector(dir, 120);
+    if (hit?.ent) {
+      const bot = hit.ent, head = hit.head;
+      if (hit.atravessou) {
+        const parede = hit.atravessou, surf = this._surfaceOf(parede.object);
+        this._puff(parede.point, parede.face?.normal || null, surf, false);
+        if (byPlayer) this._impactSfx(surf, parede.point, parede.distance);
       }
-    } else if (hW) {
-      end = hW.point;
-      const n = hW.face ? hW.face.normal : null;
-      const surf = this._surfaceOf(hW.object);
-      this._puff(hW.point, n, surf, false);   // BUG-187: impacto de bala sem fumaça (furo, faísca e som ficam)
+      const base = this._shotDamage(dmg, wid, hit.dist, head);
+      const dano = hit.damageMul == null ? base : Math.round(base * hit.damageMul);
+      if (!this.online) this._damage(bot, dano, shooter, weap, head, end);
+      else if (byPlayer && !hit.atravessou) this._acertoPrevisto(bot, dano, head, end);
+      this._fleshImpact(end, dir, head, bot.pos.y, byPlayer, this._armoredTarget(bot));
+    } else if (hit?.object) {
+      const surf = hit.sup;
+      this._puff(hit.point, hit.n, surf, false);   // BUG-187: impacto de bala sem fumaça (furo, faísca e som ficam)
       // som de impacto em 100% dos tiros do jogador (era `ricochet()` — um BIP de sine — em
       // 30%: 70% dos tiros na parede eram literalmente mudos).
-      if (GUNFEEL) { if (byPlayer || Math.random() < 0.35) this._impactSfx(surf, hW.point, from.distanceTo(hW.point)); }
+      if (GUNFEEL) { if (byPlayer || Math.random() < 0.35) this._impactSfx(surf, hit.point, hit.dist); }
       else if (Math.random() < 0.3) this.sfx.ricochet();
-      const pen = this._penetrationExit(hW, dir, wid, surf);
-      if (pen) {
-        const nextWorld = hitsWorld.find(hit => hit.object !== hW.object);
-        const hP = hC && hC.distance > pen.exitDistance
-          && (!nextWorld || hC.distance < nextWorld.distance) ? hC : null;
-        if (hP) {
-          const { bot, head } = this._targetFromHit(hP);
-          if (bot && bot.team !== shooter.team) {
-            end = hP.point;
-            const penDamage = Math.round(this._shotDamage(dmg, wid, hP.distance, head) * pen.damageMul);
-            if (!this.online) this._damage(bot, penDamage, shooter, weap, head, end);
-            this._fleshImpact(end, dir, head, bot.pos ? bot.pos.y : null, byPlayer, this._armoredTarget(bot));
-          }
-        }
-      }
-    } else {
-      end = from.clone().add(dir.clone().multiplyScalar(120));
     }
     this.world.ambience?.onShot(from, end);
     if (byPlayer && tracer) {
@@ -7426,41 +7454,25 @@ export class Game {
         }
         if ((Wb.mag || 0) > 0 && b.mag <= 0) { b.reloadUntil = this.time + (Wb.reload || 2.4); b.mag = Wb.mag; b.burst = 0; }
         b.aimErr += (Wb.recoil || 0.01) * (Wb.auto ? 0.6 : 0.4);   // cada tiro tira a mira do lugar (rajada abre)
-        const from = this._botEye(b);
-        const teye = (e.isPlayer ? this.camera.position.clone() : this._botEye(e));
+        const from = this._origemTiroBot(b);
+        const teye = this._miraTiroBot(e);
         const tdist = Math.max(1, from.distanceTo(teye));
         // tamanho angular do alvo (meia-largura de tronco ~0.5 m)
         const halfAng = Math.atan2(0.5, tdist);
         const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
         const ox = gauss() * b.aimErr, oy = gauss() * b.aimErr * 0.8;
         const off = Math.hypot(ox, oy);
-        let hit = off < halfAng;
+        const acertoAngular = off < halfAng;
         // CABEÇA: continua sendo consequência de mirar bem (off pequeno), mas com TETO
         // absoluto de 7% — sem isso o bot 'bom' virava o cheater que o dono descreveu.
         const hsChance = BOT_FAIR ? Math.min(BOT_HS_MAX, 0.05 * b.skill) : 0.16 * b.skill;
-        const head = hit && off < halfAng * 0.35 && Math.random() < hsChance;
+        const sorteioCabeca = acertoAngular && off < halfAng * 0.35 && Math.random() < hsChance;
         const dir = direcaoDesviada(from, teye, ox, oy);
-        // tracer & world impact
-        this.ray.set(from, dir); this.ray.far = 200;
-        const hitsW = this.ray.intersectObjects(this.world.occluders, false)[0];
-        // NUNCA acerta atrás de parede: se o mundo está na frente do alvo, a bala morre lá.
-        const blocked = !!(hitsW && hitsW.distance < tdist - 0.4);
-        if (blocked) hit = false;
-        let end = hitsW ? hitsW.point : from.clone().add(dir.clone().multiplyScalar(120));
-        if (hit) {
-          end = teye;
-          let dmg = (Wb.dmg || 30) * (Wb.pellets ? Math.min(Wb.pellets, 6) * 0.55 : 1);
-          dmg = this._distanceDamage(dmg, b.weapon, tdist);
-          // tabela de cabeça PRÓPRIA do bot (ver BOT_HS_MUL): rifle na cabeça = 72, não 115.
-          if (head) dmg *= BOT_FAIR ? (BOT_HS_MUL[bcls] || 2.0) : (HS_MUL[bcls] || 3) * 0.8;
-          const dmgMul = e.isPlayer ? (BOT_FAIR ? this._botDmgPlayer : BOT_DMG_PLAYER) : 1;
-          dmg = Math.max(6, Math.min(e.isPlayer ? 100 : 130, Math.round(dmg * dmgMul)));
-          this._damage(e, dmg, b, Wb.short || 'AWP', head, teye);   // arma real do bot no killfeed
-          // sangue do tiro do BOT: bot×bot = efeito completo (spray + chão); jogador levando
-          // tiro = só decals (chão/parede), sem o spray gordo estourando na câmera.
-          if (BLOOD) { if (e.isPlayer) this._bloodSpatter(teye, dir, head, e.pos ? e.pos.y : null); else this._fleshImpact(teye, dir, head, e.pos ? e.pos.y : null, false); }
-          if (e.isPlayer) this._noteHit(b, Wb.short || 'ARMA', dmg, head, tdist);
-        } else if (hitsW && Math.random() < 0.5) this._puff(hitsW.point, hitsW.face ? hitsW.face.normal : null, null, false);
+        const resultado = this._resolverTiroBot(b, from, dir, Wb, sorteioCabeca);
+        const hit = !!resultado?.ent;
+        const blocked = !!resultado?.object && resultado.dist < tdist - .4;
+        const end = resultado?.point || from.clone().addScaledVector(dir, 120);
+        if (!hit && resultado?.object && Math.random() < .5) this._puff(resultado.point, resultado.n, resultado.sup, false);
         /* COICE PROPORCIONAL AO ALVO (ver BOT_SPRAY_K). Somado DEPOIS de resolver o tiro: o
            1º tiro da rajada continua encostando (o jogador precisa sentir "levei tiro"), o 2º
            e o 3º abrem. Em múltiplos do tamanho angular do alvo pra degradar igual a 6 m e a
@@ -7496,7 +7508,7 @@ export class Game {
         // SEMPRE FX cheio quando o bot atira NO JOGADOR (dono: "não vejo de onde vem o tiro,
         // parece cheater"): tracer + som direcional em todo tiro contra o player, mesmo de longe
         // ou em quality low. Só o throttle bot-vs-bot distante segue valendo (orçamento de GPU).
-        const fxFull = e.isPlayer || (_sd < 45 && this.settings.quality !== 'low') || (fxTick % 2) === 0;
+        const fxFull = e.isPlayer || resultado?.ent?.isPlayer || (_sd < 45 && this.settings.quality !== 'low') || (fxTick % 2) === 0;
         if (fxFull) {
           this._tracer(from.clone().add(dir.clone().multiplyScalar(0.7)), end);
           this.sfx.shotWeapon(b.weapon, _sd, 0.45, _pan, Math.min(0.25, _sd / 343));   // bots MUITO mais baixos que a arma do jogador (carabina de bot estourava o mix)
@@ -7976,30 +7988,16 @@ export class Game {
     b.revealedAt = this.time;
     b.nextShotAt = this.time + Math.max(Wb.rate || 0.1, (Wb.auto ? 0.12 : 0.4)) ;
     if ((Wb.mag || 0) > 0 && b.mag <= 0) { b.reloadUntil = this.time + (Wb.reload || 2.4); b.mag = Wb.mag; }
-    const from = this._botEye(b);
-    const teye = e.isPlayer ? this.camera.position.clone() : this._botEye(e);
-    const tdist = Math.max(1, from.distanceTo(teye));
+    const from = this._origemTiroBot(b);
+    const teye = this._miraTiroBot(e);
     // desvio de mira por skill (a rede diz "atira"; a precisão fina segue o tier do bot)
     const err = 0.02 + 0.03 / Math.max(0.4, b.skill || 1);
     const gs = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
     const ox = gs() * err, oy = gs() * err;
-    const off = Math.hypot(ox, oy);
     const dir = direcaoDesviada(from, teye, ox, oy);
-    let hit = off < Math.atan2(0.5, tdist);
-    this.ray.set(from, dir); this.ray.far = 200;
-    const hw = this.ray.intersectObjects(this.world.occluders, false)[0];
-    if (hw && hw.distance < tdist - 0.4) hit = false;   // parede na frente: bala morre lá
-    const end = hit ? from.clone().addScaledVector(dir, tdist) : (hw ? hw.point : from.clone().add(dir.clone().multiplyScalar(120)));
+    const resultado = this._resolverTiroBot(b, from, dir, Wb);
+    const end = resultado?.point || from.clone().addScaledVector(dir, 120);
     this.world.ambience?.onShot(from, end);
-    if (hit) {
-      let dmg = (Wb.dmg || 30) * (Wb.pellets ? Math.min(Wb.pellets, 6) * 0.55 : 1);
-      dmg = this._distanceDamage(dmg, b.weapon, tdist);
-      const dmgMul = e.isPlayer ? (BOT_FAIR ? this._botDmgPlayer : BOT_DMG_PLAYER) : 1;
-      dmg = Math.max(6, Math.min(e.isPlayer ? 100 : 130, Math.round(dmg * dmgMul)));
-      this._damage(e, dmg, b, Wb.short || 'ARMA', false, teye);
-      if (BLOOD) { if (e.isPlayer) this._bloodSpatter(teye, dir, false, e.pos ? e.pos.y : null); else this._fleshImpact(teye, dir, false, e.pos ? e.pos.y : null, false); }
-      if (e.isPlayer) this._noteHit(b, Wb.short || 'ARMA', dmg, false, tdist);
-    }
     this._tracer(from.clone().add(dir.clone().multiplyScalar(0.7)), end);
     this._flash(from.clone().add(dir.clone().multiplyScalar(0.85)), dir);
     if (b.mesh.isGLB) b.mesh.ctrl.shoot();

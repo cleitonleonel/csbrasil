@@ -219,6 +219,11 @@ Cobertura: **3932 de 8488 linhas (46%)** do `game.js` têm dono declarado. O res
 | 3772 | `_botMelee()` | 28 |
 | 3798 | `_distanceDamage()` | 7 |
 | 3800 | `_shotDamage()` | 11 |
+| 3809 | `_consultarTiro()` | 13 |
+| 3822 | `_origemTiroBot()` | 6 |
+| 3828 | `_miraTiroBot()` | 5 |
+| 3833 | `_participanteHumano()` | 4 |
+| 3837 | `_resolverTiroBot()` | 23 |
 | 3811 | `_fireHitscan()` | 70 |
 | 3881 | `_targetFromHit()` | 9 |
 | 3890 | `_penetrationExit()` | 20 |
