@@ -298,7 +298,7 @@ function _splashSetReady() {
   // G2-R10: o failsafe de 20s dispara DEPOIS da splash sair do DOM (debug/?auto= e
   // fluxos rápidos) — sem guarda, crashava "textContent null" (banner vermelho).
   const bs = document.getElementById('boot-status'), se = document.getElementById('splash-enter');
-  if (bs) bs.textContent = 'ARENA PRONTA';
+  if (bs) bs.textContent = tr('ARENA PRONTA');
   if (se) se.classList.remove('hidden');
 }
 setTimeout(_splashSetReady, 20000);   // failsafe: nunca prende o jogador na splash

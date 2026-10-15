@@ -40,6 +40,7 @@ const DICT = {
   'CARREGANDO ARENA…': 'LOADING ARENA…',
   'CARREGANDO MODELOS 3D…': 'LOADING 3D MODELS…',
   'CARREGANDO…': 'LOADING…',
+  'ARENA PRONTA': 'ARENA READY',
   // menu principal
   '// ESCOLHA A TRETA': '// PICK YOUR FIGHT',
   // Os dois modos ficam num submenu sob JOGAR e desembocam na tela cheia de mapas.
