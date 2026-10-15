@@ -34,3 +34,9 @@ Revisão independente comparou os scripts e entradas dos dez vermelhos com a bas
 | eval:mansao | Fixture MANSAO-RECOVERY-ASSETS.json ausente; subgates posteriores não executados |
 
 Decisão: preparar primeiro PR em draft com esses resultados explícitos, sob a autorização de push/stack de Ruben e a regra de CONTRIBUTING de não introduzir vermelhos novos. Classificar falhas herdadas não aprova merge, deploy, arte ou pacote da loja. Nenhum limite foi relaxado nem ativo substituído. Próximo: publicar branch próprio com hook normal, abrir PR base main, anexar à conversa e registrar URL. Camadas posteriores preservam o estudo/orçamento e experimentos de rig; não incluir candidatos artísticos rejeitados como melhoria.
+
+### Publicação e correção da documentação no CI
+
+PR draft [#979](https://github.com/corosolto/client/pull/979), base main, publicado inicialmente em `aaad4bc0a314047212231703d1d5a76396abbb4c` e anexado ao chat. Hook normal de push passou em109s. Nenhuma integração de runtime/asset, merge ou deploy de produção.
+
+O CI revelou **um vermelho novo desta camada** no job `reguas-e-site` (run38667451060): bloco gerado inglês em `docs/i18n/en/docusaurus-plugin-content-docs/current/comecando.md` não incluía `eval:characterkit`. A pasta não estava no sparse checkout, portanto a validação local anterior não o inspecionou. Materializar `docs/i18n/en` e executar o gerador alterou somente esse comando no arquivo; `docs:check` passou com25blocos/32marcadores. Não classificar essa falha como herdada nem atribuir o fast240/250 a um checkout integral. Scripts/runtime permanecem iguais a `e0553a464`; atualizar o PR pelo hook normal e aguardar novo CI. Evidências em `stack-validation-045/pr979-*` foraGit.
