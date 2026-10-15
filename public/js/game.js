@@ -3838,14 +3838,27 @@ export class Game {
     const wid = WEAPONS[bot.weapon] ? bot.weapon : 'ak';
     const hit = this._consultarTiro(bot, from, dir, wid);
     if (!hit?.ent) return hit;
-    const alvo = hit.ent, head = !!(hit.head && permiteCabeca), classe = perfilArma(wid).perfilDano;
-    let dano = (W.dmg || 30) * (W.pellets ? Math.min(W.pellets, 6) * .55 : 1);
+    const head = !!(hit.head && permiteCabeca);
+    const dano = Math.max(6, Math.min(this._participanteHumano(hit.ent) ? 100 : 130,
+      Math.round(this._danoTiroBot(bot, hit, W, head))));
+    this._aplicarTiroBot(bot, hit, dir, W, head, dano);
+    return { ...hit, head, dano };
+  }
+
+  _danoTiroBot(bot, hit, W, head) {
+    const wid = WEAPONS[bot.weapon] ? bot.weapon : 'ak';
+    const classe = perfilArma(wid).perfilDano;
+    let dano = W.dmg || 30;
     dano = this._distanceDamage(dano, wid, hit.dist);
     if (head) dano *= BOT_FAIR ? (BOT_HS_MUL[classe] || 2) : (HS_MUL[classe] || 3) * .8;
     dano *= hit.damageMul ?? 1;
-    const humano = this._participanteHumano(alvo);
+    const humano = this._participanteHumano(hit.ent);
     const mul = humano ? (BOT_FAIR ? this._botDmgPlayer : BOT_DMG_PLAYER) : 1;
-    dano = Math.max(6, Math.min(humano ? 100 : 130, Math.round(dano * mul)));
+    return dano * mul;
+  }
+
+  _aplicarTiroBot(bot, hit, dir, W, head, dano) {
+    const alvo = hit.ent;
     this._damage(alvo, dano, bot, W.short || 'ARMA', head, hit.point);
     if (hit.atravessou) this._puff(hit.atravessou.point, hit.atravessou.face?.normal || null,
       this._surfaceOf(hit.atravessou.object), false);
@@ -3854,7 +3867,41 @@ export class Game {
       else this._fleshImpact(hit.point, dir, head, alvo.pos.y, false);
     }
     if (alvo.isPlayer) this._noteHit(bot, W.short || 'ARMA', dano, head, hit.dist);
-    return { ...hit, head, dano };
+  }
+
+  _dispararBot(bot, from, dir, W, permiteCabeca = false) {
+    if (!W.pellets) return this._resolverTiroBot(bot, from, dir, W, permiteCabeca);
+    const cone = coneDoDisparo({ crouchF: bot.crouchF || 0, sp: Math.hypot(bot.vel?.x || 0, bot.vel?.z || 0),
+      grounded: bot.grounded !== false, adsF: bot._adsF || 0, bloom: 0, scoped: !!bot.scoped }, W, Math.random);
+    const orientacao = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, -1), dir);
+    const peso = Math.min(W.pellets, 6) * .55 / cone.length, porAtor = new Map(), raios = [];
+    let bruto = 0;
+    for (const o of cone) {
+      const direcao = GUNFEEL ? new THREE.Vector3(o.x, o.y, -1).applyQuaternion(orientacao).normalize()
+        : dir.clone().add(new THREE.Vector3(o.x, o.y, o.z)).normalize();
+      const hit = this._consultarTiro(bot, from, direcao, bot.weapon);
+      raios.push({ dir: direcao, point: hit?.point || from.clone().addScaledVector(direcao, 120), hit });
+      if (!hit?.ent) continue;
+      const head = !!(hit.head && permiteCabeca), dano = this._danoTiroBot(bot, hit, W, head) * peso;
+      if (!(dano > 0)) continue;
+      const grupo = porAtor.get(hit.ent) || { hit, dir: direcao, dano: 0, head: false };
+      if (head && !grupo.head) { grupo.hit = hit; grupo.dir = direcao; }
+      grupo.dano += dano; grupo.head ||= head; porAtor.set(hit.ent, grupo); bruto += dano;
+    }
+    const total = bruto > 0 ? Math.max(6, Math.round(bruto)) : 0;
+    for (const grupo of porAtor.values()) {
+      const dano = Math.min(this._participanteHumano(grupo.hit.ent) ? 100 : 130, total * grupo.dano / bruto);
+      this._aplicarTiroBot(bot, grupo.hit, grupo.dir, W, grupo.head, dano);
+    }
+    const primeiro = porAtor.values().next().value?.hit || raios[0]?.hit;
+    return { ...primeiro, point: primeiro?.point || raios[0]?.point, raios,
+      atingiuJogadorLocal: [...porAtor.keys()].some(ent => ent.isPlayer) };
+  }
+
+  _rastroTiroBot(from, dir, end, resultado) {
+    if (resultado?.raios) {
+      for (const r of resultado.raios.slice(0, 4)) this._tracer(from.clone().addScaledVector(r.dir, .7), r.point);
+    } else this._tracer(from.clone().addScaledVector(dir, .7), end);
   }
 
   _fireHitscan(shooter, from, dir, dmg, byPlayer = false, weap = 'AWP', wid = null, tracer = true) {
@@ -7468,7 +7515,7 @@ export class Game {
         const hsChance = BOT_FAIR ? Math.min(BOT_HS_MAX, 0.05 * b.skill) : 0.16 * b.skill;
         const sorteioCabeca = acertoAngular && off < halfAng * 0.35 && Math.random() < hsChance;
         const dir = direcaoDesviada(from, teye, ox, oy);
-        const resultado = this._resolverTiroBot(b, from, dir, Wb, sorteioCabeca);
+        const resultado = this._dispararBot(b, from, dir, Wb, sorteioCabeca);
         const hit = !!resultado?.ent;
         const blocked = !!resultado?.object && resultado.dist < tdist - .4;
         const end = resultado?.point || from.clone().addScaledVector(dir, 120);
@@ -7508,9 +7555,10 @@ export class Game {
         // SEMPRE FX cheio quando o bot atira NO JOGADOR (dono: "não vejo de onde vem o tiro,
         // parece cheater"): tracer + som direcional em todo tiro contra o player, mesmo de longe
         // ou em quality low. Só o throttle bot-vs-bot distante segue valendo (orçamento de GPU).
-        const fxFull = e.isPlayer || resultado?.ent?.isPlayer || (_sd < 45 && this.settings.quality !== 'low') || (fxTick % 2) === 0;
+        const fxFull = e.isPlayer || resultado?.ent?.isPlayer || resultado?.atingiuJogadorLocal
+          || (_sd < 45 && this.settings.quality !== 'low') || (fxTick % 2) === 0;
         if (fxFull) {
-          this._tracer(from.clone().add(dir.clone().multiplyScalar(0.7)), end);
+          this._rastroTiroBot(from, dir, end, resultado);
           this.sfx.shotWeapon(b.weapon, _sd, 0.45, _pan, Math.min(0.25, _sd / 343));   // bots MUITO mais baixos que a arma do jogador (carabina de bot estourava o mix)
         }
         this._flash(from.clone().add(dir.clone().multiplyScalar(0.85)), dir);   // GPU-batched: 1 draw call
@@ -7995,10 +8043,10 @@ export class Game {
     const gs = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
     const ox = gs() * err, oy = gs() * err;
     const dir = direcaoDesviada(from, teye, ox, oy);
-    const resultado = this._resolverTiroBot(b, from, dir, Wb);
+    const resultado = this._dispararBot(b, from, dir, Wb);
     const end = resultado?.point || from.clone().addScaledVector(dir, 120);
     this.world.ambience?.onShot(from, end);
-    this._tracer(from.clone().add(dir.clone().multiplyScalar(0.7)), end);
+    this._rastroTiroBot(from, dir, end, resultado);
     this._flash(from.clone().add(dir.clone().multiplyScalar(0.85)), dir);
     if (b.mesh.isGLB) b.mesh.ctrl.shoot();
   }

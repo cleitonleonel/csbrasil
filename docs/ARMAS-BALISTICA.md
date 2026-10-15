@@ -121,5 +121,26 @@ cabeça. O caminho NN preserva sua política sem headshots.
 
 `eval:shared-shot` mede entradas, paredes, postura, alcance e os consumidores reais,
 com mutações que quebram esses contratos. A autoridade online aplica o mesmo
-resolvedor às poses históricas. Este lote não unifica golpes corpo a corpo nem
-substitui o multiplicador legado de cartucho dos bots por pellets individuais.
+resolvedor às poses históricas. Golpes corpo a corpo permanecem separados.
+
+## Cartuchos dos bots
+
+Normal e NN consultam cada pellet com o cone compartilhado do jogo, orientado
+pela direção de mira já desviada pela habilidade. Projéteis únicos conservam
+essa direção sem acrescentar outro cone. O peso por pellet reparte o orçamento
+legado do cartucho; distância, região e dificuldade são aplicadas ao acerto real.
+
+O dano bruto é somado por ator antes de arredondar. O piso mínimo pertence ao
+cartucho inteiro, é distribuído proporcionalmente entre os atingidos e não gera
+dano quando o total bruto é zero. Os tetos por ator são aplicados depois, sem
+redistribuir excedentes. Cada ator recebe um evento de dano por cartucho; efeitos
+usam pontos reais e os rastros respeitam o orçamento visual. Qualquer acerto no
+jogador local preserva a prioridade de som e rastros.
+
+`eval:bot-pellets` mede os consumidores normal/NN, divisão de dano, headshot,
+tetos, munição e efeitos, com mutantes. A comparação de alcance usa sementes
+pareadas e informa dano médio por cartucho contra um corpo parado, sem paredes.
+Seu legado é o raio único do lote anterior com o mesmo orçamento; não representa
+todo o combate antigo. Pellets podem transformar um miss central em dano parcial
+à distância, enquanto dispersam parte do dano de perto. A leitura dessa curva
+precisa de playtest; não é uma conversão de energia física para HP.
