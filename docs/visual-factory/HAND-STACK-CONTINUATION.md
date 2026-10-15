@@ -1,0 +1,11 @@
+# Continuidade: segunda camada da stack visual
+
+Objetivo completo: estudo dos vídeos de referência, fábrica modular de skins/roupas/acessórios e melhoria geral de gráficos/3P com gauntlet recorrente. Prioridade em todo elenco e sobretudo não humanos; GPT6.1Sol, teto US$5/dia Europe/Lisbon, PRs em stack com capturas reais para mudanças visuais e evidência temporal para movimento. Nenhum merge/deploy de produção.
+
+Camada C criada em15/10: branch codex/visual-hand-stack-20261015, base imediata codex/visual-kit-stack-20261015 emc735c68f9(PR979), checkout próprio visual-hand-stack-20261015 criado por Git CLI após indisponibilidade do create_worktree no diretório pai. A investigação completa permanece em visual-factory-20261014/docs/visual-factory/CONTINUATION.md(checkpoint6adb9eda5).
+
+Escopo desta camada: apenas helper de descendentes060 e gate sintético063, reconciliados sobre B sem transportar outros experimentos. Corrige seleção de palma/torso para articulações filhas novas. Não substitui assets, não fecha a mão, não aprova contato nem muda política Curl. Fallback integral em ciclo/identidade duplicada. Acessório ponderado na mesma malha sob Hand herda seleção: limite conhecido, não contrato anatômico.
+
+Pronto da camada exige baseline vermelho, gate+mutantes, comparação legada pertinente, revisão independente, docs/arch sincronizados, check:fast/check:deploy próprios com falhas classificadas, push normal e PR draft base na branch de979. Aprovação artística e gameplay continuam pendentes no programa. Evidência externa em analysis-media/2026-10-15-visual-factory/evidence/hand-ownership-stack-078/.
+
+Marco inicial validado: gate real contra B6/12, contra C12/12. Mutante palma10/12 e torso11/12, ambos aplicados e reprovados pelo predicate esperado. Alteração runtime apenas25linhas(23adições/2remoções), SHA25697ae5b4b8ab3f647f2e238e2dfef531def3fd89735cc090da4090550bd5b5970. Suite da camada anterior148/148 repetida e passou. Docs incluindo inglês regenerados, ARCH sem diferença de game. Próximo: revisão independente079 de C e comparação legada; check:deploy64entradas/check:fast251 nesta base, servidor próprio e áudio mutado. Nenhuma sessão browser iniciada.
