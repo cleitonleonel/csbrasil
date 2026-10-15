@@ -30,6 +30,6 @@ export const PERFIS_ARMAS = {
   p90: ficha('FN P90', '5,7×28', 'seletiva', true, 'smg', .38),
 };
 export function perfilArma(id) {
-  if (!Object.hasOwn(PERFIS_ARMAS, id)) throw new Error(`Arma sem ficha balística: ${id}`);
+  if (!Object.prototype.hasOwnProperty.call(PERFIS_ARMAS, id)) throw new Error(`Arma sem ficha balística: ${id}`);
   return PERFIS_ARMAS[id];
 }
