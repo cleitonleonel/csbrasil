@@ -32,6 +32,7 @@ const MUTANTES = {
   'enter-do-splash': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (e.key !== 'Enter' || e.repeat || e.defaultPrevented ||", "if (e.key !== 'Enter' || e.repeat ||")],
   'personagem-no-canto': [/\/css\/tp\/lobby\.css/, (t) => t.replace('left:calc(50% - var(--tp-lobby-heroi) / 2);right:auto;', '')],
   'convite-mudo': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (menu()?.dataset.hubNet !== 'mp') $('hub-mp')?.click();", 'return;')],
+  'erro-mudo': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (estado?.dataset.s === 'erro') { mostrarAviso(tr('O multiplayer não respondeu agora. Tente de novo em um minuto.')); return; }", "if (estado?.dataset.s === 'erro') return;")],
   'quest-inventada': [/\/js\/tp\/lobby\.js/, (t) => t.replace("const recompensa = card.querySelector('strong')?.textContent || '';", "const recompensa = 'T$ 10';")],
   'passe-sem-backend': [/\/js\/tp\/lobby\.js/, (t) => t.replace('const ABAS = [', "const ABAS = [{ id: 'passe', rotulo: 'PASSE', ir: () => {} },")],
   'rede-trocada': [/\/js\/tp\/lobby\.js/, (t) => t.replace("['privada', 'PRIVADA', () => { $('hub-mp')?.click(); $('hub-mp-private')?.click(); }]", "['privada', 'PRIVADA', () => { $('hub-mp')?.click(); $('hub-mp-public')?.click(); }]")],
@@ -213,8 +214,7 @@ async function medir(mutante = '', alvo = '') {
     }
     add('LB9', rede === '', rede || 'VS BOTS, MULTIPLAYER e PRIVADA levam o hub ao estado certo e marcam aria-pressed');
 
-    /* Convite: + CONVIDAR abre o multiplayer e pede a sala só por código (#mp-amigos). */
-    let convite = { net: '', pediu: false };
+    let convite = { net: '', pediu: false }, avisoErro = '';
     if (quer('LB6') && await page.locator('.tp-lobby-vaga__convidar').count()) {
       await page.evaluate(() => {
         window.__pediuSala = false;
@@ -224,10 +224,25 @@ async function medir(mutante = '', alvo = '') {
       await page.locator('.tp-lobby-vaga__convidar').first().click();
       await page.waitForFunction(() => window.__pediuSala || document.getElementById('mp-estado')?.dataset.s === 'erro', null, { timeout: 15000 }).catch(() => {});
       convite = await page.evaluate(() => ({ net: document.getElementById('main-menu').dataset.hubNet, pediu: window.__pediuSala, s: document.getElementById('mp-estado')?.dataset.s }));
+      await page.keyboard.press('Escape');
+      /* fora do ar o sonda não decide: força o erro e cobra o aviso visível do convite */
+      await page.evaluate(() => {
+        const est = document.getElementById('mp-estado');
+        window.__avisoErro = '';
+        const espia = new MutationObserver(() => { const t = document.querySelector('.tp-lobby-avisos .tp-toast'); if (t?.textContent) window.__avisoErro = t.textContent; });
+        espia.observe(document.body, { childList: true, subtree: true });
+        window.__forcaErro = setInterval(() => est?.setAttribute('data-s', 'erro'), 50);
+      });
+      await page.evaluate(() => document.querySelector('[data-tp-aba="jogar"]')?.click());
+      await page.waitForTimeout(300);
+      await page.evaluate(() => document.querySelector('.tp-lobby-vaga__convidar')?.click());
+      await page.waitForTimeout(1500);
+      avisoErro = await page.evaluate(() => { clearInterval(window.__forcaErro); return window.__avisoErro || ''; });
       await page.click('#hub-sp').catch(() => {});
       await page.waitForTimeout(500);
     }
-    add('LB6', convite.net === 'mp' && (convite.pediu || convite.s === 'erro'), `+ CONVIDAR: rede ${convite.net || '?'}, sala por código ${convite.pediu ? 'pedida' : convite.s === 'erro' ? 'sem servidor (erro mostrado)' : 'não pedida'}`);
+    add('LB6', convite.net === 'mp' && (convite.pediu || convite.s === 'erro') && avisoErro.length > 10,
+      `+ CONVIDAR: rede ${convite.net || '?'}, sala por código ${convite.pediu ? 'pedida' : convite.s === 'erro' ? 'sem servidor' : 'não pedida'}; sem servidor o aviso ${avisoErro ? `"${avisoErro.slice(0, 36)}"` : 'NÃO aparece'}`);
 
     /* JOGAR direto, sem o "Pronto pra treta?". */
     let jogo = {};
@@ -346,9 +361,8 @@ async function medir(mutante = '', alvo = '') {
   }
   return r;
 }
-
 const MUT = [['abas-velhas', 'LB1'], ['ajustes-mudo', 'LB2'], ['confirma-de-novo', 'LB3'], ['enter-do-splash', 'LB4'],
-  ['personagem-no-canto', 'LB5'], ['convite-mudo', 'LB6'], ['quest-inventada', 'LB7'], ['passe-sem-backend', 'LB8'],
+  ['personagem-no-canto', 'LB5'], ['convite-mudo', 'LB6'], ['erro-mudo', 'LB6'], ['quest-inventada', 'LB7'], ['passe-sem-backend', 'LB8'],
   ['rede-trocada', 'LB9'], ['coluna-larga', 'LB10'], ['toque-baixo', 'LB11'], ['sem-traducao', 'LB12'], ['flag-vaza', 'LB13'],
   ['gire-sem-arte', 'LB14'], ['mais-sem-feedback', 'LB15'], ['chip-sem-nome', 'LB16'], ['dois-limas', 'LB17']];
 let sair = 0;
