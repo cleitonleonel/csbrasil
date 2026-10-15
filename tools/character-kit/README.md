@@ -75,3 +75,7 @@ normalização e contato/clipping reais não são verificados. A saída lista fa
 ausentes e mantém `runtimeEnabled`, `contactApproved`, `fitApproved` e
 `supportRequirementSatisfied` falsos. Rotular vértices e ter hashes corretos não
 aprova o encaixe; render, deformação e revisão artística continuam necessários.
+
+## Inspeção dos bytes de bind e pesos
+
+`bind-inspector.mjs` lê o GLB com SHA256 esperado obrigatório e deriva fingerprints separados de bind, geometria e pesos. O hash de bind sozinho não prova correspondência dos índices de uma região. Uso, limites de leitura, mutantes e convenção numérica estão em [BIND-INSPECTOR.md](BIND-INSPECTOR.md). O digest legado `restPoseSha256` continua declarado; nenhuma migração silenciosa o converte no fingerprint novo. Contato, arte e consistência geométrica repouso/IBM continuam sem aprovação.
