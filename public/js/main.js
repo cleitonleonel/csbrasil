@@ -68,6 +68,8 @@ const saveSettings = () => localStorage.setItem(SETTINGS_KEY, JSON.stringify({
   ...settings,
   quality: preferredQuality ?? settings.quality,
 }));
+// Ajustes da Treta Pop (tp/ajustes.js) gravam nas mesmas settings, senão o próximo save apagaria a escolha.
+if (document.documentElement.dataset.ui === 'v3') document.addEventListener('tp-ajuste', (e) => { settings[e.detail.chave] = e.detail.valor || undefined; saveSettings(); });
 const NICK_KEY = 'awpbr_nick';
 // A coleta de jogadas exige consentimento explícito e persistente.
 const TRAIN_CONSENT_KEY = 'csbr_training_consent';
