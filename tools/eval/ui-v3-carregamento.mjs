@@ -41,7 +41,7 @@ const CENAS = [
 /* Mutantes reescrevem o JS ou o CSS servido; cada um prova que aplicou. */
 const TROCAS = {
   'sem-flag': [/\/js\/main\.js/, "if (document.documentElement.dataset.ui === 'v3') {\n  import('./splash-v3.js')", "{\n  import('./splash-v3.js')"],
-  'sem-gancho': [/\/js\/main\.js/, "window.dispatchEvent(new CustomEvent('tp:elenco'", "void (new CustomEvent('tp:elenco'"],
+  'sem-gancho': [/\/js\/main\.js/, "if (document.documentElement.dataset.ui === 'v3') {\n    window.__tpElenco", "if (false) {\n    window.__tpElenco"],
   'banner-ate-8': [/\/js\/tp\/carregamento\.js/, 'const ATE_BANNER = 5;', 'const ATE_BANNER = 8;'],
   'passo-fixo': [/\/js\/tp\/carregamento\.js/, 'grade: 30 }', 'grade: 60 }'],
   'barra-por-jogador': [/\/js\/tp\/carregamento\.js/, "nm.append(el('span', 'tp-carga__n', p.nome));", "nm.append(el('span', 'tp-carga__n', p.nome), el('span', 'tp-carga__barra'));"],
@@ -51,6 +51,7 @@ const TROCAS = {
   'legado-visivel': [/\/css\/tp\/carregamento\.css/, ':root[data-ui="v3"] #load-overlay>:not(.tp-carga){display:none}', ''],
   'vaga-some': [/\/js\/tp\/carregamento\.js/, 'while (d.tamanho &&', 'while (false && d.tamanho &&'],
   'rotulo-bot-online': [/\/js\/tp\/carregamento\.js/, "const rotuloBot = d.online ? '' : tr('BOT');", "const rotuloBot = tr('BOT');"],
+  'retrato-quebrado': [/\/js\/tp\/carregamento\.js/, "['chars-hero', 'chars/avatars', 'chars']", "['chars-sumiu']"],
   'celular-inclinado': [/\/css\/tp\/carregamento\.css/, '{width:72px;height:86px;transform:none;', '{width:72px;height:86px;transform:skewX(-8deg);'],
 };
 async function preparar(page, mutante) {
@@ -76,14 +77,14 @@ async function abrir(cena, mutante) {
     Object.defineProperty(window, '__gameLaunch', { configurable: true, get: () => lanc, set: (v) => { if (v) v.fail = () => {}; lanc = v; } });
     addEventListener('tp:elenco', (ev) => {
       const d = ev.detail || {};
-      window.__tpElenco = { eu: d.eu?.name, aliados: (d.aliados || []).map((c) => c.name), inimigos: (d.inimigos || []).map((c) => c.name) };
+      window.__reguaElenco = { lado: d.lado, eu: d.eu?.name, aliados: (d.aliados || []).map((c) => c.name), inimigos: (d.inimigos || []).map((c) => c.name) };
     });
   }, [cena.a ?? 3, cena.e ?? 4]);
   /* GLB preso: o preload nunca termina e o overlay de carregamento fica medível */
   await p.route(/\.glb(\?|$)/, () => {});
   const flag = cena.legado ? '' : 'ui=v3&';
   const url = cena.vagas ? `${BASE}/?${flag}tela=loading&lang=pt`
-    : `${BASE}/?${flag}lang=${cena.lang || 'pt'}&debug=1&auto=${cena.lado === 'B' ? 'B,sertanejo' : 'E,canarinho'}`;
+    : `${BASE}/?${flag}lang=${cena.lang || 'pt'}&debug=1&auto=${cena.lado === 'B' ? 'B,sertanejo' : 'E,punk'}`;
   await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 });
   await p.waitForFunction(() => { const b = document.getElementById('load-overlay'); return b && !b.classList.contains('hidden'); }, null, { timeout: 90000 }).catch(() => {});
   if (cena.vagas) {
@@ -112,7 +113,7 @@ async function ler(p) {
     const lado = (t) => [...(raiz?.querySelectorAll(`.tp-carga__lado[data-time="${t}"] .tp-carga__ban`) || [])].map((b) => ({
       caixa: caixa(b), voce: b.hasAttribute('data-voce'), vazia: b.hasAttribute('data-vazia'), naGrade: !!b.closest('.tp-carga__grade'),
       nome: b.querySelector('.tp-carga__n')?.textContent || '', rotulo: b.querySelector('.tp-carga__k')?.textContent || '',
-      transform: getComputedStyle(b).transform,
+      transform: getComputedStyle(b).transform, quebrado: !!b.querySelector('img') && !(b.querySelector('img').naturalWidth > 0),
     }));
     const vagas = [...(raiz?.querySelectorAll('.tp-carga__vaga') || [])].map((v) => ({ i: +v.style.getPropertyValue('--i'), atraso: getComputedStyle(v).animationDelay }));
     const barras = raiz ? raiz.querySelectorAll('.tp-carga__lado [class*="barra"], .tp-carga__lado progress, .tp-carga__lado [role="progressbar"]').length : 0;
@@ -127,7 +128,7 @@ async function ler(p) {
       texto: raiz?.innerText || '', dica: raiz?.querySelector('.tp-carga__dica span')?.textContent || '',
       legadoVisivel: ['.lo-box', '#load-kicker', '#load-character-stage'].filter(visivel),
       legadoMapa: document.getElementById('load-map')?.textContent || '',
-      elenco: window.__tpElenco || null, vw: innerWidth, vh: innerHeight,
+      elenco: window.__reguaElenco || null, vw: innerWidth, vh: innerHeight,
     };
   });
 }
@@ -158,7 +159,7 @@ async function medir(mutante = '', soCenas = null) {
     const erros = [];
     for (const x of v3) {
       const [a, e] = [x.cena.a, x.cena.e];
-      const meu = x.cena.lado === 'B' ? x.B : x.E;
+      const meu = x.elenco?.lado === 'B' ? x.B : x.E;
       const quer = Math.max(1 + a, e) <= 5 ? 'banners' : 'grade';
       if (x.forma !== quer) erros.push(`${x.cena.id}: forma ${x.forma} (quer ${quer})`);
       else if (quer === 'grade' && x.tela !== 'celular') {
@@ -172,7 +173,10 @@ async function medir(mutante = '', soCenas = null) {
 
     const errosElenco = [];
     for (const x of v3) {
-      const meu = x.cena.lado === 'B' ? x.B : x.E, deles = x.cena.lado === 'B' ? x.E : x.B;
+      const meu = x.elenco?.lado === 'B' ? x.B : x.E, deles = x.elenco?.lado === 'B' ? x.E : x.B;
+      if (x.cena.lado && x.elenco && x.elenco.lado !== x.cena.lado) errosElenco.push(`${x.cena.id}: jogo pôs você em ${x.elenco.lado}, a cena pediu ${x.cena.lado}`);
+      const quebrados = [...meu, ...deles].filter((b) => b.quebrado).length;
+      if (quebrados) errosElenco.push(`${x.cena.id}: ${quebrados} retratos sem imagem`);
       if (meu.length !== 1 + x.cena.a || deles.length !== x.cena.e) { errosElenco.push(`${x.cena.id}: ${meu.length} × ${deles.length} na tela, ${1 + x.cena.a} × ${x.cena.e} no ajuste`); continue; }
       if (meu.filter((b) => b.voce).length !== 1 || [...deles].some((b) => b.voce)) errosElenco.push(`${x.cena.id}: "você" fora do seu lado`);
       const el = x.elenco;
@@ -183,7 +187,7 @@ async function medir(mutante = '', soCenas = null) {
       const diverge = sorteio.flat().filter((n) => !tela.flat().some((t) => t.toLowerCase() === String(n).toLowerCase()));
       if (diverge.length) errosElenco.push(`${x.cena.id}: sorteado e ausente: ${diverge.join(', ')}`);
     }
-    add('CG3', !errosElenco.length, errosElenco.length ? errosElenco.join('; ') : 'contagem por lado = ajuste da partida, nomes = elenco sorteado, "você" uma vez no seu lado');
+    add('CG3', !errosElenco.length, errosElenco.length ? errosElenco.join('; ') : 'contagem por lado = ajuste da partida, nomes = elenco sorteado, todo retrato com imagem, "você" uma vez no seu lado');
 
     const errosBarra = v3.filter((x) => x.barras || x.nBarras !== 1 || x.pct !== x.pctLegado || Math.abs(parseFloat(x.p) - parseInt(x.pctLegado, 10) / 100) > 0.005)
       .map((x) => `${x.cena.id}: ${x.barras} barras por jogador, ${x.nBarras} barra geral, ${x.pct} na tela contra ${x.pctLegado} no carregador`);
@@ -195,6 +199,7 @@ async function medir(mutante = '', soCenas = null) {
     for (const x of v3) {
       const cards = [...x.E, ...x.B].map((b) => b.caixa);
       const blocos = { VS: x.vs, mapa: x.mapa, progresso: x.progresso };
+      if (!cards.length || !x.vs) cortes.push(`${x.cena.id}: sem ${cards.length ? 'VS' : 'retratos'} para medir`);
       if (cards.some((c) => fora(c, x)) || Object.values(blocos).some((c) => fora(c, x)) || x.cabs.some((c) => fora(c, x))) cortes.push(`${x.cena.id}: algo sai da tela`);
       for (const [nome, b] of Object.entries(blocos)) if (cards.some((c) => cruza(c, b))) cortes.push(`${x.cena.id}: retrato encosta em ${nome}`);
       if (x.E.some((a) => x.B.some((b) => cruza(a.caixa, b.caixa)))) cortes.push(`${x.cena.id}: os dois lados se encostam`);
@@ -242,7 +247,7 @@ async function medir(mutante = '', soCenas = null) {
         const tortos = cards.filter((b) => b.transform !== 'none').length;
         const larg = new Set(cards.map((b) => Math.round(b.caixa.w)));
         const cols = Math.max(...['E', 'B'].map((t) => new Set(x[t].map((b) => Math.round(b.caixa.l))).size));
-        return x.tela !== 'celular' || tortos || larg.size > 1 || cols > 4 ? [`${x.cena.id}: tela ${x.tela}, ${tortos} inclinados, ${larg.size} larguras, ${cols} colunas`] : [];
+        return x.tela !== 'celular' || !cards.length || tortos || larg.size > 1 || cols > 4 ? [`${x.cena.id}: tela ${x.tela}, ${cards.length} retratos, ${tortos} inclinados, ${larg.size} larguras, ${cols} colunas`] : [];
       });
       add('CG10', !erros.length, erros.length ? erros.join('; ') : 'celular deitado: grade reta de retratos iguais, até 4 colunas por lado');
     }
@@ -251,7 +256,7 @@ async function medir(mutante = '', soCenas = null) {
 }
 
 const MUT = [
-  ['sem-flag', 'CG1', ['hoje-1536x1024']], ['banner-ate-8', 'CG2', ['8x8-1536x1024']], ['sem-gancho', 'CG3', ['4x4-1536x1024']],
+  ['sem-flag', 'CG1', ['hoje-1536x1024']], ['banner-ate-8', 'CG2', ['8x8-1536x1024']], ['sem-gancho', 'CG3', ['4x4-1536x1024']], ['retrato-quebrado', 'CG3', ['4x4-1536x1024']],
   ['barra-por-jogador', 'CG4', ['4x4-1536x1024']], ['pct-inventado', 'CG4', ['4x4-1536x1024']], ['sem-escala', 'CG5', ['5x5-1280x720']],
   ['passo-fixo', 'CG6', ['8x8-1536x1024']], ['dica-sem-en', 'CG7', ['en-8x8-1536x1024']], ['vaga-some', 'CG8', ['vagas-online-1536x1024']],
   ['rotulo-bot-online', 'CG8', ['vagas-online-1536x1024']], ['legado-visivel', 'CG9', ['4x4-1536x1024']], ['celular-inclinado', 'CG10', ['8x8-844x390']],
