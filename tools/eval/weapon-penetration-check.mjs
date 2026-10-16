@@ -14,7 +14,7 @@ function scenario({ surface = 'madeira', thickness = 0.2, secondWall = false, on
   }
   const group = new THREE.Group();
   const body = new THREE.Mesh(new THREE.SphereGeometry(0.35), new THREE.MeshBasicMaterial());
-  body.position.set(0, 1.5, -6); group.add(body);
+  body.position.set(0, 1, -6); group.add(body);
   const bot = { alive: true, team: 'B', pos: new THREE.Vector3(0, 0, -6), mesh: { group, parts: { head: null } } };
   body.userData.botOwner = bot;
   g.scene.add(wall, group); for (const mesh of occluders.slice(1)) g.scene.add(mesh);
@@ -23,7 +23,7 @@ function scenario({ surface = 'madeira', thickness = 0.2, secondWall = false, on
   const damage = [];
   g._damage = (...args) => damage.push(args);
   g._puff = () => {}; g._impactSfx = () => {}; g._fleshImpact = () => {}; g._tracer = () => {};
-  return { g, damage, from: new THREE.Vector3(0, 1.5, 0), dir: new THREE.Vector3(0, 0, -1) };
+  return { g, damage, from: new THREE.Vector3(0, 1, 0), dir: new THREE.Vector3(0, 0, -1) };
 }
 
 function shot(s, wid = 'awp') {
@@ -35,7 +35,7 @@ console.log('\n· penetração de alto calibre');
   const s = scenario(); const end = shot(s);
   cobra(s.damage.length === 1 && s.damage[0][0].team === 'B', 'AWP atravessa uma tábua de 0,20 m e acerta somente o primeiro inimigo');
   cobra(s.damage[0]?.[1] === 200, `dano após madeira fina é 50% e determinístico (recebido ${s.damage[0]?.[1]})`);
-  cobra(end.z < -5.6 && end.z > -6.4, 'tracer termina no alvo atrás da superfície, não no mapa inteiro');
+  cobra(Math.abs(end.z + 5.55) < 1e-8, 'tracer termina no alvo atrás da superfície, não no mapa inteiro');
 }
 {
   const s = scenario({ surface: 'vidro' }); shot(s);

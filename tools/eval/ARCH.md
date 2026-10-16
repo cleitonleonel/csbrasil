@@ -219,6 +219,15 @@ Cobertura: **3932 de 8488 linhas (46%)** do `game.js` têm dono declarado. O res
 | 3772 | `_botMelee()` | 28 |
 | 3798 | `_distanceDamage()` | 7 |
 | 3800 | `_shotDamage()` | 11 |
+| 3809 | `_consultarTiro()` | 13 |
+| 3822 | `_origemTiroBot()` | 6 |
+| 3828 | `_miraTiroBot()` | 5 |
+| 3833 | `_participanteHumano()` | 4 |
+| 3837 | `_resolverTiroBot()` | 23 |
+| 3848 | `_danoTiroBot()` | 12 |
+| 3860 | `_aplicarTiroBot()` | 12 |
+| 3872 | `_dispararBot()` | 29 |
+| 3901 | `_rastroTiroBot()` | 6 |
 | 3811 | `_fireHitscan()` | 70 |
 | 3881 | `_targetFromHit()` | 9 |
 | 3890 | `_penetrationExit()` | 20 |
@@ -335,6 +344,7 @@ Cobertura: **3932 de 8488 linhas (46%)** do `game.js` têm dono declarado. O res
 | 6938 | `_trocarPersonagem()` | 19 |
 | 6957 | `_syncRemoteWeapon()` | 23 |
 | 6980 | `_updateTeamMark()` | 7 |
+| 7049 | `_posturaBot()` | 4 |
 | 6987 | `_botEye()` | 1 |
 | 6988 | `_enemyOf()` | 8 |
 | 6996 | `_duelToken()` | 22 |

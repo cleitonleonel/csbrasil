@@ -23,6 +23,7 @@ com código 1 em falha crítica.
 | `invariants.mjs` | **O portão principal.** As invariantes permanentes: toda vez que o dono reporta um bug, ele vira uma invariante aqui e nunca mais volta. Regenera `vm_kick_sim.json` sozinho e LÊ `vm_mint_audit.json`. | `npm run eval:invariants` |
 | `vm-mint-audit.mjs` | Enquadramento do viewmodel arma por arma, nos 26 GLBs reais. Mede a seção transversal perto de cada ponta em Z pra descobrir se a arma está de ré. | `vm_mint_audit.json` (**versionado — sem ele as invariantes VM1–VM6/VM9/VM10 viram PULADAS, que é portão verde por ausência de dado**) |
 | `vm-kick-sim.mjs` | Coice do viewmodel: near plane + pitch em rajada. Prova que a coronha não atravessa a lente no pico. | `vm_kick_sim.json` |
+| `duel-metrics-check.mjs` | BOT4 observa dano efetivo desde HP cheio, proteção, acerto fatal e cura; conserva a rajada final em diagnóstico e mata quatro mutantes. | `npm run eval:duel-metrics` |
 | `botsim.mjs` | Navegação dos bots: 60 s × 5 mapas com sementes fixas. Roda a classe `Game` de verdade com os mapas de verdade. | `npm run eval:bots` |
 | `release-check.mjs` | Release usa o nome CSBR e as notas nativas do GitHub, que preservam PRs e contribuidores. | `npm run eval:release` |
 | `error-provenance-check.mjs` | Preserva erro externo no console/banco sem atribuí-lo ao jogo ou abrir issue automática. | `npm run eval:error-origin` |
@@ -76,6 +77,12 @@ recusa DB/site remoto e restaura catálogo/contas no finally. Aprovação no man
 Os perfis explícitos do arsenal e seus consumidores de dano, entrada e saque são
 verificados por `npm run eval:weapon-profiles`, com mutantes que removem cada vínculo.
 `npm run eval:weapon-matrix` reprova a matriz quando diverge do consumidor de dano.
+
+`npm run eval:penetration-geometry` mede a travessia real em caixas rotacionadas,
+fechadas e sobrepostas, com mutantes de AABB global, validação e oclusão.
+
+`npm run eval:bot-shot-direction` mede o raio e o rastro efetivos do caminho NN,
+com mutante que restaura o raio central apesar do erro sorteado.
 
 ## 4. Viewmodel e rig — a família mais densa
 
@@ -201,3 +208,9 @@ grep -rn "<nome-do-arquivo>" tools/ .github/ package.json
 
 `__pycache__/` estava versionado (12 `.pyc`) e agora está no `.gitignore`.
 Se ele reaparecer no `git status`, é porque alguém removeu a regra.
+
+`npm run eval:bot-crouch-geometry` mede postura lógica/animação, origem, LOS,
+raios, respawn e round dos bots locais, incluindo três mutantes. O ensaio opcional
+`node tools/eval/ballistics-range-playtest.mjs [--fixed-five]` produz dados de
+TTK condicional e dispersão com cinco disparos; método e limites em
+`docs/qa/balistica/autorado/README.md`. Ele não impõe tuning ou teto novo ao gate.

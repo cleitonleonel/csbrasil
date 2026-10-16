@@ -93,11 +93,13 @@ if (P55) { prepara(longe, P55, true); longe.alive = true; } else longe.alive = f
 p.weapon = p.weapon === 'knife' ? Object.keys(p.ammo).find((w) => w !== 'knife') : p.weapon;
 p.ammo[p.weapon].mag = Math.max(5, p.ammo[p.weapon].mag);
 p.nextShotAt = 0; p.reloading = false; p.reloadUntil = 0;
+// O jogador dispara no eixo -Z: este yaw aponta para o lado oposto ao ouvinte.
+p.yaw = yawPara(p.pos, P15); p.pitch = 0;
 let tiroOk = true;
 try { g._tryShoot(); } catch (e) { tiroOk = false; console.log(`  _tryShoot lançou: ${e.message}`); }
 const alertou = (b.alertUntil || 0) > g.time;
 const longeQuieto = !P55 || !((longe.alertUntil || 0) > g.time);
-const sb3 = tiroOk && alertou && pensa(b);
+const sb3 = tiroOk && b.alive && alertou && pensa(b);
 const sb4 = longeQuieto;
 
 prepara(b, P3, true);

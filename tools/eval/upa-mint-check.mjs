@@ -28,7 +28,7 @@ if (process.argv.includes('--self-test')) {
 
 function fire(world, from, dir, distance) {
   const group = new THREE.Group(), body = new THREE.Mesh(new THREE.BoxGeometry(.02, .02, .02), new THREE.MeshBasicMaterial());
-  group.add(body); group.position.copy(from).addScaledVector(dir, distance); group.updateMatrixWorld(true);
+  group.add(body); group.position.copy(from).addScaledVector(dir, distance + .45); group.position.y -= 1; group.updateMatrixWorld(true);
   const enemy = { team: 'B', alive: true, pos: group.position, mesh: { group, parts: {} } }; group.userData.botOwner = enemy;
   const game = Object.create(Game.prototype);
   Object.assign(game, { world, ray: new THREE.Raycaster(), bots: [enemy], playerTeam: 'E', online: false, damage: 0, _damage() { this.damage++; }, _fleshImpact() {}, _puff() {}, _impactSfx() {}, sfx: { ricochet() {} } });

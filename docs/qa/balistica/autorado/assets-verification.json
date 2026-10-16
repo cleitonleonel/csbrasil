@@ -1,0 +1,506 @@
+[
+  {
+    "path": "ak/ak-baked-runtime.glb",
+    "actualBytes": 1536096,
+    "expectedBytes": 1536096,
+    "actualSha256": "96d077bec15209f63a6cdf7367305f417c2a8bc05fb8c054456ae73a04c3dee8",
+    "expectedSha256": "96d077bec15209f63a6cdf7367305f417c2a8bc05fb8c054456ae73a04c3dee8",
+    "status": "verified"
+  },
+  {
+    "path": "ak/akm-baked-runtime.glb",
+    "actualBytes": 1531012,
+    "expectedBytes": 1531012,
+    "actualSha256": "664dd1c43808d749d22709907d496ea858e0406965c40a497269949a3ba8a79a",
+    "expectedSha256": "664dd1c43808d749d22709907d496ea858e0406965c40a497269949a3ba8a79a",
+    "status": "verified"
+  },
+  {
+    "path": "ak/m92-baked-runtime.glb",
+    "actualBytes": 1697728,
+    "expectedBytes": 1697728,
+    "actualSha256": "dd51c07b8fddad1b59001a622a3e6c3d9fc4427316dfcf4482a41036e02da1fd",
+    "expectedSha256": "dd51c07b8fddad1b59001a622a3e6c3d9fc4427316dfcf4482a41036e02da1fd",
+    "status": "verified"
+  },
+  {
+    "path": "ar/carbine-baked-runtime.glb",
+    "actualBytes": 1687080,
+    "expectedBytes": 1687080,
+    "actualSha256": "59806688b0884480ec142d1a4c0e388b0bdeed9736638ca67eeba2fbcdb52bca",
+    "expectedSha256": "59806688b0884480ec142d1a4c0e388b0bdeed9736638ca67eeba2fbcdb52bca",
+    "status": "verified"
+  },
+  {
+    "path": "ar/famas-baked-runtime.glb",
+    "actualBytes": 1589920,
+    "expectedBytes": 1589920,
+    "actualSha256": "640f3369d7cf586ad7c7f153d556a713e6afcf349ea61d93af6dc792fb180592",
+    "expectedSha256": "640f3369d7cf586ad7c7f153d556a713e6afcf349ea61d93af6dc792fb180592",
+    "status": "verified"
+  },
+  {
+    "path": "ar/m4-baked-runtime.glb",
+    "actualBytes": 1506656,
+    "expectedBytes": 1506656,
+    "actualSha256": "2d8e00559ad2e640183b45062f13e5a3b77256d5638831957e8c96af9b510233",
+    "expectedSha256": "2d8e00559ad2e640183b45062f13e5a3b77256d5638831957e8c96af9b510233",
+    "status": "verified"
+  },
+  {
+    "path": "ar/md97-baked-runtime.glb",
+    "actualBytes": 1518536,
+    "expectedBytes": 1518536,
+    "actualSha256": "4cd468a65fffa13414d4f47dc8fd7a1f6070d7c26ef9f9dc2784f39ea3bfe7dc",
+    "expectedSha256": "4cd468a65fffa13414d4f47dc8fd7a1f6070d7c26ef9f9dc2784f39ea3bfe7dc",
+    "status": "verified"
+  },
+  {
+    "path": "ar/scar-baked-runtime.glb",
+    "actualBytes": 1573740,
+    "expectedBytes": 1573740,
+    "actualSha256": "5a4f8664e3b150398700cd5b8a842cedf3e37575b439ef0e83265d484883fb6a",
+    "expectedSha256": "5a4f8664e3b150398700cd5b8a842cedf3e37575b439ef0e83265d484883fb6a",
+    "status": "verified"
+  },
+  {
+    "path": "ar/tavor-baked-runtime.glb",
+    "actualBytes": 1603920,
+    "expectedBytes": 1603920,
+    "actualSha256": "e90326406e6619f8b9799516474857db88f1785f1d56c52f56420cf0cec5ed0f",
+    "expectedSha256": "e90326406e6619f8b9799516474857db88f1785f1d56c52f56420cf0cec5ed0f",
+    "status": "verified"
+  },
+  {
+    "path": "bolt/mosin-baked-runtime.glb",
+    "actualBytes": 5492332,
+    "expectedBytes": 5492332,
+    "actualSha256": "ea1195452048dfc352948d135f84805b8d295ca2a3a50e2e4e21cfc3cb6caca7",
+    "expectedSha256": "ea1195452048dfc352948d135f84805b8d295ca2a3a50e2e4e21cfc3cb6caca7",
+    "status": "verified"
+  },
+  {
+    "path": "bolt/rem700-baked-runtime.glb",
+    "actualBytes": 5261724,
+    "expectedBytes": 5261724,
+    "actualSha256": "2a5eb7c53b291381b8fb79811ab0c0920deda68fa7ca5643004613a7a1f5f2af",
+    "expectedSha256": "2a5eb7c53b291381b8fb79811ab0c0920deda68fa7ca5643004613a7a1f5f2af",
+    "status": "verified"
+  },
+  {
+    "path": "deagle/deagle-runtime.glb",
+    "actualBytes": 3443296,
+    "expectedBytes": 3443296,
+    "actualSha256": "e480f69e76f892b5b7ad3d49d1a69f24fe0c8515735faa1c7cd86de7a2583c97",
+    "expectedSha256": "e480f69e76f892b5b7ad3d49d1a69f24fe0c8515735faa1c7cd86de7a2583c97",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/akm-fabrica.glb",
+    "actualBytes": 3889224,
+    "expectedBytes": 3889224,
+    "actualSha256": "91ee56bd36a34f8b616e6038ce04139c258dbf9dfa4a8e1dd0cec751a6252a05",
+    "expectedSha256": "91ee56bd36a34f8b616e6038ce04139c258dbf9dfa4a8e1dd0cec751a6252a05",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/awp-fabrica.glb",
+    "actualBytes": 2820968,
+    "expectedBytes": 2820968,
+    "actualSha256": "3df6baabdb3db80a93fcece4e829fcc53cbb764a7bb4581e33fb7b4710178e31",
+    "expectedSha256": "3df6baabdb3db80a93fcece4e829fcc53cbb764a7bb4581e33fb7b4710178e31",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/carbine-fabrica.glb",
+    "actualBytes": 2306700,
+    "expectedBytes": 2306700,
+    "actualSha256": "d9c3907371d7f5879a8c2156dc284520bf77a4e25d84b72e19e30f9a7c073290",
+    "expectedSha256": "d9c3907371d7f5879a8c2156dc284520bf77a4e25d84b72e19e30f9a7c073290",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/deagle-fabrica.glb",
+    "actualBytes": 2543216,
+    "expectedBytes": 2543216,
+    "actualSha256": "a08149fe7315fc5703535c149ddaa6c185674df2b4291401c43f76d9cb90b12d",
+    "expectedSha256": "a08149fe7315fc5703535c149ddaa6c185674df2b4291401c43f76d9cb90b12d",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/famas-fabrica.glb",
+    "actualBytes": 2267808,
+    "expectedBytes": 2267808,
+    "actualSha256": "47e12d76849026f5b663f0ff4454216316478504daf5cd333284d69b7ff653dd",
+    "expectedSha256": "47e12d76849026f5b663f0ff4454216316478504daf5cd333284d69b7ff653dd",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/g3-fabrica.glb",
+    "actualBytes": 3351684,
+    "expectedBytes": 3351684,
+    "actualSha256": "41e72be5d88dfde2c46d8d3f559c498c678957141f5e62778630f572ad6b9e33",
+    "expectedSha256": "41e72be5d88dfde2c46d8d3f559c498c678957141f5e62778630f572ad6b9e33",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/g3sg1-fabrica.glb",
+    "actualBytes": 3369520,
+    "expectedBytes": 3369520,
+    "actualSha256": "e9248df6b25a5e407bf3fa9c1275b6e18928805bdd5f1ee22967c54efa89ee75",
+    "expectedSha256": "e9248df6b25a5e407bf3fa9c1275b6e18928805bdd5f1ee22967c54efa89ee75",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/lmg-fabrica.glb",
+    "actualBytes": 4863540,
+    "expectedBytes": 4863540,
+    "actualSha256": "527c3d411e39f5c57cc66d2434afa22eaccd489477f933c9e725bc827b825ece",
+    "expectedSha256": "527c3d411e39f5c57cc66d2434afa22eaccd489477f933c9e725bc827b825ece",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/m4-fabrica.glb",
+    "actualBytes": 4162644,
+    "expectedBytes": 4162644,
+    "actualSha256": "c500cfe6320ac063d72c60750adecce0a91179b8b53881f3b48e30f6918a2a9a",
+    "expectedSha256": "c500cfe6320ac063d72c60750adecce0a91179b8b53881f3b48e30f6918a2a9a",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/m400-fabrica.glb",
+    "actualBytes": 4133476,
+    "expectedBytes": 4133476,
+    "actualSha256": "a9f4bce104f31563c59ecd0d7a369026b0bb9c9e1d0e2bdb4cfc8577fa5a4793",
+    "expectedSha256": "a9f4bce104f31563c59ecd0d7a369026b0bb9c9e1d0e2bdb4cfc8577fa5a4793",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/m92-fabrica.glb",
+    "actualBytes": 3799036,
+    "expectedBytes": 3799036,
+    "actualSha256": "c8fcfb1276481e184033543f150c72fc474b71f59f8930a1f2bb139262a0c07a",
+    "expectedSha256": "c8fcfb1276481e184033543f150c72fc474b71f59f8930a1f2bb139262a0c07a",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/md97-fabrica.glb",
+    "actualBytes": 4162572,
+    "expectedBytes": 4162572,
+    "actualSha256": "f17921e1c1db424f9bd18f651fe5fa5a25cd795732936d47b139945948914e26",
+    "expectedSha256": "f17921e1c1db424f9bd18f651fe5fa5a25cd795732936d47b139945948914e26",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/mosin-fabrica.glb",
+    "actualBytes": 2587280,
+    "expectedBytes": 2587280,
+    "actualSha256": "71b22a261d20006e95886af09bad40859d489dd0b7827e5e20c000387590d21a",
+    "expectedSha256": "71b22a261d20006e95886af09bad40859d489dd0b7827e5e20c000387590d21a",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/mp5-fabrica.glb",
+    "actualBytes": 3126712,
+    "expectedBytes": 3126712,
+    "actualSha256": "d26da9f0abc835518f0b7bb84cbf2c84804b2929f8661c0cd36303d618c97bd7",
+    "expectedSha256": "d26da9f0abc835518f0b7bb84cbf2c84804b2929f8661c0cd36303d618c97bd7",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/p90-fabrica.glb",
+    "actualBytes": 5417180,
+    "expectedBytes": 5417180,
+    "actualSha256": "f0ab213493475f1d152871d46b76e6bd268f4b77fc2fa5abc04d0f0c56564a11",
+    "expectedSha256": "f0ab213493475f1d152871d46b76e6bd268f4b77fc2fa5abc04d0f0c56564a11",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/pistol-fabrica.glb",
+    "actualBytes": 2727384,
+    "expectedBytes": 2727384,
+    "actualSha256": "4c9e3a1a29908310c9e6d555c3dadf783e75d5858c646bd10060081aaabe7f6a",
+    "expectedSha256": "4c9e3a1a29908310c9e6d555c3dadf783e75d5858c646bd10060081aaabe7f6a",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/rem700-fabrica.glb",
+    "actualBytes": 2716640,
+    "expectedBytes": 2716640,
+    "actualSha256": "4cbc945120022d89c93056e1f86573954687ebb7a94b7c44088a062388cc6b45",
+    "expectedSha256": "4cbc945120022d89c93056e1f86573954687ebb7a94b7c44088a062388cc6b45",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/revolver38-fabrica.glb",
+    "actualBytes": 2385736,
+    "expectedBytes": 2385736,
+    "actualSha256": "9204c8df66922c6f02392573b4220aaf3295bac3e46fb47df7caf1f270046ea5",
+    "expectedSha256": "9204c8df66922c6f02392573b4220aaf3295bac3e46fb47df7caf1f270046ea5",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/scar-fabrica.glb",
+    "actualBytes": 3819096,
+    "expectedBytes": 3819096,
+    "actualSha256": "e15febed0de571bb81b388fd4b64a1852785906412ddaf675ab66e1957dc7b01",
+    "expectedSha256": "e15febed0de571bb81b388fd4b64a1852785906412ddaf675ab66e1957dc7b01",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/shotgun-fabrica.glb",
+    "actualBytes": 3080316,
+    "expectedBytes": 3080316,
+    "actualSha256": "8b3c8639cad501ac42893e4829efbbfab901f227f7da203ad39325496f088a80",
+    "expectedSha256": "8b3c8639cad501ac42893e4829efbbfab901f227f7da203ad39325496f088a80",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/sks-fabrica.glb",
+    "actualBytes": 2733696,
+    "expectedBytes": 2733696,
+    "actualSha256": "39c44f6e413db048dc5d48aeb0e410bac2711b843b521156585308af0aab0947",
+    "expectedSha256": "39c44f6e413db048dc5d48aeb0e410bac2711b843b521156585308af0aab0947",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/svd-fabrica.glb",
+    "actualBytes": 2523332,
+    "expectedBytes": 2523332,
+    "actualSha256": "8932f87984c5778d8b617f4ccac591838fbbfe6e06c4f7e98baba75d85088ccc",
+    "expectedSha256": "8932f87984c5778d8b617f4ccac591838fbbfe6e06c4f7e98baba75d85088ccc",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/tavor-fabrica.glb",
+    "actualBytes": 2260692,
+    "expectedBytes": 2260692,
+    "actualSha256": "88a6aeec814e23d4e8206135ba7116420d7a03d83670efdb244b6ab7c39f923f",
+    "expectedSha256": "88a6aeec814e23d4e8206135ba7116420d7a03d83670efdb244b6ab7c39f923f",
+    "status": "verified"
+  },
+  {
+    "path": "fabrica/uzi-fabrica.glb",
+    "actualBytes": 2162564,
+    "expectedBytes": 2162564,
+    "actualSha256": "59756a6f187a031a5b1fe822c135be20e6509ba51a1cf6e818261868381e32b8",
+    "expectedSha256": "59756a6f187a031a5b1fe822c135be20e6509ba51a1cf6e818261868381e32b8",
+    "status": "verified"
+  },
+  {
+    "path": "g3/g3-baked-runtime.glb",
+    "actualBytes": 1636876,
+    "expectedBytes": 1636876,
+    "actualSha256": "a31aff0279267f1ef22a890256961c7cc3d1d86a89b104a53df149ac7d7bac02",
+    "expectedSha256": "a31aff0279267f1ef22a890256961c7cc3d1d86a89b104a53df149ac7d7bac02",
+    "status": "verified"
+  },
+  {
+    "path": "g3/g3sg1-baked-runtime.glb",
+    "actualBytes": 1523360,
+    "expectedBytes": 1523360,
+    "actualSha256": "f6959a3ae2efbc4191ac48bc77f9e10b4ddf220d8acf979f5598cfff5047002c",
+    "expectedSha256": "f6959a3ae2efbc4191ac48bc77f9e10b4ddf220d8acf979f5598cfff5047002c",
+    "status": "verified"
+  },
+  {
+    "path": "grenade/grenade-runtime.glb",
+    "actualBytes": 2868028,
+    "expectedBytes": 2868028,
+    "actualSha256": "f6033daefb76b26e80f21ea7138e36f418cb3f3aa7e07d1cff98a6b1bd4a9826",
+    "expectedSha256": "f6033daefb76b26e80f21ea7138e36f418cb3f3aa7e07d1cff98a6b1bd4a9826",
+    "status": "verified"
+  },
+  {
+    "path": "grenade/grenades-world.glb",
+    "actualBytes": 1213844,
+    "expectedBytes": 1213844,
+    "actualSha256": "0e64280c5bace45167a325b3b43ef505d4be77e208dba2f568cc4f2d3025badf",
+    "expectedSha256": "0e64280c5bace45167a325b3b43ef505d4be77e208dba2f568cc4f2d3025badf",
+    "status": "verified"
+  },
+  {
+    "path": "knife/knife-baked-runtime.glb",
+    "actualBytes": 1487908,
+    "expectedBytes": 1487908,
+    "actualSha256": "93028919ee74f46ed8ef77c8e34ceec314f4e76b2e069b4686b65d1cb84f0556",
+    "expectedSha256": "93028919ee74f46ed8ef77c8e34ceec314f4e76b2e069b4686b65d1cb84f0556",
+    "status": "verified"
+  },
+  {
+    "path": "lmg/lmg-baked-runtime.glb",
+    "actualBytes": 6467236,
+    "expectedBytes": 6467236,
+    "actualSha256": "025a99f2f5f969e513ebafb7678f87f8bd726149d9d924cde6d6941ae367a179",
+    "expectedSha256": "025a99f2f5f969e513ebafb7678f87f8bd726149d9d924cde6d6941ae367a179",
+    "status": "verified"
+  },
+  {
+    "path": "marksman/sks-baked-runtime.glb",
+    "actualBytes": 5629224,
+    "expectedBytes": 5629224,
+    "actualSha256": "0e5d0ff138a73371e090ddb5a21fee7cd2b07b03742675543b036e1b2648fc4a",
+    "expectedSha256": "0e5d0ff138a73371e090ddb5a21fee7cd2b07b03742675543b036e1b2648fc4a",
+    "status": "verified"
+  },
+  {
+    "path": "mp5/mp5-runtime.glb",
+    "actualBytes": 1540288,
+    "expectedBytes": 1540288,
+    "actualSha256": "b548817afd0725ef52ac8ba11834fd44acf4e48678785adb15fa425f6161fd58",
+    "expectedSha256": "b548817afd0725ef52ac8ba11834fd44acf4e48678785adb15fa425f6161fd58",
+    "status": "verified"
+  },
+  {
+    "path": "p90/p90-baked-runtime.glb",
+    "actualBytes": 1469436,
+    "expectedBytes": 1469436,
+    "actualSha256": "2b4ff0fdf8ad65973f5eb6d3230cfa5d0e3eca73fecb7ca4380aafa1c57c196c",
+    "expectedSha256": "2b4ff0fdf8ad65973f5eb6d3230cfa5d0e3eca73fecb7ca4380aafa1c57c196c",
+    "status": "verified"
+  },
+  {
+    "path": "pistol/pistol-runtime.glb",
+    "actualBytes": 3006796,
+    "expectedBytes": 3006796,
+    "actualSha256": "04c126d93148f9cf0ffa07927f4d09cde2067d9abbc9ddcd25d3b811923fa3b8",
+    "expectedSha256": "04c126d93148f9cf0ffa07927f4d09cde2067d9abbc9ddcd25d3b811923fa3b8",
+    "status": "verified"
+  },
+  {
+    "path": "recoil.json",
+    "actualBytes": 78732,
+    "expectedBytes": 78732,
+    "actualSha256": "f7fd16adea20ca8f9e856eaa56ec0f94f667972a611c201a2ce227ab2fb27265",
+    "expectedSha256": "f7fd16adea20ca8f9e856eaa56ec0f94f667972a611c201a2ce227ab2fb27265",
+    "status": "verified"
+  },
+  {
+    "path": "revolver/revolver-runtime.glb",
+    "actualBytes": 4186328,
+    "expectedBytes": 4186328,
+    "actualSha256": "40b53e2fba7309ee210f0199f69fd7227c544b197d409904faaa4981231f796e",
+    "expectedSha256": "40b53e2fba7309ee210f0199f69fd7227c544b197d409904faaa4981231f796e",
+    "status": "verified"
+  },
+  {
+    "path": "shared/T_Arm01_B.webp",
+    "actualBytes": 27992,
+    "expectedBytes": 27992,
+    "actualSha256": "ea23ecd5a6dfac1b62348bd815a2d171b2779573ec9a96a53cb579c9532eb0d0",
+    "expectedSha256": "ea23ecd5a6dfac1b62348bd815a2d171b2779573ec9a96a53cb579c9532eb0d0",
+    "status": "verified"
+  },
+  {
+    "path": "shared/T_Arm01_N.webp",
+    "actualBytes": 147602,
+    "expectedBytes": 147602,
+    "actualSha256": "df2a3f6343c2e4f0bac4ff06e71399127762c2b03ffedc7200ff74ac73a60d47",
+    "expectedSha256": "df2a3f6343c2e4f0bac4ff06e71399127762c2b03ffedc7200ff74ac73a60d47",
+    "status": "verified"
+  },
+  {
+    "path": "shared/T_Arm01_ORM.webp",
+    "actualBytes": 71416,
+    "expectedBytes": 71416,
+    "actualSha256": "5b5e79a1a26e12b89a427c7ea470c1f1f126ba3b90f004f81d72f0eae373960b",
+    "expectedSha256": "5b5e79a1a26e12b89a427c7ea470c1f1f126ba3b90f004f81d72f0eae373960b",
+    "status": "verified"
+  },
+  {
+    "path": "shared/T_Cloth01_B.webp",
+    "actualBytes": 68940,
+    "expectedBytes": 68940,
+    "actualSha256": "7300e251e2f5550d36dfda181a9602ac42a3fb2a04c43d13320f83c6c8a059b2",
+    "expectedSha256": "7300e251e2f5550d36dfda181a9602ac42a3fb2a04c43d13320f83c6c8a059b2",
+    "status": "verified"
+  },
+  {
+    "path": "shared/T_Cloth01_N.webp",
+    "actualBytes": 1346582,
+    "expectedBytes": 1346582,
+    "actualSha256": "9ed1a23714bb98f6367178de003839e283d74c458e58b7e3b38e836e641e2812",
+    "expectedSha256": "9ed1a23714bb98f6367178de003839e283d74c458e58b7e3b38e836e641e2812",
+    "status": "verified"
+  },
+  {
+    "path": "shared/T_Cloth01_ORM.webp",
+    "actualBytes": 184270,
+    "expectedBytes": 184270,
+    "actualSha256": "f2d1797be051960d4a6ff455e17764542976004131e31a4a415d2a1e4eb03c63",
+    "expectedSha256": "f2d1797be051960d4a6ff455e17764542976004131e31a4a415d2a1e4eb03c63",
+    "status": "verified"
+  },
+  {
+    "path": "shared/T_Glove01_B.webp",
+    "actualBytes": 183500,
+    "expectedBytes": 183500,
+    "actualSha256": "7542bec0c2d5eae1600cac2c2da46fc7a449a47cc6af106c73e23e0d7c99954b",
+    "expectedSha256": "7542bec0c2d5eae1600cac2c2da46fc7a449a47cc6af106c73e23e0d7c99954b",
+    "status": "verified"
+  },
+  {
+    "path": "shared/T_Glove01_N.webp",
+    "actualBytes": 1470334,
+    "expectedBytes": 1470334,
+    "actualSha256": "29494e350ba01ed6e6ab2ae13fac48a9f7cce1f689a39bd8c688a89b1f1c1438",
+    "expectedSha256": "29494e350ba01ed6e6ab2ae13fac48a9f7cce1f689a39bd8c688a89b1f1c1438",
+    "status": "verified"
+  },
+  {
+    "path": "shared/T_Glove01_ORM.webp",
+    "actualBytes": 147442,
+    "expectedBytes": 147442,
+    "actualSha256": "c8034b6e1b42f831857972b857c362b1562c38ae418ac5a7dd619dd209e5aac8",
+    "expectedSha256": "c8034b6e1b42f831857972b857c362b1562c38ae418ac5a7dd619dd209e5aac8",
+    "status": "verified"
+  },
+  {
+    "path": "shared/general-runtime.glb",
+    "actualBytes": 8044284,
+    "expectedBytes": 8044284,
+    "actualSha256": "e90274422745fb0450fc795ab89d6a9e70e953d692bc8f564dc2bc42b1e71c8f",
+    "expectedSha256": "e90274422745fb0450fc795ab89d6a9e70e953d692bc8f564dc2bc42b1e71c8f",
+    "status": "verified"
+  },
+  {
+    "path": "shotgun/shotgun-baked-runtime.glb",
+    "actualBytes": 4307324,
+    "expectedBytes": 4307324,
+    "actualSha256": "d08281eef972f6033766794ca8930a03138524e0a211d125caa9838c09d1724d",
+    "expectedSha256": "d08281eef972f6033766794ca8930a03138524e0a211d125caa9838c09d1724d",
+    "status": "verified"
+  },
+  {
+    "path": "smg/uzi-baked-runtime.glb",
+    "actualBytes": 5142564,
+    "expectedBytes": 5142564,
+    "actualSha256": "c215b93f67f132a816140bf99ee1befc4f519a6953c2726da830a002d1e4c71b",
+    "expectedSha256": "c215b93f67f132a816140bf99ee1befc4f519a6953c2726da830a002d1e4c71b",
+    "status": "verified"
+  },
+  {
+    "path": "sniper/awp-baked-runtime.glb",
+    "actualBytes": 1486132,
+    "expectedBytes": 1486132,
+    "actualSha256": "3e6b77e45760191847097dc4847c9200686367d241c7d03505b46de06ba52f0a",
+    "expectedSha256": "3e6b77e45760191847097dc4847c9200686367d241c7d03505b46de06ba52f0a",
+    "status": "verified"
+  },
+  {
+    "path": "sniper/m400-baked-runtime.glb",
+    "actualBytes": 1984364,
+    "expectedBytes": 1984364,
+    "actualSha256": "838066951a0a9ed1b530875932e5af127f1ad3b7448773169ce3fcda4ed07637",
+    "expectedSha256": "838066951a0a9ed1b530875932e5af127f1ad3b7448773169ce3fcda4ed07637",
+    "status": "verified"
+  },
+  {
+    "path": "svd/svd-baked-runtime.glb",
+    "actualBytes": 5194336,
+    "expectedBytes": 5194336,
+    "actualSha256": "9db55c0299f966ee1877beecb21c5c8a54f3f823c2ce7126439d1af383b3622d",
+    "expectedSha256": "9db55c0299f966ee1877beecb21c5c8a54f3f823c2ce7126439d1af383b3622d",
+    "status": "verified"
+  }
+]
