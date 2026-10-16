@@ -66,6 +66,42 @@ import {
 	InstancedBufferAttribute
 } from 'three';
 import { toTrianglesDrawMode } from '../utils/BufferGeometryUtils.js';
+/* Teto de textura do perfil mobile: o jogo define __CS_TEXTURA_MAX__; GLB acima
+   do teto é reduzido em canvas antes do primeiro upload. Sem a flag, nada muda. */
+export function clampTexturasGL( gltf ) {
+
+	const teto = globalThis.__CS_TEXTURA_MAX__ || 0;
+	if ( ! teto || typeof document === 'undefined' ) return;
+
+	const alvos = new Set();
+	gltf.scene.traverse( ( o ) => {
+
+		const mats = Array.isArray( o.material ) ? o.material : ( o.material ? [ o.material ] : [] );
+		for ( const m of mats ) {
+
+			for ( const k in m ) {
+
+				const t = m[ k ];
+				if ( t && t.isTexture && t.image && Math.max( t.image.width, t.image.height ) > teto ) alvos.add( t );
+
+			}
+
+		}
+
+	} );
+	for ( const t of alvos ) {
+
+		const w = t.image.width, h = t.image.height;
+		const escala = teto / Math.max( w, h );
+		const c = document.createElement( 'canvas' );
+		c.width = Math.max( 1, Math.round( w * escala ) );
+		c.height = Math.max( 1, Math.round( h * escala ) );
+		c.getContext( '2d' ).drawImage( t.image, 0, 0, c.width, c.height );
+		t.image = c;
+
+	}
+
+}
 
 class GLTFLoader extends Loader {
 
@@ -428,7 +464,7 @@ class GLTFLoader extends Loader {
 
 		parser.setExtensions( extensions );
 		parser.setPlugins( plugins );
-		parser.parse( onLoad, onError );
+		parser.parse( ( gltf ) => { clampTexturasGL( gltf ); onLoad( gltf ); }, onError );
 
 	}
 
