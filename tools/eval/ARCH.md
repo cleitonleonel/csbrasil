@@ -11,6 +11,8 @@
 |---|---:|---:|
 | `public/js/game.js` | 8488 | 338 |
 | `public/js/main.js` | 4878 | 359 |
+| `public/js/game.js` | 8489 | 338 |
+| `public/js/main.js` | 4870 | 359 |
 | `public/js/glbchars.js` | 893 | 62 |
 | `public/js/characters.js` | 1143 | 42 |
 | `public/js/vmattach.js` | 633 | 4 |
@@ -32,8 +34,8 @@ Os 15 maiores somam **3365 linhas (40% do arquivo)**. Método grande = PR irrevi
 | 137 | 5368 | `_botCtf()` |  |
 | 135 | 2223 | `_touchControls()` |  |
 | 101 | 6033 | `_moveEntity()` |  |
-| 90 | 8346 | `update()` | 🔴 append-only |
-| 88 | 8258 | `_updateHud()` |  |
+| 90 | 8347 | `update()` | 🔴 append-only |
+| 88 | 8259 | `_updateHud()` |  |
 | 86 | 5079 | `_initCTF()` |  |
 | 82 | 3655 | `_tryShoot()` |  |
 | 79 | 3301 | `_ensureVmPrecisionQa()` |  |
@@ -51,16 +53,16 @@ faixas disjuntas simultaneamente com zero conflito de conteúdo.
 | **BOTS / JOGABILIDADE** | `188–191` `242–242` `275–286` `628–639` `4020–4119` `5018–5078` `5250–5504` `5587–5609` `6134–6441` `6840–6857` `6987–7017` `7052–7909` | — |
 | **MAPAS / MUNDO** | `1412–1468` `2663–2917` `5079–5225` `6455–6612` | `public/js/maps.js` `public/js/mapprops.js` `public/js/map_brasilia.js` `public/js/map_havan.js` `public/js/map_piscina.js` `public/js/map_piscinao_ramos.js` `public/js/map_ferrovelho.js` |
 | **GRÁFICOS / FX** | `1895–1904` `2019–2057` `3170–3183` `4437–4475` `4600–4656` | `public/js/bloom.js` `public/js/textures.js` `public/js/vao.js` `public/js/stylize.js` `public/js/gpuparticles.js` |
-| **UI / HUD / MENU** | `1366–1411` `3122–3144` `3160–3169` `3184–3200` `4150–4228` `4278–4331` `4347–4410` `8080–8143` `8174–8222` `8258–8345` | `public/js/main.js` `public/style.css` `src/pages/index.astro` |
+| **UI / HUD / MENU** | `1366–1411` `3122–3144` `3160–3169` `3184–3200` `4150–4228` `4278–4331` `4347–4410` `8080–8144` `8175–8223` `8259–8346` | `public/js/main.js` `public/style.css` `src/pages/index.astro` |
 | **ÁUDIO** | — | `public/js/audio.js` |
 | **PERSONAGENS** | — | `public/js/characters.js` `public/js/glbchars.js` |
 | **SITE / BACKEND** | — | `src/` `supabase/` |
 
-**🔴 Zonas vermelhas (append-only, qualquer frente pode precisar):** `update()` 8346–8435 · `_dom()` 1366–1411 · `constructor()` 728–1365
+**🔴 Zonas vermelhas (append-only, qualquer frente pode precisar):** `update()` 8347–8436 · `_dom()` 1366–1411 · `constructor()` 728–1365
 
 Nenhuma sobreposição entre frentes — todas as faixas são disjuntas. ✓
 
-Cobertura: **3932 de 8488 linhas (46%)** do `game.js` têm dono declarado. O resto é território neutro — declare a frente mesmo assim.
+Cobertura: **3933 de 8489 linhas (46%)** do `game.js` têm dono declarado. O resto é território neutro — declare a frente mesmo assim.
 
 <details><summary><strong>Índice completo de <code>game.js</code> (todos os símbolos)</strong></summary>
 
@@ -344,14 +346,14 @@ Cobertura: **3932 de 8488 linhas (46%)** do `game.js` têm dono declarado. O res
 | 7923 | `_updateBotNN()` | 73 |
 | 7996 | `_botShootNN()` | 46 |
 | 8042 | `_radarFoot()` | 38 |
-| 8080 | `_updateRadar()` | 64 |
-| 8144 | `_banner()` | 26 |
-| 8170 | `_resultadoDaRodada()` | 4 |
-| 8174 | `_showScoreboard()` | 49 |
-| 8223 | `_updateWeaponHud()` | 35 |
-| 8258 | `_updateHud()` | 88 |
-| 8346 | `update()` | 90 |
-| 8436 | `dispose()` | 52 |
+| 8080 | `_updateRadar()` | 65 |
+| 8145 | `_banner()` | 26 |
+| 8171 | `_resultadoDaRodada()` | 4 |
+| 8175 | `_showScoreboard()` | 49 |
+| 8224 | `_updateWeaponHud()` | 35 |
+| 8259 | `_updateHud()` | 88 |
+| 8347 | `update()` | 90 |
+| 8437 | `dispose()` | 52 |
 
 </details>
 
