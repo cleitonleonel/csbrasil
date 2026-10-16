@@ -6241,8 +6241,6 @@ export class Game {
        input pro servidor, que roda esta MESMA função. */
     if (this.online) this._mp?.stepPlayer(p, _inp, dt);
     // auto-fire (ak/m4/mp5) enquanto o botão está segurado
-    if (WEAPONS[p.weapon].auto && this.mouseDown0 && p.alive) this._tryShoot(true);
-    if (perfilArma(p.weapon).segurar && this.mouseDown0 && p.alive) this._tryShoot();
     if (perfilArma(p.weapon).segurar && this.mouseDown0 && p.alive) this._tryShoot(true);
     this.bloom = Math.max(0, (this.bloom || 0) - dt * 1.8);
     // camera: crouch drop + landing dip (decays) + recoil recovery (decays) + speed bob
