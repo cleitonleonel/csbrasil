@@ -69,28 +69,19 @@ import { toTrianglesDrawMode } from '../utils/BufferGeometryUtils.js';
 /* Teto de textura do perfil mobile: o jogo define __CS_TEXTURA_MAX__; GLB acima
    do teto é reduzido em canvas antes do primeiro upload. Sem a flag, nada muda. */
 export function clampTexturasGL( gltf ) {
-
 	const teto = globalThis.__CS_TEXTURA_MAX__ || 0;
 	if ( ! teto || typeof document === 'undefined' ) return;
-
 	const alvos = new Set();
 	gltf.scene.traverse( ( o ) => {
-
 		const mats = Array.isArray( o.material ) ? o.material : ( o.material ? [ o.material ] : [] );
 		for ( const m of mats ) {
-
 			for ( const k in m ) {
-
 				const t = m[ k ];
 				if ( t && t.isTexture && t.image && Math.max( t.image.width, t.image.height ) > teto ) alvos.add( t );
-
 			}
-
 		}
-
 	} );
 	for ( const t of alvos ) {
-
 		const w = t.image.width, h = t.image.height;
 		const escala = teto / Math.max( w, h );
 		const c = document.createElement( 'canvas' );
@@ -98,10 +89,9 @@ export function clampTexturasGL( gltf ) {
 		c.height = Math.max( 1, Math.round( h * escala ) );
 		c.getContext( '2d' ).drawImage( t.image, 0, 0, c.width, c.height );
 		t.image = c;
-
 	}
-
 }
+import { MeshoptDecoder } from '../../meshopt_decoder.module.js';
 
 class GLTFLoader extends Loader {
 
@@ -111,7 +101,9 @@ class GLTFLoader extends Loader {
 
 		this.dracoLoader = null;
 		this.ktx2Loader = null;
-		this.meshoptDecoder = null;
+		// EXT_meshopt_compression por padrão: 9+ loaders instanciam GLTFLoader pelo
+		// jogo e um setMeshoptDecoder esquecido viraria GLB quebrado no ar (lição 5).
+		this.meshoptDecoder = MeshoptDecoder;
 
 		this.pluginCallbacks = [];
 
