@@ -509,6 +509,17 @@ const DICT = {
   // tp:fim-lobby
 
   // tp:modos
+  'Voltar ao lobby': 'Back to lobby', 'ESCOLHA A TRETA': 'PICK YOUR FIGHT', 'Modo de jogo': 'Game mode', 'SALA PRIVADA': 'PRIVATE ROOM',
+  'Rounds, elimine o time inteiro': 'Rounds, wipe out the whole team', 'Roube a bandeira e leve pra base': 'Steal the flag and bring it home',
+  'Salas públicas': 'Public rooms', 'Chame a turma pelo link': 'Call your crew with a link',
+  '★ FAVORITOS': '★ FAVORITES', 'NOVOS': 'NEW', 'NOVO': 'NEW', 'EM OBRAS': 'WIP', 'Buscar mapa': 'Search map', 'MAPA ALEATÓRIO': 'RANDOM MAP',
+  'Marcar como favorito': 'Mark as favorite', 'Tirar dos favoritos': 'Remove from favorites',
+  'Marque a estrela de um mapa para ele aparecer aqui.': 'Star a map to see it here.', 'Nenhum mapa com esse filtro.': 'No map matches this filter.',
+  'Configurar partida': 'Match setup', 'Menos bots no seu time': 'Fewer bots on your team', 'Mais bots no seu time': 'More bots on your team',
+  'Menos inimigos': 'Fewer enemies', 'Mais inimigos': 'More enemies', 'Menos rounds': 'Fewer rounds', 'Mais rounds': 'More rounds',
+  'PISTOLAS': 'PISTOLS', 'FACA': 'KNIFE', 'DE BOA': 'CHILL', 'TRETA': 'TOUGH', 'INSANO': 'INSANE', 'você': 'you', 'só você': 'just you',
+  'Escalação': 'Lineup', 'travado, resto sorteado': 'locked, the rest drawn at random', 'travados, resto sorteado': 'locked, the rest drawn at random',
+  'Escalação automática, todos sorteados': 'Automatic lineup, everyone drawn at random', 'EDITAR': 'EDIT',
   // tp:fim-modos
 
   // tp:carregamento

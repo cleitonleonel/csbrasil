@@ -148,6 +148,8 @@
     "eval:ui-v3:splash": "node tools/eval/ui-v3-splash.mjs && node tools/eval/ui-v3-splash.mjs --mutantes",
     "//eval:ui-v3:lobby": "Lobby Treta Pop (telas 02, 18 e 26) no Chrome: abas sem PASSE, ajustes com rótulo, JOGAR direto sem o Pronto pra treta, personagem no centro, party e quests honestas, PT e EN, 4 telas, gire o celular e sem flag igual a hoje; --mutantes prova cada cláusula.",
     "eval:ui-v3:lobby": "node tools/eval/ui-v3-lobby.mjs && node tools/eval/ui-v3-lobby.mjs --mutantes",
+    "//eval:ui-v3:modos": "Modo e mapa Treta Pop (telas 03 e 19) no Chrome: tela cheia, modo e mapa mudam a partida de verdade, busca, favoritos, NOVO com data real, aleatório, passos e segmentos, um primário, JOGAR, 4 telas, alvos de 44 px, PT e EN, sem flag igual a hoje e o ＋ da escalação fora do nome; --mutantes prova cada cláusula.",
+    "eval:ui-v3:modos": "node tools/eval/ui-v3-modos.mjs && node tools/eval/ui-v3-modos.mjs --mutantes",
     "eval:resultado-arte": "node tools/eval/resultado-arte-check.mjs",
     "eval:screenquery": "node tools/eval/screen-query-check.mjs",
     "eval:screenquery:browser": "node tools/eval/screen-query-browser.mjs",
