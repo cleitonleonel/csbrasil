@@ -61,6 +61,23 @@ const MUTANTES = {
   'ignora-sistema': ['/js/tp/ajustes.js', (t) => t.replace("const sistema = matchMedia('(prefers-reduced-motion: reduce)').matches;", 'const sistema = false;'), 'AJ3'],
   'privacidade-dupla': ['/css/tp/ajustes.css', (t) => t.replace(':root[data-ui="v3"] #profile-preferences{display:none}', ''), 'AJ4'],
   'aba-sem-tr': ['/js/i18n.js', (t) => t.replace("'ACESSIBILIDADE': 'ACCESSIBILITY',", ''), 'AJ5'],
+  'lotada-entra': ['/js/tp/servidores.js', (t) => t.replace("    if (livres) {\n      for (const lado of ['E', 'B'])", "    if (true) {\n      for (const lado of ['E', 'B'])"), 'SV2b'],
+  'alvo-ajustes-pequeno': ['/css/tp/ajustes.css', (t) => t.replace('@media (pointer:coarse){\n  :root[data-ui="v3"] #settings-panel .set-tab{min-height:44px}', '@media (pointer:fine){\n  :root[data-ui="v3"] #settings-panel .set-tab{min-height:44px}'), 'AJ6'],
+  'ajustes-sem-flag': ['/js/main.js', (t) => t.replace("if (document.documentElement.dataset.ui === 'v3') {\n  import('./splash-v3.js')", "{\n  import('./splash-v3.js')"), 'AJ7'],
+  'vaga-dois-nomes': ['/js/i18n.js', (t) => t.replace("'COM VAGA': 'OPEN SLOTS',", "'COM VAGA': 'HAS ROOM',"), 'SV6'],
+  'cta-barlow': ['/css/tp/servidores.css', (t) => t.replace('.tp-srv :where(button){', '.tp-srv button{'), 'SV12'],
+  'dois-limas': ['/css/tp/servidores.css', (t) => t.replace('.hub-identity-cta{background', '.hub-identity-cta-x{background'), 'SV13'],
+  'contador-contradiz': ['/css/tp/servidores.css', (t) => t.replace('.hub-online{display:none}', '.hub-online{order:0}'), 'SV14'],
+  'gutter-fixo': ['/css/tp/servidores.css', (t) => t.replace('padding:4px var(--hub-right-gutter,32px) 32px var(--hub-left-gutter,32px);', 'padding:4px 32px 32px;'), 'SV15'],
+  'codigo-cortado': ['/css/tp/servidores.css', (t) => t.replace('.tp-srv__nome small{display:flex;', '.tp-srv__nome small{display:block;overflow:hidden;text-overflow:ellipsis;'), 'SV16'],
+  'codigo-desce': ['/css/tp/servidores.css', (t) => t.replace('.tp-srv .tp-srv__codigo{width:170px}', '.tp-srv .tp-srv__codigo{width:260px}'), 'SV16'],
+  'sub-apagado': ['/css/tp/servidores.css', (t) => t.replace('.tp-srv__regiao[data-online="0"] :is(.tp-srv__flag,.tp-srv__info b,.tp-srv__sinal){opacity:.6}', '.tp-srv__regiao[data-online="0"]{opacity:.6}'), 'SV17'],
+  'rapido-promete': ['/js/tp/servidores.js', (t) => t.replace("if (quick) { quick.classList.toggle('tp-btn--primario', !todos); quick.disabled = todos; }", ''), 'SV18'],
+  'pwa-por-cima': ['/css/tp/servidores.css', (t) => t.replace('#pwa-install{display:none}', '#pwa-install{order:0}'), 'SV19'],
+  'toggle-apagado': ['/css/tp/ajustes.css', (t) => t.replace('i{background:var(--tp-tinta-1);color:var(--tp-asfalto)}', 'i{background:var(--tp-elevado);color:var(--tp-tinta-1)}'), 'AJ8'],
+  'modal-pula': ['/css/tp/ajustes.css', (t) => t.replace('height:min(640px,calc(100dvh - 32px));', ''), 'AJ9'],
+  'fonte-sistema': ['/css/tp/ajustes.css', (t) => t.replace('cursor:pointer;font:600 15px/1.35 var(--tp-ui);color:var(--tp-tinta-2)}', 'cursor:pointer;color:var(--tp-tinta-2)}'), 'AJ10'],
+  'checkbox-nativo': ['/css/tp/ajustes.css', (t) => t.replace('{appearance:none;width:20px', '{width:20px'), 'AJ10'],
 };
 
 async function contexto(mutante, opcoes = {}, nos = NOS_OK) {
@@ -120,7 +137,53 @@ const medirServidores = () => {
   const lado = document.querySelector('.tp-srv__lado'), lista = document.querySelector('.tp-srv__salas');
   const alvos = [...(raiz || document.body).querySelectorAll('button, input, summary, select, a')].filter(vis).map((e) => ({ id: e.id || e.className || e.tagName, w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height }));
   const painel = lista ? getComputedStyle(lista).backgroundColor : '';
+  const fonte = (e) => (e && vis(e) ? { fam: getComputedStyle(e).fontFamily.split(',')[0].replace(/['"]/g, ''), px: parseFloat(getComputedStyle(e).fontSize) } : null);
+  const LIMA = 'rgb(180, 217, 46)';
+  const naTela = (e) => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0 && b.right > 0 && b.bottom > 0 && b.left < innerWidth && b.top < innerHeight; };
+  const todos = [...document.querySelectorAll('body *')].filter((e) => naTela(e) && vis(e));
+  const limaFundo = todos.filter((e) => getComputedStyle(e).backgroundColor === LIMA).map((e) => e.id || e.className.toString().slice(0, 30));
+  const limaBorda = todos.filter((e) => !raiz?.contains(e)).filter((e) => { const c = getComputedStyle(e); return ['Top', 'Right', 'Bottom', 'Left'].some((k) => c[`border${k}Color`] === LIMA && parseFloat(c[`border${k}Width`]) > 0); }).map((e) => e.id || e.className.toString().slice(0, 30) || e.tagName);
+  /* cor efetiva: a opacidade dos ancestrais até a tela compõe texto e fundo sobre o asfalto */
+  const rgb = (c) => (c.match(/[\d.]+/g) || []).map(Number);
+  const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+  const mistura = (a, b, t) => a.map((v, i) => v * t + b[i] * (1 - t));
+  const contraste = (txt) => {
+    if (!txt || !vis(txt)) return null;
+    const ASF = [9, 7, 4];
+    let op = 1, fundo = null;
+    for (let n = txt; n && n !== document.body; n = n.parentElement) {
+      op *= parseFloat(getComputedStyle(n).opacity);
+      const bg = rgb(getComputedStyle(n).backgroundColor);
+      if (!fundo && bg.length >= 3 && (bg[3] ?? 1) > 0.9) fundo = { cor: bg.slice(0, 3), op: null, no: n };
+    }
+    let opFundo = 1;
+    for (let n = fundo?.no; n && n !== document.body; n = n.parentElement) opFundo *= parseFloat(getComputedStyle(n).opacity);
+    const base = fundo?.cor || ASF;
+    const f = mistura(base, ASF, opFundo), t = mistura(mistura(rgb(getComputedStyle(txt).color).slice(0, 3), base, op / opFundo), ASF, opFundo);
+    const [a, b] = [lum(t), lum(f)].sort((x, y) => y - x);
+    return +((a + 0.05) / (b + 0.05)).toFixed(2);
+  };
+  const subFora = [...document.querySelectorAll('.tp-srv__regiao[data-online="0"] .tp-srv__sub')].map(contraste).filter((x) => x != null);
+  const cheia = document.querySelector('.tp-srv__sala[data-cheia]');
+  const hh = document.querySelector('.hub-header');
+  const voltar = document.querySelector('.tp-srv__voltar');
+  const h2 = document.querySelector('.tp-srv__h2'), form = document.getElementById('mp-convite-form');
+  const pwa = document.getElementById('pwa-install');
+  const sobre = (a, b) => { const x = a.getBoundingClientRect(), y = b.getBoundingClientRect(); return x.left < y.right && x.right > y.left && x.top < y.bottom && x.bottom > y.top; };
+  const online = document.querySelector('.hub-online');
   return {
+    fontes: { criar: fonte(document.getElementById('mp-amigos')), rapido: fonte(document.getElementById('mp-quick')), lado: fonte(document.querySelector('.tp-srv__lado-btn')), ver: fonte(document.querySelector('.tp-srv__ver--so')) },
+    limaFundo, limaBorda, subFora,
+    cheiaContraste: cheia ? { ping: contraste(cheia.querySelector('.tp-srv__ping')), sit: contraste(cheia.querySelector('.tp-srv__sit')) } : null,
+    regiaoLima: [...document.querySelectorAll('.tp-srv__regiao')].filter((b) => getComputedStyle(b).borderTopColor === LIMA).map((b) => b.dataset.no),
+    quickDisabled: !!document.getElementById('mp-quick')?.disabled,
+    online: online && vis(online) ? online.textContent.trim() : null,
+    gutter: hh && voltar && vis(voltar) ? { l: Math.round(voltar.getBoundingClientRect().left), r: Math.round(innerWidth - document.getElementById('mp-quick').getBoundingClientRect().right), hl: parseFloat(getComputedStyle(hh).paddingLeft), hr: parseFloat(getComputedStyle(hh).paddingRight) } : null,
+    convs: [...document.querySelectorAll('.tp-srv__sala .tp-srv__conv')].filter(vis).map((c) => ({ txt: c.textContent, inteiro: c.scrollWidth <= c.clientWidth + 1 && c.getBoundingClientRect().right <= c.closest('.tp-srv__nome').getBoundingClientRect().right + 1 })),
+    codigoNaLinha: h2 && form && vis(form) ? form.getBoundingClientRect().top < h2.getBoundingClientRect().bottom : null,
+    pwaSobre: pwa && vis(pwa) && raiz ? [...raiz.querySelectorAll('.tp-srv__aviso, .tp-srv__salas, .tp-srv__regiao, button')].filter((e) => vis(e) && sobre(pwa, e)).map((e) => e.className.toString().slice(0, 24)) : [],
+    chipVaga: document.querySelector('[data-filtro="vaga"]')?.textContent.trim() || '',
+    sits: [...document.querySelectorAll('.tp-srv__sit')].map((x) => x.textContent.trim()),
     existe: vis(raiz), regioes, salas, cab, primarios, avisos, vermelhos,
     aviso: vis(aviso) ? aviso.innerText : '', avisoBotoes: vis(aviso) ? [...aviso.querySelectorAll('button')].filter(vis).map((b) => b.textContent.trim()) : [],
     texto: raiz ? raiz.innerText : '', vivo: document.querySelector('[data-vivo]')?.textContent.trim() || '',
@@ -180,6 +243,16 @@ async function servidores(mutante) {
   const nums = (m.vivo.match(/\d+/g) || []).map(Number);
   add('SV10', nums.length === 2 && nums[0] === 17 && nums[1] === 5, `linha ao vivo "${m.vivo}" (os nós simulados somam 17 jogando em 5 salas)`);
   const avisoParcial = m.aviso;
+  const fo = m.fontes;
+  add('SV12', fo.criar?.fam === 'Anton' && fo.criar.px === 22 && fo.rapido?.fam === 'Anton' && fo.rapido.px === 34 && fo.lado?.fam === 'Anton' && fo.lado.px === 17 && fo.ver?.fam === 'Anton',
+    `CRIAR SALA ${fo.criar?.fam} ${fo.criar?.px}px, JOGO RÁPIDO ${fo.rapido?.fam} ${fo.rapido?.px}px, lado ${fo.lado?.fam} ${fo.lado?.px}px, ASSISTIR ${fo.ver?.fam} (pacote: Anton 22, 34 e 17)`);
+  add('SV13', m.limaFundo.length === 1 && m.limaFundo[0] === 'mp-quick' && !m.limaBorda.length,
+    `fundo lima: ${m.limaFundo.join(', ') || 'nenhum'} (quer só mp-quick); borda lima fora da tela de servidores: ${m.limaBorda.join(', ') || 'nenhuma'}`);
+  const numOnline = (m.online || '').match(/\d+/)?.[0];
+  add('SV14', m.online == null || numOnline === String(nums[0]), `contador do cabeçalho: ${m.online ?? 'escondido'}; linha ao vivo: "${m.vivo}"`);
+  const contr = [...m.subFora, m.cheiaContraste?.ping, m.cheiaContraste?.sit];
+  add('SV17', m.subFora.length >= 1 && contr.every((x) => x >= 4.5), `"fora do ar agora" ${m.subFora.join('/')}:1, sala lotada ping ${m.cheiaContraste?.ping}:1 e situação ${m.cheiaContraste?.sit}:1 (quer >= 4,5)`);
+  const vagaCasa = (x) => x.chipVaga && x.sits.some((t) => t.toLowerCase().startsWith(x.chipVaga.toLowerCase()));
 
   /* clique numa região troca a escolhida pelo caminho do legado */
   await p.click('.tp-srv__regiao[data-no="us"]').catch(() => {});
@@ -194,6 +267,8 @@ async function servidores(mutante) {
   const f = await pf.evaluate(medirServidores);
   if (!mutante) await pf.screenshot({ path: `${OUT}/fora-do-ar-1536x1024-pt.png` });
   await cf.close();
+  add('SV18', f.existe && f.limaFundo.length === 1 && /tp-srv__bots/.test(f.limaFundo[0]) && !f.regiaoLima.length && f.quickDisabled,
+    `todos fora: fundo lima ${f.limaFundo.join(', ') || 'nenhum'} (quer só TREINAR CONTRA BOTS), região com borda lima ${f.regiaoLima.join(', ') || 'nenhuma'}, JOGO RÁPIDO ${f.quickDisabled ? 'desligado' : 'ativo'}`);
   add('SV5', f.existe && f.avisos.length === 1 && /\d+ s/.test(f.aviso) && f.avisoBotoes.some((b) => /TREINAR CONTRA BOTS/i.test(b)) && f.avisoBotoes.some((b) => /TENTAR/i.test(b)) && !f.vermelhos.length && /Europa/.test(avisoParcial) && trocou,
     `fora do ar: ${f.avisos.length} aviso(s) visíveis [${f.avisos.join(', ')}], botões [${f.avisoBotoes.join(' | ')}], vermelho: ${f.vermelhos.join(' / ') || 'nenhum'}; Europa caída avisa: ${/Europa/.test(avisoParcial) ? 'sim' : 'não'}; troca de região: ${trocou ? 'ok' : 'não troca'}`);
 
@@ -207,10 +282,11 @@ async function servidores(mutante) {
   const PT = /\b(SALAS ABERTAS|JOGO RÁPIDO|CRIAR SALA|jogando|Esperando|Lotada|Com vaga|REGIÃO|ESCOLHIDA|fora do ar|VOLTAR|ATUALIZAR|TODOS OS MODOS|MATA-MATA|SEM SENHA|Atualiza|ESQUERDA|DIREITA|Brasil|Europa|EUA|SITUAÇÃO|JOGADORES|MAPA|SALA)\b/;
   const EN = /\b(OPEN ROOMS|QUICK PLAY|playing|Waiting|Full|REGION|BACK|REFRESH|LEFT|RIGHT|JOIN|Brazil|Europe|PLAYERS|ROOM)\b/;
   const vazaEn = (e.texto.match(PT) || [])[0], vazaPt = (m.texto.match(EN) || [])[0];
-  add('SV6', e.texto && m.texto && !vazaEn && !vazaPt, !e.texto ? 'sem tela v3 para medir' : vazaEn || vazaPt ? `idioma misturado: "${vazaEn || vazaPt}" ${vazaEn ? 'em EN' : 'em PT'}` : 'PT e EN sem string do outro idioma');
+  add('SV6', e.texto && m.texto && !vazaEn && !vazaPt && vagaCasa(e) && vagaCasa(m), !e.texto ? 'sem tela v3 para medir' : vazaEn || vazaPt ? `idioma misturado: "${vazaEn || vazaPt}" ${vazaEn ? 'em EN' : 'em PT'}` : !vagaCasa(e) || !vagaCasa(m) ? `filtro "${e.chipVaga}" não casa com a situação [${e.sits.join(' | ')}]` : 'PT e EN sem string do outro idioma; filtro e situação dizem vaga do mesmo jeito');
 
   /* SV7/SV11: quatro telas; nada vaza para o lado, JOGO RÁPIDO inteiro, lista não invade a coluna; toque >= 44 px no celular. */
-  const falhas = [], toque = [];
+  let menorAlvo = null;
+  const falhas = [], toque = [], gutter = [], codigo = [], sobre = [];
   for (const [w, h] of VIEWPORTS) {
     const movel = w < 900;
     const cv = await contexto(mutante, { viewport: { width: w, height: h }, ...(movel ? { hasTouch: true, isMobile: true, deviceScaleFactor: 2 } : {}) });
@@ -230,13 +306,24 @@ async function servidores(mutante) {
     if (!movel && g.lado && g.lista && g.lado.r > g.lista.l) falhas.push(`${w}×${h}: lista invade a coluna das regiões`);
     const cortada = g.salas.filter((s) => s.cols.some((x) => x > g.vw)).length;
     if (cortada) falhas.push(`${w}×${h}: ${cortada} sala(s) com coluna fora da tela`);
+    if (!movel) {
+      if (!g.gutter || Math.abs(g.gutter.l - g.gutter.hl) > 1 || Math.abs(g.gutter.r - g.gutter.hr) > 1) gutter.push(`${w}×${h}: VOLTAR em ${g.gutter?.l} e logo em ${g.gutter?.hl}; JOGO RÁPIDO a ${g.gutter?.r} da borda e engrenagem a ${g.gutter?.hr}`);
+      const cortados = g.convs.filter((c) => !c.inteiro).map((c) => c.txt);
+      if (cortados.length || g.convs.length < 4) codigo.push(`${w}×${h}: código cortado ${cortados.join(', ') || `(${g.convs.length} códigos)`}`);
+      if (!g.codigoNaLinha) codigo.push(`${w}×${h}: campo Código da sala desce de linha`);
+    }
+    if (movel && g.pwaSobre.length) sobre.push(`${w}×${h}: convite de instalar por cima de ${g.pwaSobre.join(', ')}`);
     if (movel) {
       if (!g.coarse) toque.push('emulação sem pointer: coarse');
       for (const a of g.alvos) if (a.h < 44 || a.w < 44) toque.push(`${a.id.slice(0, 24)} ${a.w.toFixed(0)}×${a.h.toFixed(0)}`);
+      menorAlvo = g.alvos.reduce((x, a) => (!x || a.h < x.h ? a : x), null);
     }
   }
   add('SV7', !falhas.length, falhas.length ? falhas.join('; ') : `${VIEWPORTS.map(([w, h]) => `${w}×${h}`).join(', ')}: sem rolagem lateral, JOGO RÁPIDO inteiro, colunas no lugar`);
-  add('SV11', !toque.length && !falhas.some((x) => /sem tela v3/.test(x)), toque.length ? `alvo de toque abaixo de 44 px em 844×390: ${toque.slice(0, 5).join(', ')}${toque.length > 5 ? ` (+${toque.length - 5})` : ''}` : '844×390 com toque: todo alvo >= 44 px');
+  add('SV15', !gutter.length, gutter.join('; ') || 'VOLTAR alinha com o logo e JOGO RÁPIDO com a engrenagem do cabeçalho');
+  add('SV16', !codigo.length, codigo.join('; ') || 'código de toda sala inteiro e campo Código da sala na linha dos filtros');
+  add('SV19', !sobre.length && !falhas.some((x) => /sem tela v3/.test(x)), sobre.join('; ') || '844×390: nada fixo por cima da tela');
+  add('SV11', !toque.length && !falhas.some((x) => /sem tela v3/.test(x)), toque.length ? `alvo de toque abaixo de 44 px em 844×390: ${toque.slice(0, 5).join(', ')}${toque.length > 5 ? ` (+${toque.length - 5})` : ''}` : `844×390 com toque: todo alvo >= 44 px (o mais baixo: ${menorAlvo?.id?.slice(0, 24)} ${menorAlvo?.h?.toFixed(0)} px)`);
 
   /* SV8: sem a flag o multiplayer é o de hoje. */
   const cl = await contexto(mutante);
@@ -257,8 +344,9 @@ async function servidores(mutante) {
 const medirAjustes = () => {
   const vis = (e) => !!e && e.checkVisibility({ visibilityProperty: true, opacityProperty: true });
   const painel = document.getElementById('settings-panel');
+  const alvos = [...painel.querySelectorAll('button, select, .set-toggle, .tp-aj-privacidade label, .set-close')].filter(vis).map((e) => ({ id: e.id || e.className.toString().slice(0, 24) || e.tagName, h: e.getBoundingClientRect().height }));
   const abas = [...painel.querySelectorAll('.set-tab')].filter(vis).map((t) => ({ id: t.dataset.tab, txt: t.textContent.trim(), h: t.getBoundingClientRect().height, w: t.getBoundingClientRect().width }));
-  return { abas, aberto: vis(painel), vw: innerWidth, sw: document.documentElement.scrollWidth, wrap: painel.querySelector('.settings-wrap')?.getBoundingClientRect().right };
+  return { abas, alvos, aberto: vis(painel), vw: innerWidth, sw: document.documentElement.scrollWidth, wrap: painel.querySelector('.settings-wrap')?.getBoundingClientRect().right };
 };
 
 async function abrirAjustes(page) {
@@ -275,6 +363,7 @@ const naAba = (page, id) => page.evaluate(async (aba) => {
     motion: vis(document.getElementById('tp-set-motion')?.closest('.set-row')), treino: vis(document.getElementById('set-training')?.closest('.set-row')),
     analytics: vis(p.querySelector('input[name="analytics"]')), news: vis(p.querySelector('input[name="newsletter"]')),
     linhas: [...p.querySelectorAll('.set-row')].filter(vis).length, texto: p.querySelector('.set-list')?.innerText || '',
+    abasTopo: Math.round(p.querySelector('.set-tabs').getBoundingClientRect().top),
   };
 }, id);
 
@@ -293,6 +382,39 @@ async function ajustes(mutante) {
   const priv = await naAba(p, 'privacidade');
   if (!mutante) await p.screenshot({ path: `${OUT}/ajustes-privacidade-1536x1024-pt.png` });
   const jog = await naAba(p, 'gameplay');
+  const video = await naAba(p, 'video');
+  const topos = { video: video.abasTopo, mira: mira.abasTopo, acessibilidade: acess.abasTopo, privacidade: priv.abasTopo };
+  add('AJ9', Math.max(...Object.values(topos)) - Math.min(...Object.values(topos)) <= 1, `linha das abas: ${Object.entries(topos).map(([k, v]) => `${k} y=${v}`).join(', ')} (quer a mesma em todas)`);
+
+  /* AJ8: o segmento escolhido do LIGADO/DESLIGADO se separa do painel (>= 3:1) nos dois estados. */
+  await naAba(p, 'acessibilidade');
+  const segmento = () => p.evaluate(() => {
+    const rgb = (c) => (c.match(/[\d.]+/g) || []).map(Number);
+    const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+    const t = document.getElementById('tp-set-motion').closest('.set-toggle');
+    const ativo = t.querySelector(document.getElementById('tp-set-motion').checked ? 'b' : 'i');
+    const a = lum(rgb(getComputedStyle(ativo).backgroundColor)), b = lum(rgb(getComputedStyle(t.closest('.settings-wrap')).backgroundColor));
+    return +((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)).toFixed(2);
+  });
+  const segDesl = await segmento();
+  await p.evaluate(() => document.getElementById('tp-set-motion').click());
+  const segLig = await segmento();
+  await p.evaluate(() => document.getElementById('tp-set-motion').click());
+  add('AJ8', segDesl >= 3 && segLig >= 3, `segmento escolhido contra o painel: DESLIGADO ${segDesl}:1, LIGADO ${segLig}:1 (quer >= 3)`);
+
+  /* AJ10: o bloco de privacidade usa as fontes do kit, checkbox da paleta e botão sem sombra. */
+  await naAba(p, 'privacidade');
+  const pv = await p.evaluate(() => {
+    const caixa = document.querySelector('#settings-panel .tp-aj-privacidade');
+    const textos = [...caixa.querySelectorAll('*')].filter((e) => e.checkVisibility() && [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()));
+    const fora = textos.filter((e) => !/^["']?(Barlow Semi Condensed|Anton)/.test(getComputedStyle(e).fontFamily)).map((e) => `${e.tagName.toLowerCase()} ${getComputedStyle(e).fontFamily.split(',')[0]}`);
+    const caixas = [...caixa.querySelectorAll('input[type=checkbox]')].filter((e) => e.checkVisibility()).map((e) => ({ ap: getComputedStyle(e).appearance, bg: getComputedStyle(e).backgroundColor }));
+    const sombra = [...caixa.querySelectorAll('button')].filter((e) => e.checkVisibility() && getComputedStyle(e).boxShadow !== 'none').length;
+    return { n: textos.length, fora, caixas, sombra };
+  });
+  const nativas = pv.caixas.filter((c) => c.ap !== 'none' || c.bg === 'rgb(255, 255, 255)').length;
+  add('AJ10', pv.n >= 3 && !pv.fora.length && pv.caixas.length >= 2 && !nativas && !pv.sombra,
+    `${pv.n} textos; fora do kit: ${pv.fora.join(', ') || 'nenhum'}; ${pv.caixas.length} checkbox(es), ${nativas} nativo(s); ${pv.sombra} botão(ões) com sombra`);
   const ids = a.abas.map((x) => x.id).join(',');
   add('AJ1', ids === 'video,audio,gameplay,controls,mira,acessibilidade,privacidade' && mira.xhair && mira.previa && acess.motion && !acess.xhair && priv.treino && priv.analytics && priv.news && !jog.xhair && !jog.treino,
     `abas ${ids || 'nenhuma'}; mira: cor ${mira.xhair ? 'ok' : 'não'}, prévia ${mira.previa ? 'ok' : 'não'}; acessibilidade: reduzir animações ${acess.motion ? 'ok' : 'não'}; privacidade: treino ${priv.treino ? 'ok' : 'não'}, cookies ${priv.analytics ? 'ok' : 'não'}, novidades ${priv.news ? 'ok' : 'não'}; jogabilidade sem mira/treino ${!jog.xhair && !jog.treino ? 'ok' : 'não'}`);
@@ -344,11 +466,13 @@ async function ajustes(mutante) {
   await entrar(pm, '/?ui=v3&lang=pt');
   await abrirAjustes(pm);
   const am = await pm.evaluate(medirAjustes);
+  const amAlvos = [...am.alvos];
+  for (const aba of ['video', 'acessibilidade', 'privacidade']) { await naAba(pm, aba); amAlvos.push(...(await pm.evaluate(medirAjustes)).alvos.filter((x) => !amAlvos.some((y) => y.id === x.id))); }
   await naAba(pm, 'acessibilidade');
   if (!mutante) await pm.screenshot({ path: `${OUT}/ajustes-acessibilidade-844x390-pt.png` });
   await cm.close();
-  const baixas = am.abas.filter((x) => x.h < 44).map((x) => `${x.id} ${x.h.toFixed(0)}px`);
-  add('AJ6', am.abas.length === 7 && !baixas.length && am.sw <= am.vw && am.wrap <= am.vw, `844×390: ${am.abas.length} abas, baixas: ${baixas.join(', ') || 'nenhuma'}, largura ${am.sw}/${am.vw}`);
+  const baixas = [...am.abas, ...amAlvos].filter((x) => x.h < 44).map((x) => `${x.id} ${x.h.toFixed(0)}px`);
+  add('AJ6', am.abas.length === 7 && amAlvos.length >= 6 && !baixas.length && am.sw <= am.vw && am.wrap <= am.vw, `844×390: ${am.abas.length} abas e ${amAlvos.length} controles, abaixo de 44 px: ${baixas.join(', ') || 'nenhum'}, largura ${am.sw}/${am.vw}`);
 
   /* AJ7: sem a flag, quatro abas e a privacidade continua no perfil. */
   const cl = await contexto(mutante);
