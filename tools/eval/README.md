@@ -73,6 +73,10 @@ recusa DB/site remoto e restaura catálogo/contas no finally. Aprovação no man
 | `botfaca-check.mjs` | Rodada de faca: o bot fecha até o alcance da arma (a banda de fuzil recuava abaixo de 6 m com faca de 2,4 m), ataca por caminho de corpo a corpo — sem traçante, fogacho nem som de cano — e a rodada normal continua com bot que abre distância. `npm run eval:botfaca` |
 | `replaycam-check.mjs` | Headshot do jogador **não** pode tirar a câmera da primeira pessoa, escalar o relógio (hit-stop) nem esconder arma/mira — e segue contando abate. Mede o contrário do que media até 06/09/2026. `npm run eval:replaycam` |
 
+Os perfis explícitos do arsenal e seus consumidores de dano, entrada e saque são
+verificados por `npm run eval:weapon-profiles`, com mutantes que removem cada vínculo.
+`npm run eval:weapon-matrix` reprova a matriz quando diverge do consumidor de dano.
+
 ## 4. Viewmodel e rig — a família mais densa
 
 | Arquivo | O que faz |

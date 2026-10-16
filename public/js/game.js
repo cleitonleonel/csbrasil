@@ -38,6 +38,8 @@ import { viewmodelVisibility } from './vmvisibility.js';
 import { urlDoBrasao } from './brasoes_versao.js';
 
 import { WEAPONS } from './data/weapons.js';
+import { perfilArma } from './data/weapon-profiles.js';
+export { perfilArma };
 // Reexporta pra não quebrar quem já consumia a tabela daqui: server/room.js (servidor
 // autoritativo) e tools/eval/botdiag.mjs. Consumidor novo importa de data/weapons.js.
 export { WEAPONS };
@@ -423,17 +425,7 @@ const DMG_FALLOFF = {
 const HS_MUL = { rifle: 4, smg: 4, pistol: 4, lmg: 3.6, shotgun: 1.7, sniper: 2.5 };
 // Classe BALÍSTICA (≠ STATIC_CLASS, que é do viewmodel: lá SMG mora em 'rifle' e a M400
 // mora em 'awp'). Usada só por falloff/headshot.
-const BALL_CLASS = {};
-for (const w of ['awp', 'mosin', 'svd', 'sks']) BALL_CLASS[w] = 'sniper';
-BALL_CLASS.shotgun = 'shotgun';
-// MD97 saiu de 'shotgun' (fica no default 'rifle'). Ela é o IMBEL MD97, fuzil 5,56 do
-// Exército — estava na classe balística de espingarda só por herdar a malha do viewmodel.
-// O estrago era grande e invisível: DMG_FALLOFF.shotgun [8, 26, 0.30] derrubava o dano
-// dela pra 30% depois de 26 m (um FUZIL inútil a média distância) e HS_MUL.shotgun 1.7
-// tirava o headshot (rifle = 4). Som corrigido junto em audio.js (GUN_CLASS 'ar').
-for (const w of ['mp5', 'uzi', 'p90']) BALL_CLASS[w] = 'smg';
-for (const w of ['pistol', 'deagle', 'revolver38']) BALL_CLASS[w] = 'pistol';
-BALL_CLASS.lmg = 'lmg';
+const BALL_CLASS = Object.fromEntries(Object.keys(WEAPONS).map(w => [w, perfilArma(w).perfilDano]));
 // Classe de viewmodel por arma — usada pelo caminho ATIVO (ADS `_adsPose`, kickMul de
 // pistola, boca de cano `_muzzleWorld`) e lida pelo auditor (invariants.mjs/vm-project.mjs
 // fatiam o trecho da declaração até a linha do 'knife' e AVALIAM como JS — não citar a
@@ -3503,10 +3495,9 @@ export class Game {
     // quanto a faca). Estes segundos alimentam DUAS coisas: `p.drawUntil` (trava do tiro) e
     // a duração do estado 'draw' do rig (a arma entrando pela borda de baixo, y -0,34 /
     // rx -1,05 no início do arco) — antes era uma rampa linear dividida por 0,28 fixo.
-    const DEPLOY = { knife: 0.25, pistol: 0.34, smg: 0.38, rifle: 0.42, shotgun: 0.42, awp: 0.45 };
     const _dcls = BALL_CLASS[w] === 'smg' ? 'smg' : (STATIC_CLASS[w] || 'rifle');
     p.lastInv = p.weapon;   // #261: Q alterna entre as duas últimas (lastinv do CS)
-    p.weapon = w; p.reloadUntil = 0; p.drawUntil = this.time + (GUNFEEL ? (DEPLOY[_dcls] || 0.38) : 0.28);
+    p.weapon = w; p.reloadUntil = 0; p.drawUntil = this.time + (GUNFEEL ? perfilArma(w).saque : 0.28);
     p.sprayI = 0; p.lastShotAt = -9;   // rajada nova: padrão de recuo recomeça do tiro 1
     // remember the slot so 1/2 recall the LAST weapon of that kind (primary vs sidearm)
     if (w !== 'knife') { if (PISTOLS.has(w)) p.secondary = w; else p.primary = w; }
@@ -3515,7 +3506,7 @@ export class Game {
     // trocar no meio da recarga. Sem `startSwap` de propósito: o holster do rig exige adiar
     // a TROCA DA MALHA até o fundo do arco, e a malha visível é lida por `poseToWeapon`,
     // pelo flash de boca e pelo ADS a partir de `p.weapon` — adiar isso é outra tarefa.
-    const drawDur = GUNFEEL ? (DEPLOY[_dcls] || 0.38) : 0.28;
+    const drawDur = GUNFEEL ? perfilArma(w).saque : 0.28;
     // Atualiza primeiro o controlador que possui a nova arma. Antes, ao trocar para a faca,
     // `melee.active` ainda refletia a arma anterior e o saque dedicado não era disparado.
     this._applyVmVisibility();
@@ -3798,7 +3789,7 @@ export class Game {
     if (e.isPlayer) this._noteHit(b, W.short || 'FACA', dmg, false, d);
   }
   _distanceDamage(dmg, wid, dist) {
-    const fo = DMG_FALLOFF[BALL_CLASS[wid] || 'rifle'];
+    const fo = DMG_FALLOFF[perfilArma(wid).perfilDano];
     if (!fo) return dmg;
     const [inicio, fim, minimo] = fo;
     const progresso = Math.max(0, Math.min(1, (dist - inicio) / (fim - inicio)));
@@ -3807,7 +3798,7 @@ export class Game {
   _shotDamage(dmg, wid, dist, head) {
     let d = dmg;
     if (GUNFEEL && wid) {
-      const bc = BALL_CLASS[wid] || 'rifle';
+      const bc = perfilArma(wid).perfilDano;
       d = this._distanceDamage(dmg, wid, dist);
       if (head) d *= HS_MUL[bc] ?? 4;
     } else if (head && d < 100) d = 100;
@@ -6186,6 +6177,7 @@ export class Game {
     if (this.online) this._mp?.stepPlayer(p, _inp, dt);
     // auto-fire (ak/m4/mp5) enquanto o botão está segurado
     if (WEAPONS[p.weapon].auto && this.mouseDown0 && p.alive) this._tryShoot(true);
+    if (perfilArma(p.weapon).segurar && this.mouseDown0 && p.alive) this._tryShoot();
     this.bloom = Math.max(0, (this.bloom || 0) - dt * 1.8);
     // camera: crouch drop + landing dip (decays) + recoil recovery (decays) + speed bob
     p.landDip = (p.landDip || 0) + (0 - (p.landDip || 0)) * Math.min(1, dt * 7);
