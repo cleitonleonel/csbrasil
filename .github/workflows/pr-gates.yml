@@ -9,13 +9,16 @@ name: pr-gates
 on:
   pull_request:
     branches: [main]
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
 
 # Push novo no MESMO PR cancela o run velho: o veredito que vale é o da cabeça.
+# No lote da fila a chave é o ref dele, único por lote.
 concurrency:
-  group: pr-gates-${{ github.event.pull_request.number }}
+  group: pr-gates-${{ github.event.pull_request.number || github.event.merge_group.head_ref }}
   cancel-in-progress: true
 
 jobs:
@@ -44,13 +47,35 @@ jobs:
   ratchet:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       # Leve (CL1): a régua lê o KNOWN-RED.json da base com `git show`, que busca o blob sob demanda.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
           filter: blob:none
+      # No lote não há corpo de PR no evento: a justificativa vem dos PRs que o lote mescla.
       - name: KNOWN-RED só cresce com justificativa
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
-        run: node tools/eval/ratchet-check.mjs
+          EVENTO: ${{ github.event_name }}
+          FILA_BASE: ${{ github.event.merge_group.base_sha }}
+          FILA_HEAD: ${{ github.event.merge_group.head_sha }}
+          FILA_REF: ${{ github.event.merge_group.head_ref }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          BASE=origin/main
+          if [ "$EVENTO" = merge_group ]; then
+            [ -n "$FILA_BASE" ] && [ -n "$FILA_HEAD" ] || { echo "::error::lote sem base ou head"; exit 1; }
+            BASE="$FILA_BASE"
+            MERGES=$(git log --merges --format=%s "$FILA_BASE..$FILA_HEAD")
+            PRS=$( { echo "$MERGES" | sed -n 's/^Merge pull request #\([0-9]*\).*/\1/p'; echo "$FILA_REF" | sed -n 's/.*\/pr-\([0-9]*\)-.*/\1/p'; } | sort -u)
+            PR_BODY=""
+            for n in $PRS; do PR_BODY+="$(gh api "repos/$REPO/pulls/$n" --jq '.body // ""')"$'\n'; done
+            export PR_BODY
+          fi
+          node tools/eval/ratchet-check.mjs --base="$BASE"
