@@ -81,8 +81,6 @@ const VM_MAT_LEGACY = QS.get('vmmat') === 'legacy';
 const ROUND_TIME = 99, ROUNDS_TO_WIN = 3, RESPAWN_DELAY = 2.2, PICKUP_RESPAWN = 8, SPAWN_PROT = 2;
 // Prazo e teto do drop de morte; procedência dos dois números em tools/eval/drop-check.mjs.
 const DROP_TTL = 18, DROP_MAX = 12;
-// m/s de recomposição do boom da câmera ao sair de trás de prop (entra na hora, sai andando).
-const RECUPERA_BOOM = 5;
 /* TETO PADRÃO DE RODADAS — "melhor de 5", que é o que o índice promete inicialmente
    (src/pages/index.astro:503, "Vence quem ganhar 3 rounds"). Sem este teto o formato NÃO
    ERA melhor de 5: round EMPATADO não dá ponto pra ninguém (game.js:_endRound), então uma
@@ -6060,7 +6058,8 @@ export class Game {
       }
       const piso = Math.max(0.35, claro - 0.18);   // 18 cm de folga pro near plane
       const atual = this._tpBoomClear ?? boomLen;
-      this._tpBoomClear = piso < atual ? piso : Math.min(boomLen, atual + dt * RECUPERA_BOOM);
+      // 5 m/s: entra na hora, sai andando (método autocontido: réguas recompilam _updatePlayerTP fora do módulo)
+      this._tpBoomClear = piso < atual ? piso : Math.min(boomLen, atual + dt * 5);
       if (this._tpBoomClear < boomLen - 1e-3)
         cam.position.copy(eyePos).addScaledVector(boom, this._tpBoomClear);
     }
