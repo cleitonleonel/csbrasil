@@ -2712,6 +2712,12 @@ export class Game {
     // reset slot memory to the loadout (1 = primary, 2 = sidearm)
     this.player.primary = PISTOLS.has(this.player.weapon) ? 'pistol' : (this.player.weapon === 'knife' ? cw : this.player.weapon);
     this.player.secondary = 'pistol';
+    // ROUND NOVO, LOADOUT CHEIO: quem SOBREVIVE o corte não chega sem balas (relato out/2026).
+    // Mesma guarda do _respawn; história e números em tools/eval/round-municao-check.mjs.
+    for (const slot of [this.player.primary, this.player.secondary]) {
+      if (slot && this._pickupAllowed(slot) && this.player.ammo[slot])
+        this.player.ammo[slot] = { mag: WEAPONS[slot].mag, res: WEAPONS[slot].reserve };
+    }
     // QA visual: congela o ADS somente nas URLs de debug para permitir validar
     // enquadramento/linha de mira sem depender de manter o RMB pressionado.
     this.player.scoped = VM_QA_ADS && this.player.weapon !== 'knife'; this.player.reloadUntil = 0;
