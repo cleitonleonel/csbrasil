@@ -110,6 +110,9 @@ const THREE = await import('three');
 const { MAPS } = await import(`${JS}/maps.js`);
 const { initTextures } = await import(`${JS}/textures.js`);
 const { Game } = await import(`${JS}/game.js`);
+// Mapas sob demanda: o build só é instalado por carregaMapa (harness faz o preload
+// completo; aqui carrega só o que o runMap vai usar, na mesma porta).
+const { carregaMapa } = await import(`${JS}/maps.js`);
 const { CHARACTERS } = await import(`${JS}/characters.js`);
 const PCHAR = (CHARACTERS.find(c => c.team === 'E') || CHARACTERS[0]).id;   // o scoreboard lê player.def.name
 
@@ -140,7 +143,8 @@ const DUEL = process.env.SIM_DUEL === '1';   // amostra a cada 9 passos ≈ 150 
 const MOVING_LOOPS = process.env.SIM_MOVING_LOOPS === '1';
 
 let D = null;
-function runMap(mapId, textures, seed) {
+async function runMap(mapId, textures, seed) {
+  await carregaMapa(mapId);
   seedRandom(seed);
   const g = new Game({
     renderer, textures, sfx, settings: { bots: TEAM_SIZE, quality: 'low', difficulty: 'normal', sens: 1 },
@@ -344,7 +348,7 @@ const SEEDS = (process.env.SIM_SEEDS || '12345,777,4242,90210,31337,8675309,2718
 const out = [];
 for (const id of ids) {
   const runs = [];
-  for (const sd of SEEDS) { try { runs.push(runMap(id, textures, sd)); } catch (e) { if (process.env.SIM_TRACE) console.error(e.stack); runs.push({ map: id, err: e.message + ' @' + sd }); } }
+  for (const sd of SEEDS) { try { runs.push(await runMap(id, textures, sd)); } catch (e) { if (process.env.SIM_TRACE) console.error(e.stack); runs.push({ map: id, err: e.message + ' @' + sd }); } }
   const ok = runs.filter(r => !r.err);
   if (!ok.length) { out.push(runs[0]); continue; }
   const m = (k) => +(ok.reduce((a, r) => a + r[k], 0) / ok.length).toFixed(3);

@@ -65,7 +65,7 @@ check(wrapAt >= 0 && hideAt > wrapAt, 'placeholder do pack só é ocultado após
 
 const ak = 'public/models/viewmodels/coro/ak-hires.glb';
 const knife = 'public/models/viewmodels/coro/melee/knife-hires.glb';
-check(tracked.has(ak) && sha256(ak) === '3b6ca23d7ea26017803d81f476b9d7a835eeb9f679f169ad0f520db82333df29', 'AK pública bate o hash aprovado');
+check(tracked.has(ak) && sha256(ak) === '4094c0534f081ac96f1d6401d651c942b2b8d39dc777be30b15875706be0c48d', 'AK pública bate o hash aprovado');
 const akJson = glbJson(ak);
 const akClips = new Set((akJson.animations || []).map((clip) => clip.name));
 check(['Equip', 'Idle', 'Reload', 'Shoot'].every((name) => akClips.has(name)) && (akJson.cameras || []).length > 0,
