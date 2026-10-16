@@ -122,8 +122,8 @@ try {
   roda('node', ['scripts/sync-changelog.mjs']);
 
   /* ---------- 5. os blocos gerados sabem a versão ---------- */
-  roda('node', ['tools/gen-docs.mjs']);
-  roda('node', ['tools/gen-arch.mjs']);
+  roda('node', ['tools/gen-docs.mjs', '--release']);
+  roda('node', ['tools/gen-arch.mjs', '--release']);
   roda('npm', ['--prefix', 'docs', 'ci']);
   roda('npm', ['--prefix', 'docs', 'run', 'build:site']);
 

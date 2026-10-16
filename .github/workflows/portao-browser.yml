@@ -166,6 +166,13 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run eval:armas
 
+      # Vitrine SKINS NOVAS no JOGAR: some com a loja fora, não baixa vídeo no boot, não move o JOGAR.
+      - name: eval:treta-vitrine (vitrine da loja no menu principal)
+        if: ${{ !cancelled() }}
+        env:
+          OUT: /tmp/treta-vitrine
+        run: node tools/eval/treta-vitrine-browser.mjs
+
       # O main.js AVALIA? B1–B7 do boot-check com o Chromium do runner (sobe o astro dev sozinho).
       - name: eval:boot (o main.js terminou de avaliar; falha de entrada recupera)
         if: ${{ !cancelled() }}
@@ -196,6 +203,7 @@ jobs:
             tools/eval/select_inflate.json
             /tmp/graffiti-audit/**
             /tmp/eval-serve.log
+            /tmp/treta-vitrine/**
           if-no-files-found: ignore
 
   # O SERTÃO EM JOB PRÓPRIO (14/10/2026). Era o passo mais caro do portão: 8,7 a 12,9 min

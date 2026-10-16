@@ -7,7 +7,7 @@ const ABAS_SOCIAIS = { profile: '', friends: 'amigos', ranking: 'ranking', notif
 const MODAIS_JOGAR = ['perfil', 'mapas', 'personagens', 'confirmar'];
 /* Abas da página pública /u/<perfil>/<aba>. Outro segundo segmento é o nick da forma antiga. */
 export const ABAS_PERFIL = { conquistas: 'Conquistas', partidas: 'Partidas', privacidade: 'Privacidade' };
-const PERFIL = /^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/[^/]*)?\/?$/i;
+const PERFIL = /^\/u\/([a-z][a-z0-9_]{2,23}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/([^/]*))?\/?$/i;
 /* Chaves de tela na query antiga. Saem da URL quando a tela vira caminho. */
 export const CHAVES_DE_TELA = ['secao', 'partida', 'servidor', 'janela', 'social', 'guia', 'loja'];
 /* Abas da loja: valor do estado → data-treta-view do TretaStore. */
@@ -57,7 +57,7 @@ export function rotaDoCaminho(caminho) {
 
 /** Caminho de uma tela. null quando a tela ainda mora na query (ranking; perfil dentro do iframe de /u). */
 export function caminhoDoEstado(estado = {}, { perfilNoCaminho = false } = {}) {
-  const { secao, partida, servidor, janela, social, guia, perfil, loja } = estado;
+  const { secao, partida, servidor, janela, social, guia, perfil, loja, aba } = estado;
   if (janela === 'configuracoes') return '/configuracoes';
   if (!secao || secao === 'jogar') {
     if (partida === 'multiplayer') return servidor === 'privado' ? '/jogar/multiplayer/privado' : '/jogar/multiplayer';
@@ -66,7 +66,7 @@ export function caminhoDoEstado(estado = {}, { perfilNoCaminho = false } = {}) {
   if (secao === 'loja') return Object.hasOwn(ABAS_LOJA, loja) ? `/loja/${loja}` : '/loja';
   if (secao === 'ranking') return '/ranking';
   if (secao === 'comunidade') {
-    if (perfil) return perfilNoCaminho ? `/u/${encodeURIComponent(perfil)}` : null;
+    if (perfil) return perfilNoCaminho ? `/u/${encodeURIComponent(perfil)}${Object.hasOwn(ABAS_PERFIL, aba || '') ? `/${aba}` : ''}` : null;
     const slug = ABAS_SOCIAIS[social || 'profile'];
     if (slug === undefined) return '/comunidade';
     return slug ? `/comunidade/${slug}` : '/comunidade';
@@ -83,8 +83,9 @@ export function estadoDaUrl(url) {
   const rota = rotaDoCaminho(u.pathname);
   const q = u.searchParams;
   if (rota) return { ...rota.estado, ...(q.get('origem') ? { origem: q.get('origem') } : {}) };
-  const perfil = PERFIL.exec(u.pathname)?.[1];
-  if (perfil) return { secao: 'comunidade', social: 'profile', perfil };
+  const [, perfil, segundo] = PERFIL.exec(u.pathname) || [];
+  /* /u/<perfil>/<aba> guarda a aba; outro segundo segmento é o nick da forma antiga. */
+  if (perfil) return { secao: 'comunidade', social: 'profile', perfil, ...(Object.hasOwn(ABAS_PERFIL, segundo || '') ? { aba: segundo } : {}) };
   if (u.pathname !== '/') return null;
   const estado = {};
   for (const chave of [...CHAVES_DE_TELA, 'origem', 'perfil']) if (q.get(chave)) estado[chave] = q.get(chave);

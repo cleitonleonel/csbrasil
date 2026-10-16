@@ -24,7 +24,7 @@
    RT6  (--dist) o build tem uma página por rota, com canonical, robots, og:url e base
         certos, e o sitemap lista as indexáveis.
 
-   uso: node tools/eval/rotas-check.mjs [--dist] [--mutante=caminho|legado|redirect|abas|base|robots|perfil|href-antigo]
+   uso: node tools/eval/rotas-check.mjs [--dist] [--mutante=caminho|legado|redirect|abas|base|robots|perfil|perfil-aba|href-antigo]
    Cada mutante quebra de propósito o que um item mede; o item TEM que ficar vermelho. */
 import { readFileSync, existsSync } from 'node:fs';
 import { strict as assert } from 'node:assert';
@@ -40,7 +40,8 @@ const mutar = (texto, de, para, nome) => {
   return novo;
 };
 if (MUT === 'caminho') fonteRotas = mutar(fonteRotas, "return servidor === 'privado' ? '/jogar/multiplayer/privado'", "return servidor === 'privado' ? '/jogar/multiplayer'", MUT);
-if (MUT === 'perfil') fonteRotas = mutar(fonteRotas, "return perfilNoCaminho ? `/u/${encodeURIComponent(perfil)}` : null;", 'return null;', MUT);
+if (MUT === 'perfil') fonteRotas = mutar(fonteRotas, "if (perfil) return perfilNoCaminho ? `/u/", "if (perfil) return null; return perfilNoCaminho ? `/u/", MUT);
+if (MUT === 'perfil-aba') fonteRotas = mutar(fonteRotas, "...(Object.hasOwn(ABAS_PERFIL, segundo || '') ? { aba: segundo } : {})", '', MUT);
 if (MUT === 'legado') fonteRotas = mutar(fonteRotas, "if (secao === 'loja') return '/loja';", "if (secao === 'loja') return null;", MUT);
 const R = await import(`data:text/javascript;base64,${Buffer.from(fonteRotas).toString('base64')}`);
 
@@ -181,6 +182,10 @@ const LEGADO = [
   const estado = { secao: 'comunidade', social: 'profile', perfil: 'rubenmarcus' };
   if (R.caminhoDoEstado(estado, { perfilNoCaminho: true }) !== '/u/rubenmarcus') erros.push(`janela de cima: ${R.caminhoDoEstado(estado, { perfilNoCaminho: true })}`);
   if (R.caminhoDoEstado(estado) !== null) erros.push('iframe: perfil saiu da query e quebraria o iframe de /u');
+  // /u/<perfil>/<aba> é o hub: a aba fica no endereço (o boot não a apaga); o nick antigo não é aba.
+  const comAba = R.estadoDaUrl(`${SITE}/u/rubenmarcus/conquistas`);
+  if (comAba?.aba !== 'conquistas' || R.caminhoDoEstado(comAba, { perfilNoCaminho: true }) !== '/u/rubenmarcus/conquistas') erros.push(`aba do perfil some do endereço: ${JSON.stringify(comAba)}`);
+  if (R.estadoDaUrl(`${SITE}/u/${ID}/Nick`)?.aba) erros.push('nick antigo virou aba');
   const legado = R.urlDoEstado(R.estadoDaUrl(`${SITE}/?secao=comunidade&social=profile&perfil=${ID}`), `${SITE}/?secao=comunidade&social=profile&perfil=${ID}`, { perfilNoCaminho: true });
   if (legado.pathname !== `/u/${ID}` || legado.search) erros.push(`link antigo de perfil na janela de cima virou ${legado.href}`);
   if (!R.ABAS_PERFIL || Object.keys(R.ABAS_PERFIL).join() !== 'conquistas,partidas,privacidade') erros.push(`ABAS_PERFIL ${JSON.stringify(R.ABAS_PERFIL)}`);

@@ -5,6 +5,8 @@ on:
     branches: [main]
     tags: ['v*']
   pull_request:
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
@@ -18,9 +20,9 @@ permissions:
 # (run do merge c14f87198 cancelado 23:19:56, run do release alpha.280 cancelado
 # 23:21:31). Em PR `github.ref` já era único (refs/pull/N/merge), então o efeito
 # desejado — run novo do MESMO PR cancela o velho — continua igual. Mesmo padrão
-# que o autofix.yml já usa.
+# que o autofix.yml já usa. No lote da fila de merge a chave é o ref dele, único por lote.
 concurrency:
-  group: pr-fast-${{ github.event.pull_request.number || github.sha }}
+  group: pr-fast-${{ github.event.pull_request.number || github.event.merge_group.head_ref || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -51,7 +53,7 @@ jobs:
       # check:fast, que roda na máquina de quem lembra: PR que quebrasse workflow passava
       # aqui verde. O runner roda todas e só reprova no fim (PI3 cobra esta lista).
       - name: Réguas de workflow, release, privacidade e escolha (node puro)
-        run: node tools/eval/runner.mjs eval:wfsecret eval:wflocal eval:wftimeout eval:wfconcurrency eval:deploygate eval:autofix eval:mutcega eval:portaointeiro eval:release eval:privacy eval:noescolha
+        run: node tools/eval/runner.mjs eval:wfsecret eval:wflocal eval:wftimeout eval:wfconcurrency eval:deploygate eval:autofix eval:mutcega eval:portaointeiro eval:release eval:privacy eval:noescolha eval:contagens-pr eval:mergequeue
       # Job que só lê histórico ou poucos arquivos faz checkout leve (CL1). Node puro.
       - name: Checkout leve nos jobs que só leem histórico
         run: npm run eval:wfcheckout
@@ -70,10 +72,16 @@ jobs:
         run: npm run eval:uuid
       - name: Loja sem fila de próximas skins
         run: npm run eval:treta-fila
+      - name: Sete moedas da loja com arte própria
+        run: npm run eval:treta-coins
       - name: Acúmulo de armas no chão tem teto
         run: npm run eval:drop
+      - name: Loja sem nome de político real
+        run: npm run eval:treta-nomes
       - name: Proxy de captura grava só dentro da pasta de saída
         run: npm run eval:capturecodex
+      - name: Aba da loja no hub diz só LOJA
+        run: npm run eval:hub-loja
       # Pendurar a régua só no `check:fast` a faria rodar na máquina de quem lembra
       # de rodar, e NÃO no portão: este job lista cada `npm run eval:*` explicitamente.
       - name: Todo mapa devolve o que o game.js consome
@@ -118,12 +126,19 @@ jobs:
       # uma contagem velha na main: o DOCS1 reprovava o push, o embarque do release.yml
       # exige pr-fast verde, e o trem, que é quem regeneraria, nunca saía. No PR eles
       # continuam valendo sempre; no commit do release eles conferem a regeneração dele.
-      - name: Documentação gerada está em dia
-        if: github.event_name == 'pull_request' || startsWith(github.event.head_commit.message, 'chore(release):')
+      # No PR só a estrutura confere; contagem e linha (classe em tools/gen-docs.mjs) só no release.
+      - name: Documentação gerada está em dia (estrutura)
+        if: github.event_name != 'push'
         run: npm run docs:check
-      - name: ARCH.md gerado está em dia
-        if: github.event_name == 'pull_request' || startsWith(github.event.head_commit.message, 'chore(release):')
+      - name: ARCH.md gerado está em dia (estrutura)
+        if: github.event_name != 'push'
         run: npm run arch:check
+      - name: Documentação gerada inteira em dia no commit do release
+        if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'chore(release):')
+        run: npm run docs:check:release
+      - name: ARCH.md inteiro em dia no commit do release
+        if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'chore(release):')
+        run: npm run arch:check:release
       - name: hreflang dos docs resolve nas duas línguas
         run: npm run eval:docs-hreflang
       # Precisa de rede, por isso NÃO entra no check:deploy (que roda dentro do
@@ -152,6 +167,8 @@ jobs:
           node tools/eval/canonical-host-check.mjs --mutate
           node tools/eval/profile-weapons-display-check.mjs
           node tools/eval/profile-weapons-display-check.mjs --mutate
+          node tools/eval/profile-treta-balance-check.mjs
+          node tools/eval/profile-treta-balance-check.mjs --mutate
           node tools/eval/profile-in-game-check.mjs
           node tools/eval/profile-in-game-check.mjs --mutate
           node tools/eval/profile-friend-request-check.mjs
@@ -273,7 +290,7 @@ jobs:
   dco:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
     steps:
       # Leve: o dco lê mensagem de commit (`git log`/`git show -s`), nunca blob (CL1).
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -290,11 +307,14 @@ jobs:
           python3 scripts/ci/autofix_allowlist.py --selftest
           python3 scripts/ci/dco_check.py --selftest
           python3 scripts/ci/agente_check.py --selftest
+      # No lote da fila o intervalo inclui os merges que ela escreve; o dco_check.py os isenta.
       - name: Check Signed-off-by
+        env:
+          BASE: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.merge_group.head_sha || github.event.pull_request.head.sha }}
         run: |
-          printf '{"baseRefOid":"%s","headRefOid":"%s"}' \
-            "${{ github.event.pull_request.base.sha }}" \
-            "${{ github.event.pull_request.head.sha }}" > /tmp/dco.json
+          [ -n "$BASE" ] && [ -n "$HEAD" ] || { echo "::error::sem base ou head para medir o DCO"; exit 1; }
+          printf '{"baseRefOid":"%s","headRefOid":"%s"}' "$BASE" "$HEAD" > /tmp/dco.json
           python3 scripts/ci/dco_check.py < /tmp/dco.json
       # A régua se prova antes de medir o PR: sem isto, portão quebrado passa calado.
       - name: Check trailer Agent
