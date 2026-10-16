@@ -1685,6 +1685,14 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
   const matchRoster = sessao
     ? rosterDoServidor(side, charId)
     : pickMatchRoster(faction, enemyFac, { allies: settings.allyBots, enemies: settings.enemyBots }, charId, false, _pinned);
+  /* Treta Pop: o carregamento VS mostra o elenco sorteado; o global cobre o ?auto=, que lança antes de tp/ligar.js chegar */
+  if (document.documentElement.dataset.ui === 'v3') {
+    window.__tpElenco = {
+      lado: side, eu: CHARACTERS.find((c) => c.id === charId), aliados: matchRoster.allyDefs, inimigos: matchRoster.enemyDefs,
+      online: !!sessao, tamanho: tamanhoTime || 0, ctf: matchMode === 'ctf', rounds: sessao ? sanitizeRounds(sessao.net.meta.roundsMax) : matchRounds(),
+      mapa: MAPS[currentMap].name, desc: MAP_DESC[currentMap] || '', arte: mapPreviewPoster(currentMap, VERSION) };
+    window.dispatchEvent(new CustomEvent('tp:elenco', { detail: window.__tpElenco }));
+  }
   const playerSkinId = sessao
     ? sessao.net.meta.roster.find(r=>r.id===sessao.net.yourEnt)?.skinId || null
     : equippedTretaSkin(charId);

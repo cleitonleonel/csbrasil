@@ -523,6 +523,15 @@ const DICT = {
   // tp:fim-modos
 
   // tp:carregamento
+  'Segure TAB a qualquer momento para ver o placar e quem está vivo.': 'Hold TAB at any time to see the scoreboard and who is still alive.',
+  'Agachar reduz o espalhamento do tiro — mas também a sua velocidade.': 'Crouching tightens your spread, but it also slows you down.',
+  'Tiro na cabeça mata em quase tudo. Mire alto no corredor.': 'A headshot kills with almost anything. Aim high in the corridor.',
+  'A fumaça (tecla 4) corta a linha de visão dos bots, não só a sua.': 'Smoke (key 4) blocks the bots\' line of sight, not just yours.',
+  'O radar mostra parede: use ele para saber de onde o barulho vem.': 'The radar shows walls: use it to tell where the noise is coming from.',
+  'Recarregar cancela o tiro. Não recarregue no meio da troca.': 'Reloading cancels your shot. Do not reload in the middle of a firefight.',
+  'Cada personagem muda só a aparência — a mira é toda sua.': 'Each character only changes the look. The aim is all yours.',
+  'CARREGANDO TEXTURAS…': 'LOADING TEXTURES…', 'POSICIONANDO OS BOTS…': 'PLACING THE BOTS…', 'AQUECENDO A TRETA…': 'WARMING UP THE FIGHT…',
+  'CARREGANDO PERSONAGENS…': 'LOADING CHARACTERS…', 'VAGA DE BOT ENTRANDO': 'BOT SLOT JOINING',
   // tp:fim-carregamento
 
   // tp:hud
