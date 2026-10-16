@@ -219,7 +219,14 @@ const CENARIOS = {
       r[`844x390-${vista}`] = await mede(q);
       if (!mut) {
         await q.screenshot({ path: `${OUT}/${vista}-844x390.png` });
-        await q.locator('.tp-perfil').screenshot({ path: `${OUT}/${vista}-844x390-inteira.png` }).catch(() => {});
+        /* o painel do hub rola por dentro: uma captura por bloco, na altura em que o celular mostra */
+        const blocos = vista === 'perfil' ? ['.tp-perfil__cartao', '.tp-perfil__dupla', '.tp-perfil__atividade', '.tp-perfil__editar', '.tp-perfil__salvar']
+          : ['.tp-carreira__eu', '.tp-carreira__trks', '.tp-carreira__partidas', '.tp-carreira__cla'];
+        for (const [n, sel] of blocos.entries()) {
+          await q.evaluate((s) => document.querySelector(s)?.scrollIntoView({ block: 'start' }), sel);
+          await q.waitForTimeout(250);
+          await q.screenshot({ path: `${OUT}/${vista}-844x390-rolado-${n + 1}.png` });
+        }
       }
     }
     await m.close();

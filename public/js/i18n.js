@@ -520,6 +520,7 @@ const DICT = {
   'Esse jogador não pode interagir com você.': 'This player cannot interact with you.',
   'Vitrine': 'Showcase', 'destaques do histórico': 'highlights from your record', 'Último personagem': 'Last character',
   'Personagem aparece depois da primeira rodada confirmada': 'Character shows up after the first confirmed round',
+  'Último personagem não compartilhado': 'Last character not shared',
   'Medalhas': 'Medals', 'A primeira medalha vem do primeiro abate': 'The first medal comes with the first kill',
   'A primeira medalha vem do primeiro abate.': 'The first medal comes with the first kill.',
   'Arena favorita': 'Favorite arena', 'Arena favorita aparece com as rodadas confirmadas': 'Favorite arena shows up with confirmed rounds',
