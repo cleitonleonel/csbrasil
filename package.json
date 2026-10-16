@@ -159,6 +159,7 @@
     "//eval:ui-v3:perfil": "Perfil e carreira Treta Pop (telas 10 e 11) no Chrome com APIs simuladas: cartão, edição ao lado com prévia ao vivo e settings sem chute, um lima por tela, números iguais aos do backend, partidas e patente, clã e convite, PT e EN, 4 telas e toque de 44 px; sem flag nada muda.",
     "eval:ui-v3:perfil": "node tools/eval/ui-v3-perfil.mjs && node tools/eval/ui-v3-perfil.mjs --mutantes",
     "eval:ui-v3:social": "node tools/eval/ui-v3-social.mjs && node tools/eval/ui-v3-social.mjs --mutantes",
+    "eval:ui-v3:servidores": "node tools/eval/ui-v3-servidores.mjs && node tools/eval/ui-v3-servidores.mjs --mutantes",
     "eval:resultado-arte": "node tools/eval/resultado-arte-check.mjs",
     "eval:screenquery": "node tools/eval/screen-query-check.mjs",
     "eval:screenquery:browser": "node tools/eval/screen-query-browser.mjs",

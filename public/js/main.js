@@ -68,6 +68,8 @@ const saveSettings = () => localStorage.setItem(SETTINGS_KEY, JSON.stringify({
   ...settings,
   quality: preferredQuality ?? settings.quality,
 }));
+// Ajustes da Treta Pop (tp/ajustes.js) gravam nas mesmas settings, senão o próximo save apagaria a escolha.
+if (document.documentElement.dataset.ui === 'v3') document.addEventListener('tp-ajuste', (e) => { settings[e.detail.chave] = e.detail.valor || undefined; saveSettings(); });
 const NICK_KEY = 'awpbr_nick';
 // A coleta de jogadas exige consentimento explícito e persistente.
 const TRAIN_CONSENT_KEY = 'csbr_training_consent';
@@ -4086,6 +4088,8 @@ async function obterMpTicket(action) {
 }
 
 const mpEl = (id) => document.getElementById(id);
+// Treta Pop (tp/servidores.js) desenha a mesma lista; o último estado fica para quem liga depois.
+const tpMp = (tipo, detail) => { if (document.documentElement.dataset.ui !== 'v3') return; (window.__tpMp ||= {})[tipo] = detail; document.dispatchEvent(new CustomEvent(tipo, { detail })); };
 function mpErro(msg, comRetry = false) {
   const e = mpEl('mp-erro'); if (!e) return;
   e.hidden = !msg; e.textContent = msg || '';
@@ -4131,6 +4135,7 @@ async function abrirMultiplayer() {
   const nos = mpEl('mp-nos');
   if (nos) nos.innerHTML = '<div class="mp-vazio">medindo o ping dos servidores…</div>';
   mpEl('mp-salas').innerHTML = '';
+  tpMp('tp-mp-nos', { nos: [], medindo: true });
   mpNos = await sondarNos(NOS);
   // o servidor do jogador tem que ser o PRIMEIRO da lista, não o do dono (regra em nos.js)
   mpNos = ordenarNos(mpNos);
@@ -4244,6 +4249,7 @@ function mpDesenharNos() {
     b.onclick = () => { ui.click(); mpSelecionarNo(n); };
     box.appendChild(b);
   }
+  tpMp('tp-mp-nos', { nos: mpNos, atual: mpNoAtual });
 }
 
 function mpSelecionarNo(no) {
@@ -4263,8 +4269,8 @@ async function mpAtualizarSalas() {
   const box = mpEl('mp-salas'); if (!box || !mpNoAtual) return;
   let salas;
   try { salas = await listRooms(mpNoAtual.http); }
-  catch { box.innerHTML = '<div class="mp-vazio">não deu pra falar com esse servidor.</div>'; return; }
-  if (!salas.length) { box.innerHTML = '<div class="mp-vazio">nenhuma sala aberta. crie a sua abaixo.</div>'; return; }
+  catch { box.innerHTML = '<div class="mp-vazio">não deu pra falar com esse servidor.</div>'; tpMp('tp-mp-salas', { erro: true, no: mpNoAtual }); return; }
+  if (!salas.length) { box.innerHTML = '<div class="mp-vazio">nenhuma sala aberta. crie a sua abaixo.</div>'; tpMp('tp-mp-salas', { salas, no: mpNoAtual }); return; }
   // oficiais primeiro, depois as mais cheias (sala com gente é sala boa de entrar)
   salas.sort((a, b) => (b.oficial - a.oficial) || (b.players - a.players));
   box.innerHTML = '';
@@ -4313,6 +4319,7 @@ async function mpAtualizarSalas() {
     acoes.append(assistir, convite);
     box.appendChild(div);
   }
+  tpMp('tp-mp-salas', { salas, no: mpNoAtual });
 }
 
 /* Copia o link e CONFIRMA na própria etiqueta. Botão de copiar sem retorno visual é o caso
