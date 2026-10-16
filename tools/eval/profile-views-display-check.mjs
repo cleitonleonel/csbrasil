@@ -125,7 +125,10 @@ const CASOS = [
     const { com, sem } = b.ssr;
     if (com.status !== 200 || sem.status !== 200) return `status ${com.status}/${sem.status}`;
     if (!/<p class="views"[^>]*>1\.234 visualizações<\/p>/.test(com.html)) return 'SSR sem o total';
-    if (/visualiza/.test(sem.html)) return 'SSR inventou total sem o campo';
+    // /u/<perfil> é o hub: mede o perfil SSR, não os comentários do HTML do jogo em volta.
+    const perfil = sem.html.match(/<article\b[^>]*profile-sheet[\s\S]*?<\/article>/)?.[0];
+    if (!perfil) return 'SSR sem o perfil legível';
+    if (/visualiza/.test(perfil)) return 'SSR inventou total sem o campo';
     const posts = [...com.pedidos, ...sem.pedidos].filter((p) => !p.startsWith('GET '));
     if (posts.length || [...com.pedidos, ...sem.pedidos].some((p) => p.includes('profile_view'))) return `SSR contou visita: ${posts.join(' ')}`;
     return null;

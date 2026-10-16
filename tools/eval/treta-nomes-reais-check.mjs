@@ -1,7 +1,8 @@
 // Nenhum texto visível da loja cita político real (pedido do dono, 14/10/2026): as skins
 // levam o nome do PERSONAGEM do jogo ("Barbudo do Drip", "Capitão Cyborg"), nunca o da
 // pessoa. Varre o que o jogador lê: nome, série e descrição de todo item do catálogo, os
-// textos da loja (treta-store.js e TretaStore.astro) e os campos de texto do manifesto de
+// textos da loja (treta-store.js e TretaStore.astro), a vitrine SKINS NOVAS do menu
+// (treta-vitrine.js e o bloco dela no index.astro) e os campos de texto do manifesto de
 // skins. Os `id` ficam de fora de propósito: inventário, banco e caminho de asset dependem
 // deles e o jogador não os vê. Mutantes em memória.
 //   node tools/eval/treta-nomes-reais-check.mjs
@@ -18,11 +19,11 @@ const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 const achar=texto=>PESSOAS.find(p=>new RegExp(`(^|[^a-z0-9])${p.replace(' ','[\\s_-]+')}([^a-z0-9]|$)`).test(norm(texto)));
 
 if(process.argv.includes('--mutations')){
-  for(const id of ['nome','descricao','serie','loja','astro','manifesto']){
+  for(const id of ['nome','descricao','serie','loja','astro','manifesto','vitrine','vitrine-html']){
     const r=spawnSync(process.execPath,[new URL(import.meta.url).pathname,`--mutante=${id}`],{encoding:'utf8'});
     assert(r.status!==0 && r.stderr.includes('pessoa real'),`Mutante ${id} não foi detectado (${(r.stderr+r.stdout).slice(-300)})`);
   }
-  console.log('PASS: 6/6 mutações de nome real detectadas');process.exit(0);
+  console.log('PASS: 8/8 mutações de nome real detectadas');process.exit(0);
 }
 const mutant=process.argv.find(a=>a.startsWith('--mutante='))?.split('=')[1];
 const falhas=[];
@@ -50,13 +51,20 @@ assert(catalog.TRETA_SKINS.length>=13,'TRETA_SKINS sumiu do catálogo');
 
 /* 2. Textos fixos da loja: literais de string do JS e o HTML do componente. Os `id` de
    skin não entram em literal de texto visível; caminhos de arquivo ficam de fora. */
-let store=fs.readFileSync('public/js/treta-store.js','utf8');
-if(mutant==='loja')store=store.replace("image.alt=s.name","image.alt=`Janja ${s.name}`");
-for(const m of store.matchAll(/'([^'\n]*)'|`([^`\n]*)`/g)){
-  const texto=m[1] ?? m[2];
-  if(/^\/|\.(webp|glb|mp4|webm|json)$/.test(texto))continue;
-  olhar('treta-store.js',texto);
+for(const arquivo of ['treta-store.js','treta-vitrine.js']){
+  let js=fs.readFileSync(`public/js/${arquivo}`,'utf8');
+  if(mutant==='loja' && arquivo==='treta-store.js')js=js.replace("image.alt=s.name","image.alt=`Janja ${s.name}`");
+  if(mutant==='vitrine' && arquivo==='treta-vitrine.js')js=js.replace('img.alt=`Skin ${s.name}`','img.alt=`Skin do Lula ${s.name}`');
+  for(const m of js.matchAll(/'([^'\n]*)'|`([^`\n]*)`/g)){
+    const texto=m[1] ?? m[2];
+    if(/^\/|\.(webp|glb|mp4|webm|json)$/.test(texto))continue;
+    olhar(arquivo,texto);
+  }
 }
+let hub=fs.readFileSync('src/pages/index.astro','utf8').match(/<section id="treta-vitrine"[\s\S]*?<\/section>/)?.[0];
+assert(hub,'bloco da vitrine sumiu do index.astro: a régua não está lendo o que o menu mostra');
+if(mutant==='vitrine-html')hub=hub.replace('SKINS NOVAS','SKINS DO BOLSONARO');
+olhar('index.astro (vitrine)',hub.replace(/<[^>]*>/g,' ').replace(/\s+/g,' '));
 const componentes=fs.readdirSync('src/components').filter(f=>/^Treta.*\.astro$/.test(f));
 assert(componentes.includes('TretaStore.astro') && componentes.includes('TretaDialogs.astro'),`componentes da loja mudaram de nome: ${componentes}`);
 for(const f of componentes){

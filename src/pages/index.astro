@@ -8,14 +8,12 @@ import TretaStore from '../components/TretaStore.astro';
 import TretaDialogs from '../components/TretaDialogs.astro';
 import '../styles/career-rank.css';
 import { SITE, abs, DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON, DESC_LONG } from '../lib/site';
-import { readFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
 
 /* Revisão do CSS pelo CONTEÚDO: a versão do pacote não muda quando só o CSS muda, e o
-   WebView servia CSS velho. Hash do arquivo na URL derruba o cache sozinho. */
-const SOCIAL_CSS_REV=createHash('sha1').update(readFileSync('public/social.css')).digest('hex').slice(0,8);
-const TRETA_CSS_REV=createHash('sha1').update(readFileSync('public/treta.css')).digest('hex').slice(0,8);
-const CSS_REV = createHash('sha1').update(readFileSync('public/style.css')).digest('hex').slice(0, 8);
+   WebView servia CSS velho. Hash do arquivo na URL derruba o cache sozinho. Vem do build
+   (astro.config.mjs): esta página também renderiza no SSR de /u/<perfil>, sem `public/`. */
+declare const __CSS_REV__: { style: string; social: string; treta: string };
+const { social: SOCIAL_CSS_REV, treta: TRETA_CSS_REV, style: CSS_REV } = __CSS_REV__;
 
 /* ESTÁTICA de propósito: o Stateloop não publica SSR e `prerender = false` aqui
    fazia o build não emitir dist/client/index.html. Idioma por país: /api/geo-lang. */
@@ -26,10 +24,14 @@ const CONTENT_TABS = [
   ['changelog', 'NOVIDADES', 'WHAT’S NEW'], ['apoie', 'APOIAR', 'SUPPORT'],
 ];
 /* ROTA FIXA (docs/adr/0008-rotas-fixas.md): src/pages/[...hub].astro renderiza esta página
-   com `rota` para cada caminho de public/js/rotas.js. Sem `rota` é a home, como sempre foi. */
-const rota = Astro.props.rota as undefined | { caminho: string; titulo: string; descricao: string; indexavel: boolean; canonical?: string };
+   com `rota` para cada caminho de public/js/rotas.js. Sem `rota` é a home, como sempre foi.
+   O SSR de /u/<perfil> (src/pages/u/[...path].astro) também renderiza esta página: ele manda
+   o head do perfil (título, og:image, og:type, JSON-LD) e o perfil legível no slot `perfil`. */
+const rota = Astro.props.rota as undefined | { caminho: string; titulo: string; descricao: string; indexavel: boolean; canonical?: string;
+  tituloPagina?: string; ogTipo?: string; imagem?: { url: string; alt: string } | null; jsonLd?: Record<string, unknown> };
 const HOME_TITLE = 'CORO SOLTO: Treta Suprema - FPS grátis de navegador (ex-CS BRASIL)';
-const pageTitle = rota ? `${rota.titulo} · CORO SOLTO: Treta Suprema` : HOME_TITLE;
+const pageTitle = rota ? (rota.tituloPagina || `${rota.titulo} · CORO SOLTO: Treta Suprema`) : HOME_TITLE;
+const ogImage = rota?.imagem === undefined ? { url: abs('/og-image.jpg'), alt: 'CORO SOLTO: Treta Suprema - FPS satírico de navegador com facções brasileiras' } : rota.imagem;
 const ogTitle = rota ? pageTitle : 'CORO SOLTO: Treta Suprema - FPS grátis de navegador';
 const pageDesc = rota ? rota.descricao : DESC_LONG;
 const pageUrl = abs(rota ? (rota.canonical || rota.caminho) : '/');
@@ -546,22 +548,22 @@ window.__GEO_LANG__ = (function () {
 {(!rota || rota.indexavel) && <><link rel="alternate" hreflang="pt-BR" href={pageUrl}>
 <link rel="alternate" hreflang="x-default" href={pageUrl}></>}
 <!-- Open Graph -->
-<meta property="og:type" content="website">
+<meta property="og:type" content={rota?.ogTipo || 'website'}>
 <meta property="og:site_name" content="CORO SOLTO: Treta Suprema">
 <meta property="og:title" content={ogTitle}>
 <meta property="og:description" content={pageDesc}>
 <meta property="og:url" content={selfUrl}>
-<meta property="og:image" content={abs('/og-image.jpg')}>
+{ogImage && <><meta property="og:image" content={ogImage.url}>
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="CORO SOLTO: Treta Suprema - FPS satírico de navegador com facções brasileiras">
+<meta property="og:image:alt" content={ogImage.alt}></>}
 <meta property="og:locale" content="pt_BR">
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content={ogTitle}>
 <meta name="twitter:description" content={pageDesc}>
-<meta name="twitter:image" content={abs('/og-image.jpg')}>
-<meta name="twitter:image:alt" content="CORO SOLTO: Treta Suprema - FPS satírico de navegador com facções brasileiras">
+{ogImage && <><meta name="twitter:image" content={ogImage.url}>
+<meta name="twitter:image:alt" content={ogImage.alt}></>}
 <!-- JSON-LD: UM nó VideoGame no site inteiro, e ele mora AQUI.
      Antes, index.astro e sobre.astro emitiam cada um um VideoGame com a MESMA
      url e SEM @id - dois nós anônimos idênticos, que é o caso clássico de
@@ -569,7 +571,7 @@ window.__GEO_LANG__ = (function () {
      Agora o nó canônico tem @id estável (…/#game) e vive na home, que é a url
      do próprio jogo; /sobre e as outras páginas só REFERENCIAM esse @id.
      Uma entidade, um dono. (a fonte dos textos é src/lib/site.ts) -->
-{rota ? (rota.indexavel && <script type="application/ld+json" is:inline set:html={JSON.stringify({
+{rota ? (rota.indexavel && <script type="application/ld+json" is:inline set:html={JSON.stringify(rota.jsonLd || {
   '@context': 'https://schema.org', '@type': 'WebPage', '@id': `${pageUrl}#webpage`, url: pageUrl, name: pageTitle,
   description: pageDesc, inLanguage: 'pt-BR', isPartOf: { '@id': `${SITE}/#website` }, about: { '@id': `${SITE}/#game` },
 })} />) : <script type="application/ld+json" is:inline set:html={JSON.stringify({
@@ -781,7 +783,7 @@ window.__GEO_LANG__ = (function () {
     </section>
 
     <TretaStore />
-    <section id="hub-community" class="hub-pane hub-info" role="tabpanel" aria-label="Comunidade" hidden><Community /></section>
+    <section id="hub-community" class="hub-pane hub-info" role="tabpanel" aria-label="Comunidade" hidden><Community /><slot name="perfil" /></section>
 
     <section id="hub-ranking" class="hub-pane hub-info" role="tabpanel" aria-label="Ranking" hidden>
       <div class="hub-kicker">02 · ARQUIVO</div><h2>PLACAR DA RUA</h2>
@@ -1072,6 +1074,12 @@ window.__GEO_LANG__ = (function () {
           <button id="btn-jogar" class="btn btn-big">▶ JOGAR</button>
         </div>
       </div>
+      <!-- Vitrine da loja (public/js/treta-vitrine.js): abaixo do JOGAR, escondida sem loja no ar. -->
+      <section id="treta-vitrine" class="treta-vitrine" aria-labelledby="treta-vitrine-titulo" hidden>
+        <header><h3 id="treta-vitrine-titulo">SKINS NOVAS</h3><button id="treta-vitrine-teaser" class="treta-vitrine-teaser" type="button" tabindex="-1" aria-hidden="true"></button><button id="treta-vitrine-loja" type="button">VER LOJA ▸</button></header>
+        <ul id="treta-vitrine-lista" class="treta-vitrine-lista"></ul>
+        <p id="treta-vitrine-aviso" class="treta-vitrine-aviso" aria-live="polite"></p>
+      </section>
     </section>
 
     <!-- ---------- PASSO À PARTE: O PERFIL ---------- -->

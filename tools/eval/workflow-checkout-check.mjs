@@ -15,14 +15,16 @@
          entra no registro.
    CL0 · registro órfão (arquivo ou job que não existe mais) é vermelho: régua que
          jura medir job ausente vira verde calada.
+   CL2 · job que mescla a main num PR baixa os blobs: com `blob:none` o merge busca
+         blob sob demanda e o servidor recusa ("not our ref"); medido no autofix, 14/10.
 
-   Mutantes: checkout-pesado (tira o filtro do dco), registro-orfao.
+   Mutantes: checkout-pesado (tira o filtro do dco), registro-orfao, merge-sem-blob.
    Uso: node tools/eval/workflow-checkout-check.mjs [--mutante=<nome>]
    ============================================================================ */
 import { readFileSync, existsSync } from 'node:fs';
 
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
-const MUTANTES = { 'checkout-pesado': 'CL1', 'registro-orfao': 'CL0' };
+const MUTANTES = { 'checkout-pesado': 'CL1', 'registro-orfao': 'CL0', 'merge-sem-blob': 'CL2' };
 if (MUT && !MUTANTES[MUT]) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
 const REGISTRO = {
@@ -30,10 +32,11 @@ const REGISTRO = {
   'pr-gates.yml': ['versao-bumpada', 'ratchet'],
   'csbrasil-bot-automerge.yml': ['automerge'],
   'csbrasil-bot-pr-classify.yml': ['classify'],
-  'autofix.yml': ['varredura', 'autofix'],
+  'autofix.yml': ['varredura'],
   'ui-regression.yml': ['classify'],
 };
 if (MUT === 'registro-orfao') REGISTRO['ci.yml'] = [...REGISTRO['ci.yml'], 'job-que-sumiu'];
+const MESCLAM = { 'autofix.yml': ['autofix'] };
 
 /* Corpo de cada job por indentação: id com 2 espaços dentro de `jobs:`. */
 function corpos(fonte) {
@@ -91,6 +94,19 @@ for (const [arquivo, jobs] of Object.entries(REGISTRO)) {
       medidos++;
       const leve = bloco.some((l) => /^filter:\s*blob:none\s*$/.test(l)) || bloco.some((l) => /^sparse-checkout:/.test(l));
       if (!leve) falhas.push(`CL1 ${arquivo}: o checkout do job \`${job}\` baixa o repositório inteiro — use \`filter: blob:none\` ou \`sparse-checkout\``);
+    }
+  }
+}
+
+for (const [arquivo, jobs] of Object.entries(MESCLAM)) {
+  let fonte = readFileSync(`.github/workflows/${arquivo}`, 'utf8');
+  if (MUT === 'merge-sem-blob') fonte = fonte.replace(/(\n {10}fetch-depth: 0)/, '$1\n          filter: blob:none');
+  const porJob = corpos(fonte);
+  for (const job of jobs) {
+    if (!porJob[job]) { falhas.push(`CL0 ${arquivo}: o job \`${job}\` está em MESCLAM e não existe`); continue; }
+    for (const bloco of checkouts(porJob[job])) {
+      medidos++;
+      if (bloco.some((l) => /^filter:\s*blob:none\s*$/.test(l))) falhas.push(`CL2 ${arquivo}: o job \`${job}\` mescla a main com checkout \`blob:none\` — o merge falha com "not our ref"`);
     }
   }
 }
