@@ -48,7 +48,10 @@ Suporte deliberado: uma cena, um nó raiz com uma malha, uma primitive indexada
 TRIANGLES, estática e BIN embutido. Índices UBYTE/USHORT/UINT; POSITION float VEC3,
 NORMAL/TANGENT float, UV e COLOR float ou unsigned normalizado. Offsets, stride,
 domínio, contagens, valores finitos, bounds declarados e referências de recursos
-são verificados. Todas as views/accessors são verificadas, inclusive as inativas.
+são verificados. O stride efetivo de cada atributo de vértice deve ser múltiplo de
+quatro, inclusive sem `byteStride` explícito. Layouts compactados de UV/COLOR que
+não atendem esse alinhamento são recusados; a ferramenta não acrescenta padding
+nem reescreve o BIN. Todas as views/accessors são verificadas, inclusive as inativas.
 O limite de trabalho agregado de escalares é proteção de memória/CPU, como os
 limites de leitura de 256 MiB GLB e 1 MiB seleção; não são budgets artísticos.
 

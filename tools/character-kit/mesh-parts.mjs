@@ -163,6 +163,7 @@ const pos=decoded[p.attributes.POSITION];
     const valid=name === 'POSITION' ? id === p.attributes.POSITION : name === 'NORMAL' ? a.type === 'VEC3' && float : name === 'TANGENT' ? a.type === 'VEC4' && float : /^TEXCOORD_[0-9]+$/.test(name) ? a.type === 'VEC2' && (float || norm) : /^COLOR_[0-9]+$/.test(name) ? ['VEC3','VEC4'].includes(a.type) && (float || norm) : false;
     must(valid, 'unsupported attribute semantic/format');
   must(((v.byteOffset ?? 0)+(a.byteOffset ?? 0)) % 4 === 0, 'vertex alignment');
+    must((v.byteStride ?? decoded[id].arity * decoded[id].width) % 4 === 0, 'vertex stride alignment');
   }
   must(index(p.indices,decoded), 'indices required');
 const ids=decoded[p.indices];

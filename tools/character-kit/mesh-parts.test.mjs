@@ -147,3 +147,45 @@ test('duplicate GLB JSON keys and malformed extra chunks are rejected',()=>{
   extra.writeUInt32LE(extra.length,8);
   assert.throws(()=>splitMeshParts(extra,selection(extra)));
 });
+
+function vertexStrideFixture(semantic, componentType, type, byteStride) {
+  const f = fixture(), width = {5121: 1, 5123: 2, 5126: 4}[componentType];
+  const arity = {VEC2: 2, VEC3: 3, VEC4: 4}[type];
+  const view = {buffer: 0, byteOffset: f.bin.length, byteLength: (byteStride ?? width * arity) * 5, target: 34962};
+  if (byteStride !== undefined) view.byteStride = byteStride;
+  const accessor = {bufferView: f.d.bufferViews.length, componentType, count: 5, type};
+  if (componentType !== 5126) accessor.normalized = true;
+  f.d.meshes[0].primitives[0].attributes[semantic] = f.d.accessors.length;
+  f.d.bufferViews.push(view);
+  f.d.accessors.push(accessor);
+  const bin = Buffer.concat([f.bin, Buffer.alloc(128)]);
+  f.d.buffers[0].byteLength = bin.length;
+  return pack(f.d, bin);
+}
+const alignmentCases = [
+  ['color-u8-vec3', 'COLOR_0', 5121, 'VEC3', 4],
+  ['uv-u8-vec2', 'TEXCOORD_0', 5121, 'VEC2', 4],
+  ['color-u16-vec3', 'COLOR_0', 5123, 'VEC3', 8],
+];
+for (const [name, semantic, componentType, type, stride] of alignmentCases) {
+  test(`reject implicit unaligned vertex stride: ${name}`, () => {
+    const bytes = vertexStrideFixture(semantic, componentType, type);
+    if (process.env.MESH_PARTS_ALIGNMENT_FIXTURES) writeFileSync(join(process.env.MESH_PARTS_ALIGNMENT_FIXTURES, `${name}-packed.glb`), bytes);
+    assert.throws(() => splitMeshParts(bytes, selection(bytes)), /vertex stride alignment/);
+  });
+  test(`preserve explicit padded vertex stride: ${name}`, () => {
+    const bytes = vertexStrideFixture(semantic, componentType, type, stride);
+    const result = splitMeshParts(bytes, selection(bytes));
+    oracle(bytes, result.bytes);
+    if (process.env.MESH_PARTS_ALIGNMENT_FIXTURES) {
+      writeFileSync(join(process.env.MESH_PARTS_ALIGNMENT_FIXTURES, `${name}-padded.glb`), bytes);
+      writeFileSync(join(process.env.MESH_PARTS_ALIGNMENT_FIXTURES, `${name}-padded-output.glb`), result.bytes);
+    }
+  });
+}
+for (const [semantic, componentType, type] of [['COLOR_0', 5121, 'VEC4'], ['COLOR_0', 5123, 'VEC4'], ['TEXCOORD_0', 5126, 'VEC2'], ['COLOR_0', 5126, 'VEC3']]) {
+  test(`preserve aligned implicit vertex stride: ${semantic}/${componentType}/${type}`, () => {
+    const bytes = vertexStrideFixture(semantic, componentType, type);
+    oracle(bytes, splitMeshParts(bytes, selection(bytes)).bytes);
+  });
+}
