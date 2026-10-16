@@ -30,6 +30,7 @@ com código 1 em falha crítica.
 | `shader-budget-check.mjs` | Deriva do GLB real o orçamento de varyings da urna e protege fog/triplanar no piso WebGL1. | `npm run eval:shaderbudget` |
 | `lajes-cache-check.mjs` | Duas builds reais de Lajes: paridade dos buffers e da sequência RNG, colisores, navegação e oclusores; 49 geometrias compartilhadas nas 9162 caixas, descarte único e isolamento entre builds. | `npm run eval:lajes-cache` |
 | `map-rotation-check.mjs` | Sugestão inicial de mapa: link manda, escolha do carrossel fica, e quem não escolhe roda pelos 5 mapas. | `npm run eval:maprotate` |
+| `glb-peso-check.mjs` | GLB grande sem referência não entra em public/: todo .glb >10 MB precisa do stem citado em código/config tracked; mutante `bruto` planta 11 MB falso. Compra: os 162 MB de GLB PBR cru da Mint em `props/{caixa_dagua,trave_futebol,favela_house}/` sem nenhuma referência. | `npm run eval:glbpeso` |
 | `../gen-arch.mjs` | (fora deste diretório) Gera e valida o `ARCH.md`. `--check` reprova se estiver desatualizado. | `npm run arch` |
 
 ## 2. Documentos — leitura, não execução
