@@ -130,7 +130,11 @@ globalThis.Image = class { constructor() { this.onload = null; this.onerror = nu
   }
 }
 export const THREE = await import('three');
-export const { MAPS } = await import(`${JS}/maps.js`);
+export const { MAPS, MAP_IDS, carregaMapa } = await import(`${JS}/maps.js`);
+/* Mapas sob demanda: no browser o módulo da arena só entra por carregaMapa; no
+   arnês não existe grafo de boot a poupar, e dezenas de réguas assumem MAPS[id].build
+   síncrono. Carrega tudo na entrada e o registro volta pronto. */
+await Promise.all(MAP_IDS.map((id) => carregaMapa(id)));
 export const { initTextures } = await import(`${JS}/textures.js`);
 export const { Game, confirmGate, CONFIRM_MIN_MS, CONFIRM_MAX_MS, pickMatchRoster } = await import(`${JS}/game.js`);
 export const { CHARACTERS } = await import(`${JS}/characters.js`);

@@ -44,6 +44,8 @@ algo está errado e o quality gate está verde, o defeito é do quality gate.
 | `public/` | o **jogo** | 147 arquivos `.js`, 62.110 linhas · Three.js `r160` vendorizado | ES modules servidos crus, **zero build**, sem dependência de runtime |
 | `src/` | o **site** | 27 páginas `.astro`, 5 rotas `/api` · Astro `^7.1.1` | framework é bem-vindo; `service_role` só no servidor |
 | `tools/` | o **arnês** | 775 scripts em `tools/eval/`, 112 em `tools/` | node puro: sobe o jogo real sem browser |
+| `public/` | o **jogo** | 146 arquivos `.js`, 61.979 linhas · Three.js `r160` vendorizado | ES modules servidos crus, **zero build**, sem dependência de runtime |
+| `tools/` | o **arnês** | 772 scripts em `tools/eval/`, 111 em `tools/` | node puro: sobe o jogo real sem browser |
 
 **Não existe `public/index.html`.** O HTML do jogo é `src/pages/index.astro`, servido na rota `/`. Servir `public/` estaticamente entrega os arnêses visuais, **não o jogo** — é a pegadinha que custa a primeira hora de todo mundo.
 
@@ -165,6 +167,7 @@ npm run check:fast   # node tools/eval/runner.mjs syntax eval:ranking-home-statu
 ```
 
 `package.json` tem **571 scripts**; o motivo de cada um mora em `SCRIPTS.md` (migrado das chaves `//nome` em 18/08/2026) — é onde está o porquê.
+`package.json` tem **565 scripts**; o motivo de cada um mora em `SCRIPTS.md` (migrado das chaves `//nome` em 18/08/2026) — é onde está o porquê.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `node -p "Object.keys(require('./package.json').scripts)"`
 

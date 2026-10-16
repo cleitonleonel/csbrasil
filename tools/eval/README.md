@@ -32,6 +32,7 @@ com código 1 em falha crítica.
 | `map-rotation-check.mjs` | Sugestão inicial de mapa: link manda, escolha do carrossel fica, e quem não escolhe roda pelos 5 mapas. | `npm run eval:maprotate` |
 | `glb-peso-check.mjs` | GLB grande sem referência não entra em public/: todo .glb >10 MB precisa do stem citado em código/config tracked; mutante `bruto` planta 11 MB falso. Compra: os 162 MB de GLB PBR cru da Mint em `props/{caixa_dagua,trave_futebol,favela_house}/` sem nenhuma referência. | `npm run eval:glbpeso` |
 | `perfil-mobile-check.mjs` | Perfil mobile de qualidade (lane glm/peso): degrau inicial rasteiro (sem SSAO, sombra baixa, dpr ≤0,7, mato ≤0,5), teto de textura min(1024, MAX_TEXTURE_SIZE) e o clamp `clampTexturasGL` do GLTFLoader vendido reduzindo imagem acima do teto; mutante `teto-frouxo` sobe o teto e a régua acende. | `npm run eval:perfilmobile` |
+| `mapas-sob-demanda-check.mjs` | Mapas sob demanda (lane glm/peso): nenhum módulo de ARENA no grafo estático do boot (import() dinâmico não conta); contrato de `carregaMapa` (instala build, memoiza, resolve alias) e conferência registro×módulo que rejeita metadado divergente. Mutantes `estatico` e `registro`. Entra no check:fast junto com a fiação do main.js. | `npm run eval:mapasobdemanda` |
 | `../gen-arch.mjs` | (fora deste diretório) Gera e valida o `ARCH.md`. `--check` reprova se estiver desatualizado. | `npm run arch` |
 
 ## 2. Documentos — leitura, não execução
