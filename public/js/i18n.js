@@ -544,6 +544,19 @@ const DICT = {
   // tp:fim-hud
 
   // tp:resultado
+  'A {time} levou a treta. O pastel da vitória está pago.': 'The {time} took the fight. Victory pastel is on the house.',
+  'A {time} levou a melhor. Já pediram CPI da partida.': 'The {time} got the upper hand. They already demanded an inquiry.',
+  'Esquerda': 'Left', 'Direita': 'Right', 'Rodadas {a} a {b}': 'Rounds {a} to {b}',
+  'Abates': 'Kills', 'Mortes': 'Deaths', 'Headshot': 'Headshot', 'Duração': 'Duration',
+  'Abate duplo': 'Double kill', 'Abate triplo': 'Triple kill',
+  'Abate quádruplo': 'Quadra kill', 'Abate múltiplo': 'Multi kill',
+  'Experiência': 'Experience', 'Quests': 'Quests', 'TRETA$ ganhos': 'TRETA$ earned',
+  'Jogar de novo': 'Play again',
+  'Outro mapa': 'Another map',
+  'Lobby': 'Lobby', 'Compartilhar card': 'Share card', 'Compartilhar': 'Share',
+  'Compartilhado': 'Shared', 'Link copiado': 'Link copied', 'Copie o link': 'Copy the link',
+  'Ganhei uma treta no CORO SOLTO. Bora jogar?': 'I won a fight in CORO SOLTO. Wanna play?',
+  'Perdi uma treta no CORO SOLTO. Bora jogar?': 'I lost a fight in CORO SOLTO. Wanna play?',
   // tp:fim-resultado
 
   // tp:loja
