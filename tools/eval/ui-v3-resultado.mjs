@@ -32,7 +32,12 @@ const MUT = {
   'titulo-atrasa': ['RS7', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('.tp-res__titulo{', '.tp-res__titulo{animation:tpResNum 480ms 200ms both!important;')],
   'tecla-nao-pula': ['RS7', 'v3pt', /\/js\/tp\/resultado\.js/, (t) => t.replace("if ('anim' in raiz.dataset) {", "if (false) {")],
   'mobile-sobrepoe': ['RS8', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace(/(@media \(max-height:520px\)\{[\s\S]*?\.tp-res__col\{)/, '$1width:760px!important;')],
-  'mvp-sempre': ['RS11b', 'v3pt', /\/js\/tp\/resultado\.js/, (t) => t.replace('return eu > 0 && todos.every', 'return true || todos.every')],
+  'mvp-volta': ['RS11a', 'v3pt', /\/js\/tp\/resultado\.js/, (t) => t.replace("if (d.combo >= 2) medalha(", "medalha('MVP', 'MVP da partida', 'mvp'); if (d.combo >= 2) medalha(")],
+  'selo-por-cima': ['RS15', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('#match-end[data-tp-res]:not(.hidden)) #vm-debug-badge{display:none}', '#match-end[data-tp-res]:not(.hidden)) #vm-debug-badge{}')],
+  'nome-desloca': ['RS16', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('.tp-res__assina{position:absolute;left:calc(var(--res-cx) - 200 * var(--k))', '.tp-res__assina{position:absolute;left:calc(var(--res-cx) - 80 * var(--k))')],
+  'heroi-pequeno': ['RS16', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('--res-fig:min(calc(790 * var(--k))', '--res-fig:min(calc(560 * var(--k))')],
+  'acoes-no-pe': ['RS17', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('justify-content:center;gap:calc(20 * var(--k))}', 'justify-content:flex-start;gap:calc(20 * var(--k))}.tp-res__acoes{margin-top:auto!important}')],
+  'partilha-lima': ['RS18', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('.tp-res__partilha{background:var(--tp-elevado);color:var(--tp-tinta-1);', '.tp-res__partilha{background:var(--tp-ganho);color:var(--tp-asfalto);')],
   'online-revanche': ['RS12', 'v3pt', /\/js\/tp\/resultado\.js/, (t) => t.replace('jogar.hidden = !!semRevanche;', 'jogar.hidden = false;')],
   'partilha-ponto': ['RS13', 'v3pt', /\/js\/tp\/resultado\.js/, (t) => t.replace("'fim-de-partida'", "'resultado'")],
   'en-vaza': ['RS9', 'v3en', /\/js\/i18n\.js/, (t) => t.replace("'Outro mapa': 'Another map',", '')],
@@ -95,6 +100,30 @@ const encerrar = (page, cen) => page.evaluate(async (c) => {
   };
 }, cen);
 
+/* Corpo opaco da arte do personagem em px de tela: alfa > 40 lido aqui, a 256 px de largura, sem passar pelo módulo. */
+const figura = (page) => page.evaluate(async () => {
+  const h = document.querySelector('.tp-res__heroi');
+  const url = h && (getComputedStyle(h).backgroundImage.match(/url\("?([^")]+)/) || [])[1];
+  if (!url || !h.checkVisibility()) return null;
+  const img = new Image(); img.src = url; await img.decode();
+  const W = 256, H = Math.round((W * img.naturalHeight) / img.naturalWidth);
+  const c = Object.assign(document.createElement('canvas'), { width: W, height: H });
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0, W, H);
+  const a = x.getImageData(0, 0, W, H).data;
+  let x0 = W, y0 = H, x1 = -1, y1 = -1;
+  for (let y = 0; y < H; y++) for (let i = 0; i < W; i++) if (a[(y * W + i) * 4 + 3] > 40) { x0 = Math.min(x0, i); x1 = Math.max(x1, i); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const b = h.getBoundingClientRect();
+  const bs = getComputedStyle(h).backgroundSize;
+  if (x1 < 0 || bs !== '100% 100%' || Math.abs(b.width / b.height - img.naturalWidth / img.naturalHeight) > 0.01) return { erro: `arte fora da proporção (${bs}, ${(b.width / b.height).toFixed(3)})` };
+  return { l: b.left + (x0 / W) * b.width, r: b.left + ((x1 + 1) / W) * b.width, t: b.top + (y0 / H) * b.height, b: b.top + ((y1 + 1) / H) * b.height };
+});
+
+const lum = (rgb) => {
+  const [r, g, b] = (rgb.match(/[\d.]+/g) || [0, 0, 0]).slice(0, 3).map((v) => { v = v / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contraste = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+
 const ler = (page) => page.evaluate(({ FACES }) => {
   const raiz = document.querySelector('.tp-res');
   const vis = (e) => !!e && e.checkVisibility();
@@ -117,9 +146,9 @@ const ler = (page) => page.evaluate(({ FACES }) => {
     existe: true, visivel: vis(raiz), legadoVisivel: vis(fim.querySelector('.me-wrap')),
     titulo: q('.tp-res__titulo')?.textContent.trim(), placar: q('.tp-res__placar')?.textContent.replace(/\s+/g, ' ').trim(),
     frase: vis(q('.tp-res__frase')) ? q('.tp-res__frase').textContent : '',
-    stats: [...raiz.querySelectorAll('.tp-res__stat')].filter(vis).map((s) => [s.querySelector('.tp-rotulo').textContent.trim(), s.querySelector('.tp-res__n').textContent.trim()]),
+    stats: [...raiz.querySelectorAll('.tp-res__stat')].filter(vis).map((s) => [s.querySelector('.tp-rotulo').innerText.trim(), s.querySelector('.tp-res__n').textContent.trim()]),
     medalhas: [...raiz.querySelectorAll('.tp-res__medalha')].filter(vis).map((m) => m.dataset.medalha),
-    mvpTag: vis(q('.tp-res__mvp')), fase2: vis(q('.tp-res__fase2')),
+    mvp: /\bMVP\b/.test(raiz.innerText), fase2: vis(q('.tp-res__fase2')),
     texto: raiz.innerText, fim: 'fim' in raiz.dataset,
     foco: document.activeElement?.className || '', primarios: [...fim.querySelectorAll('.tp-btn--primario')].filter(vis).length,
     jogar: vis(q('.tp-res__jogar')), outro: vis(q('.tp-res__outro')), proximo: vis(q('.tp-res__proximo')),
@@ -127,6 +156,15 @@ const ler = (page) => page.evaluate(({ FACES }) => {
     col: caixa(q('.tp-res__col')), acoes: caixa(q('.tp-res__acoes')), assina: caixa(q('.tp-res__assina')), heroi: caixa(q('.tp-res__heroi')),
     tituloPx: parseFloat(getComputedStyle(q('.tp-res__titulo')).fontSize), vw: innerWidth, vh: innerHeight,
     rolaX: document.documentElement.scrollWidth > innerWidth,
+    cobertos: [q('.tp-res__titulo'), ...botoes].filter((e) => e && raiz.contains(e)).flatMap((e) => {
+      const b = e.getBoundingClientRect();
+      return [[0.08, 0.15], [0.5, 0.5], [0.92, 0.85]].map(([fx, fy]) => document.elementFromPoint(b.left + fx * b.width, b.top + fy * b.height))
+        .filter((t) => !t || !raiz.contains(t)).map((t) => `${e.className.split(' ').at(-1)} sob ${t ? t.id || t.className || t.tagName : 'nada'}`);
+    }),
+    blocos: [q('.tp-res__topo'), q('.tp-res__frase'), q('.tp-res__stats'), q('.tp-res__medalhas'), q('.tp-res__fase2'), q('.tp-res__acoes')].filter(vis).map((e) => { const b = e.getBoundingClientRect(); return [e.className.split(' ').at(-1), b.top, b.bottom]; }),
+    partilha: vis(q('.tp-res__partilha')) ? (() => { const cs = getComputedStyle(q('.tp-res__partilha')); return { bg: cs.backgroundColor, cor: cs.color }; })() : null,
+    statRotulos: [...raiz.querySelectorAll('.tp-res__stat .tp-rotulo')].filter(vis).map((e) => e.innerText.trim()),
+    partilhaTexto: q('.tp-res__partilha')?.innerText.trim(),
   };
 }, { FACES });
 
@@ -162,19 +200,37 @@ async function medir(mutante = '') {
     const fraseVit = v.frase;
     add('RS7', t0.tituloOpac === 1 && t0.tituloVis && /^0s/.test(t0.tituloAtraso) && t0.animando && t0.numT0 === '0' && t0.numAtraso.startsWith('0.08s') && v.fim && v.stats[0]?.[1] === '24',
       `quadro 0: título opacidade ${t0.tituloOpac} atraso ${t0.tituloAtraso || '?'}, número "${t0.numT0}" atraso ${t0.numAtraso || '?'}; depois de uma tecla ${v.fim ? 'no fim' : 'ainda contando'} (${v.stats[0]?.[1]})`);
-    add('RS11a', v.mvpTag && v.medalhas.includes('mvp') && v.medalhas.includes('combo'), `melhor placar e 3 abates seguidos: MVP ${v.mvpTag ? 'visível' : 'ausente'}, medalhas [${v.medalhas.join(', ')}]`);
+    add('RS11a', v.visivel && !v.mvp && !v.medalhas.includes('mvp') && v.medalhas.includes('combo'), `melhor placar e 3 abates seguidos: MVP ${v.mvp ? 'na tela sem vir do servidor' : 'escondido'}, medalhas [${v.medalhas.join(', ')}]`);
     add('RS6a', v.foco.includes('tp-res__jogar') && v.primarios === 1, `foco em "${v.foco}", ${v.primarios} botão primário visível`);
 
-    const lay = [];
+    const lay = [], cob = [], fig = [], vao = [];
     for (const [w, h] of VIEWPORTS) {
       await page.setViewportSize({ width: w, height: h });
       await page.waitForTimeout(400);
       const g = await ler(page);
+      g.fig = await figura(page);
+      g.heroi = g.fig && !g.fig.erro ? g.fig : g.heroi;
       const mobile = h <= 520;
+      const k = Math.min(w / 1536, h / 1024);
+      if (g.cobertos.length) cob.push(`${w}×${h}: ${[...new Set(g.cobertos)].join(', ')}`);
+      if (!g.fig || g.fig.erro) fig.push(`${w}×${h}: ${g.fig?.erro || 'personagem ausente'}`);
+      else {
+        const cx = (g.fig.l + g.fig.r) / 2, ax = g.assina ? (g.assina.l + g.assina.r) / 2 : NaN, alt = g.fig.b - g.fig.t;
+        const minAlt = mobile ? 0.72 * h : 0.72 * 1024 * k;
+        if (!(Math.abs(cx - ax) <= 12)) fig.push(`${w}×${h}: nome em x ${ax.toFixed(0)}, corpo em x ${cx.toFixed(0)}`);
+        if (alt < minAlt) fig.push(`${w}×${h}: corpo com ${alt.toFixed(0)} px de altura (quer ≥ ${minAlt.toFixed(0)})`);
+        if (g.fig.r > w + 0.5 || g.fig.l < 0) fig.push(`${w}×${h}: corpo fora da tela (${g.fig.l.toFixed(0)}–${g.fig.r.toFixed(0)})`);
+        if (g.assina && g.assina.t < g.fig.b - 2 && !mobile) fig.push(`${w}×${h}: nome sobre o corpo`);
+      }
+      if (!mobile) {
+        let maior = 0, onde = '';
+        for (let i = 1; i < g.blocos.length; i++) { const v = g.blocos[i][1] - g.blocos[i - 1][2]; if (v > maior) { maior = v; onde = `${g.blocos[i - 1][0]} → ${g.blocos[i][0]}`; } }
+        if (maior > 120 * k) vao.push(`${w}×${h}: ${maior.toFixed(0)} px entre ${onde} (teto ${(120 * k).toFixed(0)})`);
+      } else if (!(g.statRotulos[2] === 'HS' && /^COMPARTILHAR$/i.test(g.partilhaTexto || ''))) lay.push(`${w}×${h}: rótulos curtos da tela 22 ausentes (${g.statRotulos[2]}, ${g.partilhaTexto})`);
       const alvo = mobile ? TITULO.mobile : TITULO.desktop * Math.min(w / 1536, h / 1024);
       const dentro = (b) => !b || (b.l >= 0 && b.t >= 0 && b.r <= g.vw + 0.5 && b.b <= g.vh + 0.5);
       const cruza = (a, b) => a && b && a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1;
-      const pares = [['coluna', g.col, 'ações', g.acoes], ['coluna', g.col, 'personagem', g.heroi], ['ações', g.acoes, 'personagem', g.heroi], ['coluna', g.col, 'nome', g.assina], ['ações', g.acoes, 'nome', g.assina]];
+      const pares = [['coluna', g.col, 'personagem', g.heroi], ['ações', g.acoes, 'personagem', g.heroi], ['coluna', g.col, 'nome', g.assina], ['ações', g.acoes, 'nome', g.assina]];
       for (const [n1, a, n2, b] of pares) if (cruza(a, b)) lay.push(`${w}×${h}: ${n1} cruza ${n2}`);
       for (const [n, b] of [['coluna', g.col], ['ações', g.acoes], ['nome', g.assina]]) if (!dentro(b)) lay.push(`${w}×${h}: ${n} fora da tela`);
       if (Math.abs(g.tituloPx - alvo) > alvo * 0.1) lay.push(`${w}×${h}: título ${g.tituloPx.toFixed(0)} px (quer ${alvo.toFixed(0)})`);
@@ -182,6 +238,12 @@ async function medir(mutante = '') {
       if (g.rolaX) lay.push(`${w}×${h}: rolagem horizontal`);
       await foto(page, `v3-vitoria-${w}x${h}`);
     }
+    add('RS15', !cob.length, cob.length ? `algo fora da tela de resultado por cima: ${cob.join('; ')}` : 'título e botões sem nada por cima em nenhuma resolução');
+    add('RS16', !fig.length, fig.length ? fig.join('; ') : 'corpo do personagem ≥ 72% da altura do artboard, dentro da tela, com o nome centrado sob ele (±12 px)');
+    add('RS17', !vao.length, vao.length ? `vão vazio na coluna: ${vao.join('; ')}` : 'sem a fase 2, nenhum vão maior que 120 px de artboard entre os blocos da coluna');
+    const pb = v.partilha;
+    const lumP = pb ? lum(pb.bg) : 1, cP = pb ? contraste(pb.bg, pb.cor) : 0;
+    add('RS18', pb && lumP <= 0.2 && cP >= 4.5, pb ? `COMPARTILHAR CARD: fundo ${pb.bg} (luminância ${lumP.toFixed(2)}, teto 0,2 para não competir com o lima de 0,61), contraste do texto ${cP.toFixed(1)}:1` : 'COMPARTILHAR CARD ausente');
     add('RS8', !lay.length, lay.length ? lay.join('; ') : `${VIEWPORTS.map(([w, h]) => `${w}×${h}`).join(', ')}: blocos na tela, sem cruzar, título na escala da referência, botões ≥ 44 px`);
     await page.setViewportSize({ width: 1536, height: 1024 });
 
@@ -194,7 +256,7 @@ async function medir(mutante = '') {
     if (!ficou) { rs7.ok = false; rs7.msg += '; ENTER durante a contagem saiu da tela'; }
     add('RS4', fraseVit === 'A Esquerda levou a treta. O pastel da vitória está pago.' && d.frase === 'A Direita levou a melhor. Já pediram CPI da partida.' && !/venceram|levaram/.test(fraseVit + d.frase),
       `vitória: "${fraseVit}"; derrota: "${d.frase}"`);
-    add('RS11b', d.visivel && !d.mvpTag && !d.medalhas.length, `um bot com 30 abates: MVP ${d.mvpTag ? 'visível' : 'escondido'}, medalhas [${d.medalhas.join(', ')}]`);
+    add('RS11b', d.visivel && !d.mvp && !d.medalhas.length, `um bot com 30 abates e combo 1: MVP ${d.mvp ? 'visível' : 'escondido'}, medalhas [${d.medalhas.join(', ')}]`);
     await foto(page, 'v3-derrota-1536x1024');
     await page.setViewportSize({ width: 844, height: 390 });
     await page.waitForTimeout(400);

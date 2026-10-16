@@ -1,23 +1,26 @@
 /* Treta Pop · 06 fim de partida, 22 mobile. Só vale com <html data-ui="v3">: todo seletor começa em :root[data-ui="v3"] ou numa classe .tp-. */
-/* Medidas do artboard 1536×1024 vezes --k; em tela mais larga que 3:2 o palco do personagem fica preso à borda direita. */
+/* Medidas do artboard 1536×1024 vezes --k; em tela mais larga que 3:2 o personagem fica preso à borda direita.
+   --fx, --fy, --fh, --ar e --fa vêm da caixa opaca da arte (resultado.js): o corpo, não o PNG, ocupa o palco. */
 :root[data-ui="v3"] #match-end[data-tp-res]{padding:0;background:var(--tp-asfalto)}
 :root[data-ui="v3"] #match-end[data-tp-res]::before,:root[data-ui="v3"] #match-end[data-tp-res] .me-wrap{display:none}
-.tp-res{--k:min(calc(100vw / 1536),calc(100vh / 1024));--tp-res-palco:max(calc(1000 * var(--k)),calc(100vw - 536 * var(--k)));position:absolute;inset:0;overflow:hidden;color:var(--tp-tinta-1);font-family:var(--tp-ui);
+.tp-res{--k:min(calc(100vw / 1536),calc(100vh / 1024));--res-cx:calc(100vw - 246 * var(--k));--res-pe:calc(900 * var(--k));
+  --res-fig:min(calc(790 * var(--k)),calc(440 * var(--k) / var(--fa,.67)));--res-arte:calc(var(--res-fig) / var(--fh,1));position:absolute;inset:0;overflow:hidden;color:var(--tp-tinta-1);font-family:var(--tp-ui);
   background:radial-gradient(calc(800 * var(--k)) calc(700 * var(--k)) at 78% 50%,rgba(70,224,138,.16),rgba(70,224,138,0) 65%),
     radial-gradient(calc(900 * var(--k)) calc(600 * var(--k)) at 0 0,rgba(243,185,88,.1),rgba(243,185,88,0) 70%),var(--tp-asfalto)}
 .tp-res[hidden]{display:none}
 .tp-res[data-resultado="derrota"]{background:radial-gradient(calc(800 * var(--k)) calc(700 * var(--k)) at 78% 50%,rgba(224,50,50,.14),rgba(224,50,50,0) 65%),var(--tp-asfalto)}
 
-.tp-res__heroi{position:absolute;left:var(--tp-res-palco);right:0;top:calc(120 * var(--k));bottom:calc(150 * var(--k));pointer-events:none;
-  background:var(--me-art,none) center bottom/contain no-repeat}
+.tp-res__heroi{position:absolute;pointer-events:none;height:var(--res-arte);width:calc(var(--res-arte) * var(--ar,.67));
+  left:calc(var(--res-cx) - var(--res-arte) * var(--ar,.67) * var(--fx,.5));top:calc(var(--res-pe) - var(--res-fig) - var(--res-arte) * var(--fy,0));
+  background:var(--me-art,none) 0 0/100% 100% no-repeat}
 .tp-res[data-resultado="derrota"] .tp-res__heroi{opacity:.8}
-.tp-res__assina{position:absolute;left:var(--tp-res-palco);right:0;bottom:calc(56 * var(--k));display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
-.tp-res__assina[hidden],.tp-res__assina [hidden]{display:none}
-.tp-res__mvp{padding:6px 16px;background:var(--tp-lima);color:var(--tp-lima-tinta);font-size:calc(28 * var(--k));transform:var(--tp-skew)}
+.tp-res__assina{position:absolute;left:calc(var(--res-cx) - 200 * var(--k));width:calc(400 * var(--k));top:calc(var(--res-pe) + 10 * var(--k));display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.tp-res__assina[hidden]{display:none}
 .tp-res__nome{font-size:max(18px,calc(30 * var(--k)))}
 .tp-res__linha{font-size:max(12px,calc(14 * var(--k)));color:var(--tp-tinta-2)}
 
-.tp-res__col{position:absolute;left:calc(56 * var(--k));top:calc(48 * var(--k));width:calc(900 * var(--k));display:flex;flex-direction:column;gap:calc(20 * var(--k))}
+/* Sem a fase 2 a coluna centra no alto da tela em vez de deixar meio artboard vazio entre medalhas e botões. */
+.tp-res__col{position:absolute;left:calc(56 * var(--k));top:calc(48 * var(--k));bottom:calc(44 * var(--k));width:calc(900 * var(--k));display:flex;flex-direction:column;justify-content:center;gap:calc(20 * var(--k))}
 .tp-res__topo{display:flex;align-items:flex-end;gap:calc(28 * var(--k))}
 .tp-res__titulo{margin:0;font-size:calc(168 * var(--k));color:var(--tp-ganho);text-shadow:0 0 50px rgba(70,224,138,.35);
   animation:tpResTitulo var(--tp-d-painel) var(--tp-ease-saida) both}
@@ -43,7 +46,8 @@
 .tp-res__fase2[hidden]{display:none}
 .tp-res__f2{padding:16px}
 
-.tp-res__acoes{position:absolute;left:calc(56 * var(--k));bottom:calc(44 * var(--k));display:flex;gap:calc(12 * var(--k));align-items:center}
+.tp-res__acoes{display:flex;gap:calc(12 * var(--k));align-items:center;width:max-content;margin-top:calc(28 * var(--k))}
+.tp-res__curto{display:none}
 .tp-res__acoes [hidden]{display:none}
 .tp-res__acoes .tp-btn{height:max(44px,calc(64 * var(--k)));padding:0 calc(22 * var(--k));border-radius:8px;font-size:max(17px,calc(22 * var(--k)));white-space:nowrap}
 .tp-res__acoes .tp-btn--primario{height:max(56px,calc(80 * var(--k)));gap:calc(18 * var(--k));padding:0 calc(30 * var(--k));border-radius:0;font-size:max(26px,calc(40 * var(--k)));
@@ -54,9 +58,11 @@
 .tp-res__jogar[data-auto-foco]:focus-visible{box-shadow:0 0 36px rgba(180,217,46,.3)}
 .tp-res__acoes .tp-btn[data-auto-foco]:focus-visible::after{opacity:0}
 .tp-res__acoes .tp-btn--fantasma{background:transparent}
-.tp-res__partilha{background:var(--tp-ganho);color:var(--tp-asfalto);font:800 max(15px,calc(17 * var(--k)))/1 var(--tp-ui);letter-spacing:.02em}
+.tp-res__partilha{background:var(--tp-elevado);color:var(--tp-tinta-1);box-shadow:inset 0 0 0 2px var(--tp-ganho);font:800 max(15px,calc(17 * var(--k)))/1 var(--tp-ui);letter-spacing:.02em}
 .tp-res__acoes .tp-res__partilha{font-family:var(--tp-ui);font-size:max(15px,calc(17 * var(--k)))}
-.tp-res__partilha svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4}
+.tp-res__partilha svg{width:20px;height:20px;fill:none;stroke:var(--tp-ganho);stroke-width:2.4}
+/* o selo de depuração do viewmodel (?debug=1) é HUD de partida; não cobre o fim de partida */
+:root[data-ui="v3"] body:has(#match-end[data-tp-res]:not(.hidden)) #vm-debug-badge{display:none}
 .tp-res__proximo{margin:0;font:800 max(13px,calc(15 * var(--k)))/1.2 var(--tp-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--tp-ambar)}
 
 @keyframes tpResTitulo{from{transform:scale(calc(1 + .06 * var(--tp-mov)))}to{transform:none}}
@@ -65,11 +71,11 @@
 /* Celular deitado (tela 22): valores do artboard 844×390 em px. */
 @media (max-height:520px){
   .tp-res{background:radial-gradient(360px 330px at 82% 50%,rgba(70,224,138,.16),rgba(70,224,138,0) 70%),var(--tp-asfalto)}
-  .tp-res__heroi{left:auto;right:20px;top:10px;bottom:15px;width:250px}
-  .tp-res__assina{left:auto;right:20px;bottom:14px;width:250px}
-  .tp-res__nome,.tp-res__linha{display:none}
-  .tp-res__mvp{font-size:16px;padding:4px 10px}
-  .tp-res__col{left:16px;top:12px;width:min(530px,calc(100vw - 300px));gap:9px}
+  .tp-res{--res-cx:calc(100vw - 145px);--res-pe:calc(100vh - 40px);--res-fig:min(calc(100vh - 66px),calc(230px / var(--fa,.67)))}
+  .tp-res__assina{left:calc(var(--res-cx) - 125px);width:250px;top:auto;bottom:12px}
+  .tp-res__nome{font-size:16px}
+  .tp-res__linha{display:none}
+  .tp-res__col{left:16px;top:12px;bottom:14px;width:min(530px,calc(100vw - 300px));gap:9px;justify-content:flex-start}
   .tp-res__topo{gap:14px}
   .tp-res__titulo{font-size:72px}
   .tp-res__placar{font-size:34px;padding-bottom:6px}
@@ -80,7 +86,9 @@
   .tp-res__stat .tp-num{font-size:20px}
   .tp-res__medalha{padding:4px 10px 4px 4px;font-size:13px}
   .tp-res__selo{width:24px;height:24px;font-size:11px}
-  .tp-res__acoes{left:16px;bottom:14px;gap:8px}
+  .tp-res__acoes{gap:8px;margin-top:auto}
+  .tp-res__longo{display:none}
+  .tp-res__curto{display:inline}
   .tp-res__acoes .tp-btn{height:56px;padding:0 16px;font-size:17px}
   .tp-res__acoes .tp-btn--primario{height:56px;padding:0 22px;font-size:26px;--tp-corte:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%)}
   .tp-res__acoes .tp-res__partilha{padding:0 14px;font-size:13px}
