@@ -1,7 +1,7 @@
 # Matriz gerada do arsenal
 
 Gerada por `node tools/gen-weapon-matrix.mjs`; não editar os valores à mão.
-O dano vem do consumidor real em [game.js:3803](../public/js/game.js#L3803).
+O dano vem do consumidor real em [game.js:3819](../public/js/game.js#L3819).
 
 Alvo ideal de 100 HP, sem proteção/regeneração, primeiro tiro imediato, todos os
 pellets no mesmo alvo, sem erro de mira, saque ou latência. TTK usa cadência
@@ -19,8 +19,8 @@ dispersão. Luneta é equipamento do jogo e não determina o perfil de dano.
 | m4 | M4A1 / 5,56×45 | seletiva / segurar | rifle / não | 666.667 | 30 | 1 × 31 | 31 / 30.535 / 26.35 / 26.35 | 4 / 4 | 0.27 / 0.27 | 124 |
 | mp5 | HK MP5 / 9×19 | seletiva / segurar | smg / não | 800 | 30 | 1 × 26 | 26 / 19.5 / 15.6 / 15.6 | 4 / 7 | 0.225 / 0.45 | 104 |
 | shotgun | Benelli M3 em modo pump / 12 gauge | pump / pressionar | shotgun / não | 66.667 | 7 | 9 × 14 | 126 / 37.8 / 37.8 / 37.8 | 1 / 3 | 0 / 1.8 | 214.2 |
-| deagle | Desert Eagle Mark XIX / .50 AE | semiautomatica / pressionar | pistol / não | 214.286 | 7 | 1 × 53 | 53 / 42.93 / 32.86 / 32.86 | 2 / 4 | 0.28 / 0.84 | 212 |
-| pistol | Taurus PT-938 / .380 ACP | semiautomatica / pressionar | pistol / não | 250 | 12 | 1 × 34 | 34 / 27.54 / 21.08 / 21.08 | 3 / 5 | 0.48 / 0.96 | 136 |
+| deagle | Desert Eagle Mark XIX / .50 AE | semiautomatica / pressionar | pistol / não | 250 | 7 | 1 × 53 | 53 / 42.93 / 32.86 / 32.86 | 2 / 4 | 0.24 / 0.72 | 212 |
+| pistol | Taurus PT-938 / .380 ACP | semiautomatica / pressionar | pistol / não | 352.941 | 12 | 1 × 34 | 34 / 27.54 / 21.08 / 21.08 | 3 / 5 | 0.34 / 0.68 | 136 |
 | m92 | Zastava M92 militar / 7,62×39 | seletiva / segurar | rifle / não | 600 | 30 | 1 × 32 | 32 / 31.52 / 27.2 / 27.2 | 4 / 4 | 0.3 / 0.3 | 128 |
 | akm | AKM / 7,62×39 | seletiva / segurar | rifle / não | 571.429 | 30 | 1 × 34 | 34 / 33.49 / 28.9 / 28.9 | 3 / 4 | 0.21 / 0.315 | 136 |
 | g3 | HK G3 / 7,62×51 | seletiva / segurar | rifle / não | 545.455 | 20 | 1 × 37 | 37 / 36.445 / 31.45 / 31.45 | 3 / 4 | 0.22 / 0.33 | 148 |
@@ -40,7 +40,7 @@ dispersão. Luneta é equipamento do jogo e não determina o perfil de dano.
 | uzi | UZI 9 mm / 9×19 | seletiva / segurar | smg / não | 857.143 | 25 | 1 × 25 | 25 / 18.75 / 15 / 15 | 4 / 7 | 0.21 / 0.42 | 100 |
 | p90 | FN P90 / 5,7×28 | seletiva / segurar | smg / não | 923.077 | 50 | 1 × 23 | 23 / 17.25 / 13.8 / 13.8 | 5 / 8 | 0.26 / 0.455 | 92 |
 
-A faca usa [game.js:3749](../public/js/game.js#L3749), sem modelo de pellet,
+A faca usa [game.js:3765](../public/js/game.js#L3765), sem modelo de pellet,
 falloff ou headshot de tiro. Golpe rápido: 55 HP; alcance configurado
 2.4 m; intervalo 0.55 s. O golpe pesado possui seu próprio
 contrato e não é equiparado a um disparo nesta tabela.
