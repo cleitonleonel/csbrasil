@@ -1,20 +1,21 @@
-/* profile-in-game-check.mjs — /u/<perfil> ABRE DENTRO DO JOGO SEM PERDER O SEO?
-   Pedido do dono (14/10/2026): quem abre /u/<perfil> cai no hub do jogo com o perfil aberto,
-   pronto para jogar, sem o clique em "VER PERFIL NO JOGO". A resposta SSR continua sendo a
-   página (crawler, prévia de link e quem está sem JS); o jogo sobe por cima num iframe da
-   mesma origem e a URL /u/<perfil> fica.
+/* profile-in-game-check.mjs — /u/<perfil> É O HUB DO JOGO SEM PERDER O SEO?
+   Pedido do dono (14/10/2026): quem abre /u/<perfil> está DENTRO do jogo, no mesmo hub (menu,
+   T$, música, @handle) com o perfil aberto na comunidade. Antes o SSR era uma página à parte
+   e o jogo subia por cima num iframe. Agora a resposta SSR é o próprio hub, com o head do
+   perfil e o perfil legível no HTML (crawler e prévia de link). A URL /u/<perfil> fica.
 
-   Mede o ARTEFATO: o handler SSR de `.vercel/output` com o backend interceptado, e executa
-   os scripts inline da resposta num DOM mínimo.
+   Mede o ARTEFATO: o handler SSR de `.vercel/output` com o backend interceptado, comparado
+   com a cópia estática do hub em `/comunidade` do mesmo build.
      PG1 · perfil público: 200, title, description, canonical, og:url, og:image, twitter:image,
            og:type=profile e hreflang no host decidido; o perfil SSR legível com o nick
-     PG2 · no topo, o JS monta UM iframe da mesma origem em /?secao=comunidade&social=profile&
-           perfil=<id>, com fullscreen; o conteúdo SSR fica inert; o documento não navega
-     PG3 · já dentro de um quadro (top !== self) não monta outro jogo
-     PG4 · perfil privado: 404, noindex, sem og:image, sem iframe, com a entrada ao jogo
-     PG5 · link do jogo que sai da rota "/" abre fora do quadro; rota do jogo fica no quadro
-     PG6 · o jogo: o convite de conta não cobre o perfil compartilhado, o painel da conta
-           começa recolhido e o login social sai do quadro da mesma origem
+     PG2 · a resposta é o hub: mesmo importmap e mesmos módulos da cópia estática, menu do hub,
+           comunidade montada e o perfil SSR dentro dela; nenhum iframe de jogo
+     PG3 · o perfil público não navega para outro endereço (a URL compartilhada fica)
+     PG4 · perfil privado: 404, noindex, sem og:image, sem nick, com a entrada ao jogo
+     PG5 · o boot do hub em /u/<perfil> não pendura ?map= e ?personagem= na URL compartilhada
+     PG6 · o jogo recebe o perfil compartilhado: sem convite por cima (em /u e no ?perfil=
+           antigo), painel da conta recolhido, perfil SSR trocado pela comunidade e login
+           social fora de quadro quando houver um
 
    Uso: npm run build && node tools/eval/profile-in-game-check.mjs [--mutate]
    --mutate desfaz cada garantia numa cópia do artefato/fonte e exige vermelho. */
@@ -55,7 +56,7 @@ async function coletar() {
   const pub = await pedir(`/u/${HANDLE}`), priv = await pedir(`/u/${PRIVADO}`);
   globalThis.fetch = fetchReal;
   process.chdir(ROOT);
-  return { pub, priv, main: read('public/js/main.js'), entry: read('public/js/account-entry.js'), community: read('public/js/community.js') };
+  return { pub, priv, hub: readFileSync(path.join(ROOT, '.vercel/output/static/comunidade/index.html'), 'utf8'), main: read('public/js/main.js'), entry: read('public/js/account-entry.js'), community: read('public/js/community.js'), rotas: read('public/js/rotas.js') };
 }
 
 const head = (html) => html.slice(0, Math.max(0, html.search(/<\/head>/i)));
@@ -64,27 +65,17 @@ const meta = (html, chave) => head(html).match(new RegExp(`<meta\\b[^>]*(?:prope
 const link = (html, rel) => head(html).match(new RegExp(`<link\\b[^>]*rel="${rel}"[^>]*href="([^"]*)"`))?.[1];
 const scripts = (html) => [...html.slice(html.search(/<body\b/i)).matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
 
-// DOM mínimo: o bastante para os scripts inline da página, e nada que navegue sem registro.
-function executar(html, { emQuadro = false } = {}) {
-  const navegou = [], classes = new Set();
-  let foco = null;
-  const no = (tag) => ({ tagName: tag.toUpperCase(), attrs: {}, children: [], listeners: {}, inert: false,
-    setAttribute(k, v) { this.attrs[k] = String(v); }, getAttribute(k) { return this.attrs[k] ?? null; },
-    addEventListener(t, f) { (this.listeners[t] ||= []).push(f); }, focus() { foco = this; } });
-  const body = no('body');
-  body.children.push(no('a'), no('header'), no('main'), no('footer'));
-  body.append = (...n) => body.children.push(...n);
-  const location = { origin: CANONICO, pathname: `/u/${HANDLE}`,
-    get href() { return `${CANONICO}/u/${HANDLE}`; }, set href(v) { navegou.push(['href', v]); },
-    replace(v) { navegou.push(['replace', v]); }, assign(v) { navegou.push(['assign', v]); }, reload() { navegou.push(['reload']); } };
-  const window = { location };
-  window.self = window;
-  window.top = emQuadro ? { location: { origin: CANONICO } } : window;
-  const document = { body, documentElement: { classList: { add: (c) => classes.add(c) } }, createElement: no };
-  for (const s of scripts(html)) vm.runInNewContext(s, { window, document, location, URL, Array, console });
-  const quadros = body.children.filter((n) => n.tagName === 'IFRAME');
-  const ssr = body.children.filter((n) => n.tagName !== 'IFRAME');
-  return { navegou, classes, quadros, ssr, foco: () => foco };
+const importmap = (html) => html.match(/<script type="importmap"[^>]*>([\s\S]*?)<\/script>/)?.[1] || null;
+const modulos = (html) => [...html.matchAll(/<script\b[^>]*type="module"[^>]*src="([^"]+)"/g)].map((m) => m[1]).sort().join();
+const secaoComunidade = (html) => html.match(/<section id="hub-community"[\s\S]*?<\/section>\s*<section id="hub-ranking"/)?.[0] || '';
+
+// Executa só o script inline de redirect do perfil indisponível, com location registrada.
+function redirecionamentos(html) {
+  const navegou = [];
+  const location = { origin: CANONICO, replace(v) { navegou.push(['replace', v]); }, assign(v) { navegou.push(['assign', v]); }, set href(v) { navegou.push(['href', v]); } };
+  for (const s of scripts(html).filter((t) => /location\.(?:replace|assign|href)/.test(t) && !/__GEO_LANG__|lancamento|importmap/.test(t)))
+    try { vm.runInNewContext(s, { location, window: { location }, URL }); } catch { /* script do hub sem DOM: não é redirect */ }
+  return navegou;
 }
 
 const CASOS = [
@@ -105,65 +96,62 @@ const CASOS = [
     if (!/<article\b[^>]*profile-sheet[\s\S]*Fixture Treta[\s\S]*<\/article>/.test(html)) return 'perfil SSR legível ausente';
     return null;
   }],
-  ['PG2 · no topo, monta o jogo da mesma origem com este perfil aberto', (b) => {
-    const r = executar(b.pub.html);
-    if (r.navegou.length) return `o documento navegou: ${JSON.stringify(r.navegou)}`;
-    if (r.quadros.length !== 1) return `${r.quadros.length} iframe(s) montados; esperado 1`;
-    const f = r.quadros[0], url = new URL(f.src, CANONICO + '/');
-    if (url.origin !== CANONICO || url.pathname !== '/') return `iframe fora do jogo: ${f.src}`;
-    for (const [k, v] of [['secao', 'comunidade'], ['social', 'profile'], ['perfil', ID]])
-      if (url.searchParams.get(k) !== v) return `iframe sem ${k}=${v}: ${f.src}`;
-    if (!/\bfullscreen\b/.test(f.allow || '')) return `iframe sem fullscreen: ${f.allow}`;
-    if (!f.title) return 'iframe sem title';
-    if (r.ssr.some((n) => !n.inert)) return 'conteúdo SSR atrás do jogo continua focável';
-    if (!r.classes.has('profile-in-game')) return 'documento não trava a rolagem atrás do jogo';
-    for (const fn of f.listeners.load || []) fn();
-    if (r.foco() !== f) return 'o jogo não recebe o foco ao carregar';
+  ['PG2 · a resposta é o hub do jogo, com o perfil dentro da comunidade', (b) => {
+    const { html } = b.pub;
+    if (!importmap(b.hub)) return 'cópia estática do hub sem importmap (build quebrado?)';
+    if (importmap(html) !== importmap(b.hub)) return 'importmap diferente do hub estático: /u não sobe o mesmo jogo';
+    if (modulos(html) !== modulos(b.hub)) return `módulos diferentes do hub: ${modulos(html)} vs ${modulos(b.hub)}`;
+    if (!/<base href="\/">/.test(head(html))) return 'sem <base href="/">: o jogo não resolve assets em /u/<perfil>';
+    for (const id of ['main-menu', 'hub-ui', 'hub-treta-wallet', 'hub-music-toggle', 'hub-account-login', 'community'])
+      if (!html.includes(`id="${id}"`)) return `hub sem #${id}`;
+    const comunidade = secaoComunidade(html);
+    if (!/id="community"/.test(comunidade)) return 'comunidade fora do pane do hub';
+    if (!/id="perfil-ssr"[\s\S]*<article\b[^>]*profile-sheet[\s\S]*Fixture Treta/.test(comunidade)) return 'perfil SSR fora da comunidade do hub';
+    if (/<iframe\b[^>]*profile-game|frame\.className=.profile-game/.test(html)) return 'ainda sobe o jogo num iframe por cima';
     return null;
   }],
-  ['PG3 · dentro de um quadro, não monta outro jogo', (b) => {
-    const r = executar(b.pub.html, { emQuadro: true });
-    if (r.quadros.length) return 'montou um jogo dentro do jogo';
-    if (r.navegou.length) return `navegou dentro do quadro: ${JSON.stringify(r.navegou)}`;
+  ['PG3 · perfil público não navega para outro endereço', (b) => {
+    const navegou = redirecionamentos(b.pub.html);
+    if (navegou.length) return `o documento navegou: ${JSON.stringify(navegou)}`;
     return null;
   }],
-  ['PG4 · perfil privado segue indisponível, sem jogo montado por cima', (b) => {
+  ['PG4 · perfil privado segue indisponível, com a entrada ao jogo', (b) => {
     const { status, html } = b.priv;
     if (status !== 404) return `status ${status}`;
     if (!/name="robots" content="noindex/.test(html)) return 'privado sem noindex';
     if (meta(html, 'og:image')) return 'privado expõe og:image';
     if (html.includes(PERFIL.nick)) return 'privado vaza o nick';
-    const r = executar(html);
-    if (r.quadros.length) return 'privado montou o jogo com o perfil';
-    if (!r.navegou.some(([tipo, alvo]) => tipo === 'replace' && /secao=comunidade/.test(alvo))) return 'privado perdeu a entrada ao jogo';
+    const navegou = redirecionamentos(html);
+    if (!navegou.some(([tipo, alvo]) => tipo === 'replace' && /secao=comunidade/.test(alvo) && alvo.includes(PRIVADO))) return `privado perdeu a entrada ao jogo: ${JSON.stringify(navegou)}`;
     return null;
   }],
-  ['PG5 · link que sai do jogo abre fora do quadro', (b) => {
-    const r = executar(b.pub.html), f = r.quadros[0];
-    if (!f) return 'sem iframe';
-    let captura = null;
-    f.contentDocument = { baseURI: `${CANONICO}/?secao=comunidade`, addEventListener: (t, fn, c) => { if (t === 'click' && c === true) captura = fn; } };
-    for (const fn of f.listeners.load || []) fn();
-    if (!captura) return 'o quadro não observa os cliques de link';
-    const clique = (href, target = '') => { const a = { href: new URL(href, CANONICO).href, target }; captura({ target: { closest: () => a } }); return a.target; };
-    for (const href of ['/privacidade', '/u/outro_perfil', 'https://x.com/corosolto'])
-      if (clique(href) !== '_top') return `${href} ficaria preso no quadro`;
-    for (const href of ['/?secao=jogar', '/?secao=comunidade&social=ranking'])
-      if (clique(href) !== '') return `${href} sairia do jogo`;
-    if (clique('/privacidade', '_blank') !== '_blank') return 'link com target próprio foi reescrito';
+  ['PG5 · o boot não suja a URL compartilhada', (b) => {
+    const boot = b.main.match(/^\s*([^\n]*hubNavigate\(\{ map: currentMap, personagem: currentChar \}, true\);)[^\n]*$/m)?.[1];
+    if (!boot) return 'bloco de boot do hub não encontrado';
+    const chamou = (pathname) => { let n = 0; vm.runInNewContext(boot, { location: { pathname }, hubNavigate: () => { n++; }, currentMap: 'm', currentChar: 'c' }); return n; };
+    if (chamou(`/u/${HANDLE}`) !== 0 || chamou(`/u/${HANDLE}/conquistas`) !== 0) return 'boot pendura ?map= e ?personagem= em /u/<perfil>';
+    if (chamou('/') !== 1 || chamou('/loja') !== 1) return 'boot deixou de gravar mapa e personagem no hub comum';
     return null;
   }],
-  ['PG6 · o jogo recebe o perfil compartilhado: sem convite por cima, conta recolhida, login fora do quadro', (b) => {
-    const skip = b.main.match(/initAccountEntry\(\{skipPrompt:(Boolean\([^\n]*?\)),onSession/)?.[1];
-    if (!skip) return 'skipPrompt do initAccountEntry não encontrado';
-    const avalia = (q) => vm.runInNewContext(skip, { inspectionScreen: null, testMode: false, params: new URLSearchParams(q), Boolean });
-    if (avalia('?secao=comunidade&social=profile&perfil=' + ID) !== true) return 'convite de conta cobre o perfil compartilhado';
-    if (avalia('?secao=jogar') !== false) return 'convite de conta sumiu da entrada comum';
-    const recolhe = b.community.match(/^\s*(if\(new URLSearchParams\(location\.search\)\.get\('perfil'\)\)[^\n]*)$/m)?.[1];
+  ['PG6 · o jogo recebe o perfil compartilhado: sem convite por cima, conta recolhida, login fora do quadro', async (b) => {
+    const decl = b.main.match(/^const perfilCompartilhado = ([^\n]*);$/m)?.[1];
+    if (!decl) return 'perfilCompartilhado não encontrado em main.js';
+    for (const re of [/initAccountEntry\(\{skipPrompt:Boolean\([^\n]*?perfilCompartilhado\)/, /initLoginPrompt\(\{\.\.\.ready,skip:Boolean\([^\n]*?perfilCompartilhado\)/, /initTretaStore\(\{skipPrompt:Boolean\([^\n]*?perfilCompartilhado\)/])
+      if (!re.test(b.main)) return `convite sem a guarda do perfil compartilhado: ${re}`;
+    const { estadoDaUrl } = await import(`data:text/javascript;base64,${Buffer.from(b.rotas).toString('base64')}`);
+    const avalia = (url) => { const u = new URL(url, CANONICO); return vm.runInNewContext(decl, { params: u.searchParams, estadoDaUrl, location: { href: u.href }, Boolean }); };
+    if (avalia(`/u/${HANDLE}`) !== true || avalia(`/u/${ID}/conquistas`) !== true) return 'convite de conta cobre /u/<perfil>';
+    if (avalia('/?secao=comunidade&social=profile&perfil=' + ID) !== true) return 'convite de conta cobre o link antigo ?perfil=';
+    if (avalia('/?secao=jogar') !== false || avalia('/comunidade') !== false) return 'convite de conta sumiu da entrada comum';
+    const recolhe = b.community.match(/^\s*(if\(new URLSearchParams\(location\.search\)\.get\('perfil'\)[^\n]*)$/m)?.[1];
     if (!recolhe) return 'painel da conta não recolhe no perfil compartilhado';
-    const painel = { open: true, removeAttribute(k) { if (k === 'open') this.open = false; } };
-    vm.runInNewContext(recolhe, { URLSearchParams, location: { search: '?perfil=' + ID }, account: { closest: (s) => (s === 'details' ? painel : null) } });
-    if (painel.open) return 'painel da conta continua aberto por cima do perfil';
+    for (const [search, pathname] of [['?perfil=' + ID, '/'], ['', `/u/${HANDLE}`]]) {
+      const painel = { open: true, removeAttribute(k) { if (k === 'open') this.open = false; } };
+      vm.runInNewContext(recolhe, { URLSearchParams, location: { search, pathname }, account: { closest: (s) => (s === 'details' ? painel : null) } });
+      if (painel.open) return `painel da conta continua aberto por cima do perfil (${pathname}${search})`;
+    }
+    const troca = b.community.match(/^\s*(document\.getElementById\?\.\('perfil-ssr'\)\?\.remove\(\);)$/m)?.[1];
+    if (!troca) return 'comunidade não troca o perfil SSR pelo dela (ficaria duplicado)';
     const leave = b.entry.match(/^const leaveTo=[^\n]*$/m)?.[0];
     if (!leave) return 'account-entry sem saída do quadro para o login social';
     if (/location\.assign\(out\.url\)/.test(b.entry) || (b.entry.match(/leaveTo\(out\.url\)/g) || []).length < 2) return 'login social ainda navega dentro do quadro';
@@ -175,34 +163,34 @@ const CASOS = [
       vm.runInNewContext(`${leave};leaveTo('https://accounts.example/oauth')`, { location, top, self });
       return log.map(([onde]) => onde).join();
     };
-    if (ida('mesma') !== 'topo') return 'login dentro do iframe de /u não sai do quadro';
+    if (ida('mesma') !== 'topo') return 'login dentro de quadro da mesma origem não sai do quadro';
     if (ida('topo') !== 'quadro') return 'login fora de quadro mudou de destino';
     if (ida('outra') !== 'quadro') return 'portal de outra origem quebrou o login';
     return null;
   }],
 ];
 
-const rodar = (b) => CASOS.map(([nome, f]) => { let erro; try { erro = f(b); } catch (e) { erro = `exceção: ${e.message}`; } return { nome, erro }; });
+const rodar = async (b) => { const out = []; for (const [nome, f] of CASOS) { let erro; try { erro = await f(b); } catch (e) { erro = `exceção: ${e.message}`; } out.push({ nome, erro }); } return out; };
 const build = await coletar();
 if (!build) { console.error('✗ sem build: rode `npm run build` antes (precisa de .vercel/output).'); process.exit(1); }
 
 if (MUTATE) {
   const pub = (b, f) => ({ ...b, pub: { ...b.pub, html: f(b.pub.html) } });
-  const montagem = (html) => scripts(html).find((s) => s.includes('profile-game')) || '';
   const MUTANTES = [
     ['PG1', 'canonical some do perfil', (b) => pub(b, (h) => h.replace(/<link rel="canonical"[^>]*>/, ''))],
     ['PG1', 'og:image some do perfil', (b) => pub(b, (h) => h.replace(/<meta property="og:image" [^>]*>/, ''))],
     ['PG1', 'canonical vira a home', (b) => pub(b, (h) => h.replace(`<link rel="canonical" href="${CANONICO}/u/${HANDLE}"`, `<link rel="canonical" href="${CANONICO}/"`))],
     ['PG1', 'perfil SSR some e só o jogo fica', (b) => pub(b, (h) => h.replace(/<article\b[\s\S]*?<\/article>/, ''))],
-    ['PG2', 'página sem a montagem do jogo', (b) => pub(b, (h) => h.replace(montagem(h), ''))],
-    ['PG2', 'iframe aponta para fora do site', (b) => pub(b, (h) => h.replace('frame.src=game', "frame.src='https://evil.example/'+game"))],
-    ['PG2', 'perfil público redireciona em vez de montar', (b) => pub(b, (h) => h.replace(montagem(h), 'location.replace(game);'))],
-    ['PG2', 'conteúdo SSR continua focável atrás do jogo', (b) => pub(b, (h) => h.replace('node.inert=true;', ''))],
-    ['PG3', 'sem a guarda de quadro', (b) => pub(b, (h) => h.replace('if(window.top!==window.self)return;', ''))],
-    ['PG4', 'privado também monta o jogo', (b) => ({ ...b, priv: { ...b.priv, html: b.priv.html.replace('</body>', `<script>${montagem(b.pub.html).replace(/const game = [^;]*;/, `const game = "/?secao=comunidade&social=profile&perfil=${PRIVADO}";`)}</script></body>`) } })],
-    ['PG5', 'link que sai do jogo fica preso no quadro', (b) => pub(b, (h) => h.replace("a.target='_top'", 'void 0'))],
-    ['PG6', 'convite de conta cobre o perfil compartilhado', (b) => ({ ...b, main: b.main.replace(" || params.get('perfil')", '') })],
-    ['PG6', 'painel da conta aberto por cima do perfil', (b) => ({ ...b, community: b.community.replace(/^\s*if\(new URLSearchParams\(location\.search\)\.get\('perfil'\)\)[^\n]*\n/m, '') })],
+    ['PG2', 'página à parte em vez do hub (sem o menu)', (b) => pub(b, (h) => h.replaceAll('id="main-menu"', 'id="pagina-perfil"'))],
+    ['PG2', 'importmap de outro build', (b) => pub(b, (h) => h.replace(/(<script type="importmap"[^>]*>)/, '$1 '))],
+    ['PG2', 'perfil SSR fora da comunidade', (b) => pub(b, (h) => h.replace('id="perfil-ssr"', 'id="perfil-solto"'))],
+    ['PG2', 'volta o iframe por cima', (b) => pub(b, (h) => h.replace('</body>', "<script>frame.className='profile-game'</script></body>"))],
+    ['PG3', 'perfil público redireciona', (b) => pub(b, (h) => h.replace('</body>', '<script>location.replace("/?secao=comunidade");</script></body>'))],
+    ['PG4', 'privado sem a entrada ao jogo', (b) => ({ ...b, priv: { ...b.priv, html: b.priv.html.replace('location.replace(game)', 'void game') } })],
+    ['PG5', 'boot suja /u com ?map=', (b) => ({ ...b, main: b.main.replace("  if (!location.pathname.startsWith('/u/')) hubNavigate(", '  hubNavigate(') })],
+    ['PG6', 'convite de conta cobre /u/<perfil>', (b) => ({ ...b, main: b.main.replace(" || estadoDaUrl(location.href)?.perfil", '') })],
+    ['PG6', 'painel da conta aberto por cima do perfil em /u', (b) => ({ ...b, community: b.community.replace(" || /^\\/u\\/[^/]/.test(location.pathname || '')", '') })],
+    ['PG6', 'perfil SSR fica duplicado ao lado da comunidade', (b) => ({ ...b, community: b.community.replace("document.getElementById?.('perfil-ssr')?.remove();", '') })],
     ['PG6', 'login social navega dentro do quadro', (b) => ({ ...b, entry: b.entry.replace(/^const leaveTo=[^\n]*$/m, 'const leaveTo=url=>location.assign(url);') })],
   ];
   let cegas = 0;
@@ -210,7 +198,7 @@ if (MUTATE) {
   for (const [alvo, nome, aplica] of MUTANTES) {
     const m = aplica(build);
     if (JSON.stringify(m) === JSON.stringify(build)) { console.error(`✗ MUTANTE NÃO APLICOU: ${nome}`); process.exit(1); }
-    const mordeu = rodar(m).some((r) => r.nome.startsWith(alvo) && r.erro);
+    const mordeu = (await rodar(m)).some((r) => r.nome.startsWith(alvo) && r.erro);
     if (!mordeu) cegas++;
     console.log(` ${mordeu ? '✓' : '✗'} ${alvo} · ${nome}`);
   }
@@ -219,7 +207,7 @@ if (MUTATE) {
   process.exit(0);
 }
 
-const res = rodar(build);
+const res = await rodar(build);
 for (const r of res) console.log(` ${r.erro ? '✗' : '✓'} ${r.nome}${r.erro ? '\n     ' + r.erro : ''}`);
 const falhas = res.filter((r) => r.erro).length;
 console.log(`\n${falhas ? '✗' : '✓'} perfil no jogo ${res.length - falhas}/${res.length}`);

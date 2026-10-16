@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.96`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.100`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,122 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.100] — 2026-10-14
+
+### Mudado
+- Lote automação: fila de merge e contagens fora dos PRs (#975)
+- Regenera os blocos gerados do lote de automação
+- Regenera blocos gerados depois da mescla da main
+- Lê o on: do MGQ1 linha a linha, com forma inline
+- Junta o cabeçalho duplicado da RLS10
+- Roda a régua das contagens no pr-fast
+- Exige a régua das contagens no pr-fast (PI3)
+- Adiciona mutante que aceita marcador de conflito
+- Reprova marcador de conflito no bloco gerado do ARCH.md
+- Reprova marcador de conflito em qualquer bloco gerado
+- Cobra na régua marcador de conflito em bloco gerado
+- Isola o git da cópia da régua do GIT_DIR do hook
+- Alinha valor volátil sem cursor no modo PR
+- Cobra na régua que mover um método não reescreve o ARCH.md
+- Mede a régua das contagens numa cópia da árvore
+- Reprova o ratchet quando o git log do lote falha
+- Tira portão e smoke do lote da fila
+- Cobra portão e smoke fora do lote da fila
+- Regenera os blocos gerados em modo release
+- Atualiza o comentário do autofix para o modo PR
+- Confere gerado inteiro só no commit do release
+- Regenera os blocos gerados em modo release no trem
+- Deixa linhas e tamanhos do ARCH.md para o release
+- Deixa contagens voláteis do gen-docs para o release
+- Adiciona régua das contagens geradas fora do PR
+- Regenera blocos gerados com a régua da fila
+- Proíbe segredo e escrita em workflow do lote da fila
+- Filtra portão e smoke pelo diff do lote da fila
+- Cobra o filtro do lote da fila no gatilho do portão
+- Roda versao-bumpada e ratchet no lote da fila
+- Roda build e dco no lote da fila de merge
+- Adiciona régua da fila de merge nos checks obrigatórios
+
+## [2.1.0-alpha.99] — 2026-10-14
+
+### Mudado
+- Agent: Claude (#955)
+- Agent: Claude (#953)
+- Agent: Claude (#957)
+- Lote: vitrine de skins no menu e convite de login pós-partida (#962)
+- Regenera as contagens da documentação
+- Caber o título da vitrine acima da DICA
+- Exigir o título da vitrine inteiro no celular
+- Deixar claro o estado e a rolagem da vitrine
+- Cobrir a vitrine na régua de nomes reais
+- Regenera as contagens da documentação
+- Convite com T$ absorve a apresentação da loja
+- Convite mostra os T$ que a conta rende
+- Recusa do convite vira "Agora não"
+- Bloco de T$ no convite pós-partida
+- Fim de partida diz se foi solo ou multiplayer
+- Régua: convite pós-partida mostra os T$ da campanha
+- Regenerar contagens da documentação
+- Mostrar as skins da loja na aba JOGAR
+- Exportar da loja o que a vitrine reaproveita
+- Rodar a régua da vitrine no portão de navegador
+- Medir a vitrine de skins do menu no navegador
+- Regenera as contagens da documentação
+- Contrato E02 segue a abertura sem modal
+- B7 mede modal na abertura em vez de fechá-lo
+- Apresentação da loja abre depois do convite
+- Convite de login só abre depois da 1ª partida
+- Passo de entrada não abre sozinho para visitante
+- Régua: nenhum modal antes da 1ª partida
+
+## [2.1.0-alpha.98] — 2026-10-14
+
+### Mudado
+- Agent: Claude (#948)
+- Agent: Claude (#949)
+- Agent: Claude (#950)
+- Lote perfil: /u no hub, adicionar amigo e saldo T$ (#956)
+- Regenera as contagens da documentação
+- Regenera docs
+- Abas de conta e do perfil só para o dono
+- ADICIONAR AMIGO com o estado da amizade
+- Conserta a sintaxe do eval:rotas
+- ADR 0008: /u/perfil é o hub
+- Regenera docs e ARCH
+- Tira o ABRIR PERFIL PÚBLICO do perfil no hub
+- Serve /u/perfil como o hub do jogo
+- Regenera docs
+- Régua do saldo TRETA$ no perfil
+- Mostra o saldo TRETA$ no perfil
+- Hub aceita head próprio de rota
+- Guarda a aba do perfil na rota do hub
+- Calcula a revisão do CSS do hub no build
+
+## [2.1.0-alpha.97] — 2026-10-14
+
+### Mudado
+- Agent: Claude (#918)
+- Agent: Claude (#945)
+- Agent: Claude (#946)
+- Agent: Claude (#947)
+- Agent: Claude (#946)
+- Lote loja: moedas, nomes das skins, LOJA e privacidade (#951)
+- Dar nomes de paródia às skins das primeiras-damas
+- Regenera as contagens da documentação
+- Regenerar contagens da documentação
+- Medir o rótulo da aba da loja com mutantes
+- Trocar o rótulo LOJA T$ do hub por LOJA
+- Regenerar contagens da documentação
+- Reprovar nome de político real na loja
+- Dar às skins o nome do personagem do jogo
+- Regenerar contagens da documentação
+- Medir as sete moedas da loja com mutantes
+- Mostrar as sete moedas com arte na loja
+- Adicionar arte das seis moedas TRETA$ que faltavam
+- Recortar moeda TRETA$ crua no formato da do Saci
+- Renomear a moeda Zé Gotinha para Zé da Gotinha
+- Disclose anonymous aggregate counting in privacy
 
 ## [2.1.0-alpha.96] — 2026-10-14
 
