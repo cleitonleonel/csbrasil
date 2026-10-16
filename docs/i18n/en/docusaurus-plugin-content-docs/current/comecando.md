@@ -44,6 +44,7 @@ this page was aging at the very first commit — see
 | Game code | 62,250 lines in 148 files | `git ls-files public/js/*.js \| xargs wc -l` |
 | Game code | 62,246 lines in 148 files | `git ls-files public/js/*.js \| xargs wc -l` |
 | Game code | 62,249 lines in 148 files | `git ls-files public/js/*.js \| xargs wc -l` |
+| Game code | 62,267 lines in 148 files | `git ls-files public/js/*.js \| xargs wc -l` |
 | `game.js` | **8,487** lines | `wc -l public/js/game.js` |
 | `main.js` | 4,877 lines | `wc -l public/js/main.js` |
 | Game code | 62,236 lines in 148 files | `git ls-files public/js/*.js \| xargs wc -l` |
