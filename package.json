@@ -155,6 +155,7 @@
     "//eval:ui-v3:hud": "HUD Treta Pop (telas 05, 13 e 21) numa partida viva no Chrome: retratos vivo/morto, placar, vida, munição tabular, killfeed com headshot, dicas que somem, chat com abas e menu no nome, placar sem ping inventado, toque com alvos de 44 px; --mutantes prova cada cláusula.",
     "eval:ui-v3:hud": "node tools/eval/ui-v3-hud.mjs && node tools/eval/ui-v3-hud.mjs --mutantes",
     "eval:ui-v3:resultado": "node tools/eval/ui-v3-resultado.mjs && node tools/eval/ui-v3-resultado.mjs --mutantes",
+    "eval:ui-v3:loja": "node tools/eval/ui-v3-loja.mjs && node tools/eval/ui-v3-loja.mjs --mutantes",
     "eval:resultado-arte": "node tools/eval/resultado-arte-check.mjs",
     "eval:screenquery": "node tools/eval/screen-query-check.mjs",
     "eval:screenquery:browser": "node tools/eval/screen-query-browser.mjs",

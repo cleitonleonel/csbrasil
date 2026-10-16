@@ -560,6 +560,17 @@ const DICT = {
   // tp:fim-resultado
 
   // tp:loja
+  'LOJA DA': 'SHOP', 'SKINS': 'SKINS', 'ARMÁRIO': 'LOCKER', 'GANHAR T$': 'EARN T$', 'GANHAR MAIS': 'EARN MORE', 'Seções da loja': 'Shop sections',
+  'NO SEU ARMÁRIO': 'IN YOUR LOCKER', 'EQUIPADO': 'EQUIPPED', 'EQUIPAR': 'EQUIP', 'EM PRODUÇÃO': 'IN PRODUCTION',
+  'CONSULTA INDISPONÍVEL': 'CHECK UNAVAILABLE', 'CONSULTANDO…': 'CHECKING…', 'INCOMUM': 'UNCOMMON', 'SÉRIE GAMBIARRA': 'GAMBIARRA SERIES',
+  'GANHE T$': 'EARN T$', 'Partidas hoje': 'Matches today', 'Chame sua turma · T$ {v} por amigo': 'Bring your crew · T$ {v} per friend',
+  'COPIAR CONVITE': 'COPY INVITE', 'ENTRAR NA CONTA': 'SIGN IN', 'Entre na conta para ganhar T$ e guardar seu armário.': 'Sign in to earn T$ and keep your locker.',
+  'Não há quests ativas agora. Seu saldo e seus visuais continuam na conta.': 'No active quests right now. Your balance and outfits stay on your account.',
+  'Sem compra de moeda: T$ só vem de quests e partidas. Visual não dá vantagem.': 'No currency purchases: T$ only comes from quests and matches. Outfits give no advantage.',
+  'VER EM 3D': 'VIEW IN 3D', 'VISUAL': 'OUTFIT', 'Personagem base': 'Base character', 'VISUAIS · {n} DE {m}': 'OUTFITS · {n} OF {m}',
+  'Filtrar visuais': 'Filter outfits', 'MEUS': 'MINE', 'DESBLOQUEAR VISUAL': 'UNLOCK OUTFIT', 'Não deu para equipar agora. Tente de novo.': 'Could not equip right now. Try again.',
+  'Visual é só cosmético: mesmo dano, velocidade e hitbox. O equipado entra com você na próxima partida.':
+    'Outfits are cosmetic only: same damage, speed and hitbox. The equipped one joins you in your next match.',
   // tp:fim-loja
 
   // tp:perfil

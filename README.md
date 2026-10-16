@@ -36,6 +36,7 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 |---|---:|---|
 | Código do jogo | 62.250 linhas em 148 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
 | Código do jogo | 62.246 linhas em 148 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| Código do jogo | 62.249 linhas em 148 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
 | `game.js` | **8.487** linhas | `wc -l public/js/game.js` |
 | `main.js` | 4.877 linhas | `wc -l public/js/main.js` |
 | Código do jogo | 62.236 linhas em 148 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |

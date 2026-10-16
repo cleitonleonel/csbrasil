@@ -1,1 +1,167 @@
 /* Treta Pop · 07 loja, 09 armário, 23 mobile. Só vale com <html data-ui="v3">: todo seletor começa em :root[data-ui="v3"] ou numa classe .tp-. */
+
+/* A loja v3 desenha cabeçalho, abas e grade próprios (tp/loja.js); os da loja antiga saem. */
+:root[data-ui="v3"] .treta-heading{display:none}
+:root[data-ui="v3"] .treta-views{display:none}
+:root[data-ui="v3"] #treta-skins-view{display:none!important}
+:root[data-ui="v3"] .treta-store{--treta-bg:var(--tp-asfalto);--treta-panel:var(--tp-painel);--treta-muted:var(--tp-tinta-3);--treta-line:var(--tp-borda);
+  --treta-gold:var(--tp-ambar);--treta-lime:var(--tp-lima);padding:20px 32px 28px!important;color:var(--tp-tinta-1);font-family:var(--tp-ui);
+  background:radial-gradient(900px 500px at 20% 30%,color-mix(in srgb,var(--tp-novo) 18%,transparent),transparent 70%),var(--tp-asfalto)}
+:root[data-ui="v3"] .treta-dialog,:root[data-ui="v3"] .treta-earned{--treta-bg:var(--tp-fundo-2);--treta-panel:var(--tp-painel);--treta-muted:var(--tp-tinta-3);
+  --treta-line:var(--tp-borda);--treta-gold:var(--tp-ambar);--treta-lime:var(--tp-lima);color:var(--tp-tinta-1);font-family:var(--tp-ui)}
+
+.tp-loja{display:flex;flex-direction:column;gap:18px;color:var(--tp-tinta-1);font-family:var(--tp-ui)}
+.tp-loja [hidden]{display:none!important}
+.tp-loja__topo{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.tp-loja__titulo{font-family:var(--tp-display);margin:0;font-size:64px;white-space:nowrap}
+.tp-loja__titulo em{font-style:normal;color:var(--tp-ambar)}
+
+/* Abas da loja em segmento: o risco único vira o fundo da aba ativa, para não somar um segundo sublinhado ao LOJA do topo. */
+.tp-loja__abas{gap:0;padding:4px;border-radius:10px;background:var(--tp-painel);border:1px solid var(--tp-borda)}
+.tp-loja__abas .tp-aba{position:relative;z-index:1;min-height:44px;padding:8px 18px;font-size:20px;color:var(--tp-tinta-3);
+  transition:opacity var(--tp-d-rapido) var(--tp-ease-saida)}
+.tp-loja__abas .tp-aba[aria-selected="true"]{color:var(--tp-tinta-1)}
+.tp-loja__abas .tp-abas__risco{top:4px;bottom:4px;height:auto;z-index:0;background:var(--tp-elevado)}
+
+.tp-loja__carteira{margin-left:auto;display:flex;align-items:center;gap:10px;height:48px;padding:0 6px 0 14px;border-radius:10px;
+  background:var(--tp-painel);border:1px solid color-mix(in srgb,var(--tp-lima) 35%,transparent)}
+.tp-loja__moeda{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--tp-lima);color:var(--tp-lima-tinta);font-size:13px;line-height:1}
+.tp-loja__saldo{font-size:20px;font-weight:800;color:var(--tp-ambar)}
+.tp-loja__ganhar{min-height:36px;padding:0 12px;border-radius:7px;font:800 13px/1 var(--tp-ui);letter-spacing:.06em}
+
+.tp-loja__grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:14px}
+.tp-loja__cartao{--rar-luz:var(--skin-color);justify-content:flex-start;padding:0;overflow:hidden;border-radius:12px;border:2px solid var(--tp-borda);
+  background:var(--tp-fundo-2);color:var(--tp-tinta-1);font:inherit;text-align:left;cursor:pointer}
+.tp-loja__cartao:focus-visible,.tp-loja__item:focus-visible{outline:2px solid var(--tp-tinta-1);outline-offset:3px}
+.tp-loja__arte{position:relative;display:block;height:188px;overflow:hidden;
+  background:linear-gradient(160deg,var(--skin-color),color-mix(in srgb,var(--skin-color) 30%,var(--tp-asfalto)))}
+.tp-loja__cartao[data-raridade] .tp-loja__arte{background:var(--rar-g)}
+.tp-loja__arte img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%}
+.tp-loja__info{display:flex;flex-direction:column;gap:4px;padding:10px 14px 12px;min-width:0}
+.tp-loja__rar{font:800 12px/1 var(--tp-ui);letter-spacing:.12em;color:var(--rar-luz)}
+.tp-loja__nome{font-size:24px;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tp-loja__preco{font-size:18px;font-weight:800;color:var(--tp-ambar)}
+.tp-loja__meu{font:800 15px/1.1 var(--tp-ui);letter-spacing:.06em;color:var(--tp-ganho)}
+.tp-loja__estado{font:800 13px/1.1 var(--tp-ui);letter-spacing:.06em;color:var(--tp-tinta-3)}
+
+.tp-loja__rodape{display:flex;gap:14px;align-items:stretch;margin-top:6px}
+.tp-loja__ganhe{flex:1;display:flex;align-items:center;gap:16px;padding:12px 16px;border-radius:12px}
+.tp-loja__ganhe-titulo{display:inline-block;font-size:22px;white-space:nowrap;transform:var(--tp-skew)}
+.tp-loja__ganhe-texto{flex:1;font:600 15px/1.35 var(--tp-ui);color:var(--tp-tinta-2)}
+.tp-loja__meta{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tp-loja__meta-topo{display:flex;justify-content:space-between;gap:8px;font:700 14px/1.2 var(--tp-ui)}
+.tp-loja__meta .tp-barra{height:6px}
+.tp-loja__convite,.tp-loja__3d{min-height:40px;padding:0 14px;border-radius:8px;font:800 14px/1 var(--tp-ui);letter-spacing:.04em}
+.tp-loja__aviso{display:flex;align-items:center;max-width:300px;margin:0;font:600 14px/1.35 var(--tp-ui);color:var(--tp-tinta-3)}
+
+.tp-loja__armario{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(0,1.3fr);gap:32px;align-items:start}
+.tp-loja__palco{position:relative;display:flex;flex-direction:column;gap:6px;min-height:560px}
+.tp-loja__palco::before{content:'';position:absolute;left:12%;right:12%;bottom:24px;height:90px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse at center,color-mix(in srgb,var(--tp-lima) 35%,transparent),transparent 70%)}
+.tp-loja__figura{position:absolute;left:8%;top:56px;width:84%;height:calc(100% - 80px);object-fit:contain;object-position:50% 100%;pointer-events:none}
+.tp-loja__serie{position:relative;color:var(--tp-tinta-3)}
+.tp-loja__serie[data-raridade="incomum"]{color:var(--tp-rar-incomum)}
+.tp-loja__serie[data-raridade="raro"]{color:var(--tp-rar-raro)}
+.tp-loja__serie[data-raridade="epico"]{color:#c98bff}
+.tp-loja__serie[data-raridade="lendario"]{color:var(--tp-rar-lendario)}
+.tp-loja__destaque{position:relative;margin:0;font-size:56px;max-width:420px}
+.tp-loja__3d{position:relative;align-self:flex-start;margin-top:auto;background:transparent;border:1px solid var(--tp-borda-forte)}
+.tp-loja__lado{display:flex;flex-direction:column;gap:18px;min-width:0}
+.tp-loja__slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.tp-loja__slot{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;background:var(--tp-painel);border:2px solid var(--tp-lima)}
+.tp-loja__slot-ic{width:56px;height:56px;flex:none;overflow:hidden;border-radius:8px;background:var(--tp-elevado)}
+.tp-loja__slot-ic img{width:100%;height:100%;object-fit:cover;object-position:50% 4%}
+.tp-loja__slot-tx{display:flex;flex-direction:column;gap:2px;min-width:0;line-height:1.15}
+.tp-loja__slot-tx .tp-rotulo{font-size:11px}
+.tp-loja__slot-tx b{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tp-loja__filtros{display:flex;align-items:center;gap:10px}
+.tp-loja__contagem{margin:0;font-size:30px}
+.tp-loja__chips{margin-left:auto;display:flex;gap:6px}
+.tp-loja__chip{min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--tp-borda-forte);background:none;color:var(--tp-tinta-2);
+  font:800 14px/1 var(--tp-ui);cursor:pointer}
+.tp-loja__chip[aria-pressed="true"]{background:var(--tp-tinta-1);border-color:var(--tp-tinta-1);color:var(--tp-asfalto)}
+.tp-loja__chip:focus-visible{outline:2px solid var(--tp-tinta-1);outline-offset:3px}
+.tp-loja__itens{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.tp-loja__item{--rar-luz:var(--skin-color);height:150px;padding:0;overflow:hidden;border-radius:10px;border:2px solid var(--tp-borda);cursor:pointer;font:inherit;
+  background:linear-gradient(160deg,var(--skin-color),color-mix(in srgb,var(--skin-color) 30%,var(--tp-asfalto)))}
+.tp-loja__item[data-raridade]{background:var(--rar-g)}
+.tp-loja__item[aria-pressed="true"]{border-color:var(--tp-lima)}
+.tp-loja__item img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%}
+.tp-loja__item[data-trancado] img{opacity:.4}
+.tp-loja__item-nome{position:absolute;left:8px;right:8px;bottom:8px;font-size:16px;color:var(--tp-tinta-1);text-align:left;text-shadow:0 2px 4px rgba(0,0,0,.7)}
+.tp-loja__item[data-trancado] .tp-loja__item-nome{color:var(--tp-tinta-3)}
+.tp-loja__selo{position:absolute;right:8px;top:8px;padding:3px 7px;border-radius:4px;background:var(--tp-asfalto);color:var(--tp-ambar);font-size:12px;font-weight:800}
+.tp-loja__selo--equipado{right:auto;left:8px;background:var(--tp-lima);color:var(--tp-lima-tinta);font:800 11px/1.2 var(--tp-ui)}
+.tp-loja__equipar{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px}
+.tp-loja__equipar p{flex:1;margin:0;font:600 15px/1.35 var(--tp-ui);color:var(--tp-tinta-2)}
+.tp-loja__acao{flex:none;padding:12px 28px;font-size:26px}
+.tp-loja__acao[data-estado="equipado"]{opacity:1;cursor:default}
+
+/* Quests e diálogos da loja antiga ganham os tokens; a lógica continua a de hoje. */
+:root[data-ui="v3"] .treta-status{font-family:var(--tp-ui);color:var(--tp-tinta-3)}
+:root[data-ui="v3"] .treta-section-heading small,:root[data-ui="v3"] .treta-quest small{font:700 13px/1.2 var(--tp-ui);letter-spacing:.16em;color:var(--tp-tinta-3)}
+:root[data-ui="v3"] .treta-section-heading h3,:root[data-ui="v3"] .treta-dialog h2,:root[data-ui="v3"] .treta-quest h4{font-family:var(--tp-display);font-weight:400;text-transform:uppercase}
+:root[data-ui="v3"] .treta-section-heading p,:root[data-ui="v3"] .treta-quest p,:root[data-ui="v3"] .treta-dialog p,:root[data-ui="v3"] #treta-quest-period,
+:root[data-ui="v3"] #treta-quest-limit{font-family:var(--tp-ui);color:var(--tp-tinta-2)}
+:root[data-ui="v3"] .treta-quest{border:1px solid var(--tp-borda);border-radius:12px;display:flex;gap:14px;align-items:flex-start}
+:root[data-ui="v3"] .tp-loja-quest-icone{flex:0 0 auto;display:grid;place-items:center;width:46px;height:46px;border:1px solid var(--tp-borda);border-radius:10px;background:#141008;color:var(--tp-tinta-2)}
+:root[data-ui="v3"] .tp-loja-quest-icone svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:root[data-ui="v3"] .tp-loja-quest-corpo{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+:root[data-ui="v3"] .treta-quest strong,:root[data-ui="v3"] .treta-detail-copy>strong{font-family:var(--tp-num);font-weight:800;color:var(--tp-ambar)}
+:root[data-ui="v3"] .treta-secondary,:root[data-ui="v3"] .treta-close{border-radius:8px;background:var(--tp-elevado);color:var(--tp-tinta-1);font:800 14px/1.2 var(--tp-ui);letter-spacing:.04em}
+:root[data-ui="v3"] .treta-primary{border-radius:0;clip-path:var(--tp-corte);background:var(--tp-lima);color:var(--tp-lima-tinta);font:400 24px/1 var(--tp-display);text-transform:uppercase}
+:root[data-ui="v3"] .treta-primary:disabled{background:var(--tp-elevado);color:var(--tp-tinta-3)}
+:root[data-ui="v3"] .treta-dialog{border-radius:12px;border-color:var(--tp-borda)}
+/* sem blur no fundo do diálogo: por trás está o canvas 3D do lobby */
+:root[data-ui="v3"] .treta-dialog::backdrop{backdrop-filter:none;background:rgba(9,7,4,.86)}
+
+@media (max-width:1400px){
+  .tp-loja__titulo{font-size:52px}
+  .tp-loja__itens{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (max-width:1100px){
+  .tp-loja__armario{grid-template-columns:minmax(220px,.7fr) minmax(0,1.3fr);gap:20px}
+  .tp-loja__destaque{font-size:42px}
+  .tp-loja__aviso{display:none}
+}
+/* Celular deitado (tela 23): uma linha de cabeçalho e a grade 3 por linha logo abaixo. */
+@media (max-height:520px){
+  :root[data-ui="v3"] .treta-store{padding:6px 12px 16px!important}
+  .tp-loja{gap:8px}
+  .tp-loja__topo{flex-wrap:nowrap;gap:12px}
+  .tp-loja__titulo{font-size:24px}
+  .tp-loja__abas{padding:2px}
+  .tp-loja__abas .tp-aba{padding:6px 12px;font-size:16px}
+  .tp-loja__abas .tp-abas__risco{top:2px;bottom:2px}
+  .tp-loja__carteira{height:auto;padding:0;border:0;background:none}
+  .tp-loja__moeda,.tp-loja__ganhar{display:none}
+  .tp-loja__saldo{display:flex;align-items:center;height:32px;padding:0 10px;border-radius:999px;background:var(--tp-elevado);font-size:13px}
+  .tp-loja__saldo::before{content:'T$ '}
+  .tp-loja__grade{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .tp-loja__cartao{border-radius:9px;border-width:0}
+  .tp-loja__arte{height:68px}
+  .tp-loja__info{gap:0;padding:5px 8px}
+  .tp-loja__rar{font-size:10px}
+  .tp-loja__nome{font-size:14px}
+  .tp-loja__preco{font-size:12px}
+  .tp-loja__meu,.tp-loja__estado{font-size:11px}
+  .tp-loja__rodape{flex-direction:column}
+  .tp-loja__ganhe{flex-wrap:wrap;gap:10px}
+  .tp-loja__aviso{display:flex;max-width:none}
+  .tp-loja__armario{display:flex;flex-direction:column;gap:10px}
+  .tp-loja__palco{display:none}
+  .tp-loja__lado{gap:10px}
+  .tp-loja__slots{order:3;grid-template-columns:1fr}
+  .tp-loja__filtros{order:2}
+  .tp-loja__contagem{font-size:20px}
+  .tp-loja__itens{order:1;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .tp-loja__item{height:84px}
+  .tp-loja__item-nome{font-size:13px}
+  .tp-loja__equipar{order:4;padding:8px 10px}
+  .tp-loja__equipar p{font-size:12px}
+  .tp-loja__acao{padding:8px 18px;font-size:20px}
+}
+@media (pointer:coarse){
+  .tp-loja__chip,.tp-loja__ganhar,.tp-loja__convite,.tp-loja__3d,.tp-loja__acao{min-height:44px}
+  .tp-loja__chip{min-width:44px}
+}
