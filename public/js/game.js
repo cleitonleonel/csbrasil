@@ -81,6 +81,8 @@ const VM_MAT_LEGACY = QS.get('vmmat') === 'legacy';
 const ROUND_TIME = 99, ROUNDS_TO_WIN = 3, RESPAWN_DELAY = 2.2, PICKUP_RESPAWN = 8, SPAWN_PROT = 2;
 // Prazo e teto do drop de morte; procedência dos dois números em tools/eval/drop-check.mjs.
 const DROP_TTL = 18, DROP_MAX = 12;
+// m/s de recomposição do boom da câmera ao sair de trás de prop (entra na hora, sai andando).
+const RECUPERA_BOOM = 5;
 /* TETO PADRÃO DE RODADAS — "melhor de 5", que é o que o índice promete inicialmente
    (src/pages/index.astro:503, "Vence quem ganhar 3 rounds"). Sem este teto o formato NÃO
    ERA melhor de 5: round EMPATADO não dá ponto pra ninguém (game.js:_endRound), então uma
@@ -2650,10 +2652,14 @@ export class Game {
     /* game.js:1878 — o banner tem que DECLARAR a condição de vitória do modo, senão o
        jogador não sabe pelo que está jogando. No CAPTURA a condição é bandeira, não
        relógio: dizer "primeiro a 2 bandeiras" é o que substitui o cronômetro que saiu. */
-    this._banner(frase('round', this.roundNum), this.ctf
+    // O ROUND 1 ainda declara o FORMATO (melhor de N, primeiro a X): o teto só vivia no
+    // menu/HUD e jogador achava que não existia (relato out/2026).
+    const subRound = this.ctf
       ? frase('alvoBandeiras', this.capsToWin)
       : (PACE ? frase('alvoAbates', this.killsToWin)
-        : (this.roundNum === 1 ? frase('comeceTreta') : frase('voltaTreta'))));
+        : (this.roundNum === 1 ? frase('comeceTreta') : frase('voltaTreta')));
+    this._banner(frase('round', this.roundNum),
+      this.roundNum === 1 ? `${subRound} · ${frase('formatoMelhorDe', this.roundsMax, this.roundsToWin)}` : subRound);
     if (!this.sfx.roundNumber(this.roundNum) && !this.sfx.csSound('roundstart')) this.sfx.vuvuzela(1.4);
   }
   _resetPositions() {
@@ -2687,6 +2693,10 @@ export class Game {
     this.player.ammo.awp = { mag: WEAPONS.awp.mag, res: WEAPONS.awp.reserve };
     this.player.ammo.pistol = { mag: WEAPONS.pistol.mag, res: WEAPONS.pistol.reserve };
     this.player.smokes = 5; this.player.frags = 1; this._updateSmokeHud();   // 5 fumaças + 1 frag por round
+    // sequência de frag é da RODADA (jogador e combatentes: no nó autoritativo o
+    // _resetPositions roda pro slot remoto também). Régua: frag-restock-check.mjs
+    this.player._fragSeq = 0;
+    for (const c of this.combatants || []) c._fragSeq = 0;
     // modo de armas: aplica o loadout inicial. No modo 'all', o player entra com a arma do
     // personagem dele (a mesma da tela de seleção) em vez da AWP padrão.
     const mode = this._wpnMode();
@@ -2708,6 +2718,12 @@ export class Game {
     // reset slot memory to the loadout (1 = primary, 2 = sidearm)
     this.player.primary = PISTOLS.has(this.player.weapon) ? 'pistol' : (this.player.weapon === 'knife' ? cw : this.player.weapon);
     this.player.secondary = 'pistol';
+    // ROUND NOVO, LOADOUT CHEIO: quem SOBREVIVE o corte não chega sem balas (relato out/2026).
+    // Mesma guarda do _respawn; história e números em tools/eval/round-municao-check.mjs.
+    for (const slot of [this.player.primary, this.player.secondary]) {
+      if (slot && this._pickupAllowed(slot) && this.player.ammo[slot])
+        this.player.ammo[slot] = { mag: WEAPONS[slot].mag, res: WEAPONS[slot].reserve };
+    }
     // QA visual: congela o ADS somente nas URLs de debug para permitir validar
     // enquadramento/linha de mira sem depender de manter o RMB pressionado.
     this.player.scoped = VM_QA_ADS && this.player.weapon !== 'knife'; this.player.reloadUntil = 0;
@@ -4151,6 +4167,7 @@ export class Game {
       // TELEMETRIA DE ARMA: quando o JOGADOR mata, conta a arma usada (param `weap`
       // já vem do _damage/_tryShoot). Bot mata não conta — não há balanço a inferir.
       if (attacker.isPlayer && weap) this._wperf[weap] = (this._wperf[weap] || 0) + 1;
+      this._fragRestockStep(attacker);
       if (attacker.isPlayer) {
         this._playerKillFeedback(attacker, head);
       }
@@ -4313,6 +4330,15 @@ export class Game {
     this.mk.life = 0; this.mk.count = 0; this.mk.until = 0;
     this._updateKillSequenceHud();
     this.el.killStreak?.classList.remove('pulse');
+  }
+  // FRAG DE VOLTA POR SEQUÊNCIA (pedido de jogador, out/2026): a cada 3 abates NA RODADA,
+  // +1 frag pra quem está sem (teto 1). Régua: tools/eval/frag-restock-check.mjs.
+  _fragRestockStep(attacker) {
+    if (!attacker) return;
+    attacker._fragSeq = ((attacker._fragSeq | 0) + 1) % 3;
+    if (attacker._fragSeq !== 0 || (attacker.frags | 0) >= 1) return;
+    attacker.frags = 1;
+    if (attacker.isPlayer) this._updateSmokeHud();
   }
   _playerKillFeedback(attacker = this.player, head = false) {
     try { this.sfx.killConfirm(); } catch { /* contexto de áudio indisponível */ }
@@ -6005,6 +6031,37 @@ export class Game {
     cam.position.y += TP_UP - 0.45 * orbitBlend;
     const gy = this.world.groundHeightAt(cam.position.x, cam.position.z, cam.position.y) + 0.2;
     if (cam.position.y < gy) cam.position.y = gy;   // não atravessa o chão
+    /* OCLUSÃO DO BOOM: câmera de 3ª pessoa não entra em prop atrás do jogador (relato
+       out/2026). Occluders seguram bala; world.camBlockers é PANO (câmera para, tiro passa). */
+    const eyePos = this._tpEyePos || (this._tpEyePos = new THREE.Vector3());
+    eyePos.set(p.pos.x, p.pos.y + eye, p.pos.z);
+    const boom = this._tpBoom || (this._tpBoom = new THREE.Vector3());
+    boom.copy(cam.position).sub(eyePos);
+    const boomLen = boom.length();
+    if (boomLen > 1e-4) {
+      boom.multiplyScalar(1 / boomLen);
+      let claro = boomLen;
+      if (this.world.occluders?.length) {
+        this.ray.set(eyePos, boom);
+        this.ray.far = boomLen;
+        const hit = this.ray.intersectObjects(this.world.occluders, false)[0];
+        if (hit && hit.distance < claro) claro = hit.distance;
+      }
+      if (this.world.camBlockers?.length) {
+        const pt = this._tpBoxPt || (this._tpBoxPt = new THREE.Vector3());
+        for (const box of this.world.camBlockers) {
+          if (this.ray.ray.intersectBox(box, pt)) {
+            const d = eyePos.distanceTo(pt);
+            if (d < claro) claro = d;
+          }
+        }
+      }
+      const piso = Math.max(0.35, claro - 0.18);   // 18 cm de folga pro near plane
+      const atual = this._tpBoomClear ?? boomLen;
+      this._tpBoomClear = piso < atual ? piso : Math.min(boomLen, atual + dt * RECUPERA_BOOM);
+      if (this._tpBoomClear < boomLen - 1e-3)
+        cam.position.copy(eyePos).addScaledVector(boom, this._tpBoomClear);
+    }
     // Cruz no alvo do raio autoritativo a distância de combate; o tiro continua
     // saindo do olho com yaw/pitch, igual ao servidor multiplayer.
     const aimPoint = this._tpAimPoint || (this._tpAimPoint = new THREE.Vector3());
