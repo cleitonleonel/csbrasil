@@ -127,10 +127,7 @@ jobs:
           ref: ${{ env.HEAD_REF }}
           token: ${{ secrets.CSBRASIL_BOT_TOKEN }}
           fetch-depth: 0
-          # Leve (CL1): a história vem sem blob; o merge e o checkout buscam sob demanda
-          # só os blobs que tocam, pela mesma origem autenticada. PR próprio de propósito:
-          # este caminho só roda depois do merge, e o rollback é reverter este PR.
-          filter: blob:none
+          # Com blobs (CL2): o merge da main busca blob sob demanda e o servidor recusa.
 
       - name: Traz a base e resolve conflito de arquivo gerado
         if: env.pular != '1'
@@ -152,11 +149,9 @@ jobs:
           # merge reinicia o CI inteiro do PR.
           # Sem conflito, o merge fica SÓ LOCAL e o `mesclou` não acende: os geradores abaixo
           # rodam na árvore MESCLADA, que é a que o CI testa (refs/pull/N/merge). Se eles
-          # mudarem algo, a trava acende `commitar` e sobem merge + regeneração. É o cenário
-          # A/B: A e B somam 1 à mesma contagem (242 -> 243), A entra, o merge de B junta
-          # limpo com 243 e a árvore tem 244; sem regenerar a árvore mesclada, o docs:check
-          # do B reprova e nenhuma varredura o acha, porque ele está MERGEABLE. Se os
-          # geradores não mudarem nada, o merge morre com o runner e o PR fica como está.
+          # mudarem algo, a trava acende `commitar` e sobem merge + regeneração. Os geradores
+          # rodam em modo PR: contagem volátil defasada não muda nada, então não traz a main.
+          # Se os geradores não mudarem nada, o merge morre com o runner e o PR fica como está.
           # A mensagem vai EXPLÍCITA: `--no-edit` usa a mensagem automática do git, que não
           # leva `Agent:` nem `Signed-off-by` — e aí o dco reprova o commit do bot (#406).
           if git merge --no-edit -m "Merge da base (autofix)" \
