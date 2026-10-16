@@ -111,7 +111,7 @@ recusa DB/site remoto e restaura catálogo/contas no finally. Aprovação no man
 | `gl-metrics.mjs`, `gl-shots.mjs` | Métricas de GPU e capturas. |
 | `blind-capture.mjs` | Captura cega das 26 armas (o "0 erros" que fecha rodada). |
 | `game-capture.mjs`, `map-capture.mjs`, `select-capture.mjs`, `bv-capture.mjs`, `vm-capture.mjs`, `walk-video.mjs` | Capturadores por cena. |
-| `fx-test.mjs` | Efeitos (bloom, partículas). |
+| `peso-boot.mjs` | Régua de peso/tempo do boot (lane glm/peso): browser real, cache limpo, CDP controlando rede (1,6 Mbps/150 ms/CPU 4x) e CPU. Bytes por tipo até o menu pronto, a splash clicável e a partida viva (mapa leve e pesado), só payload de jogo (public/); o número abre todo PR da lane. Rode sob `with-browser-lock.sh`, porta 9100-9900. |
 
 ---
 
