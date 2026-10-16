@@ -20,6 +20,7 @@ PR (`.github/workflows/ci.yml`).
 - `tools/eval/invariants.mjs`: **2,540 lines**, **76 declared invariant identifiers**, with **29** declared `skip()` paths.
 - The harness contains **776 scripts** in `tools/eval/`, plus **111 pipeline scripts** in `tools/`.
 - The harness contains **775 scripts** in `tools/eval/`, plus **112 pipeline scripts** in `tools/`.
+- The harness contains **777 scripts** in `tools/eval/`, plus **111 pipeline scripts** in `tools/`.
 - The number of critical checks in one run depends on the inputs present on that machine; dated results belong in `KNOWN-BUGS.md`.
 
 ```bash
