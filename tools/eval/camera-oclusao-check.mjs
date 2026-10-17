@@ -74,7 +74,7 @@ const passo = (g, n = 1, eye = 1.62) => { for (let i = 0; i < n; i++) Game.proto
     { dFim: +dFim.toFixed(3), boomLen: +boomLen.toFixed(3) });
 }
 
-/* ---- (1b) ombro: prop colado não joga a câmera pra dentro do olho ---- */
+/* ---- (1b) ombro: prop colado não empurra a câmera através do blocker ---- */
 {
   const g = boot({});
   g.camView = 'shoulder';
@@ -82,7 +82,8 @@ const passo = (g, n = 1, eye = 1.62) => { for (let i = 0; i < n; i++) Game.proto
   const eye = eyePos(g);
   const parede = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 0.15), new THREE.MeshBasicMaterial());
   const dir = g.camera.position.clone().sub(eye).normalize();
-  parede.position.copy(eye).addScaledVector(dir, 0.30);
+  const paredeDist = 0.30;
+  parede.position.copy(eye).addScaledVector(dir, paredeDist);
   parede.lookAt(eye);
   parede.updateMatrixWorld(true);
   g.scene.add(parede);
@@ -90,7 +91,17 @@ const passo = (g, n = 1, eye = 1.62) => { for (let i = 0; i < n; i++) Game.proto
   g._tpBoomClear = undefined;
   passo(g, 1);
   const d = g.camera.position.distanceTo(eye);
-  check('ombro: piso de 0,35 m com prop colado', d >= 0.3 && d <= 0.6, { d: +d.toFixed(3) });
+  check('ombro: câmera fica antes do prop colado', d < paredeDist - 0.05,
+    { d: +d.toFixed(3), paredeDist });
+  check('ombro: malhas próprias somem só dentro da cápsula',
+    g.playerTP.selfOccluded && g.playerTP.selfMeshes.every((item) => !item.object.visible),
+    { selfOccluded: g.playerTP.selfOccluded, meshes: g.playerTP.selfMeshes.length });
+  g.world.occluders.splice(g.world.occluders.indexOf(parede), 1);
+  g.scene.remove(parede);
+  passo(g, 20);
+  const visiveis = g.playerTP.selfMeshes.filter((item) => item.object.visible).length;
+  check('ombro: silhueta volta depois do prop', !g.playerTP.selfOccluded && visiveis > 0,
+    { selfOccluded: g.playerTP.selfOccluded, visiveis, meshes: g.playerTP.selfMeshes.length });
 }
 
 /* ---- (2) varal da favela: pano para a CÂMERA, não para a BALA ---- */

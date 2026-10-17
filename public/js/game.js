@@ -5985,9 +5985,12 @@ export class Game {
       if (!this.playerTP.isGLB) this.playerTP.group.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     }
     const tp = glb || buildCharacter(def);
-    // O corpo do próprio jogador nunca é alvo/obstáculo de raycast (o hitscan mira só os
-    // grupos dos bots, mas marcamos por garantia — mesmo contrato do gun mount).
-    tp.group.traverse(o => { o.userData.noHit = true; o.userData.selfBody = true; });
+    tp.selfMeshes = [];
+    tp.group.traverse(o => {
+      o.userData.noHit = true;
+      o.userData.selfBody = true;
+      if (o.isMesh) tp.selfMeshes.push({ object: o, visible: o.visible });
+    });
     tp.group.visible = (this.camView === 'third');
     this.scene.add(tp.group);
     this.playerTP = tp;
@@ -6056,13 +6059,23 @@ export class Game {
           }
         }
       }
-      const piso = Math.max(0.35, claro - 0.18);   // 18 cm de folga pro near plane
+      // Nunca ultrapassa o blocker: quando não cabe boom, a câmera volta até o olho.
+      const piso = Math.max(0, claro - 0.18);   // 18 cm de folga pro near plane
       const atual = this._tpBoomClear ?? boomLen;
       // 5 m/s: entra na hora, sai andando (método autocontido: réguas recompilam _updatePlayerTP fora do módulo)
       this._tpBoomClear = piso < atual ? piso : Math.min(boomLen, atual + dt * 5);
       if (this._tpBoomClear < boomLen - 1e-3)
         cam.position.copy(eyePos).addScaledVector(boom, this._tpBoomClear);
     }
+    // Dentro da cápsula local não existe enquadramento útil: oculta só as malhas próprias
+    // até o boom recuperar, sem afetar o rig, a arma dos demais ou a silhueta à distância.
+    const selfOccluded = (this._tpBoomClear ?? boomLen) < 0.38 + cam.near;
+    if (selfOccluded) {
+      for (const item of tp.selfMeshes) item.object.visible = false;
+    } else if (tp.selfOccluded) {
+      for (const item of tp.selfMeshes) item.object.visible = item.visible;
+    }
+    tp.selfOccluded = selfOccluded;
     // Cruz no alvo do raio autoritativo a distância de combate; o tiro continua
     // saindo do olho com yaw/pitch, igual ao servidor multiplayer.
     const aimPoint = this._tpAimPoint || (this._tpAimPoint = new THREE.Vector3());
