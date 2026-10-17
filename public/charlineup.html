@@ -27,7 +27,7 @@
    API p/ o playwright: window.LINEUP = { ready, ids, so(i), todos(), fundo() }
    ============================================================================ */
 import * as THREE from 'three';
-import { MAPS, resolveMapId } from './js/maps.js';
+import { MAPS, resolveMapId , carregaMapa } from './js/maps.js';
 import { initTextures } from './js/textures.js';
 import { CHARACTERS, setCharacterRendererCapabilities } from './js/characters.js';
 import { preloadCharacterAssets, buildCharacterModel } from './js/glbchars.js';
@@ -56,6 +56,7 @@ setCharacterRendererCapabilities(renderer);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, W / H, 0.08, 400);
 const textures = initTextures();
+await carregaMapa(MAPID);   // #959: build só existe depois de carregaMapa
 const world = MAPS[MAPID].build(scene, textures);
 
 /* IBL — CÓPIA FIEL de game.js `_buildEnv()`. Sem isto o `iblIrradiance` é zero e o
