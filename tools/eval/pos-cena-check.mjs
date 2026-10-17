@@ -61,7 +61,7 @@ renderer.render(g.scene, g.camera);
 const readotada = alvoDoPos(g.scene);
 
 const main = readFileSync(new URL('../../public/js/main.js', import.meta.url), 'utf8');
-const ini = main.indexOf('function rebuildMenuBackdrop() {');
+const ini = main.indexOf('function rebuildMenuBackdrop(');
 const fim = main.indexOf('\n}', ini);
 if (ini < 0 || fim < 0) { console.error('rebuildMenuBackdrop não encontrada em public/js/main.js'); process.exit(1); }
 let rebuild = main.slice(ini, fim + 2);
@@ -75,7 +75,7 @@ fundoVelho.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasi
 renderer.render(fundoVelho, g.camera);
 const menuAntes = alvoDoPos(fundoVelho);
 const ctx = vm.createContext({ renderer, THREE, menuScene: fundoVelho, currentMap: 'm', textures: null, MAPS: { m: { build() {} } }, settings: { quality: 'med' }, ajustarAnisotropia() {} });
-vm.runInContext(`${rebuild}\nrebuildMenuBackdrop();`, ctx);
+vm.runInContext(`${rebuild}\nrebuildMenuBackdrop(MAPS.m);`, ctx);
 const menuDepois = alvoDoPos(fundoVelho);
 
 // Estilizado: no jogo ele entra no lugar do bloom, nunca junto. Desliga o bloom e tira a
