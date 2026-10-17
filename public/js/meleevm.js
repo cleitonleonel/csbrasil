@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyTeamHandMaterial, refreshTeamHands } from './vmhands.js';
-import { VM_BYTES } from './data/vmbytes.js';
+import { GOLDEN_VER } from './data/goldenver.js';
 
-// Faca K (braços KINEMATION) do catálogo privado, na mesma composição da faca L aprovada
-// (receita tools/viewmodels/prep/knife-k-build.py); a versão da URL vem dos bytes (BUG-157).
-const KNIFE_URL = `/private-assets/viewmodels/knife/knife-baked-runtime.glb?v=${VM_BYTES.knife || 'sem-versao'}`;
+// A faca pública aprovada é autossuficiente: asset privado ausente nunca pode impedir a
+// partida. A revisão vem dos bytes do GLB, como nas demais golden (BUG-157).
+const KNIFE_URL = `/models/viewmodels/coro/melee/knife-hires.glb?v=${GOLDEN_VER.knife}`;
 const REQUIRED_CLIPS = Object.freeze(['Idle', 'Draw', 'Slash', 'Stab', 'QuickThrust', 'HeavyStab']);
 const OPTIONAL_CLIPS = Object.freeze(['Inspect']);
 const QA_SLOW_MOTION = typeof location !== 'undefined'
