@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================================
-   vm-frame-calibra.mjs — CALIBRA o FAMILY_FRAME de cada arma pela MEDIDA.
+   vm-frame-calibra.mjs — CALIBRA VM_AUTHORED_FRAME pela MEDIDA.
 
    Por que existe: o gauntlet reprova `P2 enquadramento` em quase todo o
    arsenal (`VM começa em 0,42;0,54` contra o contrato C5 `x 0,50–0,66` e
