@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {selectUrbanBodyCandidate} from './procedural-urban-apparel.js';
 
 export const URBAN_RIGID_VERSION = 'cs-urban-rigid-candidate/1';
 export const URBAN_RIGID_TRIANGLE_LIMIT = 5000;
@@ -69,18 +70,8 @@ function color(options, name, fallback) {
   try { return new THREE.Color(value); } catch { throw new TypeError(`${name} is not a Three color`); }
 }
 
-function bodyCandidates(model, socketName) {
-  const bodies = [];
-  const visit = object => {
-    if (!object?.isSkinnedMesh || !object.geometry || !object.skeleton) return;
-    if (object.skeleton.bones.filter(bone => bone.name === socketName).length === 1) bodies.push(object);
-  };
-  if (model?.isSkinnedMesh) visit(model);
-  else if (model?.traverse) model.traverse(visit);
-  return bodies;
-}
 
-function measuredBounds(body, boneIndex) {
+function measuredBounds(body, boneIndex, normalizeReadWeights) {
   const geometry = body.geometry;
   const position = geometry?.getAttribute('position');
   const skinIndex = geometry?.getAttribute('skinIndex');
@@ -93,8 +84,15 @@ function measuredBounds(body, boneIndex) {
     point.fromBufferAttribute(position, i);
     if (![point.x, point.y, point.z].every(Number.isFinite)) return null;
     bodyBounds.expandByPoint(point);
-    let weight = 0;
-    for (let lane = 0; lane < 4; lane++) if (skinIndex[CHANNELS[lane]](i) === boneIndex) weight += skinWeight[CHANNELS[lane]](i);
+    let total = 0, weight = 0;
+    for (let lane = 0; lane < 4; lane++) {
+      const value = skinWeight[CHANNELS[lane]](i);
+      if (!Number.isFinite(value) || value < 0 || value > 1) return null;
+      total += value;
+      if (skinIndex[CHANNELS[lane]](i) === boneIndex) weight += value;
+    }
+    if (total <= 0 || (!normalizeReadWeights && (total < 0.99 || total > 1.01))) return null;
+    if (normalizeReadWeights) weight /= total;
     if (weight >= 0.25) socketBounds.expandByPoint(point.clone().applyMatrix4(toSocket));
   }
   if (bodyBounds.isEmpty() || socketBounds.isEmpty()) return null;
@@ -354,11 +352,12 @@ export function mountUrbanRigidCandidate(model, familyId, options = {}) {
   if (!definition || !family) throw new RangeError(`unknown urban rigid family: ${familyId}`);
   const socketName = definition.sided && options.side === 'left' ? 'LeftHand' : definition.socket;
   if (!family.allowedSockets.includes(socketName)) throw new RangeError(`socket not allowed for ${familyId}`);
-  const candidates = bodyCandidates(model, socketName);
-  if (candidates.length !== 1) return null;
-  const body = candidates[0], indices = body.skeleton.bones.map((bone, index) => bone.name === socketName ? index : -1).filter(index => index >= 0);
+  const selection = selectUrbanBodyCandidate(model, [socketName], options);
+  if (!selection) return null;
+  const body = selection.body;
+  const indices = body.skeleton.bones.map((bone, index) => bone.name === socketName ? index : -1).filter(index => index >= 0);
   if (indices.length !== 1) return null;
-  const socketIndex = indices[0], bounds = measuredBounds(body, socketIndex);
+  const socketIndex = indices[0], bounds = measuredBounds(body, socketIndex, selection.normalizeReadWeights);
   if (!bounds) return null;
   const group = new THREE.Group();
   group.name = `urban-rigid:${familyId}`;
@@ -397,6 +396,7 @@ export function mountUrbanRigidCandidate(model, familyId, options = {}) {
     socketIndex,
     bounds,
     renderMetrics,
+    selection,
     approved: false,
     certified: false,
     dispose() {

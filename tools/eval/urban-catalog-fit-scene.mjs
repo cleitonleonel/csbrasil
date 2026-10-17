@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {MeshoptDecoder} from '/vendor/meshopt_decoder.module.js';
-import {createUrbanApparelProxy, URBAN_APPAREL_STATUS} from '/js/procedural-urban-apparel.js';
+import {createUrbanApparelProxy, selectUrbanBodyCandidate, URBAN_APPAREL_STATUS} from '/js/procedural-urban-apparel.js';
 import {mountUrbanRigidCandidate} from '/js/procedural-urban-rigid.js';
 import {mountEyewearCandidate} from '/js/eyewear.js';
 
@@ -61,15 +61,43 @@ const [eyewearManifest, faceLandmarks] = await Promise.all([
   fetch('/models/items/face-landmarks.json').then(response => response.json()),
 ]);
 let current = null;
+const disposalTotals = {models: 0, candidates: 0, geometries: 0, materials: 0, textures: 0};
 
 function finiteBox(box) {
   return !box.isEmpty() && [...box.min.toArray(), ...box.max.toArray()].every(Number.isFinite);
 }
 
-function modelBody(model) {
-  const bodies = [];
-  model.traverse(object => { if (object.isSkinnedMesh) bodies.push(object); });
-  return bodies.length === 1 ? bodies[0] : null;
+function disposeCurrent() {
+  const disposed = {models: 0, candidates: 0, geometries: 0, materials: 0, textures: 0};
+  if (!current) return {disposed, totals: {...disposalTotals}};
+  for (const candidate of current.mounts) {
+    if (typeof candidate.dispose === 'function') {
+      candidate.dispose();
+      disposed.candidates++;
+    }
+  }
+  const geometries = new Set(current.orphanGeometries || []);
+  const materials = new Set(current.orphanMaterials || []), textures = new Set();
+  current.model.traverse(object => {
+    if (object.geometry?.isBufferGeometry) geometries.add(object.geometry);
+    for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
+      if (material?.isMaterial) materials.add(material);
+    }
+  });
+  for (const material of materials) {
+    for (const value of Object.values(material)) if (value?.isTexture) textures.add(value);
+  }
+  geometries.forEach(geometry => geometry.dispose());
+  materials.forEach(material => material.dispose());
+  textures.forEach(texture => texture.dispose());
+  pivot.clear();
+  current = null;
+  disposed.models = 1;
+  disposed.geometries = geometries.size;
+  disposed.materials = materials.size;
+  disposed.textures = textures.size;
+  for (const key of Object.keys(disposalTotals)) disposalTotals[key] += disposed[key];
+  return {disposed, totals: {...disposalTotals}};
 }
 
 function normalizeModel(model) {
@@ -110,24 +138,32 @@ function mountedMeshes(mounts) {
   return [...new Set(meshes)];
 }
 
-function mountOutfit(model, index) {
+function selectionRecord(selection) {
+  if (!selection) return null;
+  const {body, ...record} = selection;
+  return record;
+}
+
+function mountOutfit(model, index, bodySha256) {
   const requested = outfitFor(index);
-  const mounts = [], failures = [], mounted = [];
+  const mounts = [], failures = [], mounted = [], selections = [];
   for (const [slot, family] of Object.entries(requested)) {
     try {
+      const options = {bodySha256, side: index % 2 ? 'left' : 'right'};
       const candidate = ['tee', 'jacket', 'legs', 'shoes'].includes(slot)
-        ? createUrbanApparelProxy(model, family)
-        : mountUrbanRigidCandidate(model, family, {side: index % 2 ? 'left' : 'right'});
+        ? createUrbanApparelProxy(model, family, options)
+        : mountUrbanRigidCandidate(model, family, options);
       if (!candidate) failures.push(`${slot}:${family}:factory-returned-null`);
       else {
         mounts.push(candidate);
         mounted.push(family);
+        selections.push({slot, family, ...selectionRecord(candidate.selection)});
       }
     } catch (error) {
       failures.push(`${slot}:${family}:${error.message}`);
     }
   }
-  return {requested, mounts, mounted, failures};
+  return {requested, mounts, mounted, failures, selections};
 }
 
 function conservativeClipping(body, mounts) {
@@ -179,28 +215,33 @@ function auditCurrent(body, mounts) {
 }
 
 async function loadBody(record, index) {
-  pivot.clear();
+  const cleanupBeforeLoad = disposeCurrent();
   const gltf = await loader.loadAsync(`/${record.path.replace(/^public\//, '')}`);
   const model = gltf.scene;
   pivot.add(model);
+  current = {kind: 'body', model, body: null, record, mounts: [], orphanGeometries: []};
   normalizeModel(model);
-  const body = modelBody(model);
-  const incompatible = record.fitProfile?.status === 'incompatible';
-  let outfit = {requested: outfitFor(index), mounts: [], mounted: [], failures: []};
-  if (incompatible) outfit.failures.push(`census-incompatible:${record.fitProfile.reason}`);
-  else if (!body) outfit.failures.push('body:expected-exactly-one-skinned-mesh');
-  else outfit = mountOutfit(model, index);
+  const incompatible = record.sourceKind === 'auxiliary';
+  let outfit = {requested: outfitFor(index), mounts: [], mounted: [], failures: [], selections: []};
+  if (incompatible) outfit.failures.push(`auxiliary-not-selectable:${record.fitProfile.reason}`);
+  else outfit = mountOutfit(model, index, record.sourceSha256);
+  const body = outfit.mounts.find(candidate => candidate.body)?.body
+    || selectUrbanBodyCandidate(model, ['Hips'], {bodySha256: record.sourceSha256})?.body
+    || null;
   model.updateMatrixWorld(true);
-  current = {kind: 'body', model, body, record, mounts: outfit.mounts};
+  current.body = body;
+  current.mounts = outfit.mounts;
   const audit = auditCurrent(body, outfit.mounts);
   const status = incompatible ? 'incompatible' : outfit.failures.length ? 'fail-closed' : 'candidate';
   return {
     bodyId: record.bodyId,
     status,
-    reason: incompatible ? record.fitProfile.reason : outfit.failures.join('; ') || 'all-deterministic-proxy-factories-mounted',
+    reason: incompatible ? 'auxiliary body is not selectable' : outfit.failures.join('; ') || 'all-deterministic-proxy-factories-mounted',
     familiesRequested: Object.values(outfit.requested),
     familiesMounted: outfit.mounted,
     failures: outfit.failures,
+    selections: outfit.selections,
+    cleanupBeforeLoad,
     fitStatus: 'fit-proxy-not-mint-asset',
     approved: false,
     certified: false,
@@ -209,17 +250,18 @@ async function loadBody(record, index) {
   };
 }
 
-async function loadFamily({family, anchorPath = 'public/models/characters/capitao.glb', anchorBodyId = 'character:capitao'}) {
-  pivot.clear();
+async function loadFamily({family, anchorPath = 'public/models/characters/capitao.glb', anchorBodyId = 'character:capitao', anchorBodySha256 = null}) {
+  const cleanupBeforeLoad = disposeCurrent();
   const gltf = await loader.loadAsync(`/${anchorPath.replace(/^public\//, '')}`);
   const model = gltf.scene;
   pivot.add(model);
+  current = {kind: 'family', family, model, body: null, mounts: [], orphanGeometries: [], orphanMaterials: []};
   normalizeModel(model);
-  const body = modelBody(model);
-  if (!body) throw new Error(`${family}: anchor has no unique skinned mesh`);
   model.traverse(object => {
     if (!object.isMesh) return;
-    const materials = (Array.isArray(object.material) ? object.material : [object.material]).map(material => {
+    const originals = Array.isArray(object.material) ? object.material : [object.material];
+    current.orphanMaterials.push(...originals);
+    const materials = originals.map(material => {
       const clone = material.clone();
       clone.transparent = true;
       clone.opacity = 0.12;
@@ -231,28 +273,39 @@ async function loadFamily({family, anchorPath = 'public/models/characters/capita
     object.material = Array.isArray(object.material) ? materials : materials[0];
   });
   let candidate, factory;
+  const options = {bodySha256: anchorBodySha256};
   if (Object.values(APPAREL_FAMILIES).flat().includes(family)) {
     factory = 'createUrbanApparelProxy';
-    candidate = createUrbanApparelProxy(model, family);
+    candidate = createUrbanApparelProxy(model, family, options);
   } else if (Object.values(RIGID_FAMILIES).flat().includes(family)) {
     factory = 'mountUrbanRigidCandidate';
-    candidate = mountUrbanRigidCandidate(model, family);
+    candidate = mountUrbanRigidCandidate(model, family, options);
   } else if (Object.hasOwn(EYEWEAR_FAMILY_ASSETS, family)) {
     factory = 'mountEyewearCandidate';
     const itemId = EYEWEAR_FAMILY_ASSETS[family];
     const entry = eyewearManifest.eyewear[itemId];
     const profile = entry?.profiles?.capitao;
     const accessory = (await loader.loadAsync(entry.model)).scene;
+    const originalGeometries = new Set();
+    accessory.traverse(object => { if (object.geometry?.isBufferGeometry) originalGeometries.add(object.geometry); });
     candidate = mountEyewearCandidate(model, accessory, profile, faceLandmarks.bodies.capitao, itemId);
+    const mountedGeometries = new Set();
+    accessory.traverse(object => { if (object.geometry?.isBufferGeometry) mountedGeometries.add(object.geometry); });
+    current.orphanGeometries.push(...[...originalGeometries].filter(geometry => !mountedGeometries.has(geometry)));
   } else throw new Error(`${family}: no real factory mapping`);
   if (!candidate) throw new Error(`${family}: ${factory} returned null`);
+  const body = candidate.body || selectUrbanBodyCandidate(model, ['Hips'], options)?.body || null;
+  if (!body) throw new Error(`${family}: anchor has no measurable skinned mesh`);
   model.updateMatrixWorld(true);
-  current = {kind: 'family', family, model, body, mounts: [candidate]};
+  current.body = body;
+  current.mounts = [candidate];
   return {
     family,
     anchorBodyId,
     factory,
     assetId: EYEWEAR_FAMILY_ASSETS[family] || null,
+    selection: selectionRecord(candidate.selection),
+    cleanupBeforeLoad,
     fitStatus: 'fit-proxy-not-mint-asset',
     approved: false,
     certified: false,
@@ -311,5 +364,5 @@ function render(view = 'front') {
   return {view, boundsFinite: true};
 }
 
-window.urbanCatalogFit = {loadBody, loadFamily, render, outfitFor};
+window.urbanCatalogFit = {loadBody, loadFamily, render, outfitFor, dispose: disposeCurrent};
 window.urbanCatalogFitReady = true;

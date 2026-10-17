@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 import {existsSync, readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {URBAN_BODY_ADAPTERS} from '../../public/js/procedural-urban-apparel.js';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const evidenceRoot = join(root, 'tools/eval/asset-evidence/items/urban-catalog-fit');
@@ -19,6 +20,13 @@ const MAX_OUTFIT_DRAW_CALLS = 40;
 const MAX_OUTFIT_TRIANGLES = 50_000;
 const MAX_FAMILY_DRAW_CALLS = 12;
 const MAX_FAMILY_TRIANGLES = 8_000;
+const SPECIAL_BODY_IDS = Object.freeze([
+  'character:camera-roxa', 'character:designer-ux', 'character:doidinho-bairro', 'character:lenda-lanhouse',
+  'character:microfonildo', 'character:motoca-cachorro-loko', 'character:profeta-calcada', 'character:programador-virado',
+  'character:cuca', 'character:lobisomem', 'skin:lula-cyborg', 'skin:senador-drip', 'skin:zero-um-mandrake',
+  'character:mst', 'character:lampiao', 'character:mariabonita',
+]);
+const adapterByHash = new Map(Object.entries(URBAN_BODY_ADAPTERS));
 
 const apparelFamilies = new Set(['boxy-tee', 'oversized-tee', 'shell-jacket', 'cargo-pants', 'bermuda-shorts', 'low-sneaker', 'chunky-runner', 'boot']);
 const rigidFamilies = new Set([
@@ -113,7 +121,7 @@ function validate(data, {verifyFiles = true} = {}) {
   assert.deepEqual(evidence.sourceHashes, sourceHashes(), 'evidence source hashes are stale');
   assert.equal(report.consoleErrors.length, 0, 'browser console errors were captured');
   assert.deepEqual(report.views, ['front', 'threeQuarter']);
-  assert.deepEqual(report.summary, {catalogItems: 160, mountableSafe: 147, blockedPermissionNeeded: 13, bodiesObserved: 88, geometryFamiliesObserved: 34, certified: 0, mintSubmitted: false});
+  assert.deepEqual(report.summary, {catalogItems: 160, mountableSafe: 147, blockedPermissionNeeded: 13, bodiesObserved: 88, selectableBodies: 87, auxiliaryBodies: 1, geometryFamiliesObserved: 34, certified: 0, mintSubmitted: false});
   rejectPromotion({catalog, batch, census, eyewear, report});
 
   const catalogById = new Map(catalog.items.map(item => [item.id, item]));
@@ -142,12 +150,18 @@ function validate(data, {verifyFiles = true} = {}) {
   }
 
   assert.equal(census.bodies.length, 88, 'body census coverage changed');
-  assert.equal(census.bodies.filter(body => body.fitProfile.status === 'unknown').length, 84, 'candidate census count changed');
-  assert.equal(census.bodies.filter(body => body.fitProfile.status === 'incompatible').length, 4, 'incompatible census count changed');
+  assert.equal(census.bodies.filter(body => body.fitProfile.status === 'unknown').length, 84, 'global census must remain unpromoted');
+  assert.equal(census.bodies.filter(body => body.fitProfile.status === 'incompatible').length, 4, 'global census incompatibilities must remain unchanged');
+  const selectableBodies = census.bodies.filter(body => body.sourceKind !== 'auxiliary');
+  const auxiliaryBodies = census.bodies.filter(body => body.sourceKind === 'auxiliary');
+  assert.equal(selectableBodies.length, 87, 'selectable body census changed');
+  assert.deepEqual(auxiliaryBodies.map(body => body.bodyId), ['auxiliary:dollynho-dance'], 'unexpected auxiliary body');
+  assert.equal(adapterByHash.size, 16, 'special adapter registry changed');
+  same(census.bodies.filter(body => adapterByHash.has(body.sourceSha256)).map(body => body.bodyId), SPECIAL_BODY_IDS, 'special adapters are not pinned to the diagnosed playable bodies');
   assert.equal(report.bodies.length, 88, 'body evidence omitted a census body');
   const bodiesById = new Map(census.bodies.map(body => [body.bodyId, body]));
   same(report.bodies.map(row => row.bodyId), bodiesById.keys(), 'body evidence IDs diverge from census');
-  for (const row of report.bodies) {
+  for (const [bodyIndex, row] of report.bodies.entries()) {
     const body = bodiesById.get(row.bodyId);
     assert(body, `${row.bodyId}: orphan body observation`);
     assert.equal(row.path, body.path, `${row.bodyId}: body path changed`);
@@ -163,19 +177,28 @@ function validate(data, {verifyFiles = true} = {}) {
     assertFiniteBounds(row, row.bodyId);
     assert(row.evidence?.sheet && row.evidence.views?.length === 2, `${row.bodyId}: front/3/4 evidence missing`);
     assert(evidence.files[row.evidence.sheet], `${row.bodyId}: referenced body sheet absent from evidence manifest`);
-    if (body.fitProfile.status === 'incompatible') {
-      assert.equal(row.status, 'incompatible', `${row.bodyId}: known incompatible body was dressed`);
-      assert.equal(row.familiesMounted.length, 0, `${row.bodyId}: incompatible body reached the mounter`);
-      assert(row.failures.includes(`census-incompatible:${body.fitProfile.reason}`), `${row.bodyId}: incompatible reason was hidden`);
-      assert.equal(row.reason, body.fitProfile.reason, `${row.bodyId}: incompatible reason changed`);
-    } else if (row.status === 'candidate') {
+    assert.equal(row.cleanupBeforeLoad?.disposed?.models, bodyIndex === 0 ? 0 : 1, `${row.bodyId}: previous model was not disposed before load`);
+    if (body.sourceKind === 'auxiliary') {
+      assert.equal(row.status, 'incompatible', `${row.bodyId}: non-selectable auxiliary was included`);
+      assert.equal(row.familiesMounted.length, 0, `${row.bodyId}: auxiliary body reached the mounter`);
+      assert.equal(row.selections.length, 0, `${row.bodyId}: auxiliary body selected a fit mesh`);
+      assert(row.failures.some(reason => reason.startsWith('auxiliary-not-selectable:')), `${row.bodyId}: auxiliary reason was hidden`);
+    } else {
+      assert.equal(row.status, 'candidate', `${row.bodyId}: selectable body is not candidate`);
       assert.equal(row.familiesMounted.length, 7, `${row.bodyId}: candidate outfit is partial`);
       assert.deepEqual(row.failures, [], `${row.bodyId}: candidate hides mount failures`);
       assert.equal(row.noHit, true, `${row.bodyId}: proxy entered hit/raycast surfaces`);
-    } else {
-      assert.equal(row.status, 'fail-closed', `${row.bodyId}: unknown body result status`);
-      assert(row.failures.length > 0, `${row.bodyId}: fail-closed result lacks factual reason`);
-      assert(row.familiesMounted.length < 7, `${row.bodyId}: complete outfit mislabeled fail-closed`);
+      assert.equal(row.selections.length, 7, `${row.bodyId}: body selection audit is incomplete`);
+      const expectedAdapter = adapterByHash.get(body.sourceSha256) || null;
+      for (const selection of row.selections) {
+        assert.equal(selection.strategy, 'largest-required-weighted-vertex-set', `${row.bodyId}/${selection.family}: first-mesh selection escaped`);
+        assert.equal(selection.bodySha256, body.sourceSha256, `${row.bodyId}/${selection.family}: selection hash is not pinned`);
+        assert(selection.weightedVertices > 0 && selection.positionCount >= selection.weightedVertices, `${row.bodyId}/${selection.family}: weighted vertex evidence invalid`);
+        assert(selection.eligibleMeshes >= 1 && selection.observedSkinnedMeshes >= selection.eligibleMeshes, `${row.bodyId}/${selection.family}: mesh selection cardinality invalid`);
+        assert(Array.isArray(selection.requiredBones) && selection.requiredBones.length > 0, `${row.bodyId}/${selection.family}: required bones missing`);
+        assert.equal(selection.adapterId, expectedAdapter?.id || null, `${row.bodyId}/${selection.family}: wrong special adapter`);
+        assert.equal(selection.normalizeReadWeights, expectedAdapter?.normalizeReadWeights === true, `${row.bodyId}/${selection.family}: weight normalization escaped its hash profile`);
+      }
     }
     assert(row.drawCalls >= 0 && row.drawCalls <= MAX_OUTFIT_DRAW_CALLS, `${row.bodyId}: draw-call budget exceeded`);
     assert(row.triangles >= 0 && row.triangles <= MAX_OUTFIT_TRIANGLES, `${row.bodyId}: triangle budget exceeded`);
@@ -187,16 +210,20 @@ function validate(data, {verifyFiles = true} = {}) {
       assert(['potential-contact-review-required', 'no-aabb-overlap-detected'].includes(row.clipping.classification), `${row.bodyId}: invalid clipping classification`);
     }
   }
+  assert.equal(report.bodies.filter(row => row.status === 'candidate').length, 87, 'selectable candidate score must be 87/87');
+  assert.equal(report.bodies.filter(row => row.status === 'fail-closed').length, 0, 'selectable body remained fail-closed');
+  assert.deepEqual(report.bodies.filter(row => row.status === 'incompatible').map(row => row.bodyId), ['auxiliary:dollynho-dance'], 'only the auxiliary may remain incompatible');
 
   assert.equal(report.families.length, 34, 'family gallery coverage changed');
   same(report.families.map(row => row.family), families, 'family gallery omitted or invented a family');
-  for (const row of report.families) {
+  for (const [familyIndex, row] of report.families.entries()) {
     const expected = factoryFor(row.family);
     assert(expected, `${row.family}: no factory mapping`);
     assert.equal(row.factory, expected.factory, `${row.family}: gallery used wrong factory`);
     assert.equal(row.assetId, expected.assetId, `${row.family}: gallery used wrong eyewear asset`);
     assert.equal(row.fitStatus, 'fit-proxy-not-mint-asset', `${row.family}: gallery mislabeled proxy`);
     assert.equal(row.noHit, true, `${row.family}: gallery proxy entered hit surfaces`);
+    assert.equal(row.cleanupBeforeLoad?.disposed?.models, 1, `${row.family}: previous model was not disposed before family load ${familyIndex}`);
     assertFiniteBounds(row, row.family);
     assert(row.drawCalls > 0 && row.drawCalls <= MAX_FAMILY_DRAW_CALLS, `${row.family}: draw-call budget exceeded`);
     assert(row.triangles > 0 && row.triangles <= MAX_FAMILY_TRIANGLES, `${row.family}: triangle budget exceeded`);
@@ -204,9 +231,13 @@ function validate(data, {verifyFiles = true} = {}) {
     if (expected.assetId) {
       const entry = eyewear.eyewear[expected.assetId];
       assert(entry, `${row.family}: mapped eyewear asset missing`);
+      assert.equal(row.selection, null, `${row.family}: eyewear invented a procedural body selection`);
       assert.equal(row.assetSha256, entry.sha256, `${row.family}: eyewear asset hash stale`);
       assert.equal(row.profileBodySha256, entry.profiles.capitao.bodySha256, `${row.family}: eyewear profile hash stale`);
       if (verifyFiles) assert.equal(hashFile(join(root, `public${entry.model}`)), entry.sha256, `${row.family}: eyewear GLB hash stale`);
+    } else {
+      assert.equal(row.selection?.strategy, 'largest-required-weighted-vertex-set', `${row.family}: gallery used first mesh`);
+      assert.match(row.selection?.bodySha256 || '', /^[a-f0-9]{64}$/, `${row.family}: gallery selection is not hash-pinned`);
     }
   }
 
@@ -246,6 +277,14 @@ function validate(data, {verifyFiles = true} = {}) {
   }, 'render budgets are stale');
   assert(report.budgets.maximumBodyDrawCalls <= MAX_OUTFIT_DRAW_CALLS && report.budgets.maximumBodyTriangles <= MAX_OUTFIT_TRIANGLES, 'outfit budget exceeded');
   assert(report.budgets.maximumFamilyDrawCalls <= MAX_FAMILY_DRAW_CALLS && report.budgets.maximumFamilyTriangles <= MAX_FAMILY_TRIANGLES, 'family budget exceeded');
+  const expectedDisposedCandidates = report.bodies.reduce((sum, row) => sum + row.familiesMounted.length, 0)
+    + report.families.filter(row => row.factory !== 'mountEyewearCandidate').length;
+  assert.equal(report.resourceDisposals?.disposed?.models, 1, 'last captured model was not disposed');
+  assert.equal(report.resourceDisposals?.totals?.models, report.bodies.length + report.families.length, 'not every captured model was disposed');
+  assert.equal(report.resourceDisposals?.totals?.candidates, expectedDisposedCandidates, 'not every procedural candidate was disposed');
+  assert(report.resourceDisposals?.totals?.geometries > 0, 'captured geometry disposal was not observed');
+  assert(report.resourceDisposals?.totals?.materials > 0, 'captured material disposal was not observed');
+  assert(report.resourceDisposals?.totals?.textures > 0, 'captured texture disposal was not observed');
 
   assert.equal(review.schemaVersion, 'cs-urban-catalog-fit-visual-review/1');
   assert.equal(review.reviewMode, 'blind-subagent');
@@ -253,6 +292,8 @@ function validate(data, {verifyFiles = true} = {}) {
   assert.equal(review.evidenceManifestSha256, hashFile(evidencePath), 'blind review targets stale evidence');
   assert.deepEqual(review.sourceHashes, report.sourceHashes, 'blind review targets stale source hashes');
   same(review.sheetsReviewed, requiredSheets, 'blind reviewer did not inspect every contact sheet');
+  assert.equal(review.rejectionPolicy, 'reject-on-clipping-scale-or-full-body-masking', 'blind review can overlook a fully masked body');
+  assert.deepEqual(review.criteria, {clipping: 'pass', scale: 'pass', fullBodyMasking: 'pass'}, 'blind review did not explicitly inspect clipping, scale and body masking');
   assert(Array.isArray(review.findings) && review.findings.length > 0, 'blind review contains no visual observations');
 
   return {
@@ -272,6 +313,24 @@ function validate(data, {verifyFiles = true} = {}) {
 
 function mutants() {
   const cases = {
+    'first-mesh': data => {
+      const row = data.report.bodies.find(candidate => candidate.selections.some(selection => selection.observedSkinnedMeshes > 1));
+      row.selections[0].strategy = 'first-skinned-mesh';
+    },
+    'skip-special-profile': data => {
+      const row = data.report.bodies.find(candidate => adapterByHash.has(candidate.bodySha256));
+      row.selections[0].adapterId = null;
+    },
+    'normalize-anything': data => {
+      const row = data.report.bodies.find(candidate => candidate.status === 'candidate' && !adapterByHash.has(candidate.bodySha256));
+      row.selections[0].normalizeReadWeights = true;
+    },
+    'include-auxiliary': data => {
+      const row = data.report.bodies.find(candidate => candidate.bodyId === 'auxiliary:dollynho-dance');
+      row.status = 'candidate';
+    },
+    'full-body-masking': data => { data.review.criteria.fullBodyMasking = 'fail'; },
+    'skip-resource-disposal': data => { data.report.resourceDisposals.totals.models--; },
     'item-without-factory': data => {
       const row = data.report.catalog.find(candidate => candidate.rightsStatus === 'original-safe');
       row.resolution = 'missing-factory';

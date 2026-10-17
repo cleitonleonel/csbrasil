@@ -25,6 +25,28 @@ const BONE_ALIASES = Object.freeze({
   LeftLowerLeg: Object.freeze(['LeftLowerLeg', 'LeftLeg']),
   RightLowerLeg: Object.freeze(['RightLowerLeg', 'RightLeg']),
 });
+const adapter = (id, reason, options = {}) => Object.freeze({ id, reason, ...options });
+export const URBAN_BODY_ADAPTERS = Object.freeze({
+  '09f5055d124ca3421316aecbd84e2cfdb9fc01f202d37802e6c8ef48813bb471': adapter('weighted-mesh-profeta-calcada', 'multi-skinned-mesh:largest-required-weighted-vertex-set'),
+  '19c0eabefc93a6c0acda0f25631cb7b3ca7d69806ab17abba844be6e94a969a0': adapter('weighted-mesh-lenda-lanhouse', 'multi-skinned-mesh:largest-required-weighted-vertex-set'),
+  '7468d7e4a693443a0d6597c24106c5e4c7756c7410c85f623173df9e1c87bce9': adapter('weighted-mesh-programador-virado', 'multi-skinned-mesh:largest-required-weighted-vertex-set'),
+  '77d1d5d6c6f7cce58846797bea4db5ffe21160f22f1880a7f440b8b1fdccfb07': adapter('weighted-mesh-designer-ux', 'multi-skinned-mesh:largest-required-weighted-vertex-set'),
+  '7e45cde94e8faf3afcd133832440af2a015b8aabc9cb711eb65dfcdfe057e609': adapter('weighted-mesh-microfonildo', 'multi-skinned-mesh:largest-required-weighted-vertex-set', {
+    measureFrom: Object.freeze({ Spine: 'Spine02' }),
+    measureFromByFamily: Object.freeze({ 'cargo-pants': Object.freeze({ Hips: 'Spine02' }) }),
+  }),
+  '8af17491600d5aa64a0234dffa0f261bbc71e93c32507791a107eb1f05348081': adapter('weighted-mesh-camera-roxa', 'multi-skinned-mesh:largest-required-weighted-vertex-set'),
+  '9d65fc624e894f23f1e029309dca0130e68a582bf70a172bfd09804fc53a6153': adapter('weighted-mesh-doidinho-bairro', 'multi-skinned-mesh:largest-required-weighted-vertex-set'),
+  'e5a31ca1d72b6a4cb3231757c6a9ad075c3713e8a32722a665f10b3a7f4a177b': adapter('weighted-mesh-motoca-cachorro-loko', 'multi-skinned-mesh:largest-required-weighted-vertex-set'),
+  '7714dbb9ff324e0c1fac93de2e0ee2d2fb150c3576eba304840bcaa876ee955e': adapter('bounds-cuca', 'body-local-depth-envelope', { maximumDepth: 1.75 }),
+  '6b3839025c194b1418c71c7ddb68a9a9afe59794d50d49c4409197edf6f0093d': adapter('bounds-lobisomem', 'body-local-width-envelope', { maximumWidth: 2.2 }),
+  'dee1c4685b95d8c742c55b58d4ec0bdc8239e4fe5e89b45d89619510f454e16e': adapter('spine02-lula-cyborg', 'spine-region-is-weighted-to-spine02', { measureFrom: Object.freeze({ Spine: 'Spine02' }) }),
+  '4db27d13f43fd0f3a06b0d564747e62722e848c1667af4e8fc362923e9716f1b': adapter('spine02-senador-drip', 'spine-region-is-weighted-to-spine02', { measureFrom: Object.freeze({ Spine: 'Spine02' }) }),
+  '43eb4d073d4a485b24c3916e0259049667f07440a88c4aac52f27888ed4b48e8': adapter('spine02-zero-um-mandrake', 'spine-region-is-weighted-to-spine02', { measureFrom: Object.freeze({ Spine: 'Spine02' }) }),
+  'acecd2a763dc417f6b132a2d555bffd2c6a5e7cf3b1a83a50ee24d938fce4b0f': adapter('roles-mst', 'duplicate-curl-joints-are-outside-required-fit-roles'),
+  '98b41671c7b1ca47cffbd4177fd620045cd20ace5d7e6b266911ec24f8aa34d4': adapter('weights-lampiao', 'normalize-weight-sum-for-measurement-read', { normalizeReadWeights: true }),
+  '96aa7ef6278dce4d8b11a5d58ab8d9f0c6d0b835b9ab3ab530d5bd1bbeea0048': adapter('weights-mariabonita', 'normalize-weight-sum-for-measurement-read', { normalizeReadWeights: true }),
+});
 const COLORS = Object.freeze({
   'boxy-tee': 0x315c8c,
   'oversized-tee': 0x4e355f,
@@ -110,12 +132,92 @@ const FAMILY_DEFINITIONS = Object.freeze({
   }),
 });
 
-function bodyCandidate(target) {
-  if (target?.isSkinnedMesh) return target;
-  if (!target?.traverse) return null;
+function profileFor(options) {
+  if (options.bodySha256 === undefined) return null;
+  if (typeof options.bodySha256 !== 'string' || !/^[a-f0-9]{64}$/.test(options.bodySha256)) return undefined;
+  return URBAN_BODY_ADAPTERS[options.bodySha256] || null;
+}
+
+function aliasesFor(name) {
+  return BONE_ALIASES[name] || [name];
+}
+
+function measurementSource(name, profile, family) {
+  return profile?.measureFromByFamily?.[family]?.[name] || profile?.measureFrom?.[name] || name;
+}
+
+function bodyMetric(body, requiredNames, profile, options) {
+  const geometry = body?.geometry;
+  const position = geometry?.getAttribute?.('position');
+  const skinIndex = geometry?.getAttribute?.('skinIndex');
+  const skinWeight = geometry?.getAttribute?.('skinWeight');
+  const bones = body?.skeleton?.bones;
+  if (!body?.isSkinnedMesh || !position || !skinIndex || !skinWeight || position.itemSize !== 3
+    || skinIndex.itemSize < 4 || skinWeight.itemSize < 4 || position.count !== skinIndex.count
+    || position.count !== skinWeight.count || !bones?.length) return null;
+  const indices = new Map();
+  for (const name of requiredNames) {
+    const sourceName = measurementSource(name, profile, options.family);
+    const match = aliasesFor(sourceName)
+      .map(alias => bones.map((bone, index) => bone.name === alias ? index : -1).filter(index => index >= 0))
+      .find(indicesForAlias => indicesForAlias.length === 1);
+    if (!match) return null;
+    indices.set(name, match[0]);
+  }
+  const counts = new Map(requiredNames.map(name => [name, 0]));
+  let weightedVertices = 0;
+  for (let vertex = 0; vertex < position.count; vertex++) {
+    let total = 0;
+    for (let channel = 0; channel < 4; channel++) total += skinWeight[CHANNELS[channel]](vertex);
+    if (!Number.isFinite(total) || total <= 0) continue;
+    const normalize = profile?.normalizeReadWeights === true;
+    if (!normalize && (total < 0.99 || total > 1.01)) continue;
+    let matched = false;
+    for (const [name, index] of indices) {
+      let weight = 0;
+      for (let channel = 0; channel < 4; channel++) {
+        if (skinIndex[CHANNELS[channel]](vertex) === index) weight += skinWeight[CHANNELS[channel]](vertex);
+      }
+      if (normalize) weight /= total;
+      if (weight >= 0.15) {
+        counts.set(name, counts.get(name) + 1);
+        matched = true;
+      }
+    }
+    if (matched) weightedVertices++;
+  }
+  if ([...counts.values()].some(count => count < 8)) return null;
+  return { body, weightedVertices, positionCount: position.count, counts, indices };
+}
+
+export function selectUrbanBodyCandidate(target, requiredNames, options = {}) {
+  if (!options || typeof options !== 'object' || !Array.isArray(requiredNames) || !requiredNames.length) return null;
+  const profile = profileFor(options);
+  if (profile === undefined) return null;
   const bodies = [];
-  target.traverse(object => { if (object.isSkinnedMesh) bodies.push(object); });
-  return bodies.length === 1 ? bodies[0] : null;
+  if (target?.isSkinnedMesh) bodies.push(target);
+  else if (target?.traverse) target.traverse(object => { if (object.isSkinnedMesh) bodies.push(object); });
+  const eligible = bodies.map(body => bodyMetric(body, requiredNames, profile, options)).filter(Boolean)
+    .sort((left, right) => right.weightedVertices - left.weightedVertices || right.positionCount - left.positionCount);
+  if (!eligible.length) return null;
+  if (eligible[1] && eligible[0].weightedVertices === eligible[1].weightedVertices
+    && eligible[0].positionCount === eligible[1].positionCount) return null;
+  const selected = eligible[0];
+  return {
+    body: selected.body,
+    strategy: 'largest-required-weighted-vertex-set',
+    meshName: selected.body.name || '(unnamed)',
+    weightedVertices: selected.weightedVertices,
+    positionCount: selected.positionCount,
+    eligibleMeshes: eligible.length,
+    observedSkinnedMeshes: bodies.length,
+    requiredBones: [...requiredNames],
+    resolvedBones: Object.fromEntries([...selected.indices].map(([name, index]) => [name, selected.body.skeleton.bones[index].name])),
+    bodySha256: options.bodySha256 || null,
+    adapterId: profile?.id || null,
+    adapterReason: profile?.reason || null,
+    normalizeReadWeights: profile?.normalizeReadWeights === true,
+  };
 }
 
 function finiteMatrix(matrix) {
@@ -131,7 +233,7 @@ function safeWorldScale(body) {
     && Math.max(...values) / Math.min(...values) <= 4;
 }
 
-function measureBody(body, definition) {
+function measureBody(body, definition, profile, family) {
   const geometry = body?.geometry;
   const position = geometry?.getAttribute?.('position');
   const skinIndex = geometry?.getAttribute?.('skinIndex');
@@ -146,23 +248,35 @@ function measureBody(body, definition) {
   const actualNames = new Map();
   for (let index = 0; index < skeleton.bones.length; index++) {
     const name = skeleton.bones[index]?.name;
-    if (typeof name !== 'string' || !name || actualNames.has(name) || !finiteMatrix(skeleton.boneInverses[index])) return null;
-    actualNames.set(name, index);
+    if (typeof name !== 'string' || !name || !finiteMatrix(skeleton.boneInverses[index])) return null;
+    if (!actualNames.has(name)) actualNames.set(name, []);
+    actualNames.get(name).push(index);
   }
+  const uniqueIndex = name => {
+    const match = aliasesFor(name).map(candidate => actualNames.get(candidate) || [])
+      .find(indicesForAlias => indicesForAlias.length === 1);
+    return match?.[0] ?? null;
+  };
   const requiredNames = [...new Set(definition.pieces.map(piece => piece.bone))];
-  const names = new Map(requiredNames.map(name => [
-    name,
-    (BONE_ALIASES[name] || [name]).map(candidate => actualNames.get(candidate)).find(Number.isSafeInteger),
-  ]));
-  if ([...names.values()].some(index => index === undefined)) return null;
-
-  const regions = new Map(requiredNames.map(name => {
-    const index = names.get(name);
-    const toBone = new THREE.Matrix4().multiplyMatrices(skeleton.boneInverses[index], body.bindMatrix);
-    return [index, { name, index, bone: skeleton.bones[index], bounds: new THREE.Box3(), count: 0, toBone }];
-  }));
+  const regions = new Map();
+  for (const name of requiredNames) {
+    const targetIndex = uniqueIndex(name);
+    const sourceIndex = uniqueIndex(measurementSource(name, profile, family));
+    if (targetIndex === null || sourceIndex === null) return null;
+    const toBone = new THREE.Matrix4().multiplyMatrices(skeleton.boneInverses[targetIndex], body.bindMatrix);
+    regions.set(name, {
+      name,
+      targetIndex,
+      sourceIndex,
+      bone: skeleton.bones[targetIndex],
+      bounds: new THREE.Box3(),
+      count: 0,
+      toBone,
+    });
+  }
   const bodyBounds = new THREE.Box3();
   const point = new THREE.Vector3(), local = new THREE.Vector3();
+  const indices = new Array(4), weights = new Array(4);
   for (let vertex = 0; vertex < position.count; vertex++) {
     point.fromBufferAttribute(position, vertex);
     if (![point.x, point.y, point.z].every(Number.isFinite)) return null;
@@ -170,26 +284,36 @@ function measureBody(body, definition) {
     for (let channel = 0; channel < 4; channel++) {
       const index = skinIndex[CHANNELS[channel]](vertex), weight = skinWeight[CHANNELS[channel]](vertex);
       if (!Number.isSafeInteger(index) || index < 0 || index >= skeleton.bones.length || !Number.isFinite(weight) || weight < 0 || weight > 1) return null;
+      indices[channel] = index;
+      weights[channel] = weight;
       total += weight;
-      const region = regions.get(index);
-      if (region && weight >= 0.15) {
+    }
+    if (!Number.isFinite(total) || total <= 0) return null;
+    const normalize = profile?.normalizeReadWeights === true;
+    if (!normalize && (total < 0.99 || total > 1.01)) return null;
+    for (let channel = 0; channel < 4; channel++) {
+      const weight = normalize ? weights[channel] / total : weights[channel];
+      if (weight < 0.15) continue;
+      for (const region of regions.values()) {
+        if (region.sourceIndex !== indices[channel]) continue;
         local.copy(point).applyMatrix4(region.toBone);
         if (![local.x, local.y, local.z].every(Number.isFinite)) return null;
         region.bounds.expandByPoint(local);
         region.count++;
       }
     }
-    if (!Number.isFinite(total) || total < 0.5 || total > 1.01) return null;
     bodyBounds.expandByPoint(point);
   }
   if (bodyBounds.isEmpty() || [...regions.values()].some(region => region.count < 8 || region.bounds.isEmpty())) return null;
   const bodySize = bodyBounds.getSize(new THREE.Vector3());
   const worldBodySize = new THREE.Box3().setFromObject(body).getSize(new THREE.Vector3());
+  const maximumWidth = profile?.maximumWidth ?? 2;
+  const maximumDepth = profile?.maximumDepth ?? 1.5;
   if (![bodySize.x, bodySize.y, bodySize.z, worldBodySize.x, worldBodySize.y, worldBodySize.z].every(Number.isFinite)
-    || bodySize.y < 0.5 || bodySize.y > 3.5 || bodySize.x < 0.12 || bodySize.x > 2
-    || bodySize.z < 0.08 || bodySize.z > 1.5 || bodySize.y / bodySize.x < 0.75
+    || bodySize.y < 0.5 || bodySize.y > 3.5 || bodySize.x < 0.12 || bodySize.x > maximumWidth
+    || bodySize.z < 0.08 || bodySize.z > maximumDepth || bodySize.y / bodySize.x < 0.75
     || worldBodySize.y <= 0) return null;
-  return { bodyBounds, bodySize, worldBodySize, regions, names };
+  return { bodyBounds, bodySize, worldBodySize, regions };
 }
 
 function taperedBox(width, height, depth, topScale, bottomScale) {
@@ -223,11 +347,11 @@ function makeGeometry(spec, dimensions, center) {
 }
 
 function pairedRegionSize(measurement, spec, target) {
-  const own = measurement.regions.get(measurement.names.get(spec.bone));
+  const own = measurement.regions.get(spec.bone);
   own.bounds.getSize(target);
   if (!spec.pairRole) return target;
   const opposite = SIDE_BONE[spec.pairRole][spec.side === 'left' ? 'right' : 'left'];
-  const other = measurement.regions.get(measurement.names.get(opposite));
+  const other = measurement.regions.get(opposite);
   if (!other) return target;
   const otherSize = other.bounds.getSize(new THREE.Vector3());
   return target.add(otherSize).multiplyScalar(0.5);
@@ -247,9 +371,15 @@ function triangleCount(geometry) {
 
 export function createUrbanApparelProxy(target, family, options = {}) {
   const definition = FAMILY_DEFINITIONS[family];
-  const body = bodyCandidate(target);
-  if (!definition || !body || !options || typeof options !== 'object') return null;
-  const measurement = measureBody(body, definition);
+  if (!definition || !options || typeof options !== 'object') return null;
+  const profile = profileFor(options);
+  if (profile === undefined) return null;
+  const requiredNames = [...new Set(definition.pieces.map(piece => piece.bone))];
+  const selectionOptions = {...options, family};
+  const selection = selectUrbanBodyCandidate(target, requiredNames, selectionOptions);
+  const body = selection?.body;
+  if (!body) return null;
+  const measurement = measureBody(body, definition, profile, family);
   if (!measurement) return null;
   const material = solidMaterial(family, options.material);
   if (!material) return null;
@@ -258,7 +388,7 @@ export function createUrbanApparelProxy(target, family, options = {}) {
   let triangles = 0;
 
   for (const spec of definition.pieces) {
-    const region = measurement.regions.get(measurement.names.get(spec.bone));
+    const region = measurement.regions.get(spec.bone);
     const regionSize = pairedRegionSize(measurement, spec, new THREE.Vector3());
     const minimums = spec.minimums || DEFAULT_MINIMUMS;
     const base = [
@@ -325,11 +455,13 @@ export function createUrbanApparelProxy(target, family, options = {}) {
     if (ownsMaterial) material.dispose();
     return null;
   }
-  for (const [boneName, mount] of mounts) measurement.regions.get(measurement.names.get(boneName)).bone.add(mount);
+  for (const [boneName, mount] of mounts) measurement.regions.get(boneName).bone.add(mount);
   const dimensions = {
     body: measurement.bodySize.toArray(),
     source: 'weighted-skinned-mesh-bind-space',
     weightThreshold: 0.15,
+    adapterId: profile?.id || null,
+    normalizeReadWeights: profile?.normalizeReadWeights === true,
   };
   const renderMetrics = { triangles, drawCalls };
   let disposed = false;
@@ -343,6 +475,7 @@ export function createUrbanApparelProxy(target, family, options = {}) {
     dimensions,
     renderMetrics,
     silhouette: definition.silhouette,
+    selection,
     certified: false,
     dispose() {
       if (disposed) return;

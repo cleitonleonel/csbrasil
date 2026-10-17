@@ -170,7 +170,7 @@ async function capture() {
     runtimeEnabled: false,
     sourceHashes: hashes,
     views: ['front', 'threeQuarter'],
-    summary: {catalogItems: catalog.items.length, mountableSafe: safeItems.length, blockedPermissionNeeded: blockedItems.length, bodiesObserved: census.bodies.length, geometryFamiliesObserved: allFamilies.length, certified: 0, mintSubmitted: false},
+    summary: {catalogItems: catalog.items.length, mountableSafe: safeItems.length, blockedPermissionNeeded: blockedItems.length, bodiesObserved: census.bodies.length, selectableBodies: census.bodies.filter(body => body.sourceKind !== 'auxiliary').length, auxiliaryBodies: census.bodies.filter(body => body.sourceKind === 'auxiliary').length, geometryFamiliesObserved: allFamilies.length, certified: 0, mintSubmitted: false},
     catalog: catalog.items.map(item => {
       const mapping = factoryFor(item.geometryFamily);
       return item.rightsStatus === 'permission-needed'
@@ -223,6 +223,7 @@ async function capture() {
             family: value,
             anchorPath: body.path,
             anchorBodyId: body.bodyId,
+            anchorBodySha256: body.sourceSha256,
           }), {value: family, body: anchor});
           break;
         } catch (error) {
@@ -246,6 +247,7 @@ async function capture() {
     evidenceFiles.push({name: familySheet, kind: 'family-gallery'});
     const blockedSheet = await writeBlockedSheet(report.blockedCards);
     evidenceFiles.push({name: blockedSheet, kind: 'blocked-card-gallery'});
+    report.resourceDisposals = await page.evaluate(() => window.urbanCatalogFit.dispose());
     if (consoleErrors.length) throw new Error(`browser console errors: ${consoleErrors.join('; ')}`);
     report.browserVersion = await browser.version();
     report.budgets = {
@@ -262,7 +264,7 @@ async function capture() {
     }
     const evidence = {schemaVersion: 'cs-urban-catalog-fit-evidence/1', sourceHashes: hashes, files};
     writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
-    console.log(`urban-catalog-fit write: ${report.bodies.length}/88 bodies, ${report.families.length}/34 families, ${report.catalog.filter(row => row.resolution === 'mountable-proxy').length}/147 safe, ${report.blockedCards.length}/13 blocked, ${Object.keys(files).length} hash-pinned sheets`);
+    console.log(`urban-catalog-fit write: ${report.bodies.filter(row => row.status === 'candidate').length}/87 selectable candidate, ${report.bodies.filter(row => row.status === 'incompatible').length}/1 auxiliary incompatible, ${report.families.length}/34 families, ${report.catalog.filter(row => row.resolution === 'mountable-proxy').length}/147 safe, ${report.blockedCards.length}/13 blocked, ${Object.keys(files).length} hash-pinned sheets`);
   } finally {
     await browser.close();
     await new Promise(resolve => http.close(resolve));
@@ -284,7 +286,7 @@ async function check() {
     assert.equal(metadata.width, expected.width, `${file}: evidence width changed`);
     assert.equal(metadata.height, expected.height, `${file}: evidence height changed`);
   }
-  console.log(`urban-catalog-fit check: ${report.bodies.length}/88 bodies, ${report.families.length}/34 families, ${Object.keys(evidence.files).length} hash-pinned sheets, console errors=0`);
+  console.log(`urban-catalog-fit check: ${report.bodies.filter(row => row.status === 'candidate').length}/87 selectable candidate, ${report.bodies.filter(row => row.status === 'incompatible').length}/1 auxiliary incompatible, ${report.families.length}/34 families, ${Object.keys(evidence.files).length} hash-pinned sheets, console errors=0`);
 }
 
 const mode = process.argv[2] || '--check';
