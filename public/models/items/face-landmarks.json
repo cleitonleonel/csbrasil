@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "cs-face-landmarks/1",
+  "status": "candidate",
+  "runtimeEnabled": false,
+  "coordinateSystem": {
+    "space": "normalized-character-world",
+    "units": "meters",
+    "characterHeight": 1.72,
+    "forward": "+Z",
+    "uncertaintyCm": 0.3
+  },
+  "provenance": {
+    "origin": "gpt-pilot+human-candidate",
+    "landmarksSha256": "726c851d057298bd7c631b0a7deab0220bc678694c629303f9e3bb84f856380e",
+    "profilesSha256": "25651328417699875a39c7a1596acd62a2682497a5336b95e9d5301f68b7d3e2",
+    "poseMetricsSha256": "e4f50295dcea9dbab450619d707b73e24bf5e4fe8f9a5b3cbbd99bf44c8c562e",
+    "capGeneratorSha256": "267d68c633743aeccb3bd2777c8cfef4c823c6d78f894c98577bda2f2ec6f321",
+    "capReportSha256": "3d4b8472a3275bfed7ba5ba306db521a195829e4d144a30d9c8cbfa5fd106d6c"
+  },
+  "bodies": {
+    "capitao": {
+      "bodyId": "character:capitao",
+      "profileId": "character:capitao@433fc02554e8",
+      "model": "/models/characters/capitao.glb",
+      "bodySha256": "433fc02554e818a7607caa3df8b1e859e086fe61965a1950b8a391cfdab8ba1d",
+      "origin": "gpt-pilot+human-candidate",
+      "eyewear": {
+        "status": "measured",
+        "eyeLineY": 1.614,
+        "ears": {
+          "left": {"frontZ": -0.02, "topY": 1.636, "backZ": -0.058},
+          "right": {"frontZ": -0.013, "topY": 1.631, "backZ": -0.055}
+        },
+        "bakedEyewearConflict": false
+      },
+      "headwear": {
+        "status": "candidate-proof",
+        "generator": "treta-cap-procedural-v1",
+        "dimensions": {"rx": 0.13293933525681498, "ry": 0.11469276428222656, "rz": 0.1466242700815201, "baseY": 1.7675645995140075},
+        "motions": ["idle", "walk", "crouch"]
+      }
+    },
+    "esquerdomacho": {
+      "bodyId": "character:esquerdomacho",
+      "profileId": "character:esquerdomacho@51bd7a1aaa6f",
+      "model": "/models/characters/esquerdomacho.glb",
+      "bodySha256": "51bd7a1aaa6ffd13dcb24dfc03d54ebed77b4e1dc4bd0aaf58de6b1ae84cbbf0",
+      "origin": "gpt-pilot+human-candidate",
+      "eyewear": {
+        "status": "measured",
+        "eyeLineY": 1.608,
+        "ears": {
+          "left": {"frontZ": 0.024, "topY": 1.609, "backZ": -0.014},
+          "right": {"frontZ": 0.0135, "topY": 1.608, "backZ": -0.034}
+        },
+        "bakedEyewearConflict": true,
+        "conflictReason": "Óculos redondos originais fundidos na malha; o perfil TRETA não pode ser certificado sem uma variante base preparada."
+      },
+      "headwear": {
+        "status": "candidate-proof",
+        "generator": "treta-cap-procedural-v1",
+        "dimensions": {"rx": 0.10239921525120736, "ry": 0.07984344482421875, "rz": 0.1275498975813389, "baseY": 1.6426124525070191},
+        "motions": ["idle", "walk", "crouch"]
+      }
+    },
+    "barbudo": {
+      "bodyId": "character:barbudo",
+      "profileId": "character:barbudo@2aaace3d7d18",
+      "model": "/models/characters/barbudo.glb",
+      "bodySha256": "2aaace3d7d18147693da0002f2f1e3477263cfd4eb8b74d2056869c3ae0f45f2",
+      "origin": "private-cap-proof+current-hash",
+      "eyewear": null,
+      "headwear": {
+        "status": "candidate-proof",
+        "generator": "treta-cap-procedural-v1",
+        "dimensions": {"rx": 0.1704328715801239, "ry": 0.12729862213134766, "rz": 0.1810849240422249, "baseY": 1.5885040628910065},
+        "motions": ["idle", "walk", "crouch"]
+      }
+    }
+  }
+}

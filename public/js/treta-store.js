@@ -6,7 +6,7 @@ import {loadAccount,socialApi} from './account-entry.js';
 import {byId} from './characters.js';
 import {estadoDaUrl,urlDoEstado,ABAS_LOJA} from './rotas.js';
 import {ligarCompartilhar,linkCompartilhavel} from './compartilhar.js';
-import {eyewearProfile} from './eyewear.js';
+import {eyewearFitCount,eyewearProfile,loadEyewearFitData} from './eyewear.js';
 
 const node=(tag,text='',cls='')=>{const e=document.createElement(tag);e.textContent=text;e.className=cls;return e;};
 const errors={account_required:'Entre e escolha seu nick para guardar seus T$.',insufficient_balance:'Ainda faltam T$ para esta skin. Ganhe mais jogando e convidando amigos.',skin_unavailable:'Este visual ainda está em produção ou revisão.',request_reused:'Este pedido já foi usado. Atualize a carteira.',skin_not_owned:'Este visual ainda não está no seu armário.',referral_ineligible:'Este convite não é elegível para a recompensa.',rate_limited:'Espere um momento antes de tentar novamente.'};
@@ -207,8 +207,8 @@ async function detail(skin) {
   $('treta-preview-retry').hidden=true;
   $('treta-detail-name').textContent=skin.name;$('treta-detail-series').textContent=skin.series;
   $('treta-detail-description').textContent=skin.description;$('treta-detail-price').textContent=money(item(skin.id)?.price ?? skin.price);
-  const fits=skin.slot==='eyewear'?Object.keys(asset(skin.id)?.profiles || {}).filter(key=>eyewearProfile(asset(skin.id),{id:key})).map(key=>TRETA_SKINS.find(s=>s.id===key)?.name || byId(key)?.name || key):[];
-  $('treta-detail-fit').hidden=skin.slot!=='eyewear';$('treta-detail-fit').textContent=fits.length?`Personagens compatíveis: ${fits.join(', ')}.`:'O encaixe nos personagens ainda está em revisão.';
+  const fitCount=skin.slot==='eyewear'?eyewearFitCount(asset(skin.id)):0;
+  $('treta-detail-fit').hidden=skin.slot!=='eyewear';$('treta-detail-fit').textContent=fitCount?`Encaixa em ${fitCount} personagens certificados.`:'Encaixa em 0 personagens certificados. Os perfis candidatos ainda aguardam decisão humana.';
   $('treta-detail-production').textContent=refreshFailed?'Consulta indisponível. Feche o detalhe e tente atualizar a carteira.':previewLoading?'Carregando prévia 3D do visual…':'Em produção. A imagem abaixo é a referência do personagem base; o visual final terá roupas e acessórios novos.';
   $('treta-buy-status').textContent='';updateBuy();openDialog($('treta-detail'));
   const loaded=await visual($('treta-stage'),{model:previewable(skin.id)?asset(skin.id).model:null,poster:portrait(skin)});
@@ -329,7 +329,7 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   draw();
   const manifestsReady=()=>{draw();notifyEquipment();if(selected && $('treta-detail').open)void detail(selected);};
   void fetch('/models/skins/manifest.json').then(r=>{if(!r.ok)throw new Error('manifest_unavailable');return r.json();}).then(data=>{manifest=data;manifestsReady();}).catch(()=>{});
-  if(TRETA_ITEMS_ENABLED)void fetch('/models/items/eyewear-manifest.json').then(r=>{if(!r.ok)throw new Error('manifest_unavailable');return r.json();}).then(data=>{eyeManifest=data;manifestsReady();}).catch(()=>{});
+  if(TRETA_ITEMS_ENABLED)void loadEyewearFitData().then(data=>{eyeManifest=data.manifest;manifestsReady();});
   void loadAccount().then(auth=>{account=auth;}).catch(()=>{});
   void refresh();
 }

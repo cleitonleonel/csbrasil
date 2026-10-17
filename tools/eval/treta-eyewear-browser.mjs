@@ -4,7 +4,7 @@ import {resolve} from 'node:path';
 import {chromium} from 'playwright';
 const out=process.env.OUT || '/tmp/treta-eyewear-ui',base=process.env.BASE || 'http://127.0.0.1:4355';mkdirSync(out,{recursive:true});
 const mutant=process.argv.find(a=>a.startsWith('--mutant='))?.split('=')[1];
-const assets=JSON.parse(readFileSync('public/models/items/eyewear-manifest.json'));
+const assets=JSON.parse(readFileSync('public/models/items/eyewear-manifest.json')),landmarks=JSON.parse(readFileSync('public/models/items/face-landmarks.json'));
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',args:['--mute-audio','--use-angle=metal']});
 let approval=true,available=true,balance=1000,inventory=[{skin_id:'lula-drip',slot:'skin',equipped:true}],purchases=0;
 const catalog=Object.entries(assets.eyewear).map(([id,s])=>({id,name:s.name,slot:'eyewear',character_id:'*',price:200,available:true,model_path:s.model}));
@@ -28,7 +28,8 @@ try{
   if(u.pathname==='/api/social-auth')return r.fulfill({json:{authenticated:true,accountId:'eyewear-fixture',profile:{nick:'TESTE'},providers:[],email:false}});
   return r.fulfill({json:{rooms:[],entries:[],profile:{socials:[]},online:0}});
  });
- await page.route('**/models/items/eyewear-manifest.json',r=>r.fulfill({json:{...assets,eyewear:Object.fromEntries(Object.entries(assets.eyewear).map(([id,e])=>[id,{...e,approved:approval,profiles:{capitao:{approved:true,width:.96,height:.44,depth:.04}}}]))}}));
+ await page.route('**/models/items/face-landmarks.json',r=>r.fulfill({json:landmarks}));
+ await page.route('**/models/items/eyewear-manifest.json',r=>r.fulfill({json:{...assets,eyewear:Object.fromEntries(Object.entries(assets.eyewear).map(([id,e])=>[id,{...e,approved:approval,profiles:e.profiles.capitao?{capitao:{...e.profiles.capitao,status:'certified',certified:true}}:{}}]))}}));
  const boot=async()=>{await page.goto(`${base}/?debug=1&nav=1&secao=loja`,{waitUntil:'commit'});await page.locator('#splash-enter:not(.hidden)').waitFor({timeout:90000});await page.locator('#boot-splash').click();await page.locator('#boot-splash').waitFor({state:'hidden'});await page.locator('[data-treta-view=accessories]').click();};
  await boot();await page.locator('#treta-balance-value').filter({hasText:'1.000'}).waitFor();await page.locator('#treta-eyewear-grid .treta-label').first().filter({hasText:'NOVO VISUAL'}).waitFor();
  const cards=page.locator('#treta-eyewear-grid .treta-card');assert.equal(await cards.count(),6,'Six real eyewear cards required');
@@ -44,8 +45,8 @@ try{
  await page.locator('#treta-detail [data-treta-close]').click();approval=true;
  const rendered=await page.evaluate(async()=>{
    const THREE=await import('three'),{preloadCharacterAssets,buildCharacterModel}=await import('/js/glbchars.js'),{preloadEyewearAssets,eyewearProfile}=await import('/js/eyewear.js'),{byId}=await import('/js/characters.js');
-   const profile={approved:true,width:.96,height:.44,depth:.04},entry={approved:true,profiles:{capitao:profile}};
-   if(eyewearProfile({...entry,approved:false},{id:'capitao'}) || eyewearProfile({...entry,profiles:{capitao:{...profile,approved:false}}},{id:'capitao'}) || eyewearProfile(entry,{id:'capitao',skinId:'other-skin'}))throw new Error('unapproved or mismatched fit accepted');
+   const landmark=(await fetch('/models/items/face-landmarks.json').then(r=>r.json())).bodies.capitao,profile={status:'certified',certified:true,source:'gpt-pilot+human-candidate',bodyId:landmark.bodyId,profileId:landmark.profileId,bodySha256:landmark.bodySha256,width:.96,height:.44,depth:.04,lensY:.5},entry={approved:true,profiles:{capitao:profile}};
+   if(eyewearProfile({...entry,approved:false},{id:'capitao'}) || eyewearProfile({...entry,profiles:{capitao:{...profile,certified:false}}},{id:'capitao'}) || eyewearProfile(entry,{id:'capitao',skinId:'other-skin'}))throw new Error('unapproved, uncertified, or mismatched fit accepted');
    const ids=['metal-de-rua','ouro-de-quebrada','oval-90','visor-de-pista'];
    await Promise.all([preloadCharacterAssets(['capitao'],{weapons:[]}),preloadEyewearAssets(ids)]);
    const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.01,50),renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});renderer.setSize(768,768);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;scene.add(new THREE.HemisphereLight(0xffffff,0x66553b,2));const key=new THREE.DirectionalLight(0xffedd1,3);key.position.set(3,4,5);scene.add(key);

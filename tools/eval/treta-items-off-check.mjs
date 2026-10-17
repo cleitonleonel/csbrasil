@@ -69,5 +69,5 @@ requests=[];
 await vm.runInContext('buy()',context);
 assert.equal(requests.length,0,'OFF malicious approved item fixture must not purchase/equip');
 const entries=Object.values(JSON.parse(read('public/models/items/eyewear-manifest.json')).eyewear);
-assert(entries.every(e=>e.approved===false && Object.keys(e.profiles).length===0),'All real items remain unapproved without fit profiles');
+assert(entries.every(e=>e.approved===false && Object.values(e.profiles).every(p=>p.certified===false)),'All real items and measured profiles remain unapproved/uncertified');
 console.log('PASS default-OFF contract: mount, proposals, grid, tab handlers, keyboard wrap, store fetch, equipped exposure, purchase/equip refusal, real manifest approval state. DOM mocked; no browser or Astro rendering.');

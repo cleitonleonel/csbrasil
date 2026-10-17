@@ -23,6 +23,11 @@
 > O conteúdo e as datas das entradas continuam intactos; só o rótulo mudou, porque chamar de
 > 3.3.0 um build com P0 em aberto promete ao jogador uma estabilidade que ele não tem.
 
+## Não lançado — 2026-10-17
+
+### Adicionado
+- A fábrica de wearables registra o boné procedural versionado e perfis candidatos por hash para Capitão, Esquerdomacho e Barbudo. A mesma régua importa os marcos e ajustes medidos dos óculos 33–36 para Capitão e Esquerdomacho, gera folhas frente/¾/perfil por pose e bloqueia qualquer par sem certificação humana; os itens 37/38 e a loja de acessórios continuam fechados.
+
 ## Não lançado — 2026-10-12
 
 ### Alterado
