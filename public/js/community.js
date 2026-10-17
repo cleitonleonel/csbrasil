@@ -5,10 +5,12 @@ import {questList} from './community-inbox.js';
 import {accountVerifiedBadge} from './account-verified.js';
 import {profileCharacterCard} from './profile-character.js';
 import {abrirConviteAmigos} from './convida-amigos.js';
+import {tr} from './i18n.js';
 import {WEAPONS} from './data/weapons.js';
 const root=document.getElementById('community');
 if(root) {
   const status=document.getElementById('social-status'),account=document.getElementById('social-account'),content=document.getElementById('social-content');
+  const UI_V3=document.documentElement.dataset.ui==='v3';
   let loginConfig={providers:[]};
   let inboxSection='quests',conversation=null,conversationBefore=null,messageDraft='',messageClientId=null,pendingSend=null;
   let auth=null,state=null,tab=root.dataset.tab || 'profile',profileId=root.dataset.profile || new URLSearchParams(location.search).get('perfil') || '',rankingScope='global',rankingQuery='',rankingOffset=0,rankingPeriod='all',rankingMode='all',rankingGameType='all',loadVersion=0;
@@ -193,7 +195,7 @@ if(root) {
     for(const [value,label] of [['abuse','Abuso ou assédio'],['cheating','Suspeita de cheat'],['profile','Conteúdo do perfil'],['other','Outro motivo']]){const o=el('option',label);o.value=value;reason.append(o);}
     c.append(empty('A denúncia vai para a fila de moderação. Ela não aplica punição automática.'),field('Motivo',reason),field('O que aconteceu? (5 a 1000 caracteres)',detail),button('ENVIAR DENÚNCIA',async()=>{if(!detail.reportValidity())return;await action('report',p.id,{reason:reason.value,detail:detail.value});message('Denúncia recebida para análise.');}));content.append(c);
   }
-  function searchForm(fn,value='') {const f=el('form','','social-search'),i=input(value,40,'search');const label=el('label','Buscar por nickname ou e-mail');label.append(i);const b=button('BUSCAR',()=>fn(i.value));f.append(label,b);f.onsubmit=e=>{e.preventDefault();b.click();};return f;}
+  function searchForm(fn,value='') {const f=el('form','','social-search'),i=input(value,40,'search');const label=el('label',UI_V3?tr('Buscar por nickname ou e-mail'):'Buscar pelo nickname');label.append(i);const b=button('BUSCAR',()=>fn(i.value));f.append(label,b);f.onsubmit=e=>{e.preventDefault();b.click();};return f;}
   function friendCard(f) {
     const c=card(f.nick);c.append(empty(f.state==='accepted'?presenceText(f.profile?.presence):f.direction==='incoming'?'Quer entrar na sua turma.':'Pedido enviado.'));
     const buttons=el('div','','social-actions');if(f.profile)buttons.append(link('VER PERFIL',f.profile.url));else buttons.append(empty('Perfil privado.'));
@@ -203,8 +205,15 @@ if(root) {
     c.append(buttons);return c;
   }
   function showFriends() {
-    content.append(button('ATUALIZAR TURMA',async()=>{await refresh();await render();}),button('CONVIDAR AMIGOS',()=>abrirConviteAmigos(state?.profile?.nick || '')));
-    content.append(searchForm(async q=>{const r=await api(`/api/social?action=search&q=${encodeURIComponent(q)}`);const results=document.getElementById('social-search-results');results.replaceChildren();for(const p of r.players){const c=card(p.nick);c.append(link('VISITAR PERFIL',`/u/${p.id}/${encodeURIComponent(p.nick)}`));results.append(c);}if(!r.players.length)results.append(empty('Nenhum jogador encontrado.'));}));
+    const atualizar=button('ATUALIZAR TURMA',async()=>{await refresh();await render();});
+    if(UI_V3){const convidar=el('button',tr('CONVIDAR AMIGOS'));convidar.type='button';convidar.setAttribute('aria-haspopup','dialog');convidar.onclick=()=>abrirConviteAmigos(auth?.profile?.nick || state?.profile?.nick || '');content.append(atualizar,convidar);}
+    else content.append(atualizar);
+    content.append(searchForm(async q=>{
+      let players=[];
+      try{const r=await api(`/api/social?action=search&q=${encodeURIComponent(q)}`);players=Array.isArray(r.players)?r.players:[];}
+      catch(e){if(!UI_V3 || !q.includes('@'))throw e;}
+      const results=document.getElementById('social-search-results');results.replaceChildren();for(const p of players){const c=card(p.nick);c.append(link('VISITAR PERFIL',`/u/${p.id}/${encodeURIComponent(p.nick)}`));results.append(c);}if(!players.length)results.append(empty('Nenhum jogador encontrado.'));
+    }));
     const results=el('div','','social-grid');results.id='social-search-results';content.append(results);
     if(!state){content.append(empty('Entre na conta para reunir sua turma.'));return;}
     const grid=el('div','','social-grid');for(const f of state.friends)grid.append(friendCard(f));content.append(grid);
