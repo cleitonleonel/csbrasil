@@ -8173,11 +8173,9 @@ export class Game {
     this._showScoreboard(true);
   }
   _botaoAmigo(c) {
-    // +AMIGO no placar (lane glm/amigos): só para GENTE (pid do roster do nó);
-    // bot e convidado sem conta não têm a quem pedir. Sem sessão o clique avisa.
-    if (!this.online || c.isPlayer || !c._playerId || this._amigosPedidos?.has(c._playerId)) return '';
+    if (document.documentElement.dataset.ui !== 'v3' || !this.online || c.isPlayer || !c._playerId || this._amigosPedidos?.has(c._playerId)) return '';
     (this._amigosPedidos ||= new Set());
-    return `<button class="sb-amigo" data-amigo="${c._playerId}">+AMIGO</button>`;
+    return `<button class="sb-amigo" data-amigo="${c._playerId}">${tr('+AMIGO')}</button>`;
   }
   _ligarAmigoPlacar() {
     const cols = this.el.sbCols;
@@ -8189,11 +8187,15 @@ export class Game {
       const pid = b.dataset.amigo;
       b.disabled = true; b.textContent = '…';
       try {
-        const r = await fetch('/api/social', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'request', target: pid }) });
+        const r = await fetch('/api/social', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'request', target: pid }), signal: AbortSignal.timeout(12000) });
         const out = await r.json().catch(() => ({}));
-        if (r.ok) { (this._amigosPedidos ||= new Set()).add(pid); b.textContent = 'PEDIDO ENVIADO'; }
-        else b.textContent = { session_expired: 'ENTRE NA CONTA', rate_limited: 'CALMA…', blocked: 'INDISPONÍVEL', not_found: 'SEM CONTA', self_action: 'VOCÊ :-)' }[out.error] || 'NÃO DEU';
-      } catch { b.textContent = 'SEM REDE'; }
+        if (r.ok) {
+          (this._amigosPedidos ||= new Set()).add(pid);
+          b.textContent = tr('PEDIDO ENVIADO');
+          return;
+        }
+        b.textContent = tr({ session_expired: 'ENTRE NA CONTA', rate_limited: 'CALMA…', blocked: 'INDISPONÍVEL', not_found: 'SEM CONTA', self_action: 'VOCÊ :-)' }[out.error] || 'NÃO DEU');
+      } catch { b.textContent = tr('SEM REDE'); }
       setTimeout(() => { b.disabled = false; }, 4000);
     });
   }

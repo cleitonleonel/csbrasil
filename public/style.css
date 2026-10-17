@@ -3525,8 +3525,8 @@ html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] .hub-footer{position:r
   .tp-splash__canto .tp-num{display:none}
 }
 /* END:treta-pop */
-/* +AMIGO no placar (lane glm/amigos): discreto na célula do nome, sem quebrar a
-   leitura de K/D/SCORE. O estado do clique (ENVIADO/ENTRE NA CONTA) mora no botão. */
-#scoreboard .sb-amigo{margin-left:8px;padding:2px 7px;font:700 10px/1.4 var(--mono);letter-spacing:.5px;color:#d0ee7d;background:#1a2410;border:1px solid #556b2f;border-radius:3px;cursor:pointer}
-#scoreboard .sb-amigo:hover{background:#26350f}
-#scoreboard .sb-amigo:disabled{color:#b6b8b2;cursor:default}
+/* +AMIGO fica só na Treta Pop; sem ?ui=v3 o placar legado não ganha controle novo. */
+:root[data-ui=v3] #scoreboard .sb-amigo{flex:none;min-height:28px;margin-left:4px;padding:4px 7px;font:700 10px/1.2 var(--tp-num);letter-spacing:.5px;color:#d0ee7d;background:#1a2410;border:1px solid #556b2f;border-radius:3px;cursor:pointer}
+:root[data-ui=v3] #scoreboard .sb-amigo:hover{background:#26350f}
+:root[data-ui=v3] #scoreboard .sb-amigo:focus-visible{outline:2px solid var(--tp-tinta-1);outline-offset:2px}
+:root[data-ui=v3] #scoreboard .sb-amigo:disabled{color:#b6b8b2;cursor:default}
