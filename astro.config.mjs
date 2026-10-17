@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import vercel from '@astrojs/vercel';
 import { aeoCurado } from './scripts/aeo.mjs';
 import { moduleCacheManifest } from './scripts/module-cache.mjs';
-import {readFileSync,existsSync} from 'node:fs';
+import {readFileSync,existsSync,readdirSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import sharp from 'sharp';
 import { SITE } from './src/lib/site-origin.mjs';
@@ -50,6 +50,9 @@ const MANIFESTO_JS = moduleCacheManifest();
    o hub também é renderizado no SSR de /u/<perfil>, e lá não existe `public/`. */
 const revisaoCss = (arquivo) => createHash('sha1').update(readFileSync(arquivo)).digest('hex').slice(0, 8);
 const CSS_REV = { style: revisaoCss('public/style.css'), social: revisaoCss('public/social.css'), treta: revisaoCss('public/treta.css') };
+/* Folhas da Treta Pop (uma por tela): a página só as liga com ?ui=v3; a revisão cobre todas juntas. */
+const TP_CSS_ARQUIVOS = readdirSync('public/css/tp').filter((f) => f.endsWith('.css')).sort();
+const TP_CSS = { arquivos: TP_CSS_ARQUIVOS, rev: createHash('sha1').update(TP_CSS_ARQUIVOS.map((f) => readFileSync(`public/css/tp/${f}`)).join('\n')).digest('hex').slice(0, 8) };
 
 export default defineConfig({
   output: 'static',
@@ -62,6 +65,7 @@ export default defineConfig({
     define: {
       __MANIFESTO_JS__: JSON.stringify(MANIFESTO_JS),
       __CSS_REV__: JSON.stringify(CSS_REV),
+      __TP_CSS__: JSON.stringify(TP_CSS),
       __SOCIAL_PORTRAITS__: JSON.stringify(SOCIAL_PORTRAITS),
       __SOCIAL_CHARACTERS__: JSON.stringify(SOCIAL_CHARACTERS),
       __SOCIAL_LOGO__: JSON.stringify(SOCIAL_LOGO),

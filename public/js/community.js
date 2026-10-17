@@ -118,6 +118,8 @@ if(root) {
   async function showProfile(id,version) {
     const {profile:p}=await api('/api/social?action=profile'+(id?`&id=${encodeURIComponent(id)}`:''));
     if(version!==loadVersion)return;
+    // Treta Pop (public/js/tp/perfil.js) redesenha o perfil com estes dados; sem ?ui=v3 nada muda.
+    if(document.documentElement?.dataset?.ui==='v3')root.tpPerfilDados={p,own:auth?.profile?.id===p.id,aba:profileAba,conta:state?.profile};
     const c=card(p.nick),identity=el('div','','social-identity');
     const badge=accountVerifiedBadge(p.account_verified);if(badge)c.querySelector('h2').append(badge);
     if(p.avatar_url){const image=el('img','','social-avatar');image.src=p.avatar_url;image.alt=`Avatar de ${p.nick}`;image.width=76;image.height=76;image.referrerPolicy='no-referrer';identity.append(image);}

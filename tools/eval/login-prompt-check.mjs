@@ -175,7 +175,9 @@ await caso('LP12', 'apresentação da loja só abre sozinha depois da decisão p
   const sozinhos = [...corpo.matchAll(/(.{0,24})\bexplain\(\)/g)].filter((m) => !/void $/.test(m[1]));
   assert.equal(sozinhos.length, 1, `chamadas automáticas: ${sozinhos.length}`);
   const pos = corpo.indexOf("document.addEventListener('cs-pos-partida',");
-  assert(pos > 0 && sozinhos[0].index > pos && sozinhos[0].index - pos < 300, 'a chamada automática não está no cs-pos-partida');
+  /* 500: o guard do ?ui=v3 (carteira só por clique) entrou antes da explain() e a chamada
+     continua DENTRO do handler de cs-pos-partida — janela de 300 não cabia mais o early return. */
+  assert(pos > 0 && sozinhos[0].index > pos && sozinhos[0].index - pos < 500, 'a chamada automática não está no cs-pos-partida');
   assert(fontePrompt.includes("document.dispatchEvent(new CustomEvent('cs-pos-partida',{detail:{treta:pitched}}))"), 'convite não avisa a loja');
 });
 const CAMPANHA = { starts_at: '2026-10-12T00:00:00+00:00', ends_at: '2026-11-01T00:00:00+00:00', email_reward: 200, referral_reward: 100, sp_reward: 10, mp_reward: 25, daily_match_cap: 250 };
