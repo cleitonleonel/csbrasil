@@ -66,6 +66,13 @@ function validate({catalog, batch}) {
   assert.equal(batch.schemaVersion, 'cs-mint-urban-batch/1');
   assert.equal(batch.catalogPath, catalogPath);
   assert(Array.isArray(catalog.items) && catalog.items.length >= 120, 'catalog must retain the large researched set');
+  assert.deepEqual(catalog.fitPolicy, {
+    status: 'research-only',
+    compatibility: 'exact-body-and-item-profile-required',
+    unmeasuredResult: 'not-compatible',
+    headwear: 'deferred-per-body',
+    reason: 'User review invalidated universal body/head fitting; catalog geometry families are silhouette references only.',
+  });
   assert.equal(catalog.deduplication.rule, 'exact-equivalence-only');
   assert.equal(catalog.deduplication.outputCount, catalog.items.length);
   assert.equal(catalog.deduplication.inputCounts.privateConcepts, 30);
@@ -174,6 +181,11 @@ function validate({catalog, batch}) {
   assert.equal(batch.costReceipt.creditsSpent, 0);
   assert.equal(batch.costReceipt.receiptId, null);
   assert(batch.safetyContract.includes(logoRule));
+  assert.deepEqual(batch.fitPolicy, {
+    status: 'body-specific-profiles-required',
+    headwear: 'deferred-per-body',
+    unmeasuredResult: 'do-not-submit',
+  });
 
   const safeIds = catalog.items.filter(item => item.rightsStatus === 'original-safe').map(item => item.id);
   const protectedIds = catalog.items.filter(item => item.rightsStatus === 'permission-needed').map(item => item.id);
@@ -187,7 +199,7 @@ function validate({catalog, batch}) {
     assert.equal(job.prompt, item.mintPrompt);
     assert(job.prompt.includes(logoRule), `${job.itemId}: unsafe Mint prompt`);
     assert(!activePromptBrandPatterns.some(pattern => pattern.test(job.prompt)), `${job.itemId}: active prompt names a protected brand/trade dress`);
-    assert.equal(job.submissionStatus, 'not-submitted-no-credits');
+    assert.equal(job.submissionStatus, job.geometryFamily.startsWith('headwear-') ? 'deferred-headwear-fit' : 'not-submitted-no-credits');
     assert.equal(job.providerJobId, null);
     assert.equal(job.outputAsset, null);
     assert.equal(job.estimatedCost, null);
@@ -209,6 +221,8 @@ function validate({catalog, batch}) {
     categories: categorySlots.size,
     tribes: tribes.size,
     safeJobs: batch.jobs.length,
+    deferredHeadwearJobs: batch.jobs.filter(job => job.submissionStatus === 'deferred-headwear-fit').length,
+    queuedAfterCredits: batch.jobs.filter(job => job.submissionStatus === 'not-submitted-no-credits').length,
     blocked: batch.excluded.length,
     officialRequestGroups: requestedForms.size,
   };
@@ -237,6 +251,12 @@ function runMutants() {
       data.batch.submitted = true;
       data.batch.submissionStatus = 'submitted';
       data.batch.costReceipt.status = 'paid';
+    },
+    'universal-fit-restored': data => {
+      data.catalog.fitPolicy.status = 'candidate';
+    },
+    'headwear-job-reenabled': data => {
+      data.batch.jobs.find(job => job.geometryFamily.startsWith('headwear-')).submissionStatus = 'not-submitted-no-credits';
     },
   };
   const killed = [];

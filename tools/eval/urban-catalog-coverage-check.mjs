@@ -95,6 +95,7 @@ function validate(data, {verifyFiles = true} = {}) {
   assert.equal(catalog.items.length, 160, 'catalog must contain exactly 160 items');
   const safe = catalog.items.filter(item => item.rightsStatus === 'original-safe');
   const blocked = catalog.items.filter(item => item.rightsStatus === 'permission-needed');
+  const safeHeadwear = safe.filter(item => item.geometryFamily.startsWith('headwear-'));
   assert.equal(safe.length, 147, 'original-safe coverage changed');
   assert.equal(blocked.length, 13, 'permission-needed coverage changed');
   const families = [...new Set(catalog.items.map(item => item.geometryFamily))];
@@ -116,12 +117,12 @@ function validate(data, {verifyFiles = true} = {}) {
   same(batch.excluded.map(item => item.itemId), blocked.map(item => item.id), 'Mint exclusions must cover the 13 permission-needed records');
 
   assert.equal(report.schemaVersion, 'cs-urban-catalog-fit/1');
-  assert.equal(report.status, 'fit-proxy-not-mint-asset');
+  assert.equal(report.status, 'silhouette-study-not-body-fit');
   assert.deepEqual(report.sourceHashes, sourceHashes(), 'fit report source hashes are stale');
   assert.deepEqual(evidence.sourceHashes, sourceHashes(), 'evidence source hashes are stale');
   assert.equal(report.consoleErrors.length, 0, 'browser console errors were captured');
   assert.deepEqual(report.views, ['front', 'threeQuarter']);
-  assert.deepEqual(report.summary, {catalogItems: 160, mountableSafe: 147, blockedPermissionNeeded: 13, bodiesObserved: 88, selectableBodies: 87, auxiliaryBodies: 1, geometryFamiliesObserved: 34, certified: 0, mintSubmitted: false});
+  assert.deepEqual(report.summary, {catalogItems: 160, safeConcepts: 147, blockedPermissionNeeded: 13, bodiesObserved: 88, selectableBodies: 87, auxiliaryBodies: 1, bodyFitCandidates: 0, bodyFitUnassessed: 87, headwearDeferred: true, geometryFamiliesObserved: 34, certified: 0, mintSubmitted: false});
   rejectPromotion({catalog, batch, census, eyewear, report});
 
   const catalogById = new Map(catalog.items.map(item => [item.id, item]));
@@ -139,10 +140,10 @@ function validate(data, {verifyFiles = true} = {}) {
       assert.equal(row.status, 'blocked', `${row.itemId}: protected item lacks blocked status`);
       assert(!Object.hasOwn(row, 'factory'), `${row.itemId}: protected item reached a factory`);
     } else {
-      const expected = factoryFor(item.geometryFamily);
-      assert(expected, `${row.itemId}: safe item has no factory`);
-      assert.equal(row.resolution, 'mountable-proxy', `${row.itemId}: safe item is not mountable`);
-      assert.equal(row.fitStatus, 'fit-proxy-not-mint-asset', `${row.itemId}: proxy mislabeled as final asset`);
+      const expected = factoryFor(item.geometryFamily), headwearDeferred = item.geometryFamily.startsWith('headwear-');
+      assert(expected, `${row.itemId}: safe item has no research factory`);
+      assert.equal(row.resolution, headwearDeferred ? 'deferred-headwear' : 'research-proxy', `${row.itemId}: dishonest fit resolution`);
+      assert.equal(row.fitStatus, headwearDeferred ? 'unassessed-per-body' : 'silhouette-study-not-body-fit', `${row.itemId}: proxy mislabeled as body fit`);
       assert.equal(row.factory, expected.factory, `${row.itemId}: wrong factory`);
       assert.equal(row.kind, expected.kind, `${row.itemId}: wrong factory kind`);
       assert.equal(row.assetId, expected.assetId, `${row.itemId}: wrong eyewear asset mapping`);
@@ -172,23 +173,23 @@ function validate(data, {verifyFiles = true} = {}) {
       assert.equal(readFileSync(path).length, body.bytes, `${row.bodyId}: GLB byte count stale`);
       assert.equal(hashFile(path), body.sourceSha256, `${row.bodyId}: census GLB hash stale`);
     }
-    assert.equal(row.fitStatus, 'fit-proxy-not-mint-asset', `${row.bodyId}: body evidence promoted proxy`);
-    assert.equal(row.familiesRequested.length, 7, `${row.bodyId}: deterministic outfit is incomplete`);
+    assert.equal(row.fitStatus, 'silhouette-study-not-body-fit', `${row.bodyId}: silhouette study mislabeled as body fit`);
+    assert.equal(row.familiesRequested.length, 6, `${row.bodyId}: study outfit changed`);
     assertFiniteBounds(row, row.bodyId);
     assert(row.evidence?.sheet && row.evidence.views?.length === 2, `${row.bodyId}: front/3/4 evidence missing`);
     assert(evidence.files[row.evidence.sheet], `${row.bodyId}: referenced body sheet absent from evidence manifest`);
     assert.equal(row.cleanupBeforeLoad?.disposed?.models, bodyIndex === 0 ? 0 : 1, `${row.bodyId}: previous model was not disposed before load`);
     if (body.sourceKind === 'auxiliary') {
-      assert.equal(row.status, 'incompatible', `${row.bodyId}: non-selectable auxiliary was included`);
+      assert.equal(row.status, 'not-applicable', `${row.bodyId}: non-selectable auxiliary was included`);
       assert.equal(row.familiesMounted.length, 0, `${row.bodyId}: auxiliary body reached the mounter`);
-      assert.equal(row.selections.length, 0, `${row.bodyId}: auxiliary body selected a fit mesh`);
+      assert.equal(row.selections.length, 0, `${row.bodyId}: auxiliary body selected a research mesh`);
       assert(row.failures.some(reason => reason.startsWith('auxiliary-not-selectable:')), `${row.bodyId}: auxiliary reason was hidden`);
     } else {
-      assert.equal(row.status, 'candidate', `${row.bodyId}: selectable body is not candidate`);
-      assert.equal(row.familiesMounted.length, 7, `${row.bodyId}: candidate outfit is partial`);
-      assert.deepEqual(row.failures, [], `${row.bodyId}: candidate hides mount failures`);
+      assert.equal(row.status, 'study-only', `${row.bodyId}: body contact sheet claims compatibility`);
+      assert.equal(row.familiesMounted.length, 6, `${row.bodyId}: silhouette study is partial`);
+      assert.deepEqual(row.failures, [], `${row.bodyId}: study hides mount failures`);
       assert.equal(row.noHit, true, `${row.bodyId}: proxy entered hit/raycast surfaces`);
-      assert.equal(row.selections.length, 7, `${row.bodyId}: body selection audit is incomplete`);
+      assert.equal(row.selections.length, 6, `${row.bodyId}: body selection audit is incomplete`);
       const expectedAdapter = adapterByHash.get(body.sourceSha256) || null;
       for (const selection of row.selections) {
         assert.equal(selection.strategy, 'largest-required-weighted-vertex-set', `${row.bodyId}/${selection.family}: first-mesh selection escaped`);
@@ -204,15 +205,15 @@ function validate(data, {verifyFiles = true} = {}) {
     assert(row.triangles >= 0 && row.triangles <= MAX_OUTFIT_TRIANGLES, `${row.bodyId}: triangle budget exceeded`);
     assert.equal(row.clipping?.method, 'conservative-body-vertices-inside-proxy-world-aabb', `${row.bodyId}: clipping observation missing`);
     assert.equal(row.clipping?.certified, false, `${row.bodyId}: clipping was falsely certified`);
-    if (row.status === 'candidate') {
-      assert(row.clipping.sampledVertices > 0, `${row.bodyId}: no vertices sampled for clipping observation`);
-      assert(finite(row.clipping.overlapPct), `${row.bodyId}: clipping percentage not finite`);
-      assert(['potential-contact-review-required', 'no-aabb-overlap-detected'].includes(row.clipping.classification), `${row.bodyId}: invalid clipping classification`);
+    if (row.status === 'study-only') {
+      assert(row.clipping.sampledVertices > 0, `${row.bodyId}: no vertices sampled for contact observation`);
+      assert(finite(row.clipping.overlapPct), `${row.bodyId}: contact percentage not finite`);
+      assert(['potential-contact-review-required', 'no-aabb-overlap-detected'].includes(row.clipping.classification), `${row.bodyId}: invalid contact classification`);
     }
   }
-  assert.equal(report.bodies.filter(row => row.status === 'candidate').length, 87, 'selectable candidate score must be 87/87');
-  assert.equal(report.bodies.filter(row => row.status === 'fail-closed').length, 0, 'selectable body remained fail-closed');
-  assert.deepEqual(report.bodies.filter(row => row.status === 'incompatible').map(row => row.bodyId), ['auxiliary:dollynho-dance'], 'only the auxiliary may remain incompatible');
+  assert.equal(report.bodies.filter(row => row.status === 'candidate').length, 0, 'user-rejected universal body candidates remained active');
+  assert.equal(report.bodies.filter(row => row.status === 'study-only').length, 87, 'selectable study coverage must be 87/87');
+  assert.deepEqual(report.bodies.filter(row => row.status === 'not-applicable').map(row => row.bodyId), ['auxiliary:dollynho-dance'], 'only the auxiliary may be not applicable');
 
   assert.equal(report.families.length, 34, 'family gallery coverage changed');
   same(report.families.map(row => row.family), families, 'family gallery omitted or invented a family');
@@ -221,7 +222,7 @@ function validate(data, {verifyFiles = true} = {}) {
     assert(expected, `${row.family}: no factory mapping`);
     assert.equal(row.factory, expected.factory, `${row.family}: gallery used wrong factory`);
     assert.equal(row.assetId, expected.assetId, `${row.family}: gallery used wrong eyewear asset`);
-    assert.equal(row.fitStatus, 'fit-proxy-not-mint-asset', `${row.family}: gallery mislabeled proxy`);
+    assert.equal(row.fitStatus, 'silhouette-study-not-body-fit', `${row.family}: gallery mislabeled shape study as body fit`);
     assert.equal(row.noHit, true, `${row.family}: gallery proxy entered hit surfaces`);
     assert.equal(row.cleanupBeforeLoad?.disposed?.models, 1, `${row.family}: previous model was not disposed before family load ${familyIndex}`);
     assertFiniteBounds(row, row.family);
@@ -287,23 +288,26 @@ function validate(data, {verifyFiles = true} = {}) {
   assert(report.resourceDisposals?.totals?.textures > 0, 'captured texture disposal was not observed');
 
   assert.equal(review.schemaVersion, 'cs-urban-catalog-fit-visual-review/1');
-  assert.equal(review.reviewMode, 'blind-subagent');
-  assert(['approved', 'approved-with-notes'].includes(review.verdict), 'blind visual review did not approve evidence');
-  assert.equal(review.evidenceManifestSha256, hashFile(evidencePath), 'blind review targets stale evidence');
-  assert.deepEqual(review.sourceHashes, report.sourceHashes, 'blind review targets stale source hashes');
-  same(review.sheetsReviewed, requiredSheets, 'blind reviewer did not inspect every contact sheet');
-  assert.equal(review.rejectionPolicy, 'reject-on-clipping-scale-or-full-body-masking', 'blind review can overlook a fully masked body');
-  assert.deepEqual(review.criteria, {clipping: 'pass', scale: 'pass', fullBodyMasking: 'pass'}, 'blind review did not explicitly inspect clipping, scale and body masking');
-  assert(Array.isArray(review.findings) && review.findings.length > 0, 'blind review contains no visual observations');
+  assert.equal(review.reviewMode, 'user-feedback-applied');
+  assert.equal(review.verdict, 'research-only', 'study was promoted after user rejected universal fitting');
+  assert.equal(review.evidenceManifestSha256, hashFile(evidencePath), 'review targets stale evidence');
+  assert.deepEqual(review.sourceHashes, report.sourceHashes, 'review targets stale source hashes');
+  same(review.sheetsReviewed, requiredSheets, 'review did not inspect every contact sheet');
+  assert.equal(review.rejectionPolicy, 'no-fit-approval-without-exact-body-profile', 'review can promote a universal fit');
+  assert.deepEqual(review.criteria, {noUniversalFitClaim: 'pass', headwearAbsentFromBodySheets: 'pass', bodySilhouetteVisible: 'pass'}, 'review does not preserve the corrected scope');
+  assert(Array.isArray(review.findings) && review.findings.length > 0, 'review contains no visual observations');
 
   return {
     items: report.catalog.length,
-    safeMountable: report.catalog.filter(row => row.resolution === 'mountable-proxy').length,
+    safeConcepts: safe.length,
+    researchProxies: report.catalog.filter(row => row.resolution === 'research-proxy').length,
+    headwearDeferred: report.catalog.filter(row => row.resolution === 'deferred-headwear').length,
+    expectedHeadwearDeferred: safeHeadwear.length,
     blocked: report.catalog.filter(row => row.resolution === 'blocked-permission-needed').length,
     bodies: report.bodies.length,
+    studyOnly: report.bodies.filter(row => row.status === 'study-only').length,
     candidates: report.bodies.filter(row => row.status === 'candidate').length,
-    failClosed: report.bodies.filter(row => row.status === 'fail-closed').length,
-    incompatible: report.bodies.filter(row => row.status === 'incompatible').length,
+    notApplicable: report.bodies.filter(row => row.status === 'not-applicable').length,
     families: report.families.length,
     sheets: Object.keys(evidence.files).length,
     consoleErrors: report.consoleErrors.length,
@@ -322,14 +326,16 @@ function mutants() {
       row.selections[0].adapterId = null;
     },
     'normalize-anything': data => {
-      const row = data.report.bodies.find(candidate => candidate.status === 'candidate' && !adapterByHash.has(candidate.bodySha256));
+      const row = data.report.bodies.find(candidate => candidate.status === 'study-only' && !adapterByHash.has(candidate.bodySha256));
       row.selections[0].normalizeReadWeights = true;
     },
     'include-auxiliary': data => {
       const row = data.report.bodies.find(candidate => candidate.bodyId === 'auxiliary:dollynho-dance');
-      row.status = 'candidate';
+      row.status = 'study-only';
     },
-    'full-body-masking': data => { data.review.criteria.fullBodyMasking = 'fail'; },
+    'universal-fit-claim': data => { data.report.bodies.find(row => row.status === 'study-only').status = 'candidate'; },
+    'headwear-promoted': data => { data.report.catalog.find(row => row.resolution === 'deferred-headwear').resolution = 'research-proxy'; },
+    'full-body-masking': data => { data.review.criteria.bodySilhouetteVisible = 'fail'; },
     'skip-resource-disposal': data => { data.report.resourceDisposals.totals.models--; },
     'item-without-factory': data => {
       const row = data.report.catalog.find(candidate => candidate.rightsStatus === 'original-safe');
@@ -339,7 +345,7 @@ function mutants() {
     'permission-needed-mounted': data => {
       const row = data.report.catalog.find(candidate => candidate.rightsStatus === 'permission-needed');
       row.mounted = true;
-      row.resolution = 'mountable-proxy';
+      row.resolution = 'research-proxy';
       row.factory = 'createUrbanApparelProxy';
     },
     'body-omitted': data => { data.report.bodies.pop(); },
