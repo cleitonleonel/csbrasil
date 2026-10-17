@@ -16,6 +16,8 @@ export async function buildRecord() {
   const body = loaded.scene.getObjectByName('SyntheticBody'), mesh = source.scene.getObjectByName('SyntheticGarment');
   loaded.scene.updateMatrixWorld(true); source.scene.updateMatrixWorld(true);
   const contract = {version: 'garment-rebind-draft/1', family: family.family, fit: family.fit,
+    itemId: 'synthetic-garment', slot: 'torso-inner', layer: 10, conflicts: [], hideBodyRegions: [],
+    clippingPolicy: 'human-certification-required',
     sourceAssetSha256: family.sourceAssetSha256, sourceBindFingerprintSha256: family.bindFingerprintSha256,
     assetSha256: garment.sourceAssetSha256, standaloneBindFingerprintSha256: garment.bindFingerprintSha256,
     meshName: 'SyntheticGarment', meshLocalMatrix: mesh.matrix.toArray(),

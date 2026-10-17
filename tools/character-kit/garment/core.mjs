@@ -1,4 +1,5 @@
 import assert from './portable-assert.mjs';
+import { acquireAttachmentSlot, validateAttachmentIdentity } from './wearables-schema.mjs';
 const array = value => Array.from(value);
 const descendants = root => {const result = new Set(); root.traverse(o => result.add(o)); return result;};
 const bodyOf = (root, name) => {
@@ -46,6 +47,7 @@ export function prepareLoadedGarment({THREE, base, source, family, contract}) {
   assert.equal(contract.sourceBindFingerprintSha256, family.bindFingerprintSha256, 'bind contract mismatch');
   assert.equal(contract.fitApproved, false); assert.equal(contract.artApproved, false); assert.equal(contract.runtimeEnabled, false);
   assert.equal(contract.maskApproved, false); assert.deepEqual(contract.hideTriangleIDs, []);
+  validateAttachmentIdentity(contract);
   base.scene.updateMatrixWorld(true); source.scene.updateMatrixWorld(true);
   const baseBody = bodyOf(base.scene, family.bodyMeshName), meshes = [];
   source.scene.traverse(o => {if (o.isMesh) meshes.push(o);});
@@ -67,13 +69,12 @@ export function prepareLoadedGarment({THREE, base, source, family, contract}) {
     assert.equal(source.parser.associations.get(g)?.nodes, joint.standaloneNode, 'standalone joint node map mismatch');
     assert.deepEqual(g.matrix.toArray(), b.matrix.toArray(), 'authoring local joint transform mismatch');
   }
-  const baseGeometry = geometrySignature(baseBody.geometry), owned = new WeakSet();
+  const baseGeometry = geometrySignature(baseBody.geometry);
   function attach(ctrl, request = {family: family.family, fit: family.fit}) {
     assert.equal(request.family, family.family, 'target family mismatch'); assert.equal(request.fit, family.fit, 'target fit mismatch');
     const owner = ctrl?.model;
     assert.ok(owner && ctrl?.group && ctrl?.mixer?.getRoot() === owner, 'actual controller required');
     assert.ok(ctrl.group.children.includes(owner), 'model not owned by controller');
-    assert.ok(!owned.has(owner), 'garment already attached to this model');
     const body = bodyOf(owner, family.bodyMeshName), members = descendants(owner), bones = body.skeleton.bones;
     assertNoMorph(body);
     assert.equal(geometrySignature(body.geometry), baseGeometry, 'target body geometry/weights mismatch');
@@ -84,18 +85,23 @@ export function prepareLoadedGarment({THREE, base, source, family, contract}) {
       assert.notEqual(bone, baseBody.skeleton.bones[bones.indexOf(bone)], 'target stole authoring bones');
       assert.equal([...members].filter(o => o.isBone && o.name === bone.name).length, 1, 'target ambiguous bone name');
     }
-    const geometry = garment.geometry.clone(), material = garment.material.clone();
-    const mesh = new THREE.SkinnedMesh(geometry, material);
-    mesh.name = contract.meshName; mesh.position.copy(garment.position); mesh.quaternion.copy(garment.quaternion); mesh.scale.copy(garment.scale);
-    mesh.castShadow = true; mesh.frustumCulled = false;
-    const skeleton = new THREE.Skeleton(bones.slice(), garment.skeleton.boneInverses.map(m => m.clone()));
-    mesh.bind(skeleton, garment.bindMatrix.clone());
-    owner.add(mesh); owned.add(owner);
-    let disposed = false;
-    return {mesh, dispose() {
-      if (disposed) return; disposed = true;
-      mesh.removeFromParent(); geometry.dispose(); material.dispose(); skeleton.dispose(); owned.delete(owner);
-    }};
+    const releaseSlot = acquireAttachmentSlot(owner, contract);
+    try {
+      const mesh = new THREE.SkinnedMesh(garment.geometry, garment.material);
+      mesh.name = contract.meshName; mesh.position.copy(garment.position); mesh.quaternion.copy(garment.quaternion); mesh.scale.copy(garment.scale);
+      mesh.castShadow = true; mesh.frustumCulled = false;
+      const skeleton = new THREE.Skeleton(bones, garment.skeleton.boneInverses);
+      mesh.bind(skeleton, garment.bindMatrix);
+      owner.add(mesh);
+      let disposed = false;
+      return {mesh, slot: contract.slot, dispose() {
+        if (disposed) return; disposed = true;
+        mesh.removeFromParent(); skeleton.dispose(); releaseSlot();
+      }};
+    } catch (error) {
+      releaseSlot();
+      throw error;
+    }
   }
   return {attach};
 }

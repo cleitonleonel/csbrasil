@@ -16,8 +16,8 @@ test('record regenerates exactly and recipe pins current checked-in sources', as
     assert.equal(createHash('sha256').update(bytes).digest('hex'), expected, name);
   }
 });
-test('core and assertions preserve validated142 bytes', () => {
-  for (const [name, expected] of Object.entries({'core.mjs': '7fe7f22a11cfec0227ee9cabf4da83dbc98deb7263e76ca1260bba121940b690', 'portable-assert.mjs': '5c0d507abacace3b9c794421234a63d7264df711be8134f0bae60fbe8c4d506a'}))
+test('core and assertions match reviewed source pins', () => {
+  for (const [name, expected] of Object.entries({'core.mjs': 'b03c5314ec1fdf7e3d3e384d481db6a7b09ac63290d66c7d6c657c31bab391f0', 'portable-assert.mjs': '5c0d507abacace3b9c794421234a63d7264df711be8134f0bae60fbe8c4d506a'}))
     assert.equal(createHash('sha256').update(readFileSync(new URL('./garment/' + name, import.meta.url))).digest('hex'), expected);
 });
 for (const [name, prepare] of [['node', nodePrepare], ['webcrypto', browserPrepare]]) {
