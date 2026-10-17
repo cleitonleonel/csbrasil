@@ -10,10 +10,10 @@
    quem não recebe texto na URL COPIA antes de abrir, e o Web Share entra como
    "MAIS APPS" quando existe.
 
-   MUTAÇÃO: `--mutante=sem-whatsapp` apaga o WhatsApp das PLATAFORMAS e EXIGE
-   vermelho (a rede que prefila a mensagem não pode sumir calada).
+   MUTAÇÕES: `sem-whatsapp` apaga o WhatsApp; `share-mudo` tira a chamada
+   do compartilhamento nativo. As duas têm que ficar vermelhas.
 
-   Uso: node tools/eval/convida-amigos-check.mjs [--mutante=sem-whatsapp]
+   Uso: node tools/eval/convida-amigos-check.mjs [--mutante=sem-whatsapp|share-mudo]
    ============================================================================ */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -21,7 +21,7 @@ import { pathToFileURL } from 'node:url';
 
 const ROOT = join(import.meta.dirname, '../..');
 const mutante = process.argv.find((a) => a.startsWith('--mutante='))?.split('=')[1];
-if (mutante && mutante !== 'sem-whatsapp') throw new Error(`mutante desconhecido: ${mutante}`);
+if (mutante && !['sem-whatsapp', 'share-mudo'].includes(mutante)) throw new Error(`mutante desconhecido: ${mutante}`);
 
 // stubs de DOM/navegador suficientes para montaConvite
 const botoesDe = (dialog) => [...dialog.querySelectorAll('button')];
@@ -60,10 +60,14 @@ function docFalso() {
 }
 
 let modulo;
-if (mutante === 'sem-whatsapp') {
+if (mutante) {
   const tmp = join(ROOT, 'public/js/convida-amigos.mutante.mjs');
-  const src = readFileSync(join(ROOT, 'public/js/convida-amigos.js'), 'utf8')
-    .replace("{ id: 'whatsapp', nome: 'WhatsApp', url: (texto) => `https://wa.me/?text=${encodeURIComponent(texto)}`, copia: false },", '');
+  let src = readFileSync(join(ROOT, 'public/js/convida-amigos.js'), 'utf8');
+  if (mutante === 'sem-whatsapp') {
+    src = src.replace("{ id: 'whatsapp', nome: 'WhatsApp', url: (texto) => `https://wa.me/?text=${encodeURIComponent(texto)}`, copia: false },", '');
+  } else {
+    src = src.replace('const resultado = await compartilhar(', "const resultado = await (() => Promise.resolve('cancelado'))(");
+  }
   const { writeFileSync, rmSync } = await import('node:fs');
   writeFileSync(tmp, src);
   try { modulo = await import(pathToFileURL(tmp).href); } finally { rmSync(tmp, { force: true }); }
@@ -105,18 +109,26 @@ if (porId.instagram) {
 if (!convite.includes('utm_medium=convidar-amigos')) falhas.push('convite sem link com utm_medium=convidar-amigos');
 if (modulo.textoConvite('').includes('Sou ')) falhas.push('convite sem nick não pode se apresentar como alguém');
 
-// nativo só quando existe share
+// nativo só quando existe share, e o clique precisa chamar o compartilhamento real
 const comShare = docFalso();
-modulo.montaConvite({ doc: comShare.doc, nav: { clipboard, share: async () => {} }, abre: () => {} });
-const nativo = botoesDe(comShare.dialog).some((b) => b.dataset.plataforma === 'nativo');
-if (!nativo) falhas.push('com navigator.share disponível, falta o botão MAIS APPS');
+let dadosNativos = null;
+modulo.montaConvite({ nick: 'testador', doc: comShare.doc, nav: { clipboard, share: async (dados) => { dadosNativos = dados; } }, abre: () => {} });
+const botaoNativo = botoesDe(comShare.dialog).find((b) => b.dataset.plataforma === 'nativo');
+if (!botaoNativo) falhas.push('com navigator.share disponível, falta o botão MAIS APPS');
+else {
+  try { await botaoNativo.onclick(); } catch (e) { falhas.push(`clique em MAIS APPS quebrou: ${e.message}`); }
+  if (!dadosNativos?.text?.includes('Bora pegar uma treta comigo?') || !dadosNativos?.url?.includes('utm_medium=convidar-amigos')) {
+    falhas.push('clique em MAIS APPS não entregou texto e link ao compartilhamento nativo');
+  }
+}
 const semShare = docFalso();
 modulo.montaConvite({ doc: semShare.doc, nav: { clipboard }, abre: () => {} });
 if (botoesDe(semShare.dialog).some((b) => b.dataset.plataforma === 'nativo')) falhas.push('sem navigator.share, o botão MAIS APPS não devia existir');
 
-if (mutante === 'sem-whatsapp') {
-  const morde = falhas.some((f) => f.includes('whatsapp'));
-  console.log(morde ? 'mutante sem-whatsapp reprovado como devia: a régua sentiu a falta do WhatsApp.' : 'MUTAÇÃO PASSOU — o WhatsApp sumiu e a régua não viu.');
+if (mutante) {
+  const alvo = { 'sem-whatsapp': 'whatsapp', 'share-mudo': 'compartilhamento nativo' }[mutante];
+  const morde = falhas.some((f) => f.includes(alvo));
+  console.log(morde ? `mutante ${mutante} reprovado como devia.` : `MUTAÇÃO PASSOU — ${mutante} não foi sentido.`);
   process.exit(morde ? 0 : 1);
 }
 if (falhas.length) {
@@ -124,4 +136,4 @@ if (falhas.length) {
   for (const f of falhas) console.error(`  ✗ ${f}`);
   process.exit(1);
 }
-console.log('convite confere: 6 plataformas, links de mensagem, cópia antes de abrir, mailto/wa prefilled, MAIS APPS quando há share.');
+console.log('convite confere: 6 plataformas, links de mensagem, cópia antes de abrir, mailto/wa prefilled e compartilhamento nativo exercitado.');
