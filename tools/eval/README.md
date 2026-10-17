@@ -26,8 +26,8 @@ com código 1 em falha crítica.
 | `shader-budget-check.mjs` | Deriva do GLB real o orçamento de varyings da urna e protege fog/triplanar no piso WebGL1. | `npm run eval:shaderbudget` |
 | `lajes-cache-check.mjs` | Duas builds reais de Lajes: paridade dos buffers e da sequência RNG, colisores, navegação e oclusores; 49 geometrias compartilhadas nas 9162 caixas, descarte único e isolamento entre builds. | `npm run eval:lajes-cache` |
 | `map-rotation-check.mjs` | Sugestão inicial de mapa: link manda, escolha do carrossel fica, e quem não escolhe roda pelos 5 mapas. | `npm run eval:maprotate` |
-| `convida-amigos-check.mjs` | Modal de convite de amigos (lane glm/amigos): as 6 plataformas exigidas, links de MENSAGEM (não home), cópia antes de abrir quem não aceita texto na URL, mailto/wa.me prefilled e MAIS APPS com Web Share; mutante `sem-whatsapp`. | `npm run eval:convidaamigos` |
-| `placar-amigo-check.mjs` | +AMIGO no placar (lane glm/amigos): pid do roster marca o corpo (netgame), botão só para gente online com pid que não é você nem já pediu, clique pede amizade com sessão e erros traduzidos; mutantes `sem-botao`, `sem-pid`, `clique-mudo`. | `npm run eval:placamamigo` |
+| `convida-amigos-check.mjs` | Modal de convite: seis plataformas, links de mensagem, cópia antes de abrir, Web Share exercitado, isolamento de `?ui=v3` e busca por e-mail degradável sem a migration 070; mutantes cobrem cada fronteira. | `npm run eval:convidaamigos` |
+| `placar-amigo-check.mjs` | +AMIGO no placar Treta Pop: UUID de gente limpa pid velho de bot, legado não ganha controle, pedido usa a sessão real e erros honestos; mutantes cobrem botão, pid, clique, kill-switch e validação. | `npm run eval:placaramigo` |
 | `../gen-arch.mjs` | (fora deste diretório) Gera e valida o `ARCH.md`. `--check` reprova se estiver desatualizado. | `npm run arch` |
 
 ## 2. Documentos — leitura, não execução
