@@ -46,6 +46,8 @@ const ALVOS = [
   // Bancadas locais não fazem parte do site publicado.
   'dist/client/dev.html',
   '.vercel/output/static/dev.html',
+  'dist/client/ui-v3-kit.html',
+  '.vercel/output/static/ui-v3-kit.html',
   'dist/client/editor',
   '.vercel/output/static/editor',
   'dist/client/js/editor',
