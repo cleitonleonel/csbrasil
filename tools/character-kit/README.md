@@ -116,8 +116,10 @@ sandbox. The record is a checked-in inspection result, not a digital signature.
 Attach requires a cloned model owned by group/mixer, the unique named body,
 exact geometry/weights/index and bind/hierarchy, and bones within that model.
 It refuses morphs, source animations, textured/multi materials, foreign bones
-and duplicate attachments. Geometry/material/skeleton are owned by the handle;
-dispose is idempotent and permits reattach without disposing body resources.
+and occupied/conflicting slots. Attached meshes share the authenticated template
+geometry/material and the target body's bone objects; only the per-attachment
+Skeleton wrapper is owned. `dispose` is idempotent, releases its slot and wrapper,
+permits reattach, and never disposes shared garment/body geometry or material.
 The low-level core is an internal building block; direct calls do not authenticate
 asset bytes. Do not treat it as the closed trust entry.
 
@@ -130,14 +132,51 @@ record exclusively; changing source deliberately requires review and regeneratio
 `--check` detects stale recipe inputs, including vendor, inspector and fixture.
 All approval flags stay false and hideTriangleIDs stays empty.
 
-Core/assert bytes originate unchanged from external experiment142. Real-profile
-browser170 used different assets and actual controller normalization; its PNGs
-are context only, not proof that this synthetic profile is equivalent or that
-fit/art/license were approved. See the [continuation](../../docs/visual-factory/GARMENT-LIBRARY-CONTINUATION.md)
+The synthetic fixture still does not prove a real profile. Real-profile browser170
+used different assets and actual controller normalization; its PNGs are context
+only, not proof that this synthetic profile is equivalent or that fit/art/license
+were approved. See the [continuation](../../docs/visual-factory/GARMENT-LIBRARY-CONTINUATION.md)
 for boundaries and pending review.
 
 Capturas locais do exemplo anexado/removido e o SHA do código observado estão em
 [Preview do mecanismo](../../docs/visual-factory/evidence/garment-library/README.md).
+
+## Wearable census, manifest and compatibility matrix
+
+The offline factory covers the canonical `back`, `head`, `face`, `piercing`,
+`tattoo`, `torso-inner`, `torso-outer`, `legs` and `feet` slots. Its single item
+schema requires an attachment mode, layer, conflicts, hidden body regions,
+certified families/bodies, body profiles, source hash and provenance for every
+versioned asset. Rigid transforms can exist only in a named body profile, in bone
+local space, with an explicit authoring source. Unknown profiles fail closed.
+
+```sh
+node tools/character-kit/garment/wearables-cli.mjs --check
+node tools/eval/wearables-fit-check.mjs --mutate
+# Deliberate regeneration after adding/removing a versioned character or item:
+node tools/character-kit/garment/wearables-cli.mjs --write
+```
+
+`body-census.json` is regenerated from every GLB under the two character roots
+plus the auxiliary Dollynho dance model. It records byte hashes, exact joint
+vocabularies, bind/geometry/weight fingerprints when inspection succeeds,
+structural families, candidate sockets and one unapproved profile per body.
+Same joint hierarchy means only structural grouping; it never inherits fit,
+proportions, bind pose, topology or socket transforms.
+
+`wearables-manifest.json` records layer/conflict/clipping policy and the current
+inventory gaps. No licensed 3D backpack, cap, piercing, tattoo, shirt, jacket,
+pants or shoe asset is versioned in the candidate, so the rows deliberately use
+`asset: null`; they are not placeholder art. `compatibility-matrix.json` contains
+every item requirement × discovered body, a false `certified` value with a reason,
+per-slot certified/incompatible/unknown counts, and the exact remaining human
+visual work grouped by structural family. The `face` slot remains canonical but
+has no row in this eight-category batch.
+
+The focused gate rebuilds both generated files and kills missing-bone,
+orphan-profile, layer-collision and false-family-wide-certification mutants.
+Neither a green gate nor the synthetic eight-slot attach/dispose/reattach test
+enables runtime, hides body regions or grants visual approval.
 
 ## Partição estática por faces registradas
 
