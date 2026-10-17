@@ -14,9 +14,8 @@ import { preloadFPArms } from './fparms.js';
 import { preloadMapProps, COMMON_MAP_PROPS } from './mapprops.js';
 import { preloadAmbientLife } from './ambientlife.js';   // fauna do mapa (MAPS[id].ambience)
 import { apiUrl, fetchComRetry, versaoComOrigem } from './apibase.js';   // rotas /api de banco moram no backend (docs/APIS.md)
-import { MAPS, DEFAULT_MAP, resolveMapId, mapaDaSessao, mapasDoMenu, MAPAS_PARADOS } from './maps.js';
+import { MAPS, DEFAULT_MAP, resolveMapId, mapaDaSessao, mapasDoMenu, MAPAS_PARADOS, defineSeedHavan, carregaMapa } from './maps.js';
 import { PALETA } from './paleta.js';
-import { setHavanCarSeed } from './map_havan.js';
 import { preloadWeapons, WEAPON_IDS } from './weapons.js';
 import { preloadAuthoredFamilies, authoredBootFamilies } from './authoredvm.js';
 import { Sfx } from './audio.js';
@@ -255,6 +254,10 @@ if (!urlMap) { settings.map = currentMap; saveSettings(); }
 // Mint building/statue GLBs used by the Brasília map (loaded once, cloned per placement).
 const MAP_PROPS = COMMON_MAP_PROPS;   // props do Piscinão de Ramos (Mint); carros/estátua do Havan carregam por-mapa   // Havan (estátua + carros + carrinho)
 let menuScene = new THREE.Scene();
+/* #959 (mapas sob demanda): `build`/`props`/`ambience` só existem depois de
+   `carregaMapa`; o boot do backdrop e o `new Game` abaixo esperam o módulo da
+   arena escolhida (o splash de carregamento cobre a espera). */
+await carregaMapa(currentMap);
 MAPS[currentMap].build(menuScene, textures);
 ajustarAnisotropia(menuScene, settings.quality);
 const menuCam = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 400);
@@ -389,8 +392,9 @@ function menuProps(id) {
   return [...MAP_PROPS, ...((MAPS[id] && MAPS[id].props) || [])];
 }
 let _menuLoadSeq = 0;
-function loadMenuBackdrop() {
+async function loadMenuBackdrop() {
   const id = currentMap, seq = ++_menuLoadSeq;
+  await carregaMapa(id);   // getters de props/ambience e o build do rebuild só existem daqui
   const propsReady = preloadMapProps(menuProps(id));
   let propsLoaded = false;
   const rebuildCurrent = () => {
@@ -1666,7 +1670,7 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
   // procedural box meshes for any archetype that isn't modeled yet. Map props (statues)
   // load in parallel and are optional — the map renders fine if they're missing.
   // sorteia os carros da Havan desta partida ANTES do preload (seleção = props do mapa)
-  setHavanCarSeed(sessao ? (sessao.net.meta.mapSeed ?? 1) : (Math.random() * 1e9) | 0);
+  void defineSeedHavan(sessao ? (sessao.net.meta.mapSeed ?? 1) : (Math.random() * 1e9) | 0);
   /* SÓ OS PERSONAGENS DA PARTIDA: o roster é sorteado ANTES do preload e só esses GLBs sobem
      (jogador + times montados). Filtro vazio = rede de segurança: elenco inteiro. Régua: PL1. */
   /* FORMATO: no multiplayer o tamanho vem do SERVIDOR, nunca do ajuste local (senão sobram
@@ -1738,6 +1742,7 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
     }
   } catch (e) { console.error('preload da partida falhou parcialmente', e); }
   if (lancamentoPerdeu(meuLancamento)) return;
+  await carregaMapa(currentMap);   // #959: build e getter de props só existem depois disto (o Game chama .build direto)
   if (sessao) await preloadMapProps(MAPS[currentMap]?.props || [], { required: true });
   /* RÉGUA:launch-race nascimento início — extraído por `tools/eval/launch-race-check.mjs` */
   /* O preload leva segundos: sem esta saída, uma queda de socket no meio dele fazia nascer um
@@ -4695,7 +4700,7 @@ function mpPreCarregarProximo(m) {
   pinta();
   mpContagemProximo = setInterval(pinta, 250);
   const armas = [...new Set([charWeapon(currentChar), ...plano.weapons])].filter(Boolean);
-  if (plano.seed != null) setHavanCarSeed(plano.seed);
+  if (plano.seed != null) void defineSeedHavan(plano.seed);
   Promise.all([
     plano.chars.length ? preloadCharacterAssets(plano.chars, { weapons: armas }) : null,
     sfx.preloadWeaponSamples(armas),

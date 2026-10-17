@@ -203,6 +203,25 @@ export function hasModel(id) { return _base.has(id); }
 export function getCharTemplate(id) { return _base.get(id); }
 export function getSharedClips() { return _clips; }
 
+// Descendentes herdam a seleção de pesos; isso não comprova contato anatômico.
+// Em hierarquia inválida, conserva o conjunto original completo.
+function withBoneDescendants(bones, seeds) {
+  if (new Set(bones).size !== bones.length) return seeds;
+  const roots = new Set([...seeds].map((i) => bones[i]));
+  const expanded = new Set(seeds);
+  for (let i = 0; i < bones.length; i++) {
+    const seen = new Set();
+    let owned = false;
+    for (let p = bones[i]; p; p = p.parent) {
+      if (seen.has(p)) return seeds;
+      seen.add(p);
+      if (roots.has(p)) owned = true;
+    }
+    if (owned) expanded.add(i);
+  }
+  return expanded;
+}
+
 // Mede o centro REAL da palma no espaço local do osso Hand: média (em BIND pose) dos
 // verts da malha com peso dominante (>0.5) no osso Hand ou no seu filho Curl (os dedos
 // são skinned nos ossos Curl). Rígido por construção (independe da pose) e adaptado a
@@ -220,13 +239,14 @@ export function measurePalmLocal(model, hand, curl) {
   // `curl` agora pode ser UMA LISTA de ossos (ver o bloco de curl em buildCharacterModel):
   // nos 18 GLB de 28 juntas o Curl_R e o Curl_L aparecem DUPLICADOS na hierarquia.
   const ci = (Array.isArray(curl) ? curl : [curl]).map((b) => (b ? bones.indexOf(b) : -1)).filter((i) => i >= 0);
+  const owned = withBoneDescendants(bones, new Set([hi, ...ci]));
   const pos = sk.geometry.attributes.position, si = sk.geometry.attributes.skinIndex, sw = sk.geometry.attributes.skinWeight;
   const at = (a, i, k) => (k === 0 ? a.getX(i) : k === 1 ? a.getY(i) : k === 2 ? a.getZ(i) : a.getW(i));
   const c = new THREE.Vector3(), v = new THREE.Vector3();
   let n = 0;
   for (let i = 0; i < pos.count; i++) {
     let w = 0;
-    for (let k = 0; k < 4; k++) { const bi = at(si, i, k); if (bi === hi || ci.includes(bi)) w += at(sw, i, k); }
+    for (let k = 0; k < 4; k++) { const bi = at(si, i, k); if (owned.has(bi)) w += at(sw, i, k); }
     if (w > 0.5) { c.add(v.fromBufferAttribute(pos, i)); n++; }
   }
   if (!n) return fallback;
@@ -287,11 +307,12 @@ function torsoProfile(id, model) {
     const bones = sk.skeleton.bones;
     const arm = new Set();
     bones.forEach((b, i) => { if (/arm|hand|shoulder|clavicle|curl/i.test(b.name)) arm.add(i); });
+    const excluded = withBoneDescendants(bones, arm);
     const pos = sk.geometry.attributes.position, si = sk.geometry.attributes.skinIndex, sw = sk.geometry.attributes.skinWeight;
     const at = (a, i, k) => (k === 0 ? a.getX(i) : k === 1 ? a.getY(i) : k === 2 ? a.getZ(i) : a.getW(i));
     const r = new Float32Array(64);
     for (let i = 0; i < pos.count; i += 3) {
-      if (si && sw) { let w = 0; for (let k = 0; k < 4; k++) if (arm.has(at(si, i, k))) w += at(sw, i, k); if (w > 0.3) continue; }
+      if (si && sw) { let w = 0; for (let k = 0; k < 4; k++) if (excluded.has(at(si, i, k))) w += at(sw, i, k); if (w > 0.3) continue; }
       const y = pos.getY(i), b = Math.floor(y / BUCKET);
       if (b < 0 || b >= 64) continue;
       const rad = Math.hypot(pos.getX(i), pos.getZ(i));
@@ -704,12 +725,15 @@ class CharController {
     this._to('idle');
   }
 
-  _to(name, once = false) {
+  _to(name, once = false, restart = true) {
     const a = this.actions[name];
     if (!a || this.cur === a) return;
-    a.reset();
-    a.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat, once ? 1 : Infinity);
-    a.clampWhenFinished = once;
+    if (a !== this.actions.jump) this.jumping = false;
+    if (restart) {
+      a.reset();
+      a.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat, once ? 1 : Infinity);
+      a.clampWhenFinished = once;
+    }
     a.enabled = true; a.fadeIn(FADE); a.play();
     if (this.cur) this.cur.fadeOut(FADE);
     this.cur = a;
@@ -723,6 +747,7 @@ class CharController {
   jump() {
     if (this.dead || this.crouch || this.jumping || !this.actions.jump) return;
     this.jumping = true;
+    this.curName = 'jump';
     const a = this.actions.jump;
     a.reset(); a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = false;
     a.enabled = true; a.fadeIn(0.08).play();
@@ -732,7 +757,9 @@ class CharController {
 
   shoot() {
     if (this.dead || this.crouch || !this.actions.shoot) return; // crouch pose already aims
+    this.jumping = false;
     this.shooting = true;
+    this.curName = 'shoot';
     this._shootUntil = this.mixer.time + this.actions.shoot.getClip().duration;
     if (this.cur === this.actions.shoot) { this.cur.time = 0; this.cur.paused = false; return; }
     this.actions.shoot.reset();
@@ -755,7 +782,7 @@ class CharController {
   // character does everything on top of the fallen pose (the "walking while falling
   // backward" bug). Then start idle clean.
   revive() {
-    this.dead = false; this.shooting = false;
+    this.dead = false; this.shooting = false; this.jumping = false;
     this.mixer.stopAllAction();
     this.cur = null;
     this._to('idle');
@@ -768,13 +795,18 @@ class CharController {
   // stride, so we drive the cycle rate from how fast the body is really moving).
   update(dt, moving, hasTarget, speed = 0, back = false) {
     if (!this.dead) {
+      if (this.shooting && this.mixer.time >= (this._shootUntil || 0)) this.shooting = false;
       if (this.crouch) {
         this._to(moving > 0.05 ? 'crouchwalk' : 'crouch');
       } else if (this.shooting && moving > 0.05 && this.actions.walkfire) {
         // Atirar EM MOVIMENTO: o clipe combinado (walk+fire) mantém as pernas andando —
         // antes as pernas congelavam ~1s a cada disparo (usuário reprovou).
         this._to('walkfire');
-        if (this.mixer.time >= (this._shootUntil || 0)) this.shooting = false;
+      } else if (this.shooting && moving <= 0.05
+        && this.cur === this.actions.walkfire && this.actions.shoot) {
+        this.actions.shoot.time = this.actions.shoot.getClip().duration - (this._shootUntil - this.mixer.time);
+        this.actions.shoot.paused = false;
+        this._to('shoot', true, false);
       } else if (!this.shooting && !this.jumping) {
         if (moving <= 0.05) { this._to(this.oneHanded && this.actions.idle1h ? 'idle1h' : 'idle'); this._loco = 'idle'; }
         else if (back) {

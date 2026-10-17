@@ -39,6 +39,17 @@ esta página envelhecia no primeiro commit — ver
 
 | O que | Quanto | Onde confere |
 |---|---:|---|
+| Código do jogo | 62.110 linhas em 147 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| Código do jogo | 61.979 linhas em 146 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| Código do jogo | 62.250 linhas em 148 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| Código do jogo | 62.246 linhas em 148 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| Código do jogo | 62.249 linhas em 148 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| Código do jogo | 62.267 linhas em 148 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| `game.js` | **8.487** linhas | `wc -l public/js/game.js` |
+| `main.js` | 4.877 linhas | `wc -l public/js/main.js` |
+| Código do jogo | 62.236 linhas em 148 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| `game.js` | **8.488** linhas | `wc -l public/js/game.js` |
+| `main.js` | 4.869 linhas | `wc -l public/js/main.js` |
 | Código do jogo | 62.708 linhas em 150 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
 | `game.js` | **8.576** linhas | `wc -l public/js/game.js` |
 | `main.js` | 4.890 linhas | `wc -l public/js/main.js` |
@@ -49,6 +60,12 @@ esta página envelhecia no primeiro commit — ver
 | Personagens jogáveis | 63, em 7 facções | array `CHARACTERS` de `characters.js` |
 | Mapas no registro | 18 | objeto `MAPS` de `maps.js` |
 | Arnêses visuais em HTML | 23 | `git ls-files 'public/*.html' \| wc -l` |
+| Scripts do arnês | 777 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
+| Scripts de pipeline | 111 | `git ls-files 'tools/*.mjs' \| wc -l` |
+| Arnêses visuais em HTML | 22 | `git ls-files 'public/*.html' \| wc -l` |
+| Scripts do arnês | 775 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
+| Scripts de pipeline | 112 | `git ls-files 'tools/*.mjs' \| wc -l` |
+| Scripts do arnês | 772 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
 | Scripts do arnês | 816 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
 | Scripts de pipeline | 113 | `git ls-files 'tools/*.mjs' \| wc -l` |
 | Tarefas de entrada escritas | 26 | `git ls-files 'docs/issues/[0-9]*.md' \| wc -l` |
@@ -221,24 +238,24 @@ Os mapas registrados hoje, e em que modo cada um abre:
 
 | Id | Nome no menu | Abre em | Arquivo em `public/js/` | Linhas |
 |---|---|---|---|---:|
-| `campomorro` | Campinho do Morro | **captura** | `map_campomorro.js` | 825 |
-| `mansao` | Mansão do Joá | **captura** | `map_mansao.js` | 1.398 |
-| `amazonia` | Treta na Amazônia | **captura** | `map_amazonia.js` | 1.271 |
-| `escadao` | Escadão (Morro) | **captura** | `map_escadao.js` | 1.411 |
-| `praca_poderes` | Praça dos Três Poderes | rodadas | `map_brasilia.js` | 1.989 |
-| `piscina_treta` | Piscina da Treta | rodadas | `map_piscina.js` | 1.201 |
-| `loja_h` | Loja H (Estacionamento) | **captura** | `map_havan.js` | 2.062 |
-| `ferro_velho` | Ferro Velho do Zé | **captura** | `map_ferrovelho.js` | 2.032 |
-| `quebrada` | Quebrada (Rua do Baile) | **captura** | `map_quebrada.js` | 1.709 |
-| `corrego` | Córrego (Favela de SP) | **captura** | `map_corrego.js` | 1.813 |
-| `lajes` | Lajes (Comunidade) | **captura** | `map_lajes_authored.js` | 420 |
-| `posto_treta` | Posto da Treta | **captura** | `map_posto.js` | 758 |
-| `upa_24h` | UPA 24h da Treta | **captura** | `map_upa.js` | 383 |
-| `obras_prefeitura` | Obras da Prefeitura | **captura** | `map_obras.js` | 491 |
-| `atacadao_treta` | Atacadão da Treta | **captura** | `map_atacadao.js` | 797 |
-| `parque_treta` | Parque da Treta | **captura** | `map_parque.js` | 991 |
-| `velho_oeste` | Sertão da Treta | **captura** | `map_velho_oeste.js` | 1.071 |
-| `penitenciaria` | CARANDIRU | **captura** | `map_penitenciaria.js` | 1.009 |
+| `campomorro` | Campinho do Morro | **captura** | `—` | — |
+| `mansao` | Mansão do Joá | **captura** | `—` | — |
+| `amazonia` | Treta na Amazônia | **captura** | `—` | — |
+| `escadao` | Escadão (Morro) | **captura** | `—` | — |
+| `praca_poderes` | Praça dos Três Poderes | rodadas | `—` | — |
+| `piscina_treta` | Piscina da Treta | rodadas | `—` | — |
+| `loja_h` | Loja H (Estacionamento) | **captura** | `—` | — |
+| `ferro_velho` | Ferro Velho do Zé | **captura** | `—` | — |
+| `quebrada` | Quebrada (Rua do Baile) | **captura** | `—` | — |
+| `corrego` | Córrego (Favela de SP) | **captura** | `—` | — |
+| `lajes` | Lajes (Comunidade) | **captura** | `—` | — |
+| `posto_treta` | Posto da Treta | **captura** | `—` | — |
+| `upa_24h` | UPA 24h da Treta | **captura** | `—` | — |
+| `obras_prefeitura` | Obras da Prefeitura | **captura** | `—` | — |
+| `atacadao_treta` | Atacadão da Treta | **captura** | `—` | — |
+| `parque_treta` | Parque da Treta | **captura** | `—` | — |
+| `velho_oeste` | Sertão da Treta | **captura** | `—` | — |
+| `penitenciaria` | CARANDIRU | **captura** | `—` | — |
 
 **18 mapas registrados** — 2 abrem em rodadas e 16 em captura. `ctfMode` **abre** o mapa em captura, não prende: o jogador troca no menu (é a `MOD1`). Há 24 arquivos `map_*.js` em `public/js/` — arquivo no disco **não** implica mapa jogável.
 
@@ -281,7 +298,7 @@ E os dois quality gates, com a lista exata do que cada um roda — direto do `pa
 {/* BEGIN:GERADO:scripts — não edite à mão, rode `npm run docs` */}
 
 ```bash
-npm run check:fast   # node tools/eval/runner.mjs syntax eval:ui-v3 eval:roundmunicao eval:cameraoclusao eval:pistolacadencia eval:fragrestock eval:formatomelhorde eval:penetration-geometry eval:bot-shot-direction eval:shared-shot eval:bot-pellets eval:duel-metrics eval:bot-crouch-geometry eval:weapon-profiles eval:weapon-matrix eval:recoil-contract eval:firing-cadence eval:ballistics-falloff eval:ranking-home-status eval:ranking-presentation eval:modgraph eval:analytics eval:online eval:release eval:error-console eval:edgecache eval:webgl eval:webglguard eval:maprotate eval:mapasparados eval:shaderlog eval:shaderbudget eval:prune eval:vminspect eval:asset-pago-resil eval:faccao eval:mapid eval:mapjson eval:mapcontrato eval:piscina-trim eval:piscina-graffiti-batch eval:ferro-graffiti-quality eval:passosim eval:perfcampo eval:dificuldade eval:qualmapas eval:pickuparma eval:scrollarma eval:parquewheel eval:campo-contract eval:campomorro-molde eval:parquevida eval:parquecanopy eval:penitenciariavida eval:penitenciariafacade eval:penitenciariapickup eval:redesign eval:resultado-arte eval:matchoptions eval:awpscope eval:tracer3p eval:charvoice eval:screenquery eval:lajes-cache docs:check arch:check audio:check eval:grafite eval:grafite:ar eval:grafite-editorial eval:versaoorigem eval:autoReload eval:smoke eval:vm-teto eval:vm-placar eval:audioalcance eval:audioespacial eval:audioenvelope eval:audioproc eval:audiocapacidade eval:audiofablocal eval:audioeventos eval:audioannouncer eval:audiovoicemix eval:audioprivate eval:audioruntimeassets eval:menumusicreview audio:inventario:autoteste audio:shortlist:autoteste feet:check eval:vmlabhud eval:ctfhud eval:pause eval:ctfround eval:ctfwin eval:switchteam eval:mp-rotulo-lado eval:mp-cor-lado eval:pool-lado eval:troca-personagem eval:launchwatchdog eval:launchrace eval:spawn eval:regen eval:pegada eval:dmgdir eval:ctflabels anims:check anims:merge:check walls:check media:check menuwalls:check travessao:check eval:medianet eval:posters eval:grafitelayout eval:grafite-support eval:grafite-area-audit eval:upa-mint eval:grafite-art-inventory eval:grafite-mural-alpha eval:decal-ink eval:map-texture-upgrade eval:texture-quality-sampler eval:map-sampler eval:map-surface-upgrade eval:external-surface-binding eval:map-local-floor-finish eval:map-local-fabrication eval:map-surface-allocation eval:green-cover-pattern eval:prop-graffiti-wall eval:corrego-graffiti-mount eval:upa-structure eval:upa-return eval:shot-occlusion eval:shot-map-contract eval:shot-brasilia-quality eval:shot-visible-surface eval:shot-quality-inventory eval:simclock eval:backendhints eval:geoproxy changelog:check eval:velhooeste eval:penitenciaria eval:mutcega eval:autofix eval:deploygate eval:portaointeiro eval:wfsecret eval:wflocal eval:wftimeout eval:comentario eval:fixture eval:preload eval:docsautoria eval:netcode eval:hurtfx eval:sonda eval:noescolha eval:maqfraca eval:qualadapt eval:netcodecbin eval:movimento eval:botsim-golden eval:replaycam eval:abateshud eval:botfaca eval:escadao-home eval:escadao-spawn-egress eval:escadao-conflict-home eval:escadao-casa-central eval:escadao-casas-conflito eval:escadao-mirante-abrigo eval:escadao-structure eval:escadao-descent eval:escadao-details eval:corrego-contract eval:corrego-water eval:corrego-superficie eval:skylife ops:test eval:privacy ops:selftest eval:lajes-layout eval:lajes-rooftop eval:lajes-visual eval:lajes-ruas eval:lajes-identidade eval:lajes-roof-overlap eval:lajes-nav eval:lajes-ctf-surface eval:lajes-authored eval:lajes-spatial eval:lajes-gap eval:lajes-circuito eval:lajes-antitrap eval:lajes-vertical eval:lajes-bots eval:lajes-ambiencia eval:lajes-santos eval:lajes-game eval:mappreview eval:lajes-airspace eval:lajes-soundscape eval:lajes-spawn-space eval:sertao eval:sertao-spatial eval:sertao-interiors eval:sertao-wagon eval:sertao-fauna eval:sertao-occlusion eval:calango-quadruped eval:sertao-horizon eval:sertao-distant-birds eval:sertao-integration eval:sertao-livestock eval:sertao-sky-lifecycle eval:amazonia eval:chao eval:ombro eval:miticos-lobisomem eval:mansao eval:dautelemetria eval:mpRoomOptions eval:fxFlash eval:campinho-integration eval:parque eval:audiofurollback eval:atacadao eval:killstreak eval:mp-paridade eval:obras eval:vm-launch eval:chat eval:ui-chat eval:pos-cena eval:capturecodex eval:legal eval:brasao-versao eval:tprajada eval:mprecuo eval:check-sem-escrita eval:modoarmamp eval:trocaarmamp eval:pos-alvo eval:ibl-vm eval:botsentidos eval:ociosoteto eval:wfconcurrency eval:mapa-sp-pos-mp eval:personagem-escolhido eval:gauntlet-rodizio eval:telemetria-coorte eval:clans-sessao eval:mp-proximo eval:hub-identity eval:login-prompt eval:portaogatilho eval:mergequeue eval:wfcheckout eval:rotas eval:compartilhar eval:contagens-pr
+npm run check:fast   # node tools/eval/runner.mjs syntax eval:ui-v3 eval:tpjumpownership eval:tplocalshot eval:tpbackpedal eval:tphandownership eval:characterkit eval:meshoptvm eval:perfilmobile eval:mapasobdemanda eval:glbpeso eval:roundmunicao eval:cameraoclusao eval:pistolacadencia eval:fragrestock eval:formatomelhorde eval:penetration-geometry eval:bot-shot-direction eval:shared-shot eval:bot-pellets eval:duel-metrics eval:bot-crouch-geometry eval:weapon-profiles eval:weapon-matrix eval:recoil-contract eval:firing-cadence eval:ballistics-falloff eval:ranking-home-status eval:ranking-presentation eval:modgraph eval:analytics eval:online eval:release eval:error-console eval:edgecache eval:webgl eval:webglguard eval:maprotate eval:mapasparados eval:shaderlog eval:shaderbudget eval:prune eval:vminspect eval:asset-pago-resil eval:faccao eval:mapid eval:mapjson eval:mapcontrato eval:piscina-trim eval:piscina-graffiti-batch eval:ferro-graffiti-quality eval:passosim eval:perfcampo eval:dificuldade eval:qualmapas eval:pickuparma eval:scrollarma eval:parquewheel eval:campo-contract eval:campomorro-molde eval:parquevida eval:parquecanopy eval:penitenciariavida eval:penitenciariafacade eval:penitenciariapickup eval:redesign eval:resultado-arte eval:matchoptions eval:awpscope eval:tracer3p eval:charvoice eval:screenquery eval:lajes-cache docs:check arch:check audio:check eval:grafite eval:grafite:ar eval:grafite-editorial eval:versaoorigem eval:autoReload eval:smoke eval:vm-teto eval:vm-placar eval:audioalcance eval:audioespacial eval:audioenvelope eval:audioproc eval:audiocapacidade eval:audiofablocal eval:audioeventos eval:audioannouncer eval:audiovoicemix eval:audioprivate eval:audioruntimeassets eval:menumusicreview audio:inventario:autoteste audio:shortlist:autoteste feet:check eval:vmlabhud eval:ctfhud eval:pause eval:ctfround eval:ctfwin eval:switchteam eval:mp-rotulo-lado eval:mp-cor-lado eval:pool-lado eval:troca-personagem eval:launchwatchdog eval:launchrace eval:spawn eval:regen eval:pegada eval:dmgdir eval:ctflabels anims:check anims:merge:check walls:check media:check menuwalls:check travessao:check eval:medianet eval:posters eval:grafitelayout eval:grafite-support eval:grafite-area-audit eval:upa-mint eval:grafite-art-inventory eval:grafite-mural-alpha eval:decal-ink eval:map-texture-upgrade eval:texture-quality-sampler eval:map-sampler eval:map-surface-upgrade eval:external-surface-binding eval:map-local-floor-finish eval:map-local-fabrication eval:map-surface-allocation eval:green-cover-pattern eval:prop-graffiti-wall eval:corrego-graffiti-mount eval:upa-structure eval:upa-return eval:shot-occlusion eval:shot-map-contract eval:shot-brasilia-quality eval:shot-visible-surface eval:shot-quality-inventory eval:simclock eval:backendhints eval:geoproxy changelog:check eval:velhooeste eval:penitenciaria eval:mutcega eval:autofix eval:deploygate eval:portaointeiro eval:wfsecret eval:wflocal eval:wftimeout eval:comentario eval:fixture eval:preload eval:docsautoria eval:netcode eval:hurtfx eval:sonda eval:noescolha eval:maqfraca eval:qualadapt eval:netcodecbin eval:movimento eval:botsim-golden eval:replaycam eval:abateshud eval:botfaca eval:escadao-home eval:escadao-spawn-egress eval:escadao-conflict-home eval:escadao-casa-central eval:escadao-casas-conflito eval:escadao-mirante-abrigo eval:escadao-structure eval:escadao-descent eval:escadao-details eval:corrego-contract eval:corrego-water eval:corrego-superficie eval:skylife ops:test eval:privacy ops:selftest eval:lajes-layout eval:lajes-rooftop eval:lajes-visual eval:lajes-ruas eval:lajes-identidade eval:lajes-roof-overlap eval:lajes-nav eval:lajes-ctf-surface eval:lajes-authored eval:lajes-spatial eval:lajes-gap eval:lajes-circuito eval:lajes-antitrap eval:lajes-vertical eval:lajes-bots eval:lajes-ambiencia eval:lajes-santos eval:lajes-game eval:mappreview eval:lajes-airspace eval:lajes-soundscape eval:lajes-spawn-space eval:sertao eval:sertao-spatial eval:sertao-interiors eval:sertao-wagon eval:sertao-fauna eval:sertao-occlusion eval:calango-quadruped eval:sertao-horizon eval:sertao-distant-birds eval:sertao-integration eval:sertao-livestock eval:sertao-sky-lifecycle eval:amazonia eval:chao eval:ombro eval:miticos-lobisomem eval:mansao eval:dautelemetria eval:mpRoomOptions eval:fxFlash eval:campinho-integration eval:parque eval:audiofurollback eval:atacadao eval:killstreak eval:mp-paridade eval:obras eval:vm-launch eval:chat eval:ui-chat eval:pos-cena eval:capturecodex eval:legal eval:brasao-versao eval:tprajada eval:mprecuo eval:check-sem-escrita eval:modoarmamp eval:trocaarmamp eval:pos-alvo eval:ibl-vm eval:botsentidos eval:ociosoteto eval:wfconcurrency eval:mapa-sp-pos-mp eval:personagem-escolhido eval:gauntlet-rodizio eval:telemetria-coorte eval:clans-sessao eval:mp-proximo eval:hub-identity eval:login-prompt eval:portaogatilho eval:mergequeue eval:wfcheckout eval:rotas eval:compartilhar eval:contagens-pr
 ```
 
 `package.json` tem **604 scripts**; o motivo de cada um mora em `SCRIPTS.md` (migrado das chaves `//nome` em 18/08/2026) — é onde está o porquê.

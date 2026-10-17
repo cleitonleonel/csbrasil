@@ -81,8 +81,6 @@ const VM_MAT_LEGACY = QS.get('vmmat') === 'legacy';
 const ROUND_TIME = 99, ROUNDS_TO_WIN = 3, RESPAWN_DELAY = 2.2, PICKUP_RESPAWN = 8, SPAWN_PROT = 2;
 // Prazo e teto do drop de morte; procedência dos dois números em tools/eval/drop-check.mjs.
 const DROP_TTL = 18, DROP_MAX = 12;
-// m/s de recomposição do boom da câmera ao sair de trás de prop (entra na hora, sai andando).
-const RECUPERA_BOOM = 5;
 /* TETO PADRÃO DE RODADAS — "melhor de 5", que é o que o índice promete inicialmente
    (src/pages/index.astro:503, "Vence quem ganhar 3 rounds"). Sem este teto o formato NÃO
    ERA melhor de 5: round EMPATADO não dá ponto pra ninguém (game.js:_endRound), então uma
@@ -3682,6 +3680,7 @@ export class Game {
     p.revealedAt = this.time;
     if (BOT_SENTIDOS) this._botOuve(p.pos, BOT_OUVE_TIRO, 3);   // tiro faz barulho
     this.vm.authored?.shoot(p.weapon);
+    if (this.camView !== 'first') this.playerTP?.ctrl?.shoot?.();
     if (p.weapon === 'awp') setTimeout(() => this.sfx.bolt(), 420);
     this.sfx.shotWeapon(p.weapon, 0);   // 1ª pessoa = distância 0 no mix do synth
     // spread & direção. GUNFEEL: (a) ADS agora fecha o spread em TODAS as armas — antes só a
@@ -6010,7 +6009,8 @@ export class Game {
     if (tp.ctrl) {
       tp.ctrl.setCrouch?.(p.crouchF > 0.5);
       tp.ctrl.aimPitch = p.pitch;
-      tp.ctrl.update(dt, sp > 0.6 ? 1 : 0, false, sp, false);
+      const back = -(p.vel.x * Math.sin(p.yaw) + p.vel.z * Math.cos(p.yaw)) < -0.25;
+      tp.ctrl.update(dt, sp > 0.6 ? 1 : 0, false, sp, back);
     } else if (tp.mixer) {
       tp.mixer.update(dt);
     }
@@ -6058,7 +6058,8 @@ export class Game {
       }
       const piso = Math.max(0.35, claro - 0.18);   // 18 cm de folga pro near plane
       const atual = this._tpBoomClear ?? boomLen;
-      this._tpBoomClear = piso < atual ? piso : Math.min(boomLen, atual + dt * RECUPERA_BOOM);
+      // 5 m/s: entra na hora, sai andando (método autocontido: réguas recompilam _updatePlayerTP fora do módulo)
+      this._tpBoomClear = piso < atual ? piso : Math.min(boomLen, atual + dt * 5);
       if (this._tpBoomClear < boomLen - 1e-3)
         cam.position.copy(eyePos).addScaledVector(boom, this._tpBoomClear);
     }

@@ -28,8 +28,10 @@ const arr = (name) => {
 };
 const assets = arr('LAJES_AUTHORED_ASSETS');
 const connections = arr('LAJES_CONNECTIONS');
-const runtimeNovo = /from\s+['"]\.\/map_lajes_authored\.js['"]/.test(mapsSrc)
-  && !/from\s+['"]\.\/map_lajes\.js['"]/.test(mapsSrc);
+const runtimeNovo = (/from\s+['"]\.\/map_lajes_authored\.js['"]/.test(mapsSrc)
+  || /import\(\s*['"]\.\/map_lajes_authored\.js['"]\s*\)/.test(mapsSrc))
+  && !/from\s+['"]\.\/map_lajes\.js['"]/.test(mapsSrc)
+  && !/import\(\s*['"]\.\/map_lajes\.js['"]\s*\)/.test(mapsSrc);
 const semCasca = !/lajes_completa\.glb|loadShell\s*\(|makeHorizon\s*\(/.test(mapSrc);
 const lowqMantemArquitetura = /const\s+ARCHITECTURE_ON\s*=\s*true/.test(mapSrc)
   && !/LOWQ[^\n]{0,120}(?:placeProp|PropBatch|LAJES_AUTHORED_ASSETS)/.test(mapSrc);

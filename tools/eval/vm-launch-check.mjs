@@ -16,7 +16,7 @@
  *   VL6 asset         com VM_LAUNCH=true, GLBs existem no catálogo local ou o
  *                     manifesto Blob privado cobre cada rota efetiva; o build
  *                     confere os bytes por SHA-256 antes de publicar
- *   VL7 ak golden     a 'ak' serve a GOLDEN aprovada (gold#ak, coro/ak-hires.glb 3b6ca23d…), nada mais
+ *   VL7 ak golden     a 'ak' serve a GOLDEN aprovada (gold#ak, coro/ak-hires.glb 4094c053…), nada mais
  *                     (sem catálogo privado não dá para medir → VERMELHO)
  *
  *   node tools/eval/vm-launch-check.mjs              # régua no estado do repo
@@ -40,7 +40,7 @@ const FILES = {
 };
 const read = (key) => fs.readFileSync(FILES[key], 'utf8');
 // sha256 da AK golden aprovada pelo dono (rig A, coro/ak-hires.glb) — o mesmo prefixo de GOLDEN_VER.ak.
-const AK_GOLDEN_SHA = '3b6ca23d';
+const AK_GOLDEN_SHA = '4094c053';
 let serial = 0;
 
 // Módulo a partir de FONTE (mutável): especificador relativo vira URL absoluta,

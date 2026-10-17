@@ -85,7 +85,7 @@
 <script type="module">
 import * as THREE from 'three';
 import { initTextures } from './js/textures.js';
-import { MAPS, resolveMapId } from './js/maps.js';
+import { MAPS, resolveMapId , carregaMapa } from './js/maps.js';
 import { preloadMapProps } from './js/mapprops.js';
 import { AERIAL_TABELA, makeAerialFog } from './js/bloom.js';
 
@@ -200,6 +200,7 @@ addEventListener('resize', () => {
 
 (async () => {
   const T = initTextures();
+  await carregaMapa(MAP);   // #959: build e getters de props só existem depois de carregaMapa
   const def = MAPS[MAP];
   const props = (def.props && (typeof def.props === 'function' ? def.props() : def.props)) || [];
   await preloadMapProps(props.map ? props.map((p) => p.id || p) : []);

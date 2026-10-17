@@ -13,7 +13,7 @@
 <script type="module">
 import * as THREE from 'three';
 import { initTextures } from './js/textures.js';
-import { MAPS, resolveMapId } from './js/maps.js';
+import { MAPS, resolveMapId, carregaMapa } from './js/maps.js';
 import { preloadMapProps, COMMON_MAP_PROPS } from './js/mapprops.js';
 import { preloadAmbientLife } from './js/ambientlife.js';
 import { lookAtual } from './js/bloom.js';
@@ -70,6 +70,7 @@ if (qp.get('hud') === '0') hud.style.display = 'none';
     preloadAmbientLife(MAPS[MAP].ambience || []),
   ]);
   const _tb = performance.now();
+  await carregaMapa(MAP);   // #959: build só existe depois de carregaMapa
   const world = MAPS[MAP].build(scene, T);
   window.__buildMs = Math.round(performance.now() - _tb);   // custo total do build, p/ régua de tempo
   window.__world = { spawns: world.spawns, bounds: world.bounds, ctf: world.ctfPoints, nodes: world.waypoints.nodes.length };
