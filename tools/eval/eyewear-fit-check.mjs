@@ -14,6 +14,25 @@ function rejectApprovalTrue(value,path='root'){
   if(!value||typeof value!=='object')return;
   for(const [key,child]of Object.entries(value)){assert(!(key==='approved'&&child===true),`${path}.${key}: approved:true prohibited in candidate lane`);rejectApprovalTrue(child,`${path}.${key}`);}
 }
+function validateOvalCapitao(eyewear,landmarks,report){
+  const profile=eyewear.eyewear['oval-90'].profiles.capitao,row=report.eyewear.find(candidate=>candidate.itemId==='oval-90'&&candidate.bodyId==='capitao'),uncertaintyCm=landmarks.coordinateSystem.uncertaintyCm,ears=landmarks.bodies.capitao.eyewear.ears;
+  assert.equal(profile.classification,'candidate-for-human-approval','oval-90/capitao: unresolved visual fit');
+  assert.equal(profile.frontFrameFit,true,'oval-90/capitao: bridge centered from whole accessory instead of front frame');
+  assert(profile.width>=.62&&profile.width<=.66,'oval-90/capitao: frame width outside reviewed fit');
+  assert(profile.frameHeightScale>=.82&&profile.frameHeightScale<=.9,'oval-90/capitao: frame height outside reviewed fit');
+  assert(profile.depth>=.03&&profile.depth<=.05,'oval-90/capitao: bridge depth outside reviewed fit');
+  assert(profile.templeScaleL>=1.7&&profile.templeScaleL<=1.8,'oval-90/capitao: left temple misses ear');
+  assert(profile.templeScaleR>=1.89&&profile.templeScaleR<=1.99,'oval-90/capitao: right temple misses ear');
+  assert(row,'oval-90/capitao: captured matrix row missing');
+  for(const sample of row.poses){
+    const {metrics}=sample;
+    assert(Math.abs(metrics.lensEyeCm)<=.5,`oval-90/capitao/${sample.pose}: frame misses eye line`);
+    assert(metrics.clippingPct<=1,`oval-90/capitao/${sample.pose}: frame clips the face`);
+    assert(['left','right'].every(side=>metrics[side].templeEarCm<=.75&&metrics[side].templeEarCm>=-(ears[side].frontZ-ears[side].backZ)*100),`oval-90/capitao/${sample.pose}: temple misses ear`);
+    assert(Math.abs(metrics.left.templeEarCm-metrics.right.templeEarCm)<=uncertaintyCm*2,`oval-90/capitao/${sample.pose}: asymmetric ear reach`);
+    assert(metrics.left.sunkFraction<=.05&&metrics.right.sunkFraction<=.05,`oval-90/capitao/${sample.pose}: temple sinks into head`);
+  }
+}
 function validate({eyewear,landmarks,factory,report}){
   assert.equal(eyewear.schema,1);assert.equal(landmarks.schemaVersion,'cs-face-landmarks/1');assert.equal(landmarks.status,'candidate');assert.equal(landmarks.runtimeEnabled,false);assert.equal(landmarks.provenance.origin,'gpt-pilot+human-candidate');
   rejectApprovalTrue(eyewear);same(Object.keys(landmarks.bodies),coveredCaps,'landmark body coverage changed');
@@ -26,11 +45,12 @@ function validate({eyewear,landmarks,factory,report}){
     }
   }
   for(const itemId of ['rebite-roxo','arco-orbital']){const entry=eyewear.eyewear[itemId];assert.equal(entry.approved,false);assert.deepEqual(entry.profiles,{},`${itemId}: rejected item gained a body profile`);}
-  assert.equal(report.schemaVersion,'cs-fit-matrix/1');assert.equal(report.certifiedPairs,0);assert.equal(report.eyewear.length,8);assert.equal(report.headwear.length,3);same(report.views,['front','threeQuarter','profile']);assert.equal(report.summary.assetAndPipeline.state,'ready');assert.deepEqual(report.summary.candidatePairs,{eyewear:8,headwear:3});assert.deepEqual(report.summary.humanDecision,{state:'pending',certifiedPairs:0,storeEnabled:false});
+  assert.equal(report.schemaVersion,'cs-fit-matrix/1');assert.equal(report.reportedDefect,'alguns oculos estao desencaixados, como o vermelho, nao ficaram bons');assert.equal(report.certifiedPairs,0);assert.equal(report.eyewear.length,8);assert.equal(report.headwear.length,3);same(report.views,['front','threeQuarter','profile']);assert.equal(report.summary.assetAndPipeline.state,'ready');assert.deepEqual(report.summary.candidatePairs,{eyewear:8,headwear:3});assert.deepEqual(report.summary.humanDecision,{state:'pending',certifiedPairs:0,storeEnabled:false});
   for(const row of report.eyewear){const entry=eyewear.eyewear[row.itemId],profile=entry?.profiles?.[row.bodyId],landmark=landmarks.bodies[row.bodyId];assert(profile&&landmark,'orphan eyewear matrix row');assert.equal(row.bodySha256,landmark.bodySha256);assert.equal(row.assetSha256,entry.sha256);assert.equal(row.profileStatus,'candidate');assert.equal(row.classification,profile.classification);assert.equal(row.certified,false);same(row.poses.map(sample=>sample.pose),poses);for(const sample of row.poses){assert(sample.metrics&&finite(sample.metrics.lensEyeCm)&&finite(sample.metrics.clippingPct),'eyewear measurements missing');for(const side of ['left','right']){const metric=sample.metrics[side],ends=[metric?.templeEarCm,metric?.templeEarVerticalCm];assert(metric&&finite(metric.sunkFraction),'temple sunk measurement missing');if(profile.classification==='blocked-baked-eyewear')assert(ends.every(finite)||ends.every(value=>value===null),'blocked body has partial temple measurement');else assert(ends.every(finite),'temple measurements missing');}}}
   const cap=factory.items.find(item=>item.id==='treta-cap-procedural-v1');assert(cap&&cap.inventoryStatus==='versioned');assert.equal(cap.asset.sha256,hash(cap.asset.path));assert.equal(cap.asset.bytes,readFileSync(join(root,cap.asset.path)).length);assert.equal(cap.runtimeEnabled,false);assert(Object.values(cap.approvals).every(value=>value===false));assert.deepEqual(cap.certifiedBodies,[]);assert.deepEqual(cap.certifiedFamilies,[]);same(cap.fitProfiles.map(profile=>profile.bodyId),coveredCaps.map(id=>`character:${id}`));
   for(const profile of cap.fitProfiles){const bodyId=profile.bodyId.slice('character:'.length),landmark=landmarks.bodies[bodyId];assert.equal(profile.status,'candidate');assert.equal(profile.profileId,landmark.profileId,`${bodyId}: cap profile transferred or stale`);}
   for(const row of report.headwear){assert(coveredCaps.includes(row.bodyId));assert.equal(row.bodySha256,landmarks.bodies[row.bodyId].bodySha256);assert.equal(row.profileStatus,'candidate');assert.equal(row.classification,'candidate-for-human-approval',`${row.bodyId}: brim still covers the front eye line in a captured pose`);assert(row.minimumBrimEyeClearancePx>=8,`${row.bodyId}: front brim-eye clearance below 8 px`);assert(finite(row.minimumProjectedAcrossViewsPx));assert.equal(row.certified,false);assert.equal(row.samples.length,9);for(const sample of row.samples){assert(finite(sample.metrics.brimEyeClearancePx));assert(finite(sample.metrics.headAndHairOutsideCrownPct)&&sample.metrics.headAndHairOutsideCrownPct>=0&&sample.metrics.headAndHairOutsideCrownPct<=100,`${row.bodyId}: invalid crown containment metric`);assert(finite(sample.metrics.crownClearanceCm),`${row.bodyId}: missing crown clearance metric`);assert.equal(sample.metrics.drawCalls,1,`${row.bodyId}: procedural cap exceeds one draw call`);assert(Number.isSafeInteger(sample.metrics.triangles)&&sample.metrics.triangles<=5000,`${row.bodyId}: procedural cap exceeds 5k triangles`);assert(sample.metrics.stability<=1e-7,`${row.bodyId}: cap anchor unstable`);}}
+  validateOvalCapitao(eyewear,landmarks,report);
   return {eyewearPairs:report.eyewear.length,capPairs:report.headwear.length,certified:0};
 }
 function mutants(){
@@ -42,6 +62,7 @@ function mutants(){
     'body-without-landmark':data=>{data.landmarks.bodies.capitao.eyewear=null;},
     'brim-over-eye':data=>{data.report.headwear[0].minimumBrimEyeClearancePx=-1;data.report.headwear[0].classification='blocked-brim-over-eye';},
     'profile-transferred':data=>{data.eyewear.eyewear['metal-de-rua'].profiles.capitao.bodyId='character:barbudo';},
+    'oval-90-bad-fit':data=>{const profile=data.eyewear.eyewear['oval-90'].profiles.capitao,row=data.report.eyewear.find(candidate=>candidate.itemId==='oval-90'&&candidate.bodyId==='capitao');Object.assign(profile,{classification:'needs-adjustment',frontFrameFit:false,width:.96,depth:.08,templeScale:1.25,templeSpreadL:.2,templeSpreadR:.45});delete profile.frameHeightScale;delete profile.templeScaleL;delete profile.templeScaleR;row.classification='needs-adjustment';},
   },result=[];
   for(const [name,mutate]of Object.entries(cases)){const data=structuredClone(inputs());mutate(data);let killed=false,reason='';try{validate(data);}catch(error){killed=true;reason=error.message;}assert(killed,`${name} mutant survived`);result.push({name,killed,reason});}
   return result;

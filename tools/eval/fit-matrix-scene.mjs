@@ -52,8 +52,8 @@ function setPose(name,time){
   state.mixer.stopAllAction();const clip=state.clips[name]||state.clips.idle||Object.values(state.clips)[0];if(clip){const action=state.mixer.clipAction(clip);action.reset().play();state.mixer.setTime(Math.min(time,Math.max(0,clip.duration-.001)));}
 }
 function setView(view){
-  const yaw={front:0,threeQuarter:Math.PI/4,profile:Math.PI/2}[view]??0;pivot.rotation.y=yaw;scene.updateMatrixWorld(true);const center=headCenter(),distance=view==='profile'?.72:.78;
-  camera.position.set(center.x,center.y+.01,center.z+distance);camera.lookAt(center.x,center.y-.025,center.z);camera.updateProjectionMatrix();scene.updateMatrixWorld(true);
+  const yaw={front:0,threeQuarter:Math.PI/4,profile:Math.PI/2}[view]??0;pivot.rotation.y=yaw;scene.updateMatrixWorld(true);const center=headCenter(),distance=state.kind==='cap'?(view==='profile'?.8:.85):(view==='profile'?.72:.78);
+  camera.position.set(center.x,center.y+(state.kind==='cap'?.025:.01),center.z+distance);camera.lookAt(center.x,center.y-.025,center.z);camera.updateProjectionMatrix();scene.updateMatrixWorld(true);
 }
 async function loadBody(bodyId){
   pivot.clear();const gltf=await loader.loadAsync(`/models/characters/${bodyId}.glb`),model=gltf.scene;pivot.add(model);let body;model.traverse(object=>{if(!body&&object.isSkinnedMesh&&object.skeleton.bones.some(bone=>bone.name==='Head'))body=object;});

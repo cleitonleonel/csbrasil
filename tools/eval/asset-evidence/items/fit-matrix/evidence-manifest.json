@@ -1,56 +1,69 @@
 {
   "schemaVersion": "cs-fit-evidence/1",
   "sourceHashes": {
-    "eyewearManifest": "c16d6e921022d907fee3c4103cd2fa970c3d8dc5c46e54027697fc9263ce2188",
+    "eyewearManifest": "98abf140cf2adcae89d776f20b926cccfa757ca6771dbf5099e81b7b20446cd5",
     "faceLandmarks": "09ac715d0452f13b95576efe0adb9ec8e0582383f2edcab4d301fa0d0c54e4fd",
+    "eyewearRuntime": "d2df55d0519d6ce72818ed609254ced4ac8b7c3e1d8244e04d0dd1582961db95",
     "proceduralCap": "3d30bc6e84f88d400f85b4daec7e3ceede9ac2b82d347c5370171dd9dfa22aa7",
-    "scene": "801abeed802538cf9d02a70ba1485288d5f65223055c99a280dcc7a6f6fc56ab",
-    "captureTool": "0babe7898e61c530ab7cb9d2282549fe2e118962c5891a19205995ae3d9a3f4a"
+    "scene": "332813d680528d3435596a4b2f54f8fc3e832e3f2d327316ee5b31c4d7c8206b",
+    "captureTool": "d8f8a2548f228ab7b9d7007546cee6f5ff4cda77416d3c5d940a7f9988a1fb90"
   },
   "files": {
     "cap-barbudo.png": {
-      "bytes": 1538671,
-      "sha256": "7af541845ed289607d3bcb159ceb66286fecc9b3de4df5e0df0171520b5febad"
+      "bytes": 1463338,
+      "sha256": "6f7d0d01282f071443a8f288fbef62f91d4c1d19885ee041034ca026122d0c31"
     },
     "cap-capitao.png": {
-      "bytes": 1126340,
-      "sha256": "8fea8778d3482c945b6a28988c60567444c05d418bdbf324b1183a5d9813c03f"
+      "bytes": 1081644,
+      "sha256": "605f9c6918bbb866875d61f04fa668d31d5326a99d9dcb4de06ba71320478cb9"
     },
     "cap-esquerdomacho.png": {
-      "bytes": 1203571,
-      "sha256": "06f8ae5e0e8c8f8bade25b8a553a36ce7f5d88a7e544ea4dac2208658880d5bc"
+      "bytes": 1130478,
+      "sha256": "23ee74c38bb0205cfef4ae86144727a9f9468623f71f1a6ddb94289656af34e2"
     },
     "eyewear-capitao-metal-de-rua.png": {
-      "bytes": 2502144,
-      "sha256": "aeff26eb4544bdf6bb0d526cf044793e8f6d2f4d52377d708e33c372c1e962ce"
+      "bytes": 2501103,
+      "sha256": "71e43eafd5b145b98581a2d2f3a5a874c8fdc93642c107e4d7046361810ac571"
     },
     "eyewear-capitao-ouro-de-quebrada.png": {
-      "bytes": 2494940,
-      "sha256": "3ee35c7eeeca6f4c88a17015c3753a05cbbb914ea221034cfe9209e63bf1c06d"
+      "bytes": 2494285,
+      "sha256": "7430fc31f76cd61877a20b1f26a2784fee8b6bd939c4f055861996363fe29037"
     },
-    "eyewear-capitao-oval-90.png": {
+    "eyewear-capitao-oval-90-ab.png": {
+      "bytes": 1076098,
+      "sha256": "306e2c99be6ec3eda477b77cf05924c31f1b5030fe872ea91ae976fe112765cc"
+    },
+    "eyewear-capitao-oval-90-before.png": {
       "bytes": 2552588,
       "sha256": "e18dd231149f2d7f10ab55d7bb090ffd6afbd0c50f8b1772a31d8e85e8ad718b"
     },
+    "eyewear-capitao-oval-90.png": {
+      "bytes": 2542933,
+      "sha256": "5597da14525f10bc657d9e407cfec7fbda6c165edfac928dbf5f503da742625c"
+    },
     "eyewear-capitao-visor-de-pista.png": {
-      "bytes": 2500210,
-      "sha256": "dba0ac6dfbf3f05db9c2b4c6e3050dcee20e1f0d2383af866336fb5c7f57a551"
+      "bytes": 2499638,
+      "sha256": "bdbdfe9b3c891aac7cb3fb612e2775a846ac33b3e50c05adc0012c39a9094536"
     },
     "eyewear-esquerdomacho-metal-de-rua.png": {
-      "bytes": 2516793,
-      "sha256": "1acd3472fbe3a6c74364c05c9660c41612fd63223fe8b635961cf91d23b81835"
+      "bytes": 2515431,
+      "sha256": "07382d032697cf08f66f04e6cd35324aca963009aa9191c316da0b30ab657f5b"
     },
     "eyewear-esquerdomacho-ouro-de-quebrada.png": {
-      "bytes": 2493737,
-      "sha256": "e5fbf1fe26d12ffa7ea450f59f038459f122fc1e0f2bc3fcf59f18a7ff43cb41"
+      "bytes": 2487099,
+      "sha256": "930ac651761d3a4721c165e24dd90b25c010e44d0b2a06bc0b8eb77298ba8b0d"
     },
     "eyewear-esquerdomacho-oval-90.png": {
-      "bytes": 2523381,
-      "sha256": "93e8baf0961a85b11d85ac1dd2cc546ef57f16c85c8ca8db77e07fe68b5bd09b"
+      "bytes": 2521275,
+      "sha256": "30da382bfa76524082eb5336e167a155324fa8e494d0ed59042862be0a6403a4"
     },
     "eyewear-esquerdomacho-visor-de-pista.png": {
-      "bytes": 2467880,
-      "sha256": "0bd40584a7754b5e38ac2d7a3ef34c9e1050a5a3b9dfabb8f8579b4785403a2b"
+      "bytes": 2465585,
+      "sha256": "2e868f17727774a79bee6d7a6eaa144bd92d550f6f6d5866dcdf4d3953d2c728"
+    },
+    "visual-review.json": {
+      "bytes": 2556,
+      "sha256": "a14bb7f8e782970750dd54dd831941e863bdcaded6266dd21b15f066216d67ff"
     }
   }
 }

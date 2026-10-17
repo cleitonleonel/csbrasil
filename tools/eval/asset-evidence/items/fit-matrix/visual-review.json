@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "cs-fit-visual-review/1",
+  "status": "candidate",
+  "approved": false,
+  "certified": false,
+  "reportedDefect": "alguns oculos estao desencaixados, como o vermelho, nao ficaram bons",
+  "oval90": {
+    "before": "Volume bug-eye largo e alto; a caixa total do acessório, incluindo hastes assimétricas, deslocava e dimensionava o aro frontal.",
+    "after": "Aro e lentes claramente menores em largura e altura na frente, 3/4 e perfil; ponte centralizada no nariz; hastes laterais seguem até as regiões das orelhas sem laços, soltura ou clipping visível nas seis poses.",
+    "metricsAcrossSixPoses": {
+      "lensEyeCm": 0,
+      "clippingPct": 0.37,
+      "leftTempleEarCm": -1,
+      "rightTempleEarCm": -0.7,
+      "leftTempleSunkFraction": 0.00413,
+      "rightTempleSunkFraction": 0.0086
+    },
+    "blindReview": {
+      "reviewer": "OvalBlindAcceptance",
+      "verdict": "pass",
+      "observation": "A correção é claramente visível também de frente; olhos continuam cobertos, ponte fica no nariz e as hastes permanecem estáveis e alcançam as regiões das orelhas sem laços ou clipping nas 18 células."
+    }
+  },
+  "sheets": {
+    "eyewear-capitao-metal-de-rua.png": "Ponte e lentes acompanham os olhos; hastes chegam às orelhas sem soltura visível.",
+    "eyewear-capitao-ouro-de-quebrada.png": "Armação retangular permanece centrada e estável nas seis poses.",
+    "eyewear-capitao-oval-90.png": "Aro vermelho compacto repousa na ponte e nos olhos; hastes chegam às regiões das orelhas em frente, 3/4 e perfil.",
+    "eyewear-capitao-visor-de-pista.png": "Visor largo permanece estável; continua candidato em ajuste próprio, sem promoção nesta correção.",
+    "eyewear-esquerdomacho-metal-de-rua.png": "Encaixe reproduzido, mas o corpo mantém óculos assados e continua bloqueado.",
+    "eyewear-esquerdomacho-ouro-de-quebrada.png": "Encaixe reproduzido, mas o conflito com óculos assados continua visível e bloqueado.",
+    "eyewear-esquerdomacho-oval-90.png": "Oval reproduzido sobre o corpo; perfil permanece blocked-baked-eyewear, sem certificação.",
+    "eyewear-esquerdomacho-visor-de-pista.png": "Visor reproduzido; conflito do corpo com óculos assados permanece bloqueante.",
+    "cap-capitao.png": "Boné inteiro e olhos livres nas três poses e vistas.",
+    "cap-esquerdomacho.png": "Boné inteiro; os óculos circulares assados do corpo continuam visíveis.",
+    "cap-barbudo.png": "Coroa, rosto e barba cabem no quadro; marca frontal/3/4 legível e sem corte do topo."
+  }
+}
