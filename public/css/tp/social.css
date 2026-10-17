@@ -15,6 +15,7 @@
 .tp-resenha-botao__novas[data-vazio]{display:none}
 .tp-resenha-botao kbd{padding:1px 6px;border:1px solid rgba(255,255,255,.3);border-radius:4px;color:var(--tp-tinta-3);font:700 12px/1.3 var(--tp-num)}
 .tp-resenha-botao[aria-expanded="true"]{z-index:8}
+:root[data-ui="v3"][data-home-ui="hub"] #hub-ui .hub-footer{left:max(var(--tp-lobby-margem,32px),260px)}
 
 .tp-resenha-veu{position:fixed;inset:0;z-index:6;background:rgba(9,7,4,.55);opacity:0;visibility:hidden;
   transition:opacity var(--tp-d-painel) var(--tp-ease-saida),visibility 0s linear var(--tp-d-painel)}
@@ -185,7 +186,7 @@
 
 /* Celular deitado (telas 24 e 25). */
 @media (max-height:520px){
-  .tp-resenha-botao{--tp-resenha-chao:12px;left:16px;height:44px;gap:8px;padding:0 12px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+  .tp-resenha-botao{--tp-resenha-chao:12px;left:16px;bottom:calc(var(--tp-resenha-chao) + 154px);height:44px;gap:8px;padding:0 12px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.5)}
   .tp-resenha-botao svg{width:22px;height:22px}
   .tp-resenha-botao .tp-disp{font-size:16px}
   .tp-resenha-botao kbd{display:none}
