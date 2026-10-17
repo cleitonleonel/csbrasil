@@ -3,15 +3,15 @@
 <!-- BEGIN:GERADO — não edite à mão, rode `npm run arch` -->
 
 > Gerado por `node tools/gen-arch.mjs`. **Não edite este bloco à mão.**
-> Versão do jogo: 2.1.0-alpha.101 · `npm run arch` para regenerar · `npm run arch:check` no CI.
+> Versão do jogo: 2.1.0-alpha.102 · `npm run arch` para regenerar · `npm run arch:check` no CI.
 
 ## Tamanho dos arquivos indexados
 
 | Arquivo | Linhas | Símbolos |
 |---|---:|---:|
-| `public/js/game.js` | 8577 | 351 |
-| `public/js/main.js` | 4891 | 360 |
-| `public/js/glbchars.js` | 893 | 62 |
+| `public/js/game.js` | 8578 | 350 |
+| `public/js/main.js` | 4896 | 359 |
+| `public/js/glbchars.js` | 925 | 63 |
 | `public/js/characters.js` | 1143 | 42 |
 | `public/js/vmattach.js` | 633 | 4 |
 | `public/js/springs.js` | 260 | 28 |
@@ -19,25 +19,25 @@
 
 ## Maiores métodos de `game.js` — onde o conflito mora
 
-Os 15 maiores somam **3358 linhas (39% do arquivo)**. Método grande = PR irrevisável e merge conflitante.
+Os 15 maiores somam **3359 linhas (39% do arquivo)**. Método grande = PR irrevisável e merge conflitante.
 
 | Linhas | Início | Método | |
 |---:|---:|---|---|
-| 837 | 7176 | `_updateBot()` | ⚠️ candidato a extração |
-| 639 | 725 | `constructor()` | 🔴 append-only |
-| 308 | 6253 | `_updatePlayer()` | ⚠️ candidato a extração |
-| 271 | 1467 | `_buildViewModels()` |  |
-| 266 | 2665 | `_resetPositions()` |  |
-| 158 | 6574 | `_updatePickups()` |  |
-| 137 | 5456 | `_botCtf()` |  |
-| 135 | 2221 | `_touchControls()` |  |
-| 101 | 6152 | `_moveEntity()` |  |
-| 90 | 8435 | `update()` | 🔴 append-only |
-| 88 | 8347 | `_updateHud()` |  |
-| 86 | 5167 | `_initCTF()` |  |
-| 84 | 3667 | `_tryShoot()` |  |
-| 79 | 3314 | `_ensureVmPrecisionQa()` |  |
-| 79 | 4229 | `_dmgArc()` |  |
+| 837 | 7177 | `_updateBot()` | ⚠️ candidato a extração |
+| 639 | 723 | `constructor()` | 🔴 append-only |
+| 308 | 6254 | `_updatePlayer()` | ⚠️ candidato a extração |
+| 271 | 1465 | `_buildViewModels()` |  |
+| 266 | 2663 | `_resetPositions()` |  |
+| 158 | 6575 | `_updatePickups()` |  |
+| 137 | 5455 | `_botCtf()` |  |
+| 135 | 2219 | `_touchControls()` |  |
+| 101 | 6153 | `_moveEntity()` |  |
+| 90 | 8436 | `update()` | 🔴 append-only |
+| 88 | 8348 | `_updateHud()` |  |
+| 86 | 5166 | `_initCTF()` |  |
+| 85 | 3665 | `_tryShoot()` |  |
+| 79 | 3312 | `_ensureVmPrecisionQa()` |  |
+| 79 | 4228 | `_dmgArc()` |  |
 
 ## Tabela de CONFLITO — resolvida para as linhas de hoje
 
@@ -47,323 +47,323 @@ faixas disjuntas simultaneamente com zero conflito de conteúdo.
 
 | Frente | Faixas em `game.js` | Arquivos exclusivos |
 |---|---|---|
-| **ARMAS / VIEWMODEL** | `363–366` `438–532` `562–583` `1467–1878` `3280–3313` `3510–3602` `3621–3750` `3765–3780` `3925–3970` `4499–4524` `4572–4672` `4745–4761` | `public/js/vmattach.js` `public/js/springs.js` `public/js/weapons.js` `public/js/fparms.js` `public/js/handik.js` `public/js/recoil.js` `public/js/vmlab.js` |
-| **BOTS / JOGABILIDADE** | `195–198` `249–249` `282–293` `625–636` `4098–4198` `5106–5166` `5338–5592` `5675–5697` `6253–6560` `6959–6976` `7110–7140` `7176–8012` | — |
-| **MAPAS / MUNDO** | `1410–1466` `2665–2930` `5167–5313` `6574–6731` | `public/js/maps.js` `public/js/mapprops.js` `public/js/map_brasilia.js` `public/js/map_havan.js` `public/js/map_piscina.js` `public/js/map_piscinao_ramos.js` `public/js/map_ferrovelho.js` |
-| **GRÁFICOS / FX** | `1893–1902` `2017–2055` `3183–3196` `4525–4563` `4688–4744` | `public/js/bloom.js` `public/js/textures.js` `public/js/vao.js` `public/js/stylize.js` `public/js/gpuparticles.js` |
-| **UI / HUD / MENU** | `1364–1409` `3135–3157` `3173–3182` `3197–3213` `4229–4307` `4366–4419` `4435–4498` `8168–8232` `8263–8311` `8347–8434` | `public/js/main.js` `public/style.css` `src/pages/index.astro` |
+| **ARMAS / VIEWMODEL** | `361–364` `436–530` `560–581` `1465–1876` `3278–3311` `3508–3600` `3619–3749` `3764–3779` `3924–3969` `4498–4523` `4571–4671` `4744–4760` | `public/js/vmattach.js` `public/js/springs.js` `public/js/weapons.js` `public/js/fparms.js` `public/js/handik.js` `public/js/recoil.js` `public/js/vmlab.js` |
+| **BOTS / JOGABILIDADE** | `193–196` `247–247` `280–291` `623–634` `4097–4197` `5105–5165` `5337–5591` `5674–5696` `6254–6561` `6960–6977` `7111–7141` `7177–8013` | — |
+| **MAPAS / MUNDO** | `1408–1464` `2663–2928` `5166–5312` `6575–6732` | `public/js/maps.js` `public/js/mapprops.js` `public/js/map_brasilia.js` `public/js/map_havan.js` `public/js/map_piscina.js` `public/js/map_piscinao_ramos.js` `public/js/map_ferrovelho.js` |
+| **GRÁFICOS / FX** | `1891–1900` `2015–2053` `3181–3194` `4524–4562` `4687–4743` | `public/js/bloom.js` `public/js/textures.js` `public/js/vao.js` `public/js/stylize.js` `public/js/gpuparticles.js` |
+| **UI / HUD / MENU** | `1362–1407` `3133–3155` `3171–3180` `3195–3211` `4228–4306` `4365–4418` `4434–4497` `8169–8233` `8264–8312` `8348–8435` | `public/js/main.js` `public/style.css` `src/pages/index.astro` |
 | **ÁUDIO** | — | `public/js/audio.js` |
 | **PERSONAGENS** | — | `public/js/characters.js` `public/js/glbchars.js` |
 | **SITE / BACKEND** | — | `src/` `supabase/` |
 
-**🔴 Zonas vermelhas (append-only, qualquer frente pode precisar):** `update()` 8435–8524 · `_dom()` 1364–1409 · `constructor()` 725–1363
+**🔴 Zonas vermelhas (append-only, qualquer frente pode precisar):** `update()` 8436–8525 · `_dom()` 1362–1407 · `constructor()` 723–1361
 
 Nenhuma sobreposição entre frentes — todas as faixas são disjuntas. ✓
 
-Cobertura: **3901 de 8577 linhas (45%)** do `game.js` têm dono declarado. O resto é território neutro — declare a frente mesmo assim.
+Cobertura: **3902 de 8578 linhas (45%)** do `game.js` têm dono declarado. O resto é território neutro — declare a frente mesmo assim.
 
 <details><summary><strong>Índice completo de <code>game.js</code> (todos os símbolos)</strong></summary>
 
 | Linha | Símbolo | Linhas |
 |---:|---|---:|
-| 51 | `ANNOUNCER_LAB` | 4 |
-| 55 | `VMLAB` | 3 |
-| 60 | `VM_QA_CICLO` | 3 |
-| 64 | `VM_QA_ADS` | 8 |
-| 72 | `VM_MAT_LEGACY` | 4 |
+| 56 | `ANNOUNCER_LAB` | 4 |
+| 60 | `VMLAB` | 3 |
+| 65 | `VM_QA_CICLO` | 3 |
+| 69 | `VM_QA_ADS` | 8 |
+| 77 | `VM_MAT_LEGACY` | 4 |
 | 83 | `DROP_TTL` | 8 |
-| 86 | `ROUNDS_MAX` | 27 |
-| 114 | `CTF_ROUNDS_TO_WIN` | 4 |
-| 119 | `sanitizeRounds` | 4 |
-| 124 | `CTF_CLOCK_SHOW` | 4 |
-| 128 | `KILLS_PER_PLAYER` | 7 |
-| 135 | `PACE` | 33 |
-| 168 | `PAUSE_ARM_MS` | 3 |
-| 171 | `CHAT_PAUSA_GUARDA_MS` | 9 |
-| 181 | `confirmGate` | 7 |
-| 192 | `BOT_AIM_PITCH` | 4 |
-| 196 | `BOT_DMG_PLAYER` | 21 |
-| 217 | `BOT_FAIR` | 5 |
-| 222 | `BOT_MOVE2` | 15 |
-| 246 | `BOT_FOCUS_MIN` | 3 |
-| 253 | `BOT_OUVE_PASSO` | 22 |
-| 279 | `BOT_TOKEN_REST` | 7 |
-| 287 | `MOVE_MUL` | 6 |
-| 294 | `MOVE2` | 4 |
-| 298 | `STEP_H` | 3 |
-| 305 | `MANTLE_APOIO` | 4 |
-| 309 | `MANTLE_GRID` | 5 |
-| 314 | `RACK_OLD` | 4 |
-| 318 | `RACK_RETA` | 25 |
-| 345 | `RADIO` | 5 |
-| 351 | `MK_LABELS` | 5 |
-| 356 | `GUNFEEL` | 4 |
-| 363 | `TRACER_STYLE` | 6 |
-| 373 | `ADS_RAMPA_S` | 3 |
-| 377 | `aberturaCone` | 16 |
-| 393 | `anguloDeDisparo` | 4 |
-| 397 | `coneDoDisparo` | 16 |
-| 414 | `D2R` | 4 |
-| 418 | `DMG_FALLOFF` | 5 |
-| 423 | `HS_MUL` | 3 |
-| 426 | `BALL_CLASS` | 15 |
-| 441 | `STATIC_CLASS` | 75 |
-| 517 | `VM_KNOB` | 19 |
-| 536 | `vmAdsRot` | 4 |
-| 541 | `vmFovForAspect` | 24 |
-| 565 | `VM_OFF` | 22 |
-| 587 | `vmOffY` | 35 |
-| 622 | `VMP` | 6 |
-| 628 | `BOT_SKILLS` | 11 |
-| 640 | `diffKey` | 4 |
-| 645 | `rollBotSkill` | 7 |
-| 652 | `botTier` | 4 |
-| 656 | `_cyclePool` | 5 |
-| 661 | `_rosterPool` | 22 |
-| 685 | `_pinnedDefs` | 5 |
-| 690 | `pickMatchRoster` | 21 |
-| 711 | `BOT_WEAPON_POOL` | 5 |
-| 716 | `pickMatchWeapons` | 9 |
-| 728 | `constructor()` | 638 |
-| 1366 | `_dom()` | 46 |
-| 1412 | `_buildEnv()` | 57 |
-| 1469 | `_buildViewModels()` | 271 |
-| 1740 | `_vmFrame` | 141 |
-| 1881 | `_vmMontarTardio` | 14 |
-| 1895 | `_makePuffTexture()` | 10 |
-| 1905 | `_makeBloodTex()` | 19 |
-| 1924 | `_makeBloodPoolTex()` | 21 |
-| 1945 | `_bloodDecal()` | 16 |
-| 1961 | `_makeBloodFx()` | 20 |
-| 1981 | `_bloodSpatter()` | 18 |
-| 1999 | `_bloodPoolAt()` | 6 |
-| 2005 | `_updateBlood()` | 14 |
-| 2019 | `_makeFlashTex()` | 21 |
-| 2040 | `_makeFlashSoftTex()` | 8 |
-| 2048 | `_makeFlashCoreTex()` | 10 |
-| 2058 | `_input()` | 6 |
-| 2064 | `_kd` | 49 |
-| 2113 | `_ku` | 5 |
-| 2118 | `_md` | 40 |
-| 2158 | `_mu` | 7 |
-| 2165 | `_mm` | 20 |
-| 2185 | `_wh` | 17 |
-| 2202 | `_cc` | 1 |
-| 2203 | `_blur` | 1 |
-| 2204 | `_plc` | 19 |
-| 2223 | `_touchControls()` | 135 |
-| 2358 | `_aimAssist()` | 28 |
-| 2386 | `_requestLock()` | 27 |
-| 2413 | `_travaAtalhos()` | 4 |
-| 2417 | `_soltaAtalhos()` | 5 |
-| 2422 | `espectando()` | 2 |
-| 2424 | `_acceptInput()` | 7 |
-| 2431 | `travarEntrada()` | 17 |
-| 2448 | `_chatSeguraPausa()` | 5 |
-| 2453 | `_pauseBackdrop()` | 7 |
-| 2460 | `_radioShow()` | 6 |
-| 2466 | `_radioUi()` | 8 |
-| 2474 | `_radioPick()` | 20 |
-| 2494 | `_abilityNotice()` | 10 |
-| 2504 | `_resetSliceAbilities()` | 9 |
-| 2513 | `_stackTrace()` | 28 |
-| 2541 | `_updateMotocaCharge()` | 10 |
-| 2551 | `_recordRoutePoint()` | 11 |
-| 2562 | `_routePing()` | 23 |
-| 2585 | `_tickRoutePings()` | 12 |
-| 2597 | `_objectiveInteractionMultiplier()` | 14 |
-| 2611 | `start()` | 5 |
-| 2616 | `_startAnnouncerLab()` | 9 |
-| 2625 | `_startRound()` | 38 |
-| 2663 | `_resetPositions()` | 255 |
-| 2918 | `_checkCtfAlvo()` | 13 |
-| 2931 | `_checkPace()` | 13 |
-| 2944 | `_endRound()` | 34 |
-| 2978 | `_roundWinnerVoice()` | 12 |
-| 2990 | `_fimDaPartida()` | 7 |
-| 2997 | `_endMatch()` | 61 |
-| 3058 | `_ensureDolly()` | 41 |
-| 3099 | `_tickDolly()` | 23 |
-| 3122 | `setPaused()` | 23 |
-| 3145 | `_now()` | 3 |
-| 3148 | `pauseArmed()` | 1 |
-| 3149 | `_syncPauseArm()` | 7 |
-| 3156 | `resume()` | 4 |
-| 3160 | `applySettings()` | 10 |
-| 3170 | `_applyQuality()` | 14 |
-| 3184 | `onResize()` | 17 |
-| 3201 | `_switchTeam()` | 66 |
-| 3267 | `_applyVmVisibility()` | 34 |
-| 3301 | `_ensureVmPrecisionQa()` | 79 |
-| 3380 | `_syncVmPresentation()` | 19 |
-| 3399 | `_vmlabEnsure()` | 14 |
-| 3413 | `_vmlabFrame()` | 28 |
-| 3441 | `_tuneGet()` | 15 |
-| 3456 | `_tune()` | 23 |
-| 3479 | `_fxSet()` | 2 |
-| 3481 | `_qaCicloArma()` | 8 |
-| 3489 | `_cycleWeapon()` | 8 |
-| 3497 | `_switchWeapon()` | 39 |
-| 3536 | `_deploySfx()` | 7 |
-| 3543 | `_scope()` | 17 |
-| 3560 | `_zoomFov()` | 5 |
-| 3565 | `_reloading()` | 1 |
-| 3566 | `_startReload()` | 25 |
-| 3591 | `_reloadLayers()` | 18 |
-| 3609 | `_installRecoil()` | 33 |
-| 3642 | `_shotRecoil()` | 13 |
-| 3655 | `_tryShoot()` | 82 |
-| 3737 | `_tryKnifeAttack()` | 14 |
-| 3751 | `_meleeHit()` | 16 |
-| 3767 | `_meleeRange()` | 5 |
-| 3772 | `_botMelee()` | 28 |
-| 3798 | `_distanceDamage()` | 7 |
-| 3800 | `_shotDamage()` | 11 |
-| 3809 | `_consultarTiro()` | 13 |
-| 3822 | `_origemTiroBot()` | 6 |
-| 3828 | `_miraTiroBot()` | 5 |
-| 3833 | `_participanteHumano()` | 4 |
-| 3837 | `_resolverTiroBot()` | 23 |
-| 3848 | `_danoTiroBot()` | 12 |
-| 3860 | `_aplicarTiroBot()` | 12 |
-| 3872 | `_dispararBot()` | 29 |
-| 3901 | `_rastroTiroBot()` | 6 |
-| 3811 | `_fireHitscan()` | 70 |
-| 3881 | `_targetFromHit()` | 9 |
-| 3890 | `_penetrationExit()` | 20 |
-| 3910 | `_surfaceOf()` | 27 |
-| 3937 | `_armoredTarget()` | 3 |
-| 3940 | `_fleshImpact()` | 38 |
-| 3978 | `_fxVoice()` | 9 |
-| 3987 | `_impactSfx()` | 17 |
-| 4004 | `_tintFx()` | 16 |
-| 4020 | `_damage()` | 42 |
-| 4062 | `_playerHurtFx()` | 5 |
-| 4067 | `_kill()` | 53 |
-| 4120 | `_checkArenaWin()` | 30 |
-| 4150 | `_dmgArc()` | 79 |
-| 4229 | `_mkBanner()` | 9 |
-| 4238 | `_updateKillSequenceHud()` | 12 |
-| 4250 | `_resetKillSequence()` | 5 |
-| 4270 | `_fragRestockStep()` | 7 |
-| 4255 | `_playerKillFeedback()` | 18 |
-| 4273 | `_acertoPrevisto()` | 5 |
-| 4278 | `_hitmarker()` | 15 |
-| 4293 | `_dmgNumber()` | 20 |
-| 4313 | `_feed()` | 19 |
-| 4332 | `_skullIcon()` | 6 |
-| 4338 | `_killfeedWeaponIcon()` | 9 |
-| 4347 | `_wpnIcon()` | 64 |
-| 4411 | `_tracer()` | 26 |
-| 4437 | `_puff()` | 39 |
-| 4476 | `_holeDecalMat()` | 8 |
-| 4484 | `_flash()` | 61 |
-| 4545 | `_vmTetoTela()` | 10 |
-| 4555 | `_muzzleWorld()` | 30 |
-| 4585 | `_aimOrigin()` | 5 |
-| 4590 | `_updateDoors()` | 10 |
-| 4600 | `_updateFx()` | 57 |
-| 4657 | `_ejectCasing()` | 17 |
-| 4674 | `_makeCtfFlagTex()` | 23 |
-| 4697 | `_paintFlagSymbol()` | 9 |
-| 4706 | `_flagTexFor()` | 25 |
-| 4731 | `_legadoSimbolo()` | 8 |
-| 4739 | `_loadCtfSymbols()` | 22 |
-| 4761 | `_makeCtfZoneTex()` | 31 |
-| 4792 | `_makeSmokeTex()` | 10 |
-| 4802 | `_updateSmokeHud()` | 4 |
-| 4806 | `_grenadeSpatial()` | 14 |
-| 4820 | `_spawnGrenade()` | 19 |
-| 4839 | `_throwNade()` | 13 |
-| 4852 | `_throwSmoke()` | 1 |
-| 4853 | `_throwFrag()` | 4 |
-| 4857 | `_explodeFrag()` | 40 |
-| 4897 | `_corDaFumaca()` | 16 |
-| 4913 | `_popSmoke()` | 23 |
-| 4936 | `_updateGrenades()` | 35 |
-| 4971 | `_teamColor()` | 12 |
-| 4983 | `_teamInk()` | 7 |
-| 4990 | `_factionOf()` | 1 |
-| 4991 | `_voiceKey()` | 2 |
-| 4993 | `_teamName()` | 1 |
-| 4994 | `_teamTag()` | 6 |
-| 5000 | `_plaqueta()` | 13 |
-| 5013 | `_mirror()` | 2 |
-| 5015 | `_defNoLado()` | 3 |
-| 5018 | `_botSeparation()` | 61 |
-| 5079 | `_initCTF()` | 86 |
-| 5165 | `_updateCTF()` | 61 |
-| 5226 | `_ctfWin()` | 24 |
-| 5250 | `_freeYaw()` | 25 |
-| 5275 | `_pullString()` | 23 |
-| 5298 | `_walkReach()` | 32 |
-| 5330 | `_wpComp()` | 16 |
-| 5346 | `_findPathLocal()` | 22 |
-| 5368 | `_botCtf()` | 137 |
-| 5505 | `_hideCtfHud()` | 6 |
-| 5511 | `_updateCtfHud()` | 76 |
-| 5587 | `_collide()` | 23 |
-| 5610 | `_collideRot()` | 22 |
-| 5632 | `_mantleAlcance()` | 50 |
-| 5682 | `_mantleAlcancavel()` | 12 |
-| 5694 | `_mantleTarget()` | 35 |
-| 5729 | `_freeSpot()` | 30 |
-| 5759 | `_retaAndavel()` | 20 |
-| 5779 | `_walkDepth()` | 16 |
-| 5795 | `_noteHit()` | 17 |
-| 5812 | `_deathFeedback()` | 45 |
-| 5857 | `_toggleCamView()` | 6 |
-| 5863 | `setCamView()` | 16 |
-| 5879 | `_syncCamViewVis()` | 8 |
-| 5887 | `_ensurePlayerTP()` | 26 |
-| 5913 | `_updatePlayerTP()` | 42 |
-| 5955 | `_updateCrosshairParallax()` | 47 |
-| 6002 | `_tpDeath()` | 18 |
-| 6020 | `_tpRevive()` | 13 |
-| 6033 | `_moveEntity()` | 101 |
-| 6134 | `_updatePlayer()` | 308 |
-| 6442 | `_footstepSurface()` | 13 |
-| 6455 | `_updatePickups()` | 158 |
-| 6613 | `_wpnMode()` | 7 |
-| 6620 | `_botWeapon()` | 10 |
-| 6630 | `_municaoInfinita()` | 1 |
-| 6631 | `_pickupAllowed()` | 9 |
-| 6640 | `_grabNearPickup()` | 10 |
-| 6650 | `_grabPickup()` | 35 |
-| 6685 | `_assentarNoChao()` | 10 |
-| 6695 | `refreshPickupModels()` | 24 |
-| 6719 | `_dropWeapon()` | 20 |
-| 6739 | `_sumirDrop()` | 36 |
-| 6775 | `_spawnY()` | 3 |
-| 6778 | `_spawnYaw()` | 5 |
-| 6783 | `_pickSpawn()` | 23 |
-| 6806 | `_respawnPlayer()` | 34 |
-| 6840 | `_losClear()` | 18 |
-| 6858 | `_botCall()` | 41 |
-| 6899 | `_teamMarkTex()` | 23 |
-| 6922 | `_makeTeamMark()` | 16 |
-| 6938 | `_trocarPersonagem()` | 19 |
-| 6957 | `_syncRemoteWeapon()` | 23 |
-| 6980 | `_updateTeamMark()` | 7 |
-| 7049 | `_posturaBot()` | 4 |
-| 6987 | `_botEye()` | 1 |
-| 6988 | `_enemyOf()` | 8 |
-| 6996 | `_duelToken()` | 22 |
-| 7018 | `_respawnEntity()` | 22 |
-| 7040 | `_botOuve()` | 12 |
-| 7052 | `_updateBot()` | 858 |
-| 7910 | `_flushTraining()` | 13 |
-| 7923 | `_updateBotNN()` | 73 |
-| 7996 | `_botShootNN()` | 46 |
-| 8042 | `_radarFoot()` | 38 |
-| 8080 | `_updateRadar()` | 65 |
-| 8145 | `_banner()` | 26 |
-| 8171 | `_resultadoDaRodada()` | 4 |
-| 8175 | `_showScoreboard()` | 49 |
-| 8224 | `_updateWeaponHud()` | 35 |
-| 8259 | `_updateHud()` | 88 |
-| 8347 | `update()` | 90 |
-| 8437 | `dispose()` | 52 |
+| 91 | `ROUNDS_MAX` | 27 |
+| 119 | `CTF_ROUNDS_TO_WIN` | 4 |
+| 124 | `sanitizeRounds` | 4 |
+| 129 | `CTF_CLOCK_SHOW` | 4 |
+| 133 | `KILLS_PER_PLAYER` | 7 |
+| 140 | `PACE` | 33 |
+| 173 | `PAUSE_ARM_MS` | 3 |
+| 176 | `CHAT_PAUSA_GUARDA_MS` | 9 |
+| 186 | `confirmGate` | 7 |
+| 197 | `BOT_AIM_PITCH` | 4 |
+| 201 | `BOT_DMG_PLAYER` | 21 |
+| 222 | `BOT_FAIR` | 5 |
+| 227 | `BOT_MOVE2` | 15 |
+| 251 | `BOT_FOCUS_MIN` | 3 |
+| 258 | `BOT_OUVE_PASSO` | 22 |
+| 284 | `BOT_TOKEN_REST` | 7 |
+| 292 | `MOVE_MUL` | 6 |
+| 299 | `MOVE2` | 4 |
+| 303 | `STEP_H` | 3 |
+| 310 | `MANTLE_APOIO` | 4 |
+| 314 | `MANTLE_GRID` | 5 |
+| 319 | `RACK_OLD` | 4 |
+| 323 | `RACK_RETA` | 25 |
+| 350 | `RADIO` | 5 |
+| 356 | `MK_LABELS` | 5 |
+| 361 | `GUNFEEL` | 4 |
+| 368 | `TRACER_STYLE` | 6 |
+| 378 | `ADS_RAMPA_S` | 3 |
+| 382 | `aberturaCone` | 16 |
+| 398 | `anguloDeDisparo` | 4 |
+| 402 | `coneDoDisparo` | 16 |
+| 419 | `D2R` | 4 |
+| 423 | `DMG_FALLOFF` | 5 |
+| 428 | `HS_MUL` | 3 |
+| 431 | `BALL_CLASS` | 5 |
+| 436 | `STATIC_CLASS` | 75 |
+| 512 | `VM_KNOB` | 19 |
+| 531 | `vmAdsRot` | 4 |
+| 536 | `vmFovForAspect` | 24 |
+| 560 | `VM_OFF` | 22 |
+| 582 | `vmOffY` | 35 |
+| 617 | `VMP` | 6 |
+| 623 | `BOT_SKILLS` | 11 |
+| 635 | `diffKey` | 4 |
+| 640 | `rollBotSkill` | 7 |
+| 647 | `botTier` | 4 |
+| 651 | `_cyclePool` | 5 |
+| 656 | `_rosterPool` | 22 |
+| 680 | `_pinnedDefs` | 5 |
+| 685 | `pickMatchRoster` | 21 |
+| 706 | `BOT_WEAPON_POOL` | 5 |
+| 711 | `pickMatchWeapons` | 9 |
+| 723 | `constructor()` | 639 |
+| 1362 | `_dom()` | 46 |
+| 1408 | `_buildEnv()` | 57 |
+| 1465 | `_buildViewModels()` | 271 |
+| 1736 | `_vmFrame` | 141 |
+| 1877 | `_vmMontarTardio` | 14 |
+| 1891 | `_makePuffTexture()` | 10 |
+| 1901 | `_makeBloodTex()` | 19 |
+| 1920 | `_makeBloodPoolTex()` | 21 |
+| 1941 | `_bloodDecal()` | 16 |
+| 1957 | `_makeBloodFx()` | 20 |
+| 1977 | `_bloodSpatter()` | 18 |
+| 1995 | `_bloodPoolAt()` | 6 |
+| 2001 | `_updateBlood()` | 14 |
+| 2015 | `_makeFlashTex()` | 21 |
+| 2036 | `_makeFlashSoftTex()` | 8 |
+| 2044 | `_makeFlashCoreTex()` | 10 |
+| 2054 | `_input()` | 6 |
+| 2060 | `_kd` | 49 |
+| 2109 | `_ku` | 5 |
+| 2114 | `_md` | 40 |
+| 2154 | `_mu` | 7 |
+| 2161 | `_mm` | 20 |
+| 2181 | `_wh` | 17 |
+| 2198 | `_cc` | 1 |
+| 2199 | `_blur` | 1 |
+| 2200 | `_plc` | 19 |
+| 2219 | `_touchControls()` | 135 |
+| 2354 | `_aimAssist()` | 28 |
+| 2382 | `_requestLock()` | 27 |
+| 2409 | `_travaAtalhos()` | 4 |
+| 2413 | `_soltaAtalhos()` | 5 |
+| 2418 | `espectando()` | 2 |
+| 2420 | `_acceptInput()` | 7 |
+| 2427 | `travarEntrada()` | 17 |
+| 2444 | `_chatSeguraPausa()` | 5 |
+| 2449 | `_pauseBackdrop()` | 7 |
+| 2456 | `_radioShow()` | 6 |
+| 2462 | `_radioUi()` | 8 |
+| 2470 | `_radioPick()` | 20 |
+| 2490 | `_abilityNotice()` | 10 |
+| 2500 | `_resetSliceAbilities()` | 9 |
+| 2509 | `_stackTrace()` | 28 |
+| 2537 | `_updateMotocaCharge()` | 10 |
+| 2547 | `_recordRoutePoint()` | 11 |
+| 2558 | `_routePing()` | 23 |
+| 2581 | `_tickRoutePings()` | 12 |
+| 2593 | `_objectiveInteractionMultiplier()` | 14 |
+| 2607 | `start()` | 5 |
+| 2612 | `_startAnnouncerLab()` | 9 |
+| 2621 | `_startRound()` | 42 |
+| 2663 | `_resetPositions()` | 266 |
+| 2929 | `_checkCtfAlvo()` | 13 |
+| 2942 | `_checkPace()` | 13 |
+| 2955 | `_endRound()` | 34 |
+| 2989 | `_roundWinnerVoice()` | 12 |
+| 3001 | `_fimDaPartida()` | 7 |
+| 3008 | `_endMatch()` | 61 |
+| 3069 | `_ensureDolly()` | 41 |
+| 3110 | `_tickDolly()` | 23 |
+| 3133 | `setPaused()` | 23 |
+| 3156 | `_now()` | 3 |
+| 3159 | `pauseArmed()` | 1 |
+| 3160 | `_syncPauseArm()` | 7 |
+| 3167 | `resume()` | 4 |
+| 3171 | `applySettings()` | 10 |
+| 3181 | `_applyQuality()` | 14 |
+| 3195 | `onResize()` | 17 |
+| 3212 | `_switchTeam()` | 66 |
+| 3278 | `_applyVmVisibility()` | 34 |
+| 3312 | `_ensureVmPrecisionQa()` | 79 |
+| 3391 | `_syncVmPresentation()` | 19 |
+| 3410 | `_vmlabEnsure()` | 14 |
+| 3424 | `_vmlabFrame()` | 28 |
+| 3452 | `_tuneGet()` | 15 |
+| 3467 | `_tune()` | 23 |
+| 3490 | `_fxSet()` | 2 |
+| 3492 | `_qaCicloArma()` | 8 |
+| 3500 | `_cycleWeapon()` | 8 |
+| 3508 | `_switchWeapon()` | 38 |
+| 3546 | `_deploySfx()` | 7 |
+| 3553 | `_scope()` | 17 |
+| 3570 | `_zoomFov()` | 5 |
+| 3575 | `_reloading()` | 1 |
+| 3576 | `_startReload()` | 25 |
+| 3601 | `_reloadLayers()` | 18 |
+| 3619 | `_installRecoil()` | 33 |
+| 3652 | `_shotRecoil()` | 13 |
+| 3665 | `_tryShoot()` | 85 |
+| 3750 | `_tryKnifeAttack()` | 14 |
+| 3764 | `_meleeHit()` | 16 |
+| 3780 | `_meleeRange()` | 5 |
+| 3785 | `_botMelee()` | 26 |
+| 3811 | `_distanceDamage()` | 7 |
+| 3818 | `_shotDamage()` | 10 |
+| 3828 | `_consultarTiro()` | 13 |
+| 3841 | `_origemTiroBot()` | 4 |
+| 3845 | `_miraTiroBot()` | 5 |
+| 3850 | `_participanteHumano()` | 4 |
+| 3854 | `_resolverTiroBot()` | 11 |
+| 3865 | `_danoTiroBot()` | 12 |
+| 3877 | `_aplicarTiroBot()` | 12 |
+| 3889 | `_dispararBot()` | 29 |
+| 3918 | `_rastroTiroBot()` | 6 |
+| 3924 | `_fireHitscan()` | 46 |
+| 3970 | `_targetFromHit()` | 9 |
+| 3979 | `_penetrationExit()` | 8 |
+| 3987 | `_surfaceOf()` | 27 |
+| 4014 | `_armoredTarget()` | 3 |
+| 4017 | `_fleshImpact()` | 38 |
+| 4055 | `_fxVoice()` | 9 |
+| 4064 | `_impactSfx()` | 17 |
+| 4081 | `_tintFx()` | 16 |
+| 4097 | `_damage()` | 42 |
+| 4139 | `_playerHurtFx()` | 5 |
+| 4144 | `_kill()` | 54 |
+| 4198 | `_checkArenaWin()` | 30 |
+| 4228 | `_dmgArc()` | 79 |
+| 4307 | `_mkBanner()` | 9 |
+| 4316 | `_updateKillSequenceHud()` | 12 |
+| 4328 | `_resetKillSequence()` | 7 |
+| 4335 | `_fragRestockStep()` | 7 |
+| 4342 | `_playerKillFeedback()` | 18 |
+| 4360 | `_acertoPrevisto()` | 5 |
+| 4365 | `_hitmarker()` | 15 |
+| 4380 | `_dmgNumber()` | 20 |
+| 4400 | `_feed()` | 19 |
+| 4419 | `_skullIcon()` | 6 |
+| 4425 | `_killfeedWeaponIcon()` | 9 |
+| 4434 | `_wpnIcon()` | 64 |
+| 4498 | `_tracer()` | 26 |
+| 4524 | `_puff()` | 39 |
+| 4563 | `_holeDecalMat()` | 8 |
+| 4571 | `_flash()` | 61 |
+| 4632 | `_vmTetoTela()` | 10 |
+| 4642 | `_muzzleWorld()` | 30 |
+| 4672 | `_aimOrigin()` | 5 |
+| 4677 | `_updateDoors()` | 10 |
+| 4687 | `_updateFx()` | 57 |
+| 4744 | `_ejectCasing()` | 17 |
+| 4761 | `_makeCtfFlagTex()` | 23 |
+| 4784 | `_paintFlagSymbol()` | 9 |
+| 4793 | `_flagTexFor()` | 25 |
+| 4818 | `_legadoSimbolo()` | 8 |
+| 4826 | `_loadCtfSymbols()` | 22 |
+| 4848 | `_makeCtfZoneTex()` | 31 |
+| 4879 | `_makeSmokeTex()` | 10 |
+| 4889 | `_updateSmokeHud()` | 4 |
+| 4893 | `_grenadeSpatial()` | 14 |
+| 4907 | `_spawnGrenade()` | 19 |
+| 4926 | `_throwNade()` | 13 |
+| 4939 | `_throwSmoke()` | 1 |
+| 4940 | `_throwFrag()` | 4 |
+| 4944 | `_explodeFrag()` | 40 |
+| 4984 | `_corDaFumaca()` | 16 |
+| 5000 | `_popSmoke()` | 23 |
+| 5023 | `_updateGrenades()` | 35 |
+| 5058 | `_teamColor()` | 12 |
+| 5070 | `_teamInk()` | 7 |
+| 5077 | `_factionOf()` | 1 |
+| 5078 | `_voiceKey()` | 2 |
+| 5080 | `_teamName()` | 1 |
+| 5081 | `_teamTag()` | 6 |
+| 5087 | `_plaqueta()` | 13 |
+| 5100 | `_mirror()` | 2 |
+| 5102 | `_defNoLado()` | 3 |
+| 5105 | `_botSeparation()` | 61 |
+| 5166 | `_initCTF()` | 86 |
+| 5252 | `_updateCTF()` | 61 |
+| 5313 | `_ctfWin()` | 24 |
+| 5337 | `_freeYaw()` | 25 |
+| 5362 | `_pullString()` | 23 |
+| 5385 | `_walkReach()` | 32 |
+| 5417 | `_wpComp()` | 16 |
+| 5433 | `_findPathLocal()` | 22 |
+| 5455 | `_botCtf()` | 137 |
+| 5592 | `_hideCtfHud()` | 6 |
+| 5598 | `_updateCtfHud()` | 76 |
+| 5674 | `_collide()` | 23 |
+| 5697 | `_collideRot()` | 22 |
+| 5719 | `_mantleAlcance()` | 50 |
+| 5769 | `_mantleAlcancavel()` | 12 |
+| 5781 | `_mantleTarget()` | 35 |
+| 5816 | `_freeSpot()` | 30 |
+| 5846 | `_retaAndavel()` | 20 |
+| 5866 | `_walkDepth()` | 16 |
+| 5882 | `_noteHit()` | 17 |
+| 5899 | `_deathFeedback()` | 45 |
+| 5944 | `_toggleCamView()` | 6 |
+| 5950 | `setCamView()` | 16 |
+| 5966 | `_syncCamViewVis()` | 8 |
+| 5974 | `_ensurePlayerTP()` | 26 |
+| 6000 | `_updatePlayerTP()` | 75 |
+| 6075 | `_updateCrosshairParallax()` | 47 |
+| 6122 | `_tpDeath()` | 18 |
+| 6140 | `_tpRevive()` | 13 |
+| 6153 | `_moveEntity()` | 101 |
+| 6254 | `_updatePlayer()` | 308 |
+| 6562 | `_footstepSurface()` | 13 |
+| 6575 | `_updatePickups()` | 158 |
+| 6733 | `_wpnMode()` | 7 |
+| 6740 | `_botWeapon()` | 10 |
+| 6750 | `_municaoInfinita()` | 1 |
+| 6751 | `_pickupAllowed()` | 9 |
+| 6760 | `_grabNearPickup()` | 10 |
+| 6770 | `_grabPickup()` | 35 |
+| 6805 | `_assentarNoChao()` | 10 |
+| 6815 | `refreshPickupModels()` | 24 |
+| 6839 | `_dropWeapon()` | 20 |
+| 6859 | `_sumirDrop()` | 36 |
+| 6895 | `_spawnY()` | 3 |
+| 6898 | `_spawnYaw()` | 5 |
+| 6903 | `_pickSpawn()` | 23 |
+| 6926 | `_respawnPlayer()` | 34 |
+| 6960 | `_losClear()` | 18 |
+| 6978 | `_botCall()` | 41 |
+| 7019 | `_teamMarkTex()` | 23 |
+| 7042 | `_makeTeamMark()` | 16 |
+| 7058 | `_trocarPersonagem()` | 19 |
+| 7077 | `_syncRemoteWeapon()` | 23 |
+| 7100 | `_updateTeamMark()` | 7 |
+| 7107 | `_posturaBot()` | 4 |
+| 7111 | `_botEye()` | 1 |
+| 7112 | `_enemyOf()` | 8 |
+| 7120 | `_duelToken()` | 22 |
+| 7142 | `_respawnEntity()` | 23 |
+| 7165 | `_botOuve()` | 12 |
+| 7177 | `_updateBot()` | 837 |
+| 8014 | `_flushTraining()` | 13 |
+| 8027 | `_updateBotNN()` | 73 |
+| 8100 | `_botShootNN()` | 31 |
+| 8131 | `_radarFoot()` | 38 |
+| 8169 | `_updateRadar()` | 65 |
+| 8234 | `_banner()` | 26 |
+| 8260 | `_resultadoDaRodada()` | 4 |
+| 8264 | `_showScoreboard()` | 49 |
+| 8313 | `_updateWeaponHud()` | 35 |
+| 8348 | `_updateHud()` | 88 |
+| 8436 | `update()` | 90 |
+| 8526 | `dispose()` | 52 |
 
 </details>
 

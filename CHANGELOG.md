@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.101`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.102`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,53 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.102] — 2026-10-17
+
+### Mudado
+- Regenera blocos gerados após a main da UI v3 (#964)
+- Lote: peso (lixo/mobile/mapas/meshopt) + cadeia visual 3P (#1002)
+- Fiação do carregaMapa: boot, partida, menu e páginas de mapa
+- Réguas acompanham mapas sob demanda e a golden meshopt
+- Matriz do arsenal regenerada no lote visual+peso
+- Lote visual+peso: pontas soltas do merge
+- fix: reject unaligned mesh vertex strides
+- feat: add offline mesh part partition tool
+- Document measured jump validation and release limits
+- Corrija retorno após interromper salto do corpo
+- Documente validação e sincronização do tiro local
+- fix: acionar tiro local e retomar pose parada em 3p
+- docs: registrar validação local da biblioteca de roupas
+- docs: show synthetic garment attach and dispose preview
+- fix: execute garment generator through directory aliases
+- feat: add synthetic garment attachment library
+- Registre os gates próprios da camada de recuo
+- fix: encaminha recuo local ao controlador de terceira pessoa
+- docs: fecha validacao e reconcilia base da stack de ownership
+- docs: registra gate completo da camada de ownership
+- docs: distingue ferramentas dos experimentos de animacao
+- docs: registra compatibilidade do elenco na segunda camada
+- fix: preserva selecao das maos ao adicionar articulacoes
+- docs: atualiza gate de personagens no guia em ingles
+- docs: registra gate completo e falhas herdadas da fábrica
+- docs: registra validação da fábrica e próxima autoria de mão
+- test: Integra a fábrica draft nos gates obrigatórios
+- feat: Inspeciona bind e pesos reais dos GLBs
+- feat: Separa perfis draft de empunhadura por rig
+- feat: Valida pacotes draft de personagens
+- A/B lê o original de origin/main, não de HEAD
+- Corrige mutante do perfil e comentário do clamp
+- Mutante do teto de GLB deixa de citar a si mesmo
+- Regenera as contagens da documentação
+- Converte os 15 viewmodels golden para meshopt
+- Liga Meshopt nos viewmodels golden
+- Regenera as contagens da documentação
+- Carrega módulos de mapa sob demanda
+- Regenera as contagens da documentação
+- Adiciona perfil mobile com teto de textura
+- Regenera as contagens da documentação
+- Tira GLBs PBR crus da Mint de public
+- Adiciona régua de GLB grande sem referência
 
 ## [2.1.0-alpha.101] — 2026-10-17
 
