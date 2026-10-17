@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.100`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.101`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -80,6 +80,132 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.101] — 2026-10-17
+
+### Mudado
+- Canal de fontes da faca: release privada vm-fontes-faca (#999)
+- Treta Pop: a UI v3 completa (9 frentes) atrás de ?ui=v3 (#964)
+- Regenera blocos gerados após a main da UI v3 (#964)
+- Lote: balística do arsenal + relato de gameplay de out/2026 (#1000)
+- Release tolera arquivo da lista que saiu do repo (#1003)
+- Release tolera arquivo da lista que saiu do repo
+- Kit coerente: tokens no ping e escopo v3 nos guards de tela
+- i18n sem chaves duplicadas (UIR5)
+- Regenera blocos gerados da integração Treta Pop
+- Integração Treta Pop: nove frentes + fiação e réguas fechadas
+- Servidores: régua ganha 16 mutantes novos (SV2b..AJ10)
+- Perfil/carreira: Medalhas, arena favorita e string não-compartilhado
+- Resultado: centra nome na caixa opaca da arte e aperta régua
+- Matriz do arsenal acompanha a cadência de semi
+- Regenera blocos do lote balística+feedback
+- Auto-fire único na união do lote
+- Round 1 anuncia melhor de N e primeiro a X
+- Régua: banner do round 1 declara o formato
+- Frag volta a cada 3 abates na rodada (teto 1)
+- Régua: granada de volta por sequência de abates
+- Semi no piso do gênero: PT-38 0,17 s e Deagle 0,24 s
+- Régua: cadência de pistola com faixa e ordem de TTK
+- Câmera de 3ª pessoa para antes do prop e do varal
+- Régua: o boom da câmera não entra em prop
+- Round novo nasce com o loadout cheio
+- Régua: munição entre rounds reprova na main
+- Atualiza os blocos gerados e os ponteiros da matriz
+- Registra as evidências do QA autorado
+- Alinha o agachamento dos bots e registra o QA do arsenal
+- Mede o BOT4 pelo dano efetivo desde HP cheio
+- Recalcula a rota quando o destino se torna inalcançável
+- Mantém as fichas compatíveis com navegadores antigos
+- Regenera as contagens da documentação
+- Aperta a régua do convite do lobby
+- Avisa quando o convite não encontra servidor
+- Regenera as contagens da documentação
+- Aperta a régua da loja: ícone por quest e sublinhado com dono certo
+- Põe ícone por quest na loja Treta Pop
+- Regenera as contagens da documentação
+- Aperta a régua da resenha e do convite
+- Monta a resenha e o convite Treta Pop atrás de ?ui=v3
+- Traduz a resenha e o convite Treta Pop
+- Desenha a resenha e o convite Treta Pop
+- Regenera as contagens da documentação
+- Monta o HUD Treta Pop atrás de ?ui=v3
+- Desenha o HUD Treta Pop
+- Traduz o HUD Treta Pop
+- Abre três ganchos cirúrgicos no radar e no placar
+- Mede o HUD Treta Pop no Chrome
+- Regenera as contagens da documentação
+- Aperta a régua do carregamento VS
+- Monta o carregamento VS da Treta Pop atrás de ?ui=v3
+- Desenha o carregamento VS da Treta Pop
+- Traduz o carregamento VS da Treta Pop
+- Expõe o elenco sorteado para a Treta Pop
+- Regenera as contagens da documentação
+- Aperta a régua do lobby Treta Pop
+- Monta o lobby Treta Pop atrás de ?ui=v3
+- Desenha o lobby Treta Pop
+- Aponta dois mutantes do resultado para a cláusula certa
+- Aperta a régua de Modo e mapa
+- Mantém o campo de código inteiro em 1280 px
+- Registra o diagnóstico visual da geometria balística
+- Posiciona o alvo da UPA pela entrada do torso
+- Monta o fim de partida Treta Pop atrás de ?ui=v3
+- Tira o ＋ da escalação de cima do nome
+- Monta a tela Modo e mapa da Treta Pop
+- Desenha a tela Modo e mapa da Treta Pop
+- Traduz a tela Modo e mapa da Treta Pop
+- Expõe o estado da partida para a Treta Pop
+- Repete a busca do mutante quando o servidor cai
+- Traduz as strings do lobby Treta Pop
+- Posiciona as fixtures pela entrada física e preserva o ouvinte
+- Monta loja e armário Treta Pop atrás de ?ui=v3
+- Traduz a loja e o armário Treta Pop
+- Não abre a carteira T$ sozinha na Treta Pop
+- Expõe o recorte da loja para a Treta Pop
+- Conta sublinhado por sombra na régua da loja
+- Ajusta a régua do resultado à leitura do placar
+- Atualiza as referências da matriz na consulta compartilhada
+- Traduz perfil e carreira Treta Pop
+- Expõe os dados do perfil à Treta Pop
+- Mede perfil e carreira Treta Pop no Chrome
+- Completa a procedência histórica das famílias AW e G3
+- Sincroniza as referências da matriz após integrar a cadência
+- Resolve os pellets dos bots sem multiplicar o piso de dano
+- Atualiza os portões documentados da geometria
+- Compartilha a entrada física dos tiros entre os combatentes
+- Mede a tela Modo e mapa da Treta Pop no Chrome
+- Adiciona a régua do lobby Treta Pop
+- Gera QR code do convite sem dependência
+- Mede no Chrome a resenha e o convite da Treta Pop
+- Soma Mira, Acessibilidade e Privacidade aos ajustes
+- Monta a tela de servidores Treta Pop
+- Grava ajustes da v3 nas settings do jogo
+- Publica nós e salas do multiplayer para a v3
+- Mede servidores e ajustes da Treta Pop no Chrome
+- Mede o carregamento VS da Treta Pop no Chrome
+- Aplica o erro de mira do bot neural ao raio e ao rastro
+- Mede a loja e o armário Treta Pop no Chrome
+- Mede o fim de partida Treta Pop no Chrome
+- Restringe a travessia a caixas completas com espessura verificada
+- Separa referências físicas das escolhas de gameplay das armas
+- Escreve o contrato de backend da Treta Pop
+- Regenera as contagens da documentação
+- Reserva uma faixa por tela no dicionário
+- Estende a régua da Treta Pop às folhas por tela
+- Carrega folhas e módulos por tela da Treta Pop
+- Preserva o calendário dos tiros durante a rajada
+- Restaura os perfis de recuo que caíam no padrão
+- Corrige a queda de dano entre os extremos da curva
+- Regenera as contagens da documentação
+- Monta o splash Treta Pop atrás de ?ui=v3
+- Avisa quando a música do menu fica tocável
+- Traduz o ARENA PRONTA do splash
+- Adiciona a régua do splash Treta Pop
+- Regenera as contagens da documentação
+- Adiciona a bancada do kit Treta Pop fora do deploy
+- Liga a Treta Pop com ?ui=v3 antes do primeiro paint
+- Adiciona tokens e componentes da Treta Pop
+- Adiciona as fontes da Treta Pop
+- Adiciona a régua da camada Treta Pop
 
 ## [2.1.0-alpha.100] — 2026-10-14
 

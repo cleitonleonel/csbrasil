@@ -250,7 +250,7 @@ The registry, generated from the `MAPS` of `public/js/maps.js`:
 
 | Id | Menu name | Opens in | File in `public/js/` | Lines |
 |---|---|---|---|---:|
-| `campomorro` | Campinho do Morro | **capture** | `map_campomorro.js` | 816 |
+| `campomorro` | Campinho do Morro | **capture** | `map_campomorro.js` | 825 |
 | `mansao` | Mansão do Joá | **capture** | `map_mansao.js` | 1,398 |
 | `amazonia` | Treta na Amazônia | **capture** | `map_amazonia.js` | 1,271 |
 | `escadao` | Escadão (Morro) | **capture** | `map_escadao.js` | 1,411 |

@@ -249,7 +249,7 @@ O registro, gerado do `MAPS` de `public/js/maps.js`:
 
 | Id | Nome no menu | Abre em | Arquivo em `public/js/` | Linhas |
 |---|---|---|---|---:|
-| `campomorro` | Campinho do Morro | **captura** | `map_campomorro.js` | 816 |
+| `campomorro` | Campinho do Morro | **captura** | `map_campomorro.js` | 825 |
 | `mansao` | Mansão do Joá | **captura** | `map_mansao.js` | 1.398 |
 | `amazonia` | Treta na Amazônia | **captura** | `map_amazonia.js` | 1.271 |
 | `escadao` | Escadão (Morro) | **captura** | `map_escadao.js` | 1.411 |
