@@ -12,6 +12,7 @@ export function makeNetcode(game, net) { return new Netcode(game, net); }
 /* Insere a amostra NA ORDEM do tempo do servidor. Com WebSocket o snapshot nunca chega fora
    de ordem; com datagrama, chega — e empurrar no fim faria o boneco andar para trás. */
 const RELOGIO_NOVO_MS = 1000;
+const PLAYER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function inserirAmostra(ent, t, e, semOrdem = false) {
   const at = ent._bufAt, n = at.length;
   let i = n;
@@ -325,6 +326,7 @@ class Netcode {
       const row = (net.meta.roster || []).find(r=>r.id===e.id);
       bot.team = e.team;                      // o lado do corpo passa a ser o do servidor
       bot.name = e.bot ? `[BOT] ${e.name}` : e.name; bot._nomeServidor = e.name;
+      bot._playerId = !e.bot && PLAYER_ID.test(row?.pid || '') ? row.pid : '';
       bot.pos.set(e.x, e.y, e.z); bot.yaw = e.yaw;
       this._netMap.set(e.id, bot);
       if (row) this._onPersonagem({...row,ent:e.id},false);

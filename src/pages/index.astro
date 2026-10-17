@@ -14,6 +14,8 @@ import { SITE, abs, DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPO
    (astro.config.mjs): esta página também renderiza no SSR de /u/<perfil>, sem `public/`. */
 declare const __CSS_REV__: { style: string; social: string; treta: string };
 const { social: SOCIAL_CSS_REV, treta: TRETA_CSS_REV, style: CSS_REV } = __CSS_REV__;
+declare const __TP_CSS__: { arquivos: string[]; rev: string };
+const TP_CSS = __TP_CSS__;
 
 /* ESTÁTICA de propósito: o Stateloop não publica SSR e `prerender = false` aqui
    fazia o build não emitir dist/client/index.html. Idioma por país: /api/geo-lang. */
@@ -54,6 +56,26 @@ const IMPORTMAP = JSON.stringify({
 <head>
 {import.meta.env.DEV && import.meta.env.SOCIAL_LOCAL_GAME_URL && <meta name="cs-local-game" content={import.meta.env.SOCIAL_LOCAL_GAME_URL} />}
 <meta charset="UTF-8">
+<script is:inline>
+/* ?ui=v3 liga a Treta Pop antes do primeiro paint; ?ui=legacy continua no main.js. */
+(function () {
+  try {
+    if (new URLSearchParams(location.search).get('ui') !== 'v3') return;
+    document.documentElement.dataset.ui = 'v3';
+    ['anton-latin-400-normal', 'barlow-semi-condensed-latin-700-normal', 'barlow-semi-condensed-latin-800-normal'].forEach(function (f) {
+      var l = document.createElement('link');
+      l.rel = 'preload'; l.as = 'font'; l.type = 'font/woff2'; l.crossOrigin = 'anonymous';
+      l.href = '/fonts/' + f + '.woff2';
+      document.head.appendChild(l);
+    });
+    var n = 1 + Math.floor(Math.random() * 6);
+    document.documentElement.dataset.splashArte = String(n);
+    var img = document.createElement('link');
+    img.rel = 'preload'; img.as = 'image'; img.href = '/img/loading-' + n + '.webp';
+    document.head.appendChild(img);
+  } catch (e) { /* URL inválida: segue na UI atual */ }
+})();
+</script>
 <script src={`/js/privacy-runtime.js?v=${JS_REV}`} is:inline></script>
 <link rel="stylesheet" href={`/social.css?v=${SOCIAL_CSS_REV}`} />
 <link rel="stylesheet" href={`/treta.css?v=${TRETA_CSS_REV}`} />
@@ -442,7 +464,7 @@ window.__GEO_LANG__ = (function () {
   window.addEventListener('pointerdown', function(e){
     try{
       var alvo = e.target && e.target.closest ? e.target.closest('#boot-splash,#btn-jogar') : null;
-      if (!alvo) return;
+      if (!alvo || e.target.closest('[data-splash-fica]')) return;
       if (alvo.id === 'btn-jogar' && document.documentElement.dataset.homeUi === 'hub') return;
       if (alvo.id === 'boot-splash') {
         var prompt = document.getElementById('splash-enter');
@@ -672,6 +694,14 @@ window.__GEO_LANG__ = (function () {
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href={`/map-preview.css?v=${V}-${JS_REV}`}>
 <link rel="stylesheet" href={`/style.css?v=${V}-${CSS_REV}`}>
+<script is:inline define:vars={{ TP_CSS }}>
+/* Folhas por tela da Treta Pop: depois do style.css na cascata, e só com a flag. */
+if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(function (f) {
+  var l = document.createElement('link');
+  l.rel = 'stylesheet'; l.href = '/css/tp/' + f + '?v=' + TP_CSS.rev; l.setAttribute('blocking', 'render');
+  document.head.appendChild(l);
+});
+</script>
 <!-- Todo módulo local precisa passar pelo import map versionado. -->
 <script type="importmap" is:inline set:html={IMPORTMAP}></script>
 <link rel="stylesheet" href={`/map-preview.css?v=${V}-${JS_REV}`} />
@@ -695,6 +725,23 @@ window.__GEO_LANG__ = (function () {
     <div id="splash-enter" class="hidden">CLIQUE OU PRESSIONE QUALQUER TECLA</div>
   </div>
   <div class="splash-ver" id="splash-ver"></div>
+  <div class="tp-splash">
+    <div class="tp-splash__centro">
+      <div class="tp-splash__progresso">
+        <div class="tp-splash__topo"><span class="tp-splash__status" id="tp-splash-status">CARREGANDO ARENA…</span><span class="tp-num" id="tp-splash-pct">0%</span></div>
+        <div class="tp-splash__barra"><i></i></div>
+        <ul class="tp-splash__etapas">
+          <li data-etapa="lobby"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"></path></svg><i class="tp-gira" aria-hidden="true"></i>LOBBY</li>
+          <li data-etapa="personagem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"></path></svg><i class="tp-gira" aria-hidden="true"></i>SEU PERSONAGEM<small>em segundo plano</small></li>
+          <li data-etapa="audio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"></path></svg><i class="tp-gira" aria-hidden="true"></i>ÁUDIO<small>em segundo plano</small></li>
+        </ul>
+      </div>
+      <button id="tp-splash-jogar" class="tp-btn tp-btn--primario" type="button" disabled><span class="tp-ital">JOGAR</span><kbd>ENTER</kbd></button>
+      <p class="tp-splash__convidado" id="tp-splash-convidado" data-vazio>Você entra como <b>convidado</b></p>
+    </div>
+    <div class="tp-splash__dica"><b>DICA</b><span>Andar com a arma no ombro (tecla F) é mais rápido do que andar mirando.</span></div>
+    <div class="tp-splash__canto"><button id="tp-splash-som" type="button" data-splash-fica data-vazio><span aria-hidden="true">♫ </span><b>MÚSICA LIGADA</b></button><span class="tp-num" id="tp-splash-ver" data-vazio>v0</span></div>
+  </div>
 </div>
 
 <!-- LOADING de partida/personagens: overlay opaco com barra real (THREE.LoadingManager)

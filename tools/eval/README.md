@@ -36,6 +36,8 @@ com código 1 em falha crítica.
 | `mapas-sob-demanda-check.mjs` | Mapas sob demanda (lane glm/peso): nenhum módulo de ARENA no grafo estático do boot (import() dinâmico não conta); contrato de `carregaMapa` (instala build, memoiza, resolve alias) e conferência registro×módulo que rejeita metadado divergente. Mutantes `estatico` e `registro`. Entra no check:fast junto com a fiação do main.js. | `npm run eval:mapasobdemanda` |
 | `meshopt-vm-check.mjs` | O GLB meshopt publicado é o que o manifest registra: sha256, container GLB (magic), EXT_meshopt requerida e CARGA com MeshoptDecoder; mutante `troca-byte`. Compra: o 1º conversor explodiu o viewmodel em .bin externo e nenhuma régua olhava o container. | `npm run eval:meshoptvm` |
 | `vm-meshopt-ab.mjs` | A/B visual de viewmodel por arma na página `public/vm-meshopt-eval.html` (pose de bind, câmera exportada do GLB). VIÉS CONHECIDO: sob SwiftShader a captura dá 25% de falso positivo (A/A mediu); use em GPU real ou confira com o jogo. | `node tools/eval/vm-meshopt-ab.mjs` |
+| `convida-amigos-check.mjs` | Modal de convite: seis plataformas, links de mensagem, cópia antes de abrir, Web Share exercitado, isolamento de `?ui=v3` e busca por e-mail degradável sem a migration 070; mutantes cobrem cada fronteira. | `npm run eval:convidaamigos` |
+| `placar-amigo-check.mjs` | +AMIGO no placar Treta Pop: UUID de gente limpa pid velho de bot, legado não ganha controle, pedido usa a sessão real e erros honestos; mutantes cobrem botão, pid, clique, kill-switch e validação. | `npm run eval:placaramigo` |
 | `../gen-arch.mjs` | (fora deste diretório) Gera e valida o `ARCH.md`. `--check` reprova se estiver desatualizado. | `npm run arch` |
 
 ## 2. Documentos — leitura, não execução

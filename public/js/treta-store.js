@@ -155,6 +155,14 @@ export function equippedTretaEyewear() {
   if(!TRETA_ITEMS_ENABLED)return null;
   return state?.inventory?.find(s=>s.equipped && item(s.skin_id)?.slot==='eyewear' && available(s.skin_id))?.skin_id || null;
 }
+/* Leitura da loja Treta Pop (tp/loja.js): preço e raridade só do servidor; sem eles, null e ''. */
+export function tretaLoja() {
+  const c=state?.campaign || TRETA_DEFAULT_REWARDS,q=state?.quests || {};
+  return {loading,failed:refreshFailed,authenticated:Boolean(state?.authenticated),saldo:state?.wallet?.balance ?? null,campanha:campaignActive(),
+    ganhoHoje:q.dailyMatchEarned || 0,tetoDiario:c.daily_match_cap,amigos:q.referral || 0,tetoAmigos:c.referral_cap,porAmigo:c.referral_reward,
+    itens:TRETA_SKINS.filter(s=>manifest.skins[s.id]?.approved===true).map(s=>({id:s.id,name:s.name,series:s.series,color:s.color,poster:portrait(s),
+      price:item(s.id)?.price ?? null,raridade:item(s.id)?.rarity || '',owned:Boolean(owned(s.id)),equipped:Boolean(equipped(s.id)),available:available(s.id)}))};
+}
 function openDialog(dialog) {
   if(dialog.open)return;
   const focus=document.activeElement;
@@ -314,6 +322,7 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   // Apresentação só depois da 1ª partida, quando o convite pós-partida (login-prompt.js) já decidiu.
   document.addEventListener('cs-pos-partida',event=>{
     if(event.detail?.treta){stored('cs_treta_intro','v1');return;}   // o convite já mostrou os T$
+    if(document.documentElement.dataset.ui==='v3'){stored('cs_treta_intro','v1');return;}   // Treta Pop: a carteira só abre por clique
     if(skipPrompt || stored('cs_treta_intro') || $('main-menu')?.classList.contains('hidden') || document.querySelector('dialog[open]'))return;
     explain();
   });

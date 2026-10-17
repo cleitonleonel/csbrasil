@@ -62,16 +62,15 @@ Tamanho dos arquivos que o `gen-arch.mjs` indexa — bloco gerado, regenerado po
 
 | Arquivo | Linhas |
 |---|---:|
-| `public/js/game.js` | 8.487 |
-| `public/js/main.js` | 4.863 |
+| `public/js/game.js` | 8.605 |
+| `public/js/main.js` | 4.899 |
 | `public/js/characters.js` | 1.142 |
-| `public/js/glbchars.js` | 892 |
-| `public/js/vmattach.js` | 632 |
+| `public/js/glbchars.js` | 924 |
+| `public/js/vmattach.js` | 352 |
 | `public/js/weapons.js` | 353 |
 | `public/js/springs.js` | 259 |
 
-Total de `public/js/`: **62.110 linhas em 147 arquivos**. O índice símbolo→linha, com a tabela de conflito, é outro bloco gerado: `tools/eval/ARCH.md` (`npm run arch`).
-Total de `public/js/`: **61.979 linhas em 146 arquivos**. O índice símbolo→linha, com a tabela de conflito, é outro bloco gerado: `tools/eval/ARCH.md` (`npm run arch`).
+Total de `public/js/`: **62.656 linhas em 151 arquivos**. O índice símbolo→linha, com a tabela de conflito, é outro bloco gerado: `tools/eval/ARCH.md` (`npm run arch`).
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: ``git ls-files public/js/*.js | xargs wc -l``
 
@@ -281,7 +280,10 @@ para além do fim do arquivo.
 
 {/* BEGIN:GERADO:ponteiros — não edite à mão, rode `npm run docs` */}
 
-Nenhum ponteiro `arquivo:linha` das docs aponta para fora do arquivo que ele cita. ✓
+⚠️ **Ponteiros que apontam para além do fim do arquivo** (a prosa envelheceu — corrija à mão):
+
+- `docs/docs/quality-gates.md` → `vmattach.js:387` (o arquivo tem 352 linhas)
+- `docs/docs/quality-gates.md` → `vmattach.js:395` (o arquivo tem 352 linhas)
 
 > Isto confere só o **limite** do arquivo: um ponteiro que ainda cabe mas mudou de assunto passa aqui. É a razão de a doutrina da casa ser declarar o SÍMBOLO e deixar a linha para o gerador — ver `tools/gen-arch.mjs`.
 
