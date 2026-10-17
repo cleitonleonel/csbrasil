@@ -54,8 +54,14 @@ function deformTemples(accessory,profile) {
   const position=new THREE.BufferAttribute(original.slice(),3);mesh.geometry.setAttribute('position',position);
   const box=new THREE.Box3();for(let i=0;i<original.length;i+=3)box.expandByPoint(new THREE.Vector3(original[i],original[i+1],original[i+2]));
   const hinge=hingeZ(original,box),array=position.array,templeScale=profile.templeScale??1,lift=profile.templeLift??0,half=(box.max.x-box.min.x)/2,center=(box.max.x+box.min.x)/2,denominator=hinge-box.min.z;
-  for(let i=0;i<array.length;i+=3)if(original[i+2]<hinge){const distance=hinge-original[i+2],fraction=distance/denominator,side=Math.sign(original[i]-center),spread=side>0?(profile.templeSpreadL??0):(profile.templeSpreadR??0);array[i+2]=hinge-distance*templeScale;array[i]=original[i]+side*spread*half*fraction;array[i+1]=original[i+1]+lift*(box.max.y-box.min.y)*fraction;}
+  for(let i=0;i<array.length;i+=3)if(original[i+2]<hinge){const distance=hinge-original[i+2],fraction=distance/denominator,side=Math.sign(original[i]-center),templeSideScale=side>0?(profile.templeScaleL??templeScale):(profile.templeScaleR??templeScale),spread=side>0?(profile.templeSpreadL??0):(profile.templeSpreadR??0);array[i+2]=hinge-distance*templeSideScale;array[i]=original[i]+side*spread*half*fraction;array[i+1]=original[i+1]+lift*(box.max.y-box.min.y)*fraction;}
   position.needsUpdate=true;mesh.geometry.computeBoundingBox();mesh.geometry.computeBoundingSphere();return {mesh,original,hinge};
+}
+function frontFitBox(accessory,deformation) {
+  const {mesh,original,hinge}=deformation,position=mesh.geometry.getAttribute('position'),box=new THREE.Box3(),point=new THREE.Vector3();
+  accessory.updateMatrixWorld(true);const relative=new THREE.Matrix4().copy(accessory.matrixWorld).invert().multiply(mesh.matrixWorld);
+  for(let i=0;i<position.count;i++)if(original[i*3+2]>=hinge)box.expandByPoint(point.fromBufferAttribute(position,i).applyMatrix4(relative));
+  return box;
 }
 function headBounds(body,index) {
   const position=body.geometry.getAttribute('position'),skinIndex=body.geometry.getAttribute('skinIndex'),skinWeight=body.geometry.getAttribute('skinWeight');if(!position || !skinIndex || !skinWeight)return null;
@@ -66,9 +72,10 @@ function headBounds(body,index) {
 export function mountEyewearCandidate(model,accessory,profile,landmark,itemId='candidate') {
   let body;model.traverse(object=>{if(!body&&object.isSkinnedMesh&&object.skeleton.bones.some(bone=>bone.name==='Head'))body=object;});if(!body)return null;
   const index=body.skeleton.bones.findIndex(bone=>bone.name==='Head'),head=body.skeleton.bones[index],bounds=headBounds(body,index);if(!bounds)return null;
-  const assetBox=new THREE.Box3().setFromObject(accessory),size=bounds.getSize(new THREE.Vector3()),assetSize=assetBox.getSize(new THREE.Vector3());if(assetSize.x<=0)return null;
-  const deformation=deformTemples(accessory,profile),scale=size.x*profile.width/assetSize.x,center=assetBox.getCenter(new THREE.Vector3()),lensY=assetBox.min.y+assetSize.y*profile.lensY;
-  accessory.scale.setScalar(scale);accessory.position.set(-center.x*scale,-lensY*scale,-assetBox.max.z*scale);
+  const size=bounds.getSize(new THREE.Vector3()),deformation=deformTemples(accessory,profile);if(!deformation)return null;
+  const assetBox=new THREE.Box3().setFromObject(accessory),fitBox=profile.frontFrameFit===true?frontFitBox(accessory,deformation):assetBox,fitSize=fitBox.getSize(new THREE.Vector3());if(fitSize.x<=0)return null;
+  const scale=size.x*profile.width/fitSize.x,heightScale=scale*(profile.frameHeightScale??1),center=fitBox.getCenter(new THREE.Vector3()),lensY=fitBox.min.y+fitSize.y*profile.lensY;
+  accessory.scale.set(scale,heightScale,scale);accessory.position.set(-center.x*scale,-lensY*heightScale,-assetBox.max.z*scale);
   accessory.traverse(object=>{if(object.isMesh){object.userData.noHit=true;object.raycast=()=>{};object.castShadow=false;object.receiveShadow=true;}});
   const normalizedEyeY=landmark?.eyewear?.eyeLineY,eyeY=Number.isFinite(normalizedEyeY)&&model.scale.y!==0?(normalizedEyeY-model.position.y)/model.scale.y:null;
   const anchor=new THREE.Group();anchor.name='TRETA-eyewear';anchor.userData={eyewearId:itemId,certified:profile.certified===true,fitSource:Number.isFinite(eyeY)?'landmarks':'bounds-fallback'};
