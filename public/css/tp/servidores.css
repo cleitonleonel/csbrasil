@@ -101,8 +101,10 @@
 .tp-srv__sit{font-size:15px;font-weight:700;min-width:0}
 .tp-srv__sit[data-tom="ganho"]{color:var(--tp-ganho)}
 .tp-srv__lot{font-size:16px;font-weight:800}
-.tp-srv__ping{font-size:14px;font-weight:800;color:#63F2A2}
-.tp-srv__ping[data-q="medio"],.tp-srv__ping[data-q="ruim"]{color:#FFCB70}
+.tp-srv__ping{font-size:14px;font-weight:800;color:var(--tp-ganho)}
+.tp-srv__ping[data-q="medio"],.tp-srv__ping[data-q="ruim"]{color:var(--tp-ambar)}
+/* SV17: ping da sala lotada não é sinal de qualidade, é leitura */
+.tp-srv__sala[data-cheia] .tp-srv__ping{color:var(--tp-tinta-1)}
 .tp-srv__entrar{display:flex;gap:6px;justify-content:flex-end}
 .tp-srv__lado-btn,.tp-srv__ver{height:40px;border:0;border-radius:8px;background:var(--tp-elevado);color:var(--tp-tinta-1);cursor:pointer;
   transition:transform var(--tp-d-rapido) var(--tp-ease-saida)}
@@ -168,8 +170,8 @@
 }
 
 /* SV13: na tela de servidores o único lima é o JOGO RÁPIDO */
-body:has(#mp-panel.tp-srv-painel:not(.hidden)) .tp-resenha-botao{display:none}
-body:has(#mp-panel.tp-srv-painel:not(.hidden)) .tp-abas__risco{background:var(--tp-elevado)}
-body:has(#mp-panel.tp-srv-painel:not(.hidden)) #hub-ui #hub-treta-wallet>span{background:var(--tp-elevado);color:var(--tp-tinta-1)}
+:root[data-ui="v3"] body:has(#mp-panel.tp-srv-painel:not(.hidden)) .tp-resenha-botao{display:none}
+:root[data-ui="v3"] body:has(#mp-panel.tp-srv-painel:not(.hidden)) .tp-abas__risco{background:var(--tp-elevado)}
+:root[data-ui="v3"] body:has(#mp-panel.tp-srv-painel:not(.hidden)) #hub-ui #hub-treta-wallet>span{background:var(--tp-elevado);color:var(--tp-tinta-1)}
 .tp-srv .tp-abas__risco{background:var(--tp-elevado)}
-body:has(#mp-panel.tp-srv-painel:not(.hidden)) #pwa-install{display:none}
+:root[data-ui="v3"] body:has(#mp-panel.tp-srv-painel:not(.hidden)) #pwa-install{display:none}
