@@ -125,7 +125,7 @@ function expectAuditFailure(candidate, pattern) {
 
 function checkMetadata() {
   assert.equal(URBAN_RIGID_VERSION, 'cs-urban-rigid-candidate/1');
-  assert.equal(URBAN_RIGID_FAMILY_IDS.length, 16);
+  assert.equal(URBAN_RIGID_FAMILY_IDS.length, 22);
   assert.deepEqual(Object.keys(URBAN_RIGID_FAMILIES), URBAN_RIGID_FAMILY_IDS);
   for (const id of URBAN_RIGID_FAMILY_IDS) {
     const family = URBAN_RIGID_FAMILIES[id];
@@ -254,7 +254,7 @@ try {
   checkFailClosed();
   checkMutants();
   const totals = items.reduce((sum, item) => ({ triangles: sum.triangles + item.triangles, drawCalls: sum.drawCalls + item.drawCalls }), { triangles: 0, drawCalls: 0 });
-  console.log(`✓ URBAN-RIGID 16 famílias determinísticas, mutantes socket/hit/performance mordidos: ${JSON.stringify({ limit: URBAN_RIGID_TRIANGLE_LIMIT, maxTriangles: Math.max(...items.map(item => item.triangles)), maxDrawCalls: Math.max(...items.map(item => item.drawCalls)), totals })}`);
+  console.log(`✓ URBAN-RIGID ${items.length} famílias determinísticas, mutantes socket/hit/performance mordidos: ${JSON.stringify({ limit: URBAN_RIGID_TRIANGLE_LIMIT, maxTriangles: Math.max(...items.map(item => item.triangles)), maxDrawCalls: Math.max(...items.map(item => item.drawCalls)), totals })}`);
 } catch (error) {
   console.error(`✗ URBAN-RIGID ${error.stack || error.message}`);
   process.exitCode = 1;

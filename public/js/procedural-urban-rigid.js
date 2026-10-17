@@ -16,10 +16,16 @@ const FAMILY_DEFINITIONS = {
   'headwear-beanie': { category: 'headwear', slot: 'head', socket: 'Head', builder: 'beanie', palette: [0x3d5260, 0xb65e44, 0x292929] },
   'headwear-bucket': { category: 'headwear', slot: 'head', socket: 'Head', builder: 'bucket', palette: [0x555f46, 0xc5b98b, 0x30322d] },
   'headwear-balaclava': { category: 'headwear', slot: 'head', socket: 'Head', builder: 'balaclava', palette: [0x2d3034, 0x555c63, 0x202020] },
+  'headwear-hair': { category: 'headwear', slot: 'head', socket: 'Head', builder: 'hair', palette: [0x302820, 0x704735, 0x24201d] },
+  'headwear-helmet': { category: 'headwear', slot: 'head', socket: 'Head', builder: 'helmet', palette: [0x47535a, 0xa66a35, 0x25292c] },
   'accessory-chain': { category: 'accessory', slot: 'neck', socket: 'Spine02', builder: 'chain', palette: [0xc4a85d, 0x8c7135, 0x292929] },
   'accessory-bandana': { category: 'accessory', slot: 'face', socket: 'Head', builder: 'bandana', palette: [0x8b3f3c, 0xd4bd8c, 0x292929] },
   'accessory-earring': { category: 'accessory', slot: 'piercing', socket: 'Head', builder: 'earring', palette: [0xc8b56b, 0x78652d, 0x292929] },
   'accessory-bracelet': { category: 'accessory', slot: 'wrist', socket: 'RightHand', builder: 'bracelet', palette: [0x537d78, 0xb79a55, 0x292929], sided: true },
+  'accessory-modular': { category: 'accessory', slot: 'chest', socket: 'Spine02', builder: 'modularAccessory', palette: [0x41483d, 0xa17d4d, 0x292d28] },
+  'accessory-ring': { category: 'accessory', slot: 'hand', socket: 'RightHand', builder: 'ring', palette: [0xb9a05c, 0x496d72, 0x2b2b2b], sided: true },
+  'accessory-belt': { category: 'accessory', slot: 'waist', socket: 'Spine02', builder: 'belt', palette: [0x46382e, 0xb58d4f, 0x292929] },
+  'accessory-case': { category: 'accessory', slot: 'hand', socket: 'RightHand', builder: 'case', palette: [0x39434a, 0xc0783f, 0x292929], sided: true },
 };
 
 const PARAMETER_SCHEMA = Object.freeze({
@@ -271,7 +277,53 @@ function buildBracelet(p, d) {
   p.box('clasp', [tube * 2, tube * 2.8, tube * 2.8], [c.x, c.y + radius, c.z], 'hardware');
 }
 
-const BUILDERS = { rolltop: buildRolltop, triplePocket: buildTriplePocket, sling: buildSling, drypack: buildDrypack, modular: buildModular, tote: buildTote, duffel: buildDuffel, trucker: buildTrucker, boina: buildBoina, beanie: buildBeanie, bucket: buildBucket, balaclava: buildBalaclava, chain: buildChain, bandana: buildBandana, earring: buildEarring, bracelet: buildBracelet };
+function buildModularAccessory(p, d) {
+  const c = d.center, w = d.stature * 0.3 * d.width, h = d.stature * 0.22 * d.height, z = c.z + d.socket.z * 0.6;
+  for (const side of [-1, 1]) p.tube(`shoulder-webbing-${side}`, [[c.x + side * w * 0.42, c.y + h * 0.75, c.z], [c.x + side * w * 0.48, c.y, z], [c.x + side * w * 0.35, c.y - h * 0.65, z]], d.stature * 0.008 * d.detail, 'primary');
+  for (const side of [-1, 0, 1]) p.box(`utility-cell-${side}`, [w * 0.26, h * 0.38, d.stature * 0.045 * d.depth], [c.x + side * w * 0.3, c.y - h * 0.28, z], side === 0 ? 'accent' : 'hardware');
+  p.box('cross-webbing', [w, h * 0.08, d.stature * 0.018], [c.x, c.y + h * 0.2, z], 'accent');
+}
+
+function buildRing(p, d) {
+  const c = d.center, radius = Math.max(d.socket.y, d.socket.z) * 0.2 * d.width, tube = radius * 0.24 * d.detail, x = c.x + d.socket.x * 0.33;
+  p.torus('finger-band', radius, tube, 7, 18, [x, c.y, c.z], [0, Math.PI / 2, 0], 'hardware');
+  p.cylinder('setting', radius * 0.36, radius * 0.5, radius * 0.42, 8, [x, c.y + radius, c.z], 'accent');
+  p.sphere('stone', radius * 0.32, [x, c.y + radius * 1.3, c.z], [1, 0.7, 1], 'primary');
+}
+
+function buildBelt(p, d) {
+  const c = d.center, radius = d.stature * 0.155 * d.width, y = c.y - d.stature * 0.24 * d.height, tube = d.stature * 0.018 * d.detail;
+  p.torus('waist-band', radius, tube, 6, 22, [c.x, y, c.z], [Math.PI / 2, 0, 0], 'primary');
+  p.box('buckle', [radius * 0.28, tube * 2.8, tube * 1.2], [c.x, y, c.z + radius], 'accent');
+  for (const side of [-1, 1]) p.box(`belt-pocket-${side}`, [radius * 0.34, tube * 4.2, tube * 2.5], [c.x + side * radius * 0.72, y - tube * 0.9, c.z + radius * 0.55], 'hardware');
+}
+
+function buildCase(p, d) {
+  const c = d.center, w = d.stature * 0.24 * d.width, h = d.stature * 0.18 * d.height, z = d.stature * 0.055 * d.depth, y = c.y - h * 0.72;
+  p.box('hard-shell', [w, h, z], [c.x, y, c.z], 'primary');
+  p.box('case-edge', [w * 1.03, h * 0.055, z * 1.08], [c.x, y, c.z], 'accent');
+  p.tube('case-handle', [[c.x - w * 0.2, y + h * 0.52, c.z], [c.x - w * 0.16, y + h * 0.77, c.z], [c.x + w * 0.16, y + h * 0.77, c.z], [c.x + w * 0.2, y + h * 0.52, c.z]], z * 0.08, 'hardware');
+  for (const side of [-1, 1]) p.cylinder(`hinge-${side}`, z * 0.08, z * 0.08, w * 0.12, 8, [c.x + side * w * 0.3, y - h * 0.5, c.z], 'hardware', [0, 0, Math.PI / 2]);
+}
+
+function buildHair(p, d) {
+  const { w, h, z, c } = headSize(d);
+  p.sphere('hair-cap', 1, [c.x, c.y + h * 0.52, c.z - z * 0.02], [w * 0.57, h * 0.56, z * 0.59], 'primary', Math.PI * 2, 0, Math.PI * 0.58);
+  for (let tuft = -3; tuft <= 3; tuft++) {
+    const x = c.x + tuft * w * 0.12, lift = h * (0.79 + (3 - Math.abs(tuft)) * 0.025);
+    p.cylinder(`tuft-${tuft}`, w * 0.018, w * 0.075, h * (0.22 + (tuft & 1) * 0.035), 7, [x, c.y + lift, c.z - z * 0.05], tuft === 0 ? 'accent' : 'primary', [0, 0, tuft * -0.055]);
+  }
+}
+
+function buildHelmet(p, d) {
+  const { w, h, z, c } = headSize(d);
+  p.sphere('helmet-shell', 1, [c.x, c.y + h * 0.5, c.z], [w * 0.62, h * 0.68, z * 0.64], 'primary', Math.PI * 2, 0, Math.PI * 0.67);
+  p.torus('lower-rim', w * 0.53, h * 0.035, 6, 20, [c.x, c.y + h * 0.23, c.z], [Math.PI / 2, 0, 0], 'accent');
+  for (const side of [-1, 1]) p.box(`ear-guard-${side}`, [w * 0.17, h * 0.31, z * 0.13], [c.x + side * w * 0.52, c.y + h * 0.22, c.z], 'hardware');
+  p.box('top-ridge', [w * 0.08, h * 0.18, z * 0.7], [c.x, c.y + h * 0.91, c.z], 'accent');
+}
+
+const BUILDERS = { rolltop: buildRolltop, triplePocket: buildTriplePocket, sling: buildSling, drypack: buildDrypack, modular: buildModular, tote: buildTote, duffel: buildDuffel, trucker: buildTrucker, boina: buildBoina, beanie: buildBeanie, bucket: buildBucket, balaclava: buildBalaclava, hair: buildHair, helmet: buildHelmet, chain: buildChain, bandana: buildBandana, earring: buildEarring, bracelet: buildBracelet, modularAccessory: buildModularAccessory, ring: buildRing, belt: buildBelt, case: buildCase };
 
 function metricsOf(root) {
   let drawCalls = 0, triangles = 0;
