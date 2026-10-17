@@ -111,7 +111,7 @@ globalThis.Audio = class { play() {} pause() {} };
   }
 }
 const THREE = await import('three');
-const { MAPS } = await import(`${JS}/maps.js`);
+const { carregaMapa } = await import(`${JS}/maps.js`);
 const { initTextures } = await import(`${JS}/textures.js`);
 const { Game, WEAPONS } = await import(`${JS}/game.js`);
 const { CHARACTERS } = await import(`${JS}/characters.js`);
@@ -160,7 +160,8 @@ const MUDO_S = parseFloat(process.env.SIM_SHOOTGATE_S || '1.5');
 const PLAYER_IN = DUEL || GATE;   // jogador vivo e andando pelo mapa (alvo de verdade)
 
 let D = null;
-function runMap(mapId, textures, seed) {
+async function runMap(mapId, textures, seed) {
+  await carregaMapa(mapId);
   seedRandom(seed);
   const g = new Game({
     renderer, textures, sfx, settings: { bots: 4, quality: 'low', difficulty: 'normal', sens: 1 },
@@ -360,7 +361,7 @@ function runMap(mapId, textures, seed) {
     taxaAcerto: +(D.hits / Math.max(1, D.shots)).toFixed(3),
     fracCabeca: +(D.hs / Math.max(1, D.hits)).toFixed(3),
     mortesPorMin: +(D.deaths / (SECS / 60)).toFixed(2),
-    janelaAteMorrer: +(D.ttk / Math.max(1, D.ttkN)).toFixed(2), ttkSum: D.ttk, ttkN: D.ttkN,
+    janelaAteMorrer: D.ttkN ? +(D.ttk / D.ttkN).toFixed(2) : null, ttkSum: D.ttk, ttkN: D.ttkN,
   };
   return {
     map: mapId, bots: nb,
@@ -382,7 +383,7 @@ const SEEDS = (process.env.SIM_SEEDS || '12345,777,4242').split(',').map(Number)
 const out = [];
 for (const id of ids) {
   const runs = [];
-  for (const sd of SEEDS) { try { runs.push(runMap(id, textures, sd)); } catch (e) { if (process.env.SIM_TRACE) console.error(e.stack); runs.push({ map: id, err: e.message + ' @' + sd }); } }
+  for (const sd of SEEDS) { try { runs.push(await runMap(id, textures, sd)); } catch (e) { if (process.env.SIM_TRACE) console.error(e.stack); runs.push({ map: id, err: `${e.name}: ${e.message} @${sd}` }); } }
   const ok = runs.filter(r => !r.err);
   if (!ok.length) { out.push(runs[0]); continue; }
   const m = (k) => +(ok.reduce((a, r) => a + r[k], 0) / ok.length).toFixed(3);
@@ -403,7 +404,7 @@ for (const id of ids) {
     continue;
   }
   if (DUEL) { const ts = ok.reduce((a, r) => a + r.ttkSum, 0), tn = ok.reduce((a, r) => a + r.ttkN, 0);
-    out.push({ map: id, tirosBot: m('tirosBot'), acertos: m('acertos'), taxaAcerto: m('taxaAcerto'), fracCabeca: m('fracCabeca'), mortesPorMin: m('mortesPorMin'), janelaAteMorrer: +(tn ? ts / tn : 0).toFixed(2), ttkSum: ts, ttkN: tn }); continue; }
+    out.push({ map: id, tirosBot: m('tirosBot'), acertos: m('acertos'), taxaAcerto: m('taxaAcerto'), fracCabeca: m('fracCabeca'), mortesPorMin: m('mortesPorMin'), janelaAteMorrer: tn ? +(ts / tn).toFixed(2) : null, ttkSum: ts, ttkN: tn }); continue; }
   out.push({ map: id, bots: ok[0].bots, latFlips: m('latFlips'), latFlipsCombat: m('latFlipsCombat'), latShare: m('latShare'), fwdFlips: m('fwdFlips'), fwdFlipsCombat: m('fwdFlipsCombat'), spinTurns: m('spinTurns'), spinRoam: m('spinRoam'), stuckPct: m('stuckPct'), eff: m('eff') });
 }
 if (process.env.SIM_FLIP === '1') {
@@ -442,5 +443,5 @@ if (GATE) {
 console.log(JSON.stringify(out, null, 1));
 const avg = (k) => +(out.filter(o => !o.err).reduce((a, o) => a + o[k], 0) / Math.max(1, out.filter(o => !o.err).length)).toFixed(3);
 if (DUEL) { const okd = out.filter(o => !o.err); const ts = okd.reduce((a, o) => a + o.ttkSum, 0), tn = okd.reduce((a, o) => a + o.ttkN, 0);
-  console.log('MEDIA taxaAcerto', avg('taxaAcerto'), '| fracCabeca', avg('fracCabeca'), '| mortes/min', avg('mortesPorMin'), '| janela ate morrer (s)', +(tn ? ts / tn : 0).toFixed(3), '| mortes amostradas', tn); process.exit(0); }
+  console.log('MEDIA taxaAcerto', avg('taxaAcerto'), '| fracCabeca', avg('fracCabeca'), '| mortes/min', avg('mortesPorMin'), '| janela ate morrer (s)', tn ? +(ts / tn).toFixed(3) : 'SEM_AMOSTRA', '| mortes amostradas', tn); process.exit(0); }
 console.log('MEDIA latFlips/min', avg('latFlips'), '| fwdFlips/min', avg('fwdFlips'), '| latShare', avg('latShare'), '| spin voltas/min', avg('spinTurns'), '| spinRoam', avg('spinRoam'), '| stuck%', avg('stuckPct'), '| eff', avg('eff'));
