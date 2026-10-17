@@ -26,7 +26,9 @@
       "origin": "gpt-pilot+human-candidate",
       "eyewear": {
         "status": "measured",
-        "eyeLineY": 1.614,
+        "eyeLineY": 1.574,
+        "pilotEyeLineY": 1.614,
+        "calibration": "integrated-real-browser-visual-review",
         "ears": {
           "left": {"frontZ": -0.02, "topY": 1.636, "backZ": -0.058},
           "right": {"frontZ": -0.013, "topY": 1.631, "backZ": -0.055}
@@ -48,7 +50,9 @@
       "origin": "gpt-pilot+human-candidate",
       "eyewear": {
         "status": "measured",
-        "eyeLineY": 1.608,
+        "eyeLineY": 1.568,
+        "pilotEyeLineY": 1.608,
+        "calibration": "integrated-real-browser-visual-review",
         "ears": {
           "left": {"frontZ": 0.024, "topY": 1.609, "backZ": -0.014},
           "right": {"frontZ": 0.0135, "topY": 1.608, "backZ": -0.034}

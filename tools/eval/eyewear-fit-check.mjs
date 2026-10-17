@@ -18,6 +18,7 @@ function validate({eyewear,landmarks,factory,report}){
   assert.equal(eyewear.schema,1);assert.equal(landmarks.schemaVersion,'cs-face-landmarks/1');assert.equal(landmarks.status,'candidate');assert.equal(landmarks.runtimeEnabled,false);assert.equal(landmarks.provenance.origin,'gpt-pilot+human-candidate');
   rejectApprovalTrue(eyewear);same(Object.keys(landmarks.bodies),coveredCaps,'landmark body coverage changed');
   for(const bodyId of coveredCaps){const landmark=landmarks.bodies[bodyId];assert.equal(landmark.bodySha256,hash(`public${landmark.model}`),`${bodyId}: stale landmark body hash`);assert.equal(landmark.profileId,`${landmark.bodyId}@${landmark.bodySha256.slice(0,12)}`);assert(landmark.headwear?.dimensions&&landmark.headwear.motions.length===3,`${bodyId}: cap proof profile missing`);}
+  for(const bodyId of coveredBodies){const eye=landmarks.bodies[bodyId].eyewear;assert.equal(eye.calibration,'integrated-real-browser-visual-review');assert(finite(eye.pilotEyeLineY)&&eye.pilotEyeLineY-eye.eyeLineY>=.03,`${bodyId}: uncorrected pilot eye line`);}
   for(const itemId of coveredItems){const entry=eyewear.eyewear[itemId];assert(entry&&entry.approved===false,`${itemId}: candidate asset must stay unapproved`);same(Object.keys(entry.profiles),coveredBodies,`${itemId}: measured body coverage changed`);
     for(const bodyId of coveredBodies){const profile=entry.profiles[bodyId],landmark=landmarks.bodies[bodyId];assert.equal(profile.status,'candidate');assert.equal(profile.certified,false);assert.equal(profile.source,'gpt-pilot+human-candidate');assert.equal(profile.bodyId,landmark.bodyId,`${itemId}/${bodyId}: profile transferred to another body`);assert.equal(profile.profileId,landmark.profileId);assert.equal(profile.bodySha256,landmark.bodySha256,`${itemId}/${bodyId}: stale profile hash`);assert.equal(landmark.origin,'gpt-pilot+human-candidate');assert.equal(landmark.eyewear?.status,'measured',`${itemId}/${bodyId}: body without measured landmarks`);
       assert([profile.width,profile.height,profile.depth,profile.lensY,profile.templeScale,profile.templeSpreadL,profile.templeSpreadR,profile.templeLift].every(finite),`${itemId}/${bodyId}: non-finite fit profile`);same(profile.metrics.poses,poses,`${itemId}/${bodyId}: pose coverage changed`);for(const key of ['lensEyeAbsMaxCm','templeEarAbsMaxCm','templeVerticalAbsMaxCm','frameInsideMaxPct','templeSunkMaxFraction'])assert(finite(profile.metrics[key])&&profile.metrics[key]>=0,`${itemId}/${bodyId}: invalid ${key}`);
@@ -35,6 +36,7 @@ function validate({eyewear,landmarks,factory,report}){
 function mutants(){
   const cases={
     'lens-low':data=>{data.eyewear.eyewear['metal-de-rua'].profiles.capitao.metrics.lensEyeAbsMaxCm=3;},
+    'uncorrected-eye-line':data=>{data.landmarks.bodies.capitao.eyewear.eyeLineY=data.landmarks.bodies.capitao.eyewear.pilotEyeLineY;},
     'temple-short':data=>{data.eyewear.eyewear['ouro-de-quebrada'].profiles.capitao.metrics.templeEarAbsMaxCm=3;},
     'stale-hash':data=>{data.eyewear.eyewear['metal-de-rua'].profiles.capitao.bodySha256='0'.repeat(64);},
     'body-without-landmark':data=>{data.landmarks.bodies.capitao.eyewear=null;},
