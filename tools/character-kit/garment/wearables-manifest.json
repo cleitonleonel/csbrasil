@@ -105,23 +105,57 @@
       "reason": "No licensed 3D backpack asset with registered origin is versioned in the candidate."
     },
     {
-      "id": "gap:cap",
+      "id": "treta-cap-procedural-v1",
       "category": "cap",
       "slot": "head",
       "attachmentMode": "rigid",
-      "inventoryStatus": "missing",
-      "asset": null,
-      "provenance": null,
+      "inventoryStatus": "versioned",
+      "asset": {
+        "path": "public/js/procedural-cap.js",
+        "sha256": "3d30bc6e84f88d400f85b4daec7e3ceede9ac2b82d347c5370171dd9dfa22aa7",
+        "bytes": 6888
+      },
+      "provenance": {
+        "author": "Coro Solto private fitting pilot",
+        "source": "private-assets/treta-store/items/fitting-room/cap.mjs@267d68c633743aeccb3bd2777c8cfef4c823c6d78f894c98577bda2f2ec6f321",
+        "license": "project-owned",
+        "evidence": "tools/eval/asset-evidence/items/fit-matrix/cap-provenance.json"
+      },
       "layer": 30,
       "conflicts": [],
       "hideBodyRegions": [],
       "certifiedFamilies": [],
       "certifiedBodies": [],
       "incompatibleBodies": [],
-      "fitProfiles": [],
+      "fitProfiles": [
+        {
+          "profileId": "character:barbudo@2aaace3d7d18",
+          "bodyId": "character:barbudo",
+          "familyId": "rig-cf26b508edb3",
+          "status": "candidate",
+          "reason": "Private idle/walk/crouch proof imported for this exact body hash; brim clearance and human commercial approval remain pending.",
+          "transform": {"position": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1], "space": "bone-local", "source": "treta-cap-procedural-v1 bounds profile"}
+        },
+        {
+          "profileId": "character:capitao@433fc02554e8",
+          "bodyId": "character:capitao",
+          "familyId": "rig-cf26b508edb3",
+          "status": "candidate",
+          "reason": "Private idle/walk/crouch proof imported for this exact body hash; brim clearance and human commercial approval remain pending.",
+          "transform": {"position": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1], "space": "bone-local", "source": "treta-cap-procedural-v1 bounds profile"}
+        },
+        {
+          "profileId": "character:esquerdomacho@51bd7a1aaa6f",
+          "bodyId": "character:esquerdomacho",
+          "familyId": "rig-c9ebfa9c881d",
+          "status": "candidate",
+          "reason": "Private idle/walk/crouch proof imported for this exact body hash; brim clearance and human commercial approval remain pending.",
+          "transform": {"position": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1], "space": "bone-local", "source": "treta-cap-procedural-v1 bounds profile"}
+        }
+      ],
       "approvals": {"asset": false, "fit": false, "clipping": false, "human": false},
       "runtimeEnabled": false,
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "Procedural cap source is versioned and three body-hash candidates are measured; no fit or commercial approval is granted."
     },
     {
       "id": "gap:piercing",

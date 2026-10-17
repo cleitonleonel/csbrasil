@@ -297,13 +297,14 @@ export function buildMatrix(manifest, census) {
     else {
       const profile = item.fitProfiles.find(candidate => candidate.bodyId === body.bodyId);
       if (item.certifiedBodies.includes(body.bodyId) && profile?.status === 'certified') { status = 'certified'; reason = 'body profile and human gates recorded'; }
-      else { status = 'unknown'; reason = 'no certified body profile'; }
+      else if (profile?.status === 'candidate') { status = 'candidate'; reason = profile.reason; }
+      else { status = 'unknown'; reason = 'no measured body profile'; }
     }
     entries.push({ itemId: item.id, slot: item.slot, bodyId: body.bodyId, familyId: body.familyId, certified: status === 'certified', status, reason });
   }
   const countsBySlot = Object.fromEntries(CANONICAL_SLOTS.map(slot => {
     const rows = entries.filter(entry => entry.slot === slot);
-    return [slot, { items: manifest.items.filter(item => item.slot === slot).length, pairs: rows.length, certified: rows.filter(row => row.status === 'certified').length, incompatible: rows.filter(row => row.status === 'incompatible').length, unknown: rows.filter(row => row.status === 'unknown').length }];
+    return [slot, { items: manifest.items.filter(item => item.slot === slot).length, pairs: rows.length, certified: rows.filter(row => row.status === 'certified').length, candidate: rows.filter(row => row.status === 'candidate').length, incompatible: rows.filter(row => row.status === 'incompatible').length, unknown: rows.filter(row => row.status === 'unknown').length }];
   }));
   const familyWork = census.families.map(family => {
     const bodies = family.bodies.map(bodyId => bodyById.get(bodyId));
@@ -350,7 +351,7 @@ export function validateBundle(manifest, census, matrix, root) {
       const body = bodies.get(profile.bodyId);
       must(body && body.profileId === profile.profileId && body.familyId === profile.familyId, `${item.id}: orphan fit profile ${profile.profileId}`);
       must(!profileIds.has(profile.profileId), `${item.id}: duplicate fit profile ${profile.profileId}`); profileIds.add(profile.profileId);
-      must(['certified', 'incompatible'].includes(profile.status) && typeof profile.reason === 'string' && profile.reason.length > 0, `${item.id}: invalid fit profile status/reason`);
+      must(['candidate', 'certified', 'incompatible'].includes(profile.status) && typeof profile.reason === 'string' && profile.reason.length > 0, `${item.id}: invalid fit profile status/reason`);
       validateFitTransform(item, profile);
       if (profile.status === 'certified') must(item.certifiedBodies.includes(profile.bodyId), `${item.id}: certified profile not in certifiedBodies`);
     }
@@ -362,12 +363,12 @@ export function validateBundle(manifest, census, matrix, root) {
   const pairs = new Set();
   for (const entry of matrix.entries) {
     const key = `${entry.itemId}\u0000${entry.bodyId}`; must(!pairs.has(key), 'duplicate matrix pair'); pairs.add(key);
-    must(entry.certified === (entry.status === 'certified') && ['certified', 'incompatible', 'unknown'].includes(entry.status), 'matrix status/boolean mismatch');
+    must(entry.certified === (entry.status === 'certified') && ['candidate', 'certified', 'incompatible', 'unknown'].includes(entry.status), 'matrix status/boolean mismatch');
     must(typeof entry.reason === 'string' && entry.reason.length > 0, 'matrix reason required');
   }
   for (const slot of CANONICAL_SLOTS) {
     const count = matrix.summary.countsBySlot[slot];
-    must(count && count.certified + count.incompatible + count.unknown === count.pairs, `${slot}: matrix counts mismatch`);
+    must(count && count.certified + count.candidate + count.incompatible + count.unknown === count.pairs, `${slot}: matrix counts mismatch`);
   }
   must(matrix.entries.every(entry => entry.certified === false), 'certification cannot be generated before human gate');
   return { manifest, census, matrix };

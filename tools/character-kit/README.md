@@ -165,13 +165,17 @@ Same joint hierarchy means only structural grouping; it never inherits fit,
 proportions, bind pose, topology or socket transforms.
 
 `wearables-manifest.json` records layer/conflict/clipping policy and the current
-inventory gaps. No licensed 3D backpack, cap, piercing, tattoo, shirt, jacket,
-pants or shoe asset is versioned in the candidate, so the rows deliberately use
-`asset: null`; they are not placeholder art. `compatibility-matrix.json` contains
-every item requirement × discovered body, a false `certified` value with a reason,
-per-slot certified/incompatible/unknown counts, and the exact remaining human
-visual work grouped by structural family. The `face` slot remains canonical but
-has no row in this eight-category batch.
+inventory gaps. The project-owned procedural cap source is versioned as one
+batched draw call below 5k triangles, with private-pilot provenance and
+body-hash-pinned candidate profiles for Capitão, Esquerdomacho and Barbudo; all
+three remain uncertified and runtime-disabled. The real-browser fit matrix records
+brim/eye clearance, crown containment, skull clearance and Head-anchor stability.
+The other seven category rows deliberately use `asset: null`; they are inventory
+gaps, not placeholder art. `compatibility-matrix.json` contains every item
+requirement × discovered body, a false `certified` value with a reason,
+per-slot candidate/certified/incompatible/unknown counts, and the exact remaining
+human visual work grouped by structural family. The `face` slot remains canonical
+but has no row in this eight-category batch.
 
 The focused gate rebuilds both generated files and kills missing-bone,
 orphan-profile, layer-collision and false-family-wide-certification mutants.

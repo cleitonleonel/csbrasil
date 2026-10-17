@@ -10,6 +10,7 @@
         "items": 1,
         "pairs": 88,
         "certified": 0,
+        "candidate": 0,
         "incompatible": 1,
         "unknown": 87
       },
@@ -17,13 +18,15 @@
         "items": 1,
         "pairs": 88,
         "certified": 0,
+        "candidate": 3,
         "incompatible": 1,
-        "unknown": 87
+        "unknown": 84
       },
       "face": {
         "items": 0,
         "pairs": 0,
         "certified": 0,
+        "candidate": 0,
         "incompatible": 0,
         "unknown": 0
       },
@@ -31,6 +34,7 @@
         "items": 1,
         "pairs": 88,
         "certified": 0,
+        "candidate": 0,
         "incompatible": 1,
         "unknown": 87
       },
@@ -38,6 +42,7 @@
         "items": 1,
         "pairs": 88,
         "certified": 0,
+        "candidate": 0,
         "incompatible": 0,
         "unknown": 88
       },
@@ -45,6 +50,7 @@
         "items": 1,
         "pairs": 88,
         "certified": 0,
+        "candidate": 0,
         "incompatible": 4,
         "unknown": 84
       },
@@ -52,6 +58,7 @@
         "items": 1,
         "pairs": 88,
         "certified": 0,
+        "candidate": 0,
         "incompatible": 4,
         "unknown": 84
       },
@@ -59,6 +66,7 @@
         "items": 1,
         "pairs": 88,
         "certified": 0,
+        "candidate": 0,
         "incompatible": 4,
         "unknown": 84
       },
@@ -66,6 +74,7 @@
         "items": 1,
         "pairs": 88,
         "certified": 0,
+        "candidate": 0,
         "incompatible": 4,
         "unknown": 84
       }
@@ -865,7 +874,7 @@
       "reason": "No licensed 3D backpack asset with registered origin is versioned in the candidate."
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "auxiliary:dollynho-dance",
       "familyId": "rig-41954dc908ad",
@@ -874,787 +883,787 @@
       "reason": "body lacks an unambiguous head socket bone"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:adjim",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:ancap",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:bandeirante",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:barbudo",
       "familyId": "rig-cf26b508edb3",
       "certified": false,
-      "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "status": "candidate",
+      "reason": "Private idle/walk/crouch proof imported for this exact body hash; brim clearance and human commercial approval remain pending."
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:blackmetal",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:bombado",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:bonzo",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:boto",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:cadequinha",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:caipora",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:camera-roxa",
       "familyId": "rig-a95b48489ba3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:caminhoneiro",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:canarinho",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:capitao",
       "familyId": "rig-cf26b508edb3",
       "certified": false,
-      "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "status": "candidate",
+      "reason": "Private idle/walk/crouch proof imported for this exact body hash; brim clearance and human commercial approval remain pending."
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:chave",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:clubber",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:coach",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:criarj",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:cuca",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:curupira",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:dama",
       "familyId": "rig-cf26b508edb3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:deputado",
       "familyId": "rig-cf26b508edb3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:designer-ux",
       "familyId": "rig-a95b48489ba3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:doidinho-bairro",
       "familyId": "rig-aa0b4ae0c501",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:dollynho",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:doutora",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:emo",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:esbirro",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:esquerdomacho",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
-      "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "status": "candidate",
+      "reason": "Private idle/walk/crouch proof imported for this exact body hash; brim clearance and human commercial approval remain pending."
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:et",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:farialimer",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:fluxo",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:funkeiro",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:funkraiz",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:gilbomes",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:gotinha",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:hipster",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:jozo",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:juiz",
       "familyId": "rig-cf26b508edb3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:julia-zanatta",
       "familyId": "rig-cf26b508edb3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:lampiao",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:lenda-lanhouse",
       "familyId": "rig-a95b48489ba3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:lobisomem",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:mandrake",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:mariabonita",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:marina-silva",
       "familyId": "rig-cf26b508edb3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:metaleiro",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:microfonildo",
       "familyId": "rig-a95b48489ba3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:ministro",
       "familyId": "rig-cf26b508edb3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:mistico",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:motoca-cachorro-loko",
       "familyId": "rig-04bce278898e",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:mst",
       "familyId": "rig-715c6fe0fd7c",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:oakley",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:ostentacao",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:padata",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:padati",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:pagodeiro",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:palhacomal",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:proerd",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:professor",
       "familyId": "rig-cf26b508edb3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:profeta-calcada",
       "familyId": "rig-a95b48489ba3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:programador-virado",
       "familyId": "rig-aa0b4ae0c501",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:punk",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:rapper",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:raul",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:reggae",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:saci",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:senador",
       "familyId": "rig-cf26b508edb3",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:sertanejo",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:sindicato",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:skatista",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:titica",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:trapfunk",
       "familyId": "rig-5875ed3e37b4",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "character:zumbi",
       "familyId": "rig-c9ebfa9c881d",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:aljuiz-toga-mandrake",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:bolsonaro-cyborg",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:bolsonaro-drip",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:bolsonaro-mandrake",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:janja",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:lula-cyborg",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:lula-drip",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:lula-mandrake",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:lula-na-regua",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:michelle-bolsonaro",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:michelle-mandrake",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:senador-drip",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
-      "itemId": "gap:cap",
+      "itemId": "treta-cap-procedural-v1",
       "slot": "head",
       "bodyId": "skin:zero-um-mandrake",
       "familyId": "rig-dc96cfa99b23",
       "certified": false,
       "status": "unknown",
-      "reason": "No licensed 3D cap asset with registered origin is versioned in the candidate; existing cap proposals are concepts only."
+      "reason": "no measured body profile"
     },
     {
       "itemId": "gap:piercing",
