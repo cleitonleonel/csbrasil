@@ -1,0 +1,188 @@
+/* Treta Pop · 10 carreira e clã, 11 perfil. Só vale com <html data-ui="v3">: todo seletor começa em :root[data-ui="v3"] ou numa classe .tp-. */
+/* O perfil do community.js segue no DOM, escondido: ele é quem executa as ações (amizade, denúncia, compartilhar). */
+:root[data-ui="v3"] #social-content:has(>.tp-perfil)>:not(.tp-perfil){display:none}
+:root[data-ui="v3"] #hub-community:has(.tp-perfil),:root[data-ui="v3"] .community:has(.tp-perfil){max-width:none}
+/* o cartão já diz quem é: a saudação gigante do legado sai e a tela sobe */
+:root[data-ui="v3"] .community:has(.tp-perfil) #social-hello{display:none}
+:root[data-ui="v3"] .community:has(.tp-perfil) .social-heading{justify-content:flex-end;margin-bottom:0}
+
+:root[data-ui="v3"] .tp-perfil{container:tp-perfil/inline-size;display:flex;flex-direction:column;gap:16px;color:var(--tp-tinta-1);font:500 15px/1.3 var(--tp-ui)}
+:root[data-ui="v3"] .tp-perfil h2,:root[data-ui="v3"] .tp-perfil h3,:root[data-ui="v3"] .tp-perfil p{margin:0;letter-spacing:.01em}
+:root[data-ui="v3"] .tp-perfil h3{font:400 24px/.92 var(--tp-display);text-transform:uppercase}
+/* .community button do legado tem borda, sombra e brilho no hover: aqui dentro quem manda é o kit */
+:root[data-ui="v3"] .tp-perfil button{min-height:0;box-shadow:none;filter:none}
+:root[data-ui="v3"] .tp-perfil .tp-btn{border:0;padding:0 16px;height:44px;border-radius:8px;background:var(--tp-elevado);color:var(--tp-tinta-1);
+  font:800 14px/1 var(--tp-ui);letter-spacing:.06em;text-transform:uppercase}
+:root[data-ui="v3"] .tp-perfil .tp-btn:active{transform:scale(calc(1 - .04 * var(--tp-mov)))}
+:root[data-ui="v3"] .tp-perfil .tp-btn--primario{clip-path:none;border-radius:8px;background:var(--tp-lima);color:var(--tp-lima-tinta);font:400 19px/1 var(--tp-display);letter-spacing:.02em}
+:root[data-ui="v3"] .tp-perfil .tp-btn--primario:hover{transform:scale(calc(1 + .03 * var(--tp-mov)))}
+:root[data-ui="v3"] .tp-perfil .tp-btn--primario:focus-visible{outline:2px solid var(--tp-tinta-1);outline-offset:3px;box-shadow:none}
+:root[data-ui="v3"] .tp-perfil .tp-btn[disabled]{opacity:.38}
+
+.tp-perfil__abas{align-self:flex-start;padding-bottom:2px}
+:root[data-ui="v3"] .tp-perfil .tp-aba{min-height:0;border:0;padding:0 0 8px;background:none;font:400 22px/1 var(--tp-display);color:var(--tp-tinta-2)}
+:root[data-ui="v3"] .tp-perfil .tp-aba[aria-selected="true"]{color:var(--tp-lima)}
+
+:root[data-ui="v3"] .tp-perfil .tp-perfil__nota{font:700 13px/1.35 var(--tp-ui);color:var(--tp-tinta-3)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__vazio{font:600 15px/1.4 var(--tp-ui);color:var(--tp-tinta-3)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__aviso{min-height:1.2em;font:700 14px/1.3 var(--tp-ui);color:var(--tp-ganho)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__aviso:empty{display:none}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__link{padding:0;border:0;background:none;color:var(--tp-ambar);font:800 13px/1 var(--tp-ui);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;cursor:pointer}
+.tp-perfil__cab{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.tp-perfil__linha{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__tag{padding:3px 7px;border-radius:4px;background:var(--tp-ganho);color:var(--tp-asfalto);font-size:13px;font-weight:800}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__handle{font:700 15px/1 var(--tp-ui);color:var(--tp-tinta-2)}
+.tp-perfil__presenca{display:inline-flex;align-items:center;gap:6px;font:700 14px/1 var(--tp-ui);color:var(--tp-tinta-3)}
+.tp-perfil__presenca::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--tp-elevado)}
+.tp-perfil__presenca[data-on="true"]{color:var(--tp-ganho)}
+.tp-perfil__presenca[data-on="true"]::before{background:var(--tp-ganho)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__nivel{font:700 15px/1 var(--tp-ui)}
+.tp-patente{display:inline-flex;align-items:center;padding:5px 10px;border-radius:6px;color:var(--tp-asfalto);font:800 15px/1 var(--tp-ui);
+  background:linear-gradient(160deg,var(--tp-tinta-1),var(--tp-rar-comum))}
+.tp-patente[data-tier="bronze"]{background:linear-gradient(160deg,color-mix(in srgb,var(--tp-rar-lendario) 55%,var(--tp-tinta-1)),color-mix(in srgb,var(--tp-rar-lendario) 60%,var(--tp-asfalto)))}
+.tp-patente[data-tier="gold"]{background:linear-gradient(160deg,var(--tp-ambar),color-mix(in srgb,var(--tp-ambar) 55%,var(--tp-asfalto)))}
+.tp-perfil__inicial{display:grid;place-items:center;background:var(--tp-elevado);color:var(--tp-tinta-2)}
+
+/* Tela 11: cartão público + vitrine/números + atividade, e a edição ao lado. */
+.tp-perfil__grade{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.tp-perfil__grade[data-dono]{grid-template-columns:minmax(0,1fr) 428px}
+.tp-perfil__principal{display:flex;flex-direction:column;gap:16px;min-width:0}
+.tp-perfil__cartao{position:relative;display:flex;flex-direction:column;gap:18px;min-height:330px;box-sizing:border-box;padding:28px 28px 24px;border-radius:16px;overflow:hidden;isolation:isolate;
+  background:linear-gradient(120deg,color-mix(in srgb,var(--tp-ganho) 16%,var(--tp-asfalto)) 0%,color-mix(in srgb,var(--tp-ambar) 14%,var(--tp-asfalto)) 55%,var(--tp-fundo-2) 100%)}
+.tp-perfil__cartao::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(9,7,4,.9) 0%,rgba(9,7,4,.45) 60%,rgba(9,7,4,0) 100%)}
+.tp-perfil__arte{position:absolute;right:20px;top:-30px;z-index:-2;width:300px;height:450px;object-fit:cover;object-position:50% 12%}
+.tp-perfil__id{display:flex;gap:22px;align-items:flex-start;margin-right:300px}
+.tp-perfil__avatar{flex:none;width:132px;height:132px;box-sizing:border-box;border-radius:18px;border:4px solid var(--tp-lima);object-fit:cover;font-size:64px}
+.tp-perfil__quem{display:flex;flex-direction:column;gap:8px;min-width:0}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__nick{font:400 64px/.92 var(--tp-display);text-transform:uppercase;overflow-wrap:anywhere}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__bio{max-width:560px;font:600 18px/1.35 var(--tp-ui)}
+.tp-perfil__redes{display:flex;flex-wrap:wrap;gap:8px;margin-right:300px}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__rede{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);color:var(--tp-tinta-1);font:700 14px/1 var(--tp-ui);text-decoration:none}
+.tp-perfil__acoes{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;margin-top:auto}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__acoes .tp-btn:not(.tp-btn--primario),:root[data-ui="v3"] .tp-perfil .tp-perfil__mais-botao{border:1px solid rgba(255,255,255,.3);background:rgba(9,7,4,.5)}
+.tp-perfil__selo{display:inline-flex;align-items:center;height:44px;padding:0 14px;border-radius:8px;background:rgba(9,7,4,.5);color:var(--tp-ganho);font:800 14px/1 var(--tp-ui)}
+.tp-perfil__mais{position:relative}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__mais-botao{width:44px;padding:0;list-style:none;font-size:18px}
+.tp-perfil__mais-botao::-webkit-details-marker{display:none}
+.tp-perfil__mais-lista{position:absolute;right:0;bottom:calc(100% + 8px);z-index:3;display:flex;flex-direction:column;gap:6px;min-width:220px;padding:8px;
+  border-radius:10px;background:var(--tp-painel);border:1px solid var(--tp-borda-forte)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__mais-lista .tp-btn{justify-content:flex-start;background:var(--tp-elevado)}
+
+.tp-perfil__dupla{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.tp-perfil__bloco{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:12px;border-color:rgba(255,255,255,.09)}
+.tp-perfil__vitrine,.tp-perfil__trks,.tp-carreira__trks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tp-perfil__destaque{position:relative;height:172px;border-radius:10px;overflow:hidden;background:var(--tp-fundo);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.tp-perfil__destaque img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 12%}
+.tp-perfil__destaque--personagem{background:linear-gradient(160deg,var(--tp-rar-lendario),color-mix(in srgb,var(--tp-rar-lendario) 45%,var(--tp-asfalto)))}
+.tp-perfil__destaque--mapa::after,.tp-perfil__destaque--personagem::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,7,4,0) 40%,rgba(9,7,4,.85))}
+.tp-perfil__destaque--medalha{border:1px solid rgba(180,217,46,.35)}
+.tp-perfil__destaque--vazio{border:1px dashed rgba(255,255,255,.18)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__destaque-rotulo{position:relative;z-index:1;padding:0 8px;font-size:15px;line-height:1.05;text-align:center}
+.tp-perfil__destaque--personagem .tp-perfil__destaque-rotulo,.tp-perfil__destaque--mapa .tp-perfil__destaque-rotulo{position:absolute;left:8px;right:8px;bottom:8px;padding:0;text-align:left}
+.tp-perfil__selo-grande{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:var(--tp-lima);color:var(--tp-lima-tinta);font-size:28px;font-weight:800}
+.tp-perfil__trk{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border-radius:10px;background:var(--tp-fundo)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__trk-num{font-size:26px;font-weight:800;white-space:nowrap}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__trk-texto{font:800 18px/1.1 var(--tp-ui);overflow-wrap:anywhere}
+.tp-perfil__atividade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tp-perfil__evento{display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;background:var(--tp-fundo);min-width:0}
+.tp-perfil__evento-texto{display:flex;flex-direction:column;gap:2px;line-height:1.2;min-width:0}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__evento-texto b{font:800 15px/1.2 var(--tp-ui)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__evento-texto small{font:600 13px/1.2 var(--tp-ui);color:var(--tp-tinta-3)}
+.tp-perfil__marca{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:8px;background:var(--tp-elevado);font-size:22px}
+.tp-perfil__marca[data-resultado="win"]{background:color-mix(in srgb,var(--tp-ganho) 62%,var(--tp-asfalto))}
+.tp-perfil__marca[data-resultado="loss"]{background:color-mix(in srgb,var(--tp-esq) 58%,var(--tp-asfalto))}
+
+.tp-perfil__editar{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:12px;border-color:rgba(180,217,46,.35)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__editar .tp-perfil__cab h3{font-size:30px}
+.tp-perfil__campo{display:flex;flex-direction:column;gap:6px}
+.tp-perfil__rotulo-campo{font:800 13px/1 var(--tp-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--tp-tinta-2)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__input{width:100%;height:42px;box-sizing:border-box;padding:0 12px;border-radius:8px;border:1px solid rgba(255,255,255,.16);
+  background:var(--tp-fundo);color:var(--tp-tinta-1);font:600 16px/1.3 var(--tp-ui)}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__textarea{height:72px;padding:10px 12px;resize:none}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__input:focus-visible{outline:2px solid var(--tp-lima);outline-offset:1px}
+.tp-perfil__contador{align-self:flex-end;font-size:12px;color:var(--tp-tinta-3)}
+.tp-perfil__foto{display:flex;gap:8px;align-items:center}
+.tp-perfil__foto-atual{width:52px;height:52px;box-sizing:border-box;border-radius:10px;border:2px solid var(--tp-lima);object-fit:cover;font-size:26px}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__foto-mais{width:52px;height:52px;padding:0;border-radius:10px;border:1px dashed rgba(255,255,255,.35);background:none;color:var(--tp-tinta-2);font:500 22px/1 var(--tp-ui);cursor:pointer}
+.tp-perfil__check{display:flex;align-items:center;gap:10px;font:700 15px/1.25 var(--tp-ui)}
+.tp-perfil__check input{flex:none;width:20px;height:20px;accent-color:var(--tp-ambar)}
+.tp-perfil__chips{display:flex;flex-wrap:wrap;gap:6px 8px}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__chip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);color:var(--tp-tinta-1);font:700 14px/1 var(--tp-ui);cursor:pointer}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__chip--nova{background:none;border-style:dashed}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__salvar{margin-top:8px;height:56px;font-size:24px}
+
+/* Tela 10: carreira, últimas partidas e clã. */
+.tp-carreira{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,.9fr);gap:20px;align-items:start}
+.tp-carreira__eu{display:flex;flex-direction:column;gap:16px;min-width:0}
+.tp-carreira__hero{position:relative;height:300px;border-radius:14px;overflow:hidden;isolation:isolate;
+  background:linear-gradient(130deg,color-mix(in srgb,var(--tp-ganho) 18%,var(--tp-asfalto)) 0%,color-mix(in srgb,var(--tp-rar-lendario) 10%,var(--tp-asfalto)) 60%,var(--tp-asfalto) 100%)}
+.tp-carreira__hero .tp-perfil__arte{right:-30px;top:-10px;height:450px}
+/* VP1: no celular deitado a arte da carreira cabe na tela (container query não aperta em 844) */
+@media (max-width:900px){.tp-carreira__hero .tp-perfil__arte{right:0;top:0;width:200px;height:300px;opacity:.55}}
+.tp-carreira__hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(9,7,4,.85) 0%,rgba(9,7,4,.2) 70%)}
+.tp-carreira__quem{position:absolute;left:22px;right:22px;bottom:22px;display:flex;flex-direction:column;gap:6px}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__quem .tp-perfil__nick{font-size:58px}
+.tp-carreira__prox{display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:12px}
+.tp-carreira__prox-topo{display:flex;justify-content:space-between;gap:12px;font:700 16px/1.2 var(--tp-ui)}
+.tp-carreira__barra>i{background:linear-gradient(90deg,var(--tp-rar-comum),var(--tp-tinta-1))}
+.tp-carreira__trks .tp-perfil__trk{padding:14px}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__trks .tp-perfil__trk-num{font-size:30px}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__compartilhar{height:48px;font-size:15px}
+.tp-carreira__partidas,.tp-carreira__cla{display:flex;flex-direction:column;gap:10px;padding:18px;border-radius:12px;min-width:0}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__partidas h3{font-size:28px}
+.tp-carreira__m{display:grid;grid-template-columns:44px minmax(0,1fr) 76px auto;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:var(--tp-fundo)}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__m b{font-size:16px}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__m small{font-size:14px}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__kd{font-size:15px;font-weight:800;white-space:nowrap}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__quando{font:600 13px/1.2 var(--tp-ui);color:var(--tp-tinta-3);text-align:right}
+.tp-carreira__med-rotulo{margin-top:8px}
+:root[data-ui="v3"] .tp-perfil .tp-perfil__medalha{padding:6px 10px;border-radius:999px;background:var(--tp-fundo);border:1px solid rgba(180,217,46,.4);font:800 14px/1.2 var(--tp-ui)}
+.tp-carreira__cla{gap:12px}
+.tp-carreira__cla-cab{display:flex;align-items:center;gap:12px}
+.tp-carreira__brasao{flex:none;display:grid;place-items:center;width:56px;height:56px;border-radius:12px;color:var(--tp-asfalto);font-size:20px;
+  background:linear-gradient(140deg,var(--tp-ganho),color-mix(in srgb,var(--tp-lima) 35%,var(--tp-asfalto)))}
+.tp-carreira__cla-nome{display:flex;flex-direction:column;gap:4px;min-width:0}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__cla-nome h3,:root[data-ui="v3"] .tp-perfil .tp-carreira__cla-cab h3{font-size:26px}
+.tp-carreira__membros{margin:0;padding:0;list-style:none}
+.tp-carreira__membro{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.tp-carreira__membro-ini{width:36px;height:36px;border-radius:8px;font-size:18px}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__membro-nick{flex:1;min-width:0;color:var(--tp-tinta-1);font:800 15px/1.2 var(--tp-ui);text-decoration:none;overflow-wrap:anywhere}
+.tp-carreira__lider{font:800 12px/1 var(--tp-ui);letter-spacing:.08em;color:var(--tp-ambar)}
+:root[data-ui="v3"] .tp-perfil .tp-carreira__cla-acao{width:100%;height:48px;font-size:22px}
+.tp-carreira__proxima{text-align:center}
+
+@container tp-perfil (max-width:1240px){
+  .tp-perfil__dupla{grid-template-columns:minmax(0,1fr)}
+  .tp-carreira{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .tp-carreira__eu{grid-row:span 2}
+}
+@container tp-perfil (max-width:1000px){
+  .tp-perfil__grade[data-dono]{grid-template-columns:minmax(0,1fr)}
+  .tp-perfil__editar{position:static}
+}
+@container tp-perfil (max-width:900px){
+  .tp-carreira{grid-template-columns:minmax(0,1fr)}
+  .tp-carreira__eu{grid-row:auto}
+}
+@container tp-perfil (max-width:760px){
+  .tp-perfil__cartao{min-height:0;padding:18px}
+  .tp-perfil__arte{right:-40px;top:0;width:200px;height:300px;opacity:.55}
+  /* VP1: a arte da carreira também precisa caber no celular deitado (sem rolagem lateral) */
+  .tp-carreira__hero .tp-perfil__arte{right:0;top:0;width:200px;height:300px;opacity:.55}
+  .tp-perfil__id{gap:14px;margin-right:0}
+  .tp-perfil__redes{margin-right:0}
+  .tp-perfil__avatar{width:88px;height:88px;border-radius:14px;font-size:44px}
+  :root[data-ui="v3"] .tp-perfil .tp-perfil__nick,:root[data-ui="v3"] .tp-perfil .tp-carreira__quem .tp-perfil__nick{font-size:42px}
+  :root[data-ui="v3"] .tp-perfil .tp-perfil__bio{font-size:16px}
+  .tp-perfil__acoes{justify-content:flex-start}
+  .tp-perfil__atividade{grid-template-columns:minmax(0,1fr)}
+  .tp-perfil__destaque{height:132px}
+  .tp-carreira__hero{height:220px}
+}
+@media (pointer:coarse){
+  :root[data-ui="v3"] .tp-perfil :is(.tp-aba,.tp-perfil__link,.tp-perfil__rede,.tp-perfil__chip,.tp-carreira__membro-nick,.tp-perfil__input){min-height:44px}
+  :root[data-ui="v3"] .tp-perfil :is(.tp-aba,.tp-perfil__link,.tp-carreira__membro-nick){display:inline-flex;align-items:center}
+  :root[data-ui="v3"] .tp-perfil .tp-perfil__check{min-height:44px}
+}

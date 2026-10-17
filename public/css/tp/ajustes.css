@@ -1,0 +1,81 @@
+/* Treta Pop · Ajustes (#settings-panel). Só vale com <html data-ui="v3">: todo seletor começa em :root[data-ui="v3"] ou numa classe .tp-. */
+:root[data-ui="v3"] #settings-panel{background:rgba(9,7,4,.86);backdrop-filter:none;font-family:var(--tp-ui)}
+:root[data-ui="v3"] #settings-panel .settings-wrap{width:1040px;max-width:calc(100vw - 32px);height:min(640px,calc(100dvh - 32px));display:flex;flex-direction:column;
+  background:var(--tp-painel);border:1px solid rgba(255,255,255,.09);border-radius:12px;clip-path:none}
+:root[data-ui="v3"] #settings-panel .set-head h2{font:400 40px/1 var(--tp-display);letter-spacing:.01em;color:var(--tp-tinta-1);transform:var(--tp-skew)}
+:root[data-ui="v3"] #settings-panel .set-close{min-height:44px;color:var(--tp-tinta-3);font:800 13px/1 var(--tp-ui);letter-spacing:.08em}
+:root[data-ui="v3"] #settings-panel .set-close kbd{font:700 11px/1 var(--tp-num);border-color:var(--tp-borda-forte);border-radius:4px}
+:root[data-ui="v3"] #settings-panel .set-tabs{gap:22px;border-bottom:1px solid var(--tp-borda);overflow-x:auto;scrollbar-width:none;flex:none}
+:root[data-ui="v3"] #settings-panel .set-tab{flex:none;padding:12px 2px 9px;background:none;border:0;border-bottom:3px solid transparent;color:var(--tp-tinta-3);
+  font:400 20px/1 var(--tp-display);letter-spacing:.03em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+:root[data-ui="v3"] #settings-panel .set-tab.active{color:var(--tp-tinta-1);border-bottom-color:var(--tp-lima)}
+:root[data-ui="v3"] #settings-panel .set-tab:focus-visible{outline:2px solid var(--tp-tinta-1);outline-offset:2px}
+:root[data-ui="v3"] #settings-panel .set-cols{min-height:0;overflow-y:auto}
+:root[data-ui="v3"] #settings-panel .set-row{color:var(--tp-tinta-2);font:700 15px/1.2 var(--tp-ui);letter-spacing:.08em}
+:root[data-ui="v3"] #settings-panel .set-row:hover{color:var(--tp-tinta-1)}
+:root[data-ui="v3"] #settings-panel .set-row select{background-color:var(--tp-fundo);border:1px solid rgba(255,255,255,.14);border-radius:6px;color:var(--tp-tinta-1);font:700 14px/1 var(--tp-ui);letter-spacing:.04em}
+:root[data-ui="v3"] #settings-panel .set-range{color:var(--tp-lima)}
+:root[data-ui="v3"] #settings-panel .set-range b{font:800 15px/1 var(--tp-num);color:var(--tp-tinta-1)}
+:root[data-ui="v3"] #settings-panel .set-toggle{border:1px solid rgba(255,255,255,.14);border-radius:6px;overflow:hidden;color:var(--tp-tinta-3)}
+:root[data-ui="v3"] #settings-panel .set-toggle b,:root[data-ui="v3"] #settings-panel .set-toggle i{font:800 12px/1 var(--tp-ui);letter-spacing:.08em}
+:root[data-ui="v3"] #settings-panel .set-toggle b{background:var(--tp-ganho);color:var(--tp-asfalto)}
+:root[data-ui="v3"] #settings-panel .set-toggle:has(input:not(:checked)) b{background:transparent;color:var(--tp-tinta-3)}
+:root[data-ui="v3"] #settings-panel .set-toggle:has(input:not(:checked)) i{background:var(--tp-tinta-1);color:var(--tp-asfalto)}
+:root[data-ui="v3"] #settings-panel .set-toggle:has(input:disabled){opacity:.6}
+:root[data-ui="v3"] #settings-panel .set-toggle:has(input:focus-visible){outline:2px solid var(--tp-tinta-1);outline-offset:2px}
+:root[data-ui="v3"] #settings-panel .set-note{border-left-color:var(--tp-borda-forte);color:var(--tp-tinta-3)}
+:root[data-ui="v3"] #settings-panel .set-preview{border-color:var(--tp-borda);border-radius:8px;position:relative}
+:root[data-ui="v3"] #settings-panel .set-preview-caption{font:700 11px/1.2 var(--tp-ui);letter-spacing:.16em;color:var(--tp-tinta-3)}
+:root[data-ui="v3"] #settings-panel .set-actions{border-top-color:var(--tp-borda);flex:none}
+:root[data-ui="v3"] #settings-panel .set-secondary{border:1px solid var(--tp-borda-forte);border-radius:6px;color:var(--tp-tinta-2);font:800 13px/1 var(--tp-ui);letter-spacing:.08em}
+:root[data-ui="v3"] #settings-panel .set-apply{transform:none;border:0;border-radius:6px;background:var(--tp-elevado)}
+:root[data-ui="v3"] #settings-panel .set-save{transform:none;border-radius:0;background:var(--tp-lima);clip-path:var(--tp-corte)}
+:root[data-ui="v3"] #settings-panel .set-apply span,:root[data-ui="v3"] #settings-panel .set-save span{transform:var(--tp-skew);font:400 22px/1 var(--tp-display);letter-spacing:.03em}
+:root[data-ui="v3"] #settings-panel .set-save span{color:var(--tp-lima-tinta)}
+
+/* abas novas: o legado só filtra vídeo, áudio, jogabilidade e controles */
+:root[data-ui="v3"] #settings-panel[data-active-tab="mira"] .set-row:not([data-section="mira"]),
+:root[data-ui="v3"] #settings-panel[data-active-tab="acessibilidade"] .set-row:not([data-section="acessibilidade"]),
+:root[data-ui="v3"] #settings-panel[data-active-tab="privacidade"] .set-row:not([data-section="privacidade"]){display:none}
+:root[data-ui="v3"] #settings-panel .tp-aj-nota{display:none}
+:root[data-ui="v3"] #settings-panel[data-active-tab="acessibilidade"] .tp-aj-nota{display:block}
+:root[data-ui="v3"] #settings-panel:not([data-active-tab="privacidade"]) .tp-aj-privacidade{display:none}
+:root[data-ui="v3"] #settings-panel[data-active-tab="acessibilidade"] .set-preview-wrap,
+:root[data-ui="v3"] #settings-panel[data-active-tab="privacidade"] .set-preview-wrap{display:none}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade{display:flex;flex-direction:column;align-items:stretch;gap:10px;letter-spacing:0;text-transform:none;font:600 15px/1.35 var(--tp-ui);color:var(--tp-tinta-2)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade h3{margin:0;font:400 22px/1 var(--tp-display);text-transform:uppercase;color:var(--tp-tinta-1)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade *{text-transform:none;letter-spacing:0}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade label{display:flex;gap:10px;align-items:flex-start;min-height:44px;cursor:pointer;font:600 15px/1.35 var(--tp-ui);color:var(--tp-tinta-2)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade input[type="checkbox"]{appearance:none;width:20px;height:20px;margin:2px 0 0;flex:none;border:2px solid var(--tp-tinta-3);border-radius:4px;background:var(--tp-fundo);display:grid;place-content:center}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade input[type="checkbox"]:checked{background:var(--tp-ganho);border-color:var(--tp-ganho)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade input[type="checkbox"]:checked::before{content:'';width:10px;height:10px;background:var(--tp-asfalto);clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0,43% 62%)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade p{margin:0;font:400 14px/1.4 var(--tp-ui);color:var(--tp-tinta-3)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade button{align-self:flex-start;min-height:44px;padding:0 16px;border:0;border-radius:6px;background:var(--tp-elevado);color:var(--tp-tinta-1);font:400 18px/1 var(--tp-display);cursor:pointer;box-shadow:none}
+/* a escolha de cookies e novidades mora em Ajustes > Privacidade; o perfil não repete o controle */
+:root[data-ui="v3"] #profile-preferences{display:none}
+
+.tp-mira-previa{display:none;position:absolute;left:50%;top:50%;width:0;height:0}
+:root[data-ui="v3"] #settings-panel[data-active-tab="mira"] .tp-mira-previa{display:block}
+.tp-mira-previa i{position:absolute;background:var(--xhair);box-shadow:0 0 0 1px rgba(0,0,0,.55)}
+.tp-mira-previa i:nth-child(1){left:-1px;top:-14px;width:2px;height:8px}
+.tp-mira-previa i:nth-child(2){left:-1px;top:6px;width:2px;height:8px}
+.tp-mira-previa i:nth-child(3){top:-1px;left:-14px;width:8px;height:2px}
+.tp-mira-previa i:nth-child(4){top:-1px;left:6px;width:8px;height:2px}
+.tp-mira-previa b{position:absolute;left:-1px;top:-1px;width:2px;height:2px;background:var(--xhair)}
+
+@media (max-width:900px),(max-height:520px){
+  :root[data-ui="v3"] #settings-panel .settings-wrap{max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}
+  :root[data-ui="v3"] #settings-panel .set-head{padding:10px 16px 0}
+  :root[data-ui="v3"] #settings-panel .set-head h2{font-size:28px}
+  :root[data-ui="v3"] #settings-panel .set-tabs{padding:0 16px;gap:16px}
+  :root[data-ui="v3"] #settings-panel .set-tab{font-size:17px}
+  :root[data-ui="v3"] #settings-panel .set-cols{padding:14px 16px}
+  :root[data-ui="v3"] #settings-panel .set-preview-wrap{display:none}
+  :root[data-ui="v3"] #settings-panel .set-actions{padding:10px 16px}
+}
+@media (pointer:coarse){
+  :root[data-ui="v3"] #settings-panel .set-tab{min-height:44px}
+  :root[data-ui="v3"] #settings-panel .set-toggle b,:root[data-ui="v3"] #settings-panel .set-toggle i{padding:16px 16px}
+  :root[data-ui="v3"] #settings-panel .set-row select,:root[data-ui="v3"] #settings-panel .set-secondary,
+  :root[data-ui="v3"] #settings-panel .set-apply,:root[data-ui="v3"] #settings-panel .set-save{min-height:44px}
+}

@@ -67,6 +67,8 @@ const saveSettings = () => localStorage.setItem(SETTINGS_KEY, JSON.stringify({
   ...settings,
   quality: preferredQuality ?? settings.quality,
 }));
+// Ajustes da Treta Pop (tp/ajustes.js) gravam nas mesmas settings, senão o próximo save apagaria a escolha.
+if (document.documentElement.dataset.ui === 'v3') document.addEventListener('tp-ajuste', (e) => { settings[e.detail.chave] = e.detail.valor || undefined; saveSettings(); });
 const NICK_KEY = 'awpbr_nick';
 // A coleta de jogadas exige consentimento explícito e persistente.
 const TRAIN_CONSENT_KEY = 'csbr_training_consent';
@@ -297,10 +299,14 @@ function _splashSetReady() {
   // G2-R10: o failsafe de 20s dispara DEPOIS da splash sair do DOM (debug/?auto= e
   // fluxos rápidos) — sem guarda, crashava "textContent null" (banner vermelho).
   const bs = document.getElementById('boot-status'), se = document.getElementById('splash-enter');
-  if (bs) bs.textContent = 'ARENA PRONTA';
+  if (bs) bs.textContent = tr('ARENA PRONTA');
   if (se) se.classList.remove('hidden');
 }
 setTimeout(_splashSetReady, 20000);   // failsafe: nunca prende o jogador na splash
+if (document.documentElement.dataset.ui === 'v3') {
+  import('./splash-v3.js').then((m) => m.ligarSplashV3()).catch(() => {});
+  import('./tp/ligar.js').then((m) => m.ligarTelas()).catch((e) => console.error('[treta-pop]', e));
+}
 // overlay de loading de partida/personagens (cobre a cena montando — sem "minecraft")
 const _lo = {
   box: document.getElementById('load-overlay'), fill: document.getElementById('load-bar-fill'),
@@ -622,6 +628,7 @@ function _ensureMusic() {
     // não casar mais com o número da faixa (some uma no meio e o telemetry mentiria).
     if (!MENU_MUSIC_REVIEW) _pick('musica', _menuTrackId(_url)); }
   menuMusic.loop = true; menuMusic.volume = MENU_MUSIC_VOL;
+  menuMusic.addEventListener('canplaythrough', () => { window.__csMusicaPronta = true; window.dispatchEvent(new Event('cs-musica-pronta')); }, { once: true });
   window.__mm = menuMusic;   // hook de debug/teste (estado da música do menu)
   return menuMusic;
 }
@@ -670,6 +677,7 @@ const _armMusic = () => {
 function dismissSplash(e) {
   const sp = document.getElementById('boot-splash');
   if (!sp || !_splashReady || sp.classList.contains('gone')) return;
+  if (e?.target?.closest?.('[data-splash-fica]')) return;
   e?.preventDefault?.(); e?.stopPropagation?.();
   _entradaEm = performance.now();
   loadingStage.hide();
@@ -1678,6 +1686,14 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
   const matchRoster = sessao
     ? rosterDoServidor(side, charId)
     : pickMatchRoster(faction, enemyFac, { allies: settings.allyBots, enemies: settings.enemyBots }, charId, false, _pinned);
+  /* Treta Pop: o carregamento VS mostra o elenco sorteado; o global cobre o ?auto=, que lança antes de tp/ligar.js chegar */
+  if (document.documentElement.dataset.ui === 'v3') {
+    window.__tpElenco = {
+      lado: side, eu: CHARACTERS.find((c) => c.id === charId), aliados: matchRoster.allyDefs, inimigos: matchRoster.enemyDefs,
+      online: !!sessao, tamanho: tamanhoTime || 0, ctf: matchMode === 'ctf', rounds: sessao ? sanitizeRounds(sessao.net.meta.roundsMax) : matchRounds(),
+      mapa: MAPS[currentMap].name, desc: MAP_DESC[currentMap] || '', arte: mapPreviewPoster(currentMap, VERSION) };
+    window.dispatchEvent(new CustomEvent('tp:elenco', { detail: window.__tpElenco }));
+  }
   const playerSkinId = sessao
     ? sessao.net.meta.roster.find(r=>r.id===sessao.net.yourEnt)?.skinId || null
     : equippedTretaSkin(charId);
@@ -2930,6 +2946,12 @@ function montarHubSels() {
   syncHubSels();
 }
 if (HUB_ENABLED) montarHubSels();
+/* Treta Pop (public/js/tp/modos.js): lê o estado da partida e troca o mapa pela mesma máquina do menu. */
+if (document.documentElement.dataset.ui === 'v3') window.__tpModos = {
+  mapas: () => MAPAS_MENU.map((id) => ({ id, nome: MAPS[id].name, poster: mapPreviewPoster(id, VERSION), cats: catsDe(id), data: MAP_DATA[id] || '', desc: tr(MAP_DESC[id] || ''), parado: MAPAS_PARADOS.has(id) })),
+  estado: () => ({ mapa: currentMap, modo: matchMode, armas: settings.wpnMode || 'all', aliados: settings.allyBots, inimigos: settings.enemyBots, rounds: matchRounds(), dificuldade: settings.difficulty || 'normal', escalados: [...settings.pinnedChars] }),
+  irMapa: (id) => { if (MAPAS_MENU.includes(id)) gotoMap(MAPAS_MENU.indexOf(id)); },
+};
 if (diffSel) {
   [['easy', 'FÁCIL'], ['normal', 'NORMAL'], ['hard', 'DIFÍCIL'], ['insane', 'INSANO']].forEach(([v, l]) => { const o = document.createElement('option'); o.value = v; o.textContent = l; diffSel.appendChild(o); });
   diffSel.value = settings.difficulty || 'normal';
@@ -4065,6 +4087,8 @@ async function obterMpTicket(action) {
 }
 
 const mpEl = (id) => document.getElementById(id);
+// Treta Pop (tp/servidores.js) desenha a mesma lista; o último estado fica para quem liga depois.
+const tpMp = (tipo, detail) => { if (document.documentElement.dataset.ui !== 'v3') return; (window.__tpMp ||= {})[tipo] = detail; document.dispatchEvent(new CustomEvent(tipo, { detail })); };
 function mpErro(msg, comRetry = false) {
   const e = mpEl('mp-erro'); if (!e) return;
   e.hidden = !msg; e.textContent = msg || '';
@@ -4110,6 +4134,7 @@ async function abrirMultiplayer() {
   const nos = mpEl('mp-nos');
   if (nos) nos.innerHTML = '<div class="mp-vazio">medindo o ping dos servidores…</div>';
   mpEl('mp-salas').innerHTML = '';
+  tpMp('tp-mp-nos', { nos: [], medindo: true });
   mpNos = await sondarNos(NOS);
   // o servidor do jogador tem que ser o PRIMEIRO da lista, não o do dono (regra em nos.js)
   mpNos = ordenarNos(mpNos);
@@ -4223,6 +4248,7 @@ function mpDesenharNos() {
     b.onclick = () => { ui.click(); mpSelecionarNo(n); };
     box.appendChild(b);
   }
+  tpMp('tp-mp-nos', { nos: mpNos, atual: mpNoAtual });
 }
 
 function mpSelecionarNo(no) {
@@ -4242,8 +4268,8 @@ async function mpAtualizarSalas() {
   const box = mpEl('mp-salas'); if (!box || !mpNoAtual) return;
   let salas;
   try { salas = await listRooms(mpNoAtual.http); }
-  catch { box.innerHTML = '<div class="mp-vazio">não deu pra falar com esse servidor.</div>'; return; }
-  if (!salas.length) { box.innerHTML = '<div class="mp-vazio">nenhuma sala aberta. crie a sua abaixo.</div>'; return; }
+  catch { box.innerHTML = '<div class="mp-vazio">não deu pra falar com esse servidor.</div>'; tpMp('tp-mp-salas', { erro: true, no: mpNoAtual }); return; }
+  if (!salas.length) { box.innerHTML = '<div class="mp-vazio">nenhuma sala aberta. crie a sua abaixo.</div>'; tpMp('tp-mp-salas', { salas, no: mpNoAtual }); return; }
   // oficiais primeiro, depois as mais cheias (sala com gente é sala boa de entrar)
   salas.sort((a, b) => (b.oficial - a.oficial) || (b.players - a.players));
   box.innerHTML = '';
@@ -4292,6 +4318,7 @@ async function mpAtualizarSalas() {
     acoes.append(assistir, convite);
     box.appendChild(div);
   }
+  tpMp('tp-mp-salas', { salas, no: mpNoAtual });
 }
 
 /* Copia o link e CONFIRMA na própria etiqueta. Botão de copiar sem retorno visual é o caso

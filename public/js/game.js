@@ -8169,7 +8169,7 @@ export class Game {
   _updateRadar() {
     const x = this.radarCtx;
     if (!x) return;
-    const S = 150, H = S / 2, R = H - 3;
+    const S = x.canvas.width || 150, H = S / 2, R = H - 3;
     const fp = this._radarFoot(S);
     const sc = fp ? fp.sc : 1.42, ox = fp ? fp.cx : 0, oz = fp ? fp.cz : 0;
     x.clearRect(0, 0, S, S);
@@ -8224,7 +8224,8 @@ export class Game {
     // tem que continuar dizendo algo verdadeiro.
     x.strokeStyle = 'rgba(236,235,230,0.12)'; x.lineWidth = 1;
     x.strokeRect(0.5, 0.5, S - 1, S - 1);
-    x.font = "600 10px Rajdhani, sans-serif"; x.textAlign = 'left'; x.textBaseline = 'alphabetic';
+    /* dataset só existe no browser (tp/hud.js seta); o arnês node usa canvas falso */
+    x.font = x.canvas?.dataset?.fonte || "600 10px Rajdhani, sans-serif"; x.textAlign = 'left'; x.textBaseline = 'alphabetic';
     x.fillStyle = 'rgba(139,140,146,0.95)';
     x.fillText((MAPS[this._mapId].name || '').toUpperCase(), 8, S - 7);
   }
@@ -8285,7 +8286,7 @@ export class Game {
           const score = Math.max(0, c.kills * 100 + (c.captures || 0) * 250 - c.deaths * 20);
           const ping = 12 + ((c.kills * 7 + c.deaths * 3 + i * 5) % 18);
           return (
-          `<tr${c.isPlayer ? ' class="me"' : ''}>
+          `<tr data-av="${/^[\w-]+$/.test(c.def?.id || '') ? c.def.id : ''}"${c.isPlayer ? ' class="me"' : ''}>
             <td class="sb-n">${escapeClanName(c.name, c.clanTag)}${c.isPlayer ? ' ★' : ''}</td><td>${c.kills}</td><td>${c.deaths}</td><td class="sb-points">${score}</td><td class="sb-ping">${ping}</td>${this.ctf ? `<td>${c.captures || 0}</td>` : ''}</tr>`
           );
         }).join('');
