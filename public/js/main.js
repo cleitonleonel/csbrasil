@@ -254,6 +254,7 @@ if (!urlMap) { settings.map = currentMap; saveSettings(); }
 // Mint building/statue GLBs used by the Brasília map (loaded once, cloned per placement).
 const MAP_PROPS = COMMON_MAP_PROPS;   // props do Piscinão de Ramos (Mint); carros/estátua do Havan carregam por-mapa   // Havan (estátua + carros + carrinho)
 let menuScene = new THREE.Scene();
+
 const menuCam = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 400);
 /* ---------------- loading real (barra via LoadingManager compartilhado) ---------------- */
 // GLTFLoader sem manager cai no THREE.DefaultLoadingManager — TODOS os GLBs (personagens,
@@ -386,7 +387,7 @@ function menuProps(mapa) {
   return [...MAP_PROPS, ...(mapa.props || [])];
 }
 let _menuLoadSeq = 0;
-function loadMenuBackdrop() {
+async function loadMenuBackdrop() {
   const id = currentMap, seq = ++_menuLoadSeq;
   return comMapaCarregado(id, (mapa) => {
     if (seq !== _menuLoadSeq || id !== currentMap) return;
