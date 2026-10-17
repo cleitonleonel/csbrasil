@@ -69,7 +69,7 @@ async function preparar(page, mutante, { conta = true, registro = [] } = {}) {
     return json({ error: 'not_found' }, 404);
   });
   const reescreve = (teste, troca) => page.route(teste, async (r) => {
-    const res = await r.fetch();
+    const res = await r.fetch().catch(() => r.fetch());
     const antes = await res.text();
     const depois = troca(antes);
     if (depois === antes) throw new Error(`mutante ${mutante} não aplicou em ${r.request().url()}`);
