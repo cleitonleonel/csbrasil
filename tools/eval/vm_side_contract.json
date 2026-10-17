@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T02:42:45.458Z",
+  "generatedAt": "2026-10-17T03:00:31.098Z",
   "contract": {
     "aspects": [
       1.7777777777777777,
@@ -48,15 +48,25 @@
   "matrix": {
     "awp": {
       "family": "sniper",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/awp.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/sniper/sniper-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "sniper"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": -0.05,
+          "y": 0.15,
+          "z": -0.3296,
+          "fov": 80,
+          "rotDeg": [
+            -11.9,
+            0,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.141,
@@ -102,15 +112,25 @@
     },
     "m4": {
       "family": "ar",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/m4.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/ar/ar-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "rifle"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.0198,
+          "y": 0.061,
+          "z": -0.1649,
+          "fov": 84,
+          "rotDeg": [
+            -8,
+            0.9,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.092,
@@ -127,15 +147,25 @@
     },
     "mp5": {
       "family": "mp5",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/mp5.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/mp5/mp5-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "smg"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.091,
+          "y": -0.187,
+          "z": -0.204,
+          "fov": 84,
+          "rotDeg": [
+            -10.1,
+            0,
+            18
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.133,
@@ -152,15 +182,25 @@
     },
     "shotgun": {
       "family": "shotgun",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/shotgun.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/shotgun/shotgun-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "shotgun"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.65,
+          "y": -0.72,
+          "z": -1,
+          "fov": 84,
+          "rotDeg": [
+            8,
+            4,
+            -5
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.355,
@@ -177,15 +217,25 @@
     },
     "deagle": {
       "family": "deagle",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/deagle.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/deagle/deagle-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "pistol"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.1,
+          "y": -0.1,
+          "z": -0.25,
+          "fov": 55,
+          "rotDeg": [
+            -5,
+            15,
+            -5
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.012,
@@ -250,15 +300,25 @@
     },
     "m92": {
       "family": "ak",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/m92.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/ak/ak-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "rifle"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.0948,
+          "y": 0.0409,
+          "z": -0.1014,
+          "fov": 57,
+          "rotDeg": [
+            6,
+            15,
+            2
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.086,
@@ -275,15 +335,25 @@
     },
     "akm": {
       "family": "ak",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/akm.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/ak/ak-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "rifle"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.065,
+          "y": 0.04,
+          "z": -0.203,
+          "fov": 57,
+          "rotDeg": [
+            1.69,
+            7.69,
+            6.19
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.092,
@@ -300,15 +370,25 @@
     },
     "g3": {
       "family": "g3",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/g3.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/g3/g3-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "rifle"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": -0.0395,
+          "y": -0.015,
+          "z": -0.2204,
+          "fov": 78,
+          "rotDeg": [
+            8,
+            -0.2,
+            18
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.183,
@@ -330,15 +410,25 @@
     },
     "revolver38": {
       "family": "revolver",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/revolver38.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/revolver/revolver-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "pistol"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.2,
+          "y": -0.08,
+          "z": -0.4,
+          "fov": 55,
+          "rotDeg": [
+            -10,
+            16,
+            -5
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.053,
@@ -361,15 +451,25 @@
     },
     "md97": {
       "family": "ar",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/md97.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/ar/ar-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "rifle"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.0008,
+          "y": 0.1243,
+          "z": -0.068,
+          "fov": 90,
+          "rotDeg": [
+            -4,
+            -4,
+            -12
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.064,
@@ -391,15 +491,25 @@
     },
     "carbine": {
       "family": "ar",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/carbine.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/ar/ar-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "rifle"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.03,
+          "y": 0.1,
+          "z": -0.26,
+          "fov": 84,
+          "rotDeg": [
+            -8,
+            0.9,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.117,
@@ -416,15 +526,25 @@
     },
     "m400": {
       "family": "sniper",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/m400.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/sniper/sniper-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "sniper"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": -0.2358,
+          "y": 0.3123,
+          "z": -0.5979,
+          "fov": 84,
+          "rotDeg": [
+            -11.9,
+            0,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.141,
@@ -446,15 +566,25 @@
     },
     "mosin": {
       "family": "bolt",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/mosin.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/bolt/bolt-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "sniper"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.0667,
+          "y": 0.0733,
+          "z": -0.2739,
+          "fov": 84,
+          "rotDeg": [
+            -1.6,
+            15,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.221,
@@ -471,15 +601,25 @@
     },
     "rem700": {
       "family": "bolt",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/rem700.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/bolt/bolt-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "sniper"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.0696,
+          "y": -0.1131,
+          "z": -0.5712,
+          "fov": 84,
+          "rotDeg": [
+            0,
+            20,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.221,
@@ -496,15 +636,25 @@
     },
     "lmg": {
       "family": "lmg",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/lmg.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/lmg/lmg-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "rifle"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.153,
+          "y": -0.116,
+          "z": -0.375,
+          "fov": 84,
+          "rotDeg": [
+            -5.2,
+            -0.3,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.356,
@@ -526,15 +676,25 @@
     },
     "scar": {
       "family": "ar",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/scar.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/ar/ar-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "rifle"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": -0.0615,
+          "y": 0.0721,
+          "z": -0.1984,
+          "fov": 82,
+          "rotDeg": [
+            -8,
+            0.9,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.15,
@@ -551,15 +711,25 @@
     },
     "tavor": {
       "family": "ar",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/tavor.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/ar/ar-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "rifle"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.1037,
+          "y": 0.0315,
+          "z": -0.2007,
+          "fov": 84,
+          "rotDeg": [
+            -8,
+            0.9,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.046,
@@ -576,15 +746,25 @@
     },
     "famas": {
       "family": "ar",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/famas.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/ar/ar-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "rifle"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.0755,
+          "y": 0.0731,
+          "z": -0.1424,
+          "fov": 84,
+          "rotDeg": [
+            -8,
+            0.9,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.046,
@@ -606,15 +786,25 @@
     },
     "uzi": {
       "family": "smg",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/uzi.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/smg/smg-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "smg"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.4704,
+          "y": -0.454,
+          "z": -0.4408,
+          "fov": 84,
+          "rotDeg": [
+            15.4,
+            6,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.345,
@@ -637,15 +827,25 @@
     },
     "p90": {
       "family": "p90",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/p90.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/p90/p90-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "smg"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.075,
+          "y": -0.02,
+          "z": -0.141,
+          "fov": 84,
+          "rotDeg": [
+            0,
+            0,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.042,
@@ -667,15 +867,25 @@
     },
     "svd": {
       "family": "svd",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/svd.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/svd/svd-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "sniper"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": -0.0852,
+          "y": -0.124,
+          "z": -0.4522,
+          "fov": 84,
+          "rotDeg": [
+            1.9,
+            0.5,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.183,
@@ -696,16 +906,26 @@
       }
     },
     "g3sg1": {
-      "family": "marksman",
-      "active": "legacy",
+      "family": "g3",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/g3sg1.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/g3/g3-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "sniper"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.117,
+          "y": -0.062,
+          "z": -0.202,
+          "fov": 84,
+          "rotDeg": [
+            1,
+            -0.2,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.183,
@@ -727,15 +947,25 @@
     },
     "sks": {
       "family": "marksman",
-      "active": "legacy",
+      "active": "paid",
       "fallback": "legacy",
-      "fallbackUsed": true,
-      "result": "fallback-explicito",
-      "asset": "/models/weapons/sks.glb",
-      "license": "Mint/project asset",
+      "fallbackUsed": false,
+      "result": "autorada",
+      "asset": "/private-assets/viewmodels/marksman/marksman-runtime.glb",
+      "license": "Fab Standard License (private runtime)",
       "frame": {
-        "source": "VM_FRAME.cls",
-        "class": "sniper"
+        "source": "VM_AUTHORED_FRAME.family",
+        "value": {
+          "x": 0.24,
+          "y": -0.18,
+          "z": -0.25,
+          "fov": 84,
+          "rotDeg": [
+            0.5,
+            -0.3,
+            0
+          ]
+        }
       },
       "goldsrcFrame": {
         "x": 0.158,

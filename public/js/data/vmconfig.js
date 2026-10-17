@@ -423,13 +423,13 @@ export const VM_FRAME = {
          depois:                     VM1 10 VM3  2 VM5  6 VM9  0 VM12 14 VM16 21 =  53
        O que NÃO fechou está declarado no relatório: pistola e faca (sem foto de referência)
        e a borda esquerda de 5 armas. */
-    rifle:   { roll: -0.070, pitch: 0.1571, yaw: 0.2793, tanH: 0.360, clear: 0.020, minz: 0.3450, fwdTan: 1.60 },
-    sniper:  { roll: -0.055, pitch: 0.1571, yaw: 0.2094, tanH: 0.360, clear: 0.020, minz: 0.3350, fwdTan: 1.60 },
+    rifle:   { roll: -0.0524, pitch: 0.1571, yaw: 0.2793, tanH: 0.360, clear: 0.020, minz: 0.3450, fwdTan: 1.60 },
+    sniper:  { roll: 0.580, pitch: 0.1571, yaw: 0.2094, tanH: 0.360, clear: 0.020, minz: 0.3350, fwdTan: 1.60 },
     shotgun: { roll: -0.078, pitch: 0.1047, yaw: 0.3491, tanH: 0.360, clear: 0.020, minz: 0.3450, fwdTan: 1.60 },
     smg:     { roll: -0.085, pitch: 0.4189, yaw: 0.4887, tanH: 0.360, clear: 0.020, minz: 0.3500, fwdTan: 1.60 },
-    // Pose da main: o cant leve desta branch punha deagle/revolver38/mosin abaixo do piso
-    // de areaPct da VM5; a queixa da PT-38 que motivou o cant fica em KNOWN-BUGS (BUG-180).
-    pistol:  { roll: -0.050, pitch: 0.4712, yaw: 0.5585, tanH: 0.280, clear: 0.020, minz: 0.2700, fwdTan: 1.60 },
+    // Armas curtas: yaw alto expõe o flanco da arma em hip-fire; no ADS o
+    // runtime zera pitch/yaw e realinha a alça ao centro.
+    pistol:  { roll: 0.000, pitch: 0.1745, yaw: 1.0472, tanH: 0.285, clear: 0.020, minz: 0.3500, fwdTan: 1.45 },
     knife:   { roll: 0, pitch: 0.000, yaw: 0.000, tanH: 0.240, clear: 0.020, minz: 0.3100, fwdTan: 1.60 },   // pitch/yaw n/a: a faca usa knifeRot
   },
   // A faca não tem cano: em vez do cant ela leva a pose CS clássica (lâmina atravessada,
@@ -469,7 +469,9 @@ export const VM_FRAME = {
      que sobrasse só tiraria o grip da banda da VM9 (m92 com 1,12 ia a Zg 0,560 e o grip
      saía por 0,0009). DÍVIDA REMOVIDA: 5 exceções por arma -> 0. Se alguém precisar de uma,
      o custo é medido: a janela inteira de Zg da VM9 é [0,445 ; 0,558], ou seja ±11%. */
-  zMul: {},
+  // Compactas têm caixa alta para o comprimento: afastar em torno do grip
+  // impede UZI/P90 de parecerem maiores que um fuzil na lente 1P.
+  zMul: { uzi: 1.34, p90: 1.16, mp5: 1.08 },
   // classe de ENQUADRAMENTO (≠ STATIC_CLASS do pipeline Tripo, ≠ BALL_CLASS da balística)
   classOf: {
     ak: 'rifle', akm: 'rifle', m4: 'rifle', m92: 'rifle', g3: 'rifle', carbine: 'rifle',
@@ -481,71 +483,57 @@ export const VM_FRAME = {
     knife: 'knife',
   },
 };
-// Enquadramento por ARMA da trilha CS 1.6 (goldsrc). MEDIDO no jogo real por
-// `tools/eval/vm-frame-calibra.mjs`; o alvo de tamanho é a AK golden aprovada.
-const MOLDE_FRAME = Object.freeze({
-  awp:        { x: 0.141, y: 0.031, z: 0 },
-  ak:         { x: 0.092, y: 0.064, z: 0 },
-  m4:         { x: 0.092, y: 0.009, z: 0 },
-  mp5:        { x: 0.133, y: 0.068, z: 0 },
-  shotgun:    { x: 0.355, y: 0.04, z: -0.24 },
-  deagle:     { x: 0.012, y: 0.084, z: 0, drawDrop: 0.513 },
-  pistol:     { x: 0.061, y: -0.043, z: 0, drawDrop: 0.367 },
-  m92:        { x: 0.086, y: 0.012, z: 0 },
-  revolver38: { x: 0.053, y: 0.013, z: 0, drawDrop: 0.333 },
-  md97:       { x: 0.064, y: 0.099, z: 0 },
-  carbine:    { x: 0.117, y: 0.085, z: 0 },
-  mosin:      { x: 0.221, y: -0.14, z: -0.08 },
-  lmg:        { x: 0.356, y: 0.173, z: -0.08 },
-  scar:       { x: 0.15, y: 0.013, z: 0 },
-  famas:      { x: 0.046, y: 0.005, z: 0 },
-  uzi:        { x: 0.345, y: 0.177, z: 0, drawDrop: 0.28 },
-  p90:        { x: 0.042, y: -0.046, z: 0 },
-  svd:        { x: 0.183, y: 0.12, z: -0.08 },
-  sks:        { x: 0.158, y: 0.078, z: -0.08 },
-  default:    { x: 0.1, y: 0.02, z: 0 },
-});
 
-// O enquadramento move o pacote inteiro e preserva contatos. Armas longas ganham
-// distância ocular para o aspecto largo do navegador.
-const FAMILY_FRAME = Object.freeze({
-  // Âncoras MEDIDAS nos gabaritos CS 1.6 (vm-cs16-frames.mjs, razão angular
-  // alvo 1,00; relatórios em baked-preview/<arma>-cs16-template-report.json).
-  ak:      { x: 0.112, y: -0.068, z: -0.199, fov: 84, rotDeg: [0.6, -0.1, -5] },
-  ar:      { x: 0.096, y: -0.129, z: -0.198, fov: 84, rotDeg: [-8.0, 0.9, 0] },
-  mp5:     { x: 0.091, y: -0.187, z: -0.204, fov: 84, rotDeg: [-10.1, 0, 0] },
-  // O DGL50 final já traz a arma assada no rig. A calibração antiga incluía
-  // o wrap montado em runtime e deixava o punho abaixo do quadro.
-  deagle:  { x: 0.089, y: 0.000, z: -0.217, fov: 84, rotDeg: [-15.8, -0.2, 0] },
-  smg:     { x: 0.206, y: -0.141, z: -0.462, fov: 84, rotDeg: [15.4, 6.0, 0] },
-  // O pacote P90 nasceu 41,56 graus fora do eixo do gabarito. A rolagem final
-  // preserva arma e mãos juntas e devolve a silhueta horizontal ao ombro.
-  p90:     { x: 0.300, y: -0.200, z: -0.600, fov: 84, rotDeg: [15.4, 6.0, -60] },
-  // Yaw 15° aprovado em 05/09: VIEWMODEL-ASTRA-PISTOL-HANDOFF.md.
-  pistol:  { x: 0.100, y: -0.100, z: -0.220, fov: 55, rotDeg: [0, 15, -5], drawDrop: 0.34 },
-  shotgun: { x: 0.057, y: -0.114, z: -0.159, fov: 84, rotDeg: [-8.9, 0, 0] },
-  sniper:  { x: 0.118, y: -0.128, z: 0.029, fov: 84, rotDeg: [-11.9, 0, 0] },
-  bolt:    { x: 0.055, y: -0.083, z: -0.254, fov: 84, rotDeg: [-1.6, -0.3, 0] },
-  g3:      { x: 0.117, y: -0.062, z: -0.202, fov: 84, rotDeg: [1.0, -0.2, 0] },
-  marksman:{ x: 0.107, y: -0.07, z: -0.187, fov: 84, rotDeg: [0.5, -0.3, 0] },
-  svd:     { x: 0.107, y: -0.17, z: -0.419, fov: 84, rotDeg: [1.9, 0.5, 0] },
-  lmg:     { x: 0.153, y: -0.116, z: -0.409, fov: 84, rotDeg: [-5.2, -0.3, 0] },
-  // revolver: sem doador CS 1.6 (não existe no jogo fonte) — fica no olho antigo.
-  revolver:{ x: 0.075, y: -0.042, z: -0.110, fov: 84 },
-  grenade: { x: -0.050, y: 0.000, z: -0.080, fov: 84 },
-  default: { x: 0.050, y: -0.040, z: -0.140, fov: 84 },
-});
-
+// Composição em espaço de câmera dos pacotes autorados. O pacote inteiro move;
+// arma, mãos, clipes, ADS e sockets continuam no mesmo referencial.
 export const VM_AUTHORED_FRAME = Object.freeze({
-  family: FAMILY_FRAME,
+  family: Object.freeze({
+    ak:       { x: 0.112, y: -0.068, z: -0.199, fov: 84, rotDeg: [0.6, -0.1, -5] },
+    ar:       { x: 0.096, y: -0.129, z: -0.198, fov: 84, rotDeg: [-8.0, 0.9, 0] },
+    mp5:      { x: 0.091, y: -0.187, z: -0.204, fov: 84, rotDeg: [-10.1, 0, 0] },
+    deagle:   { x: 0.089, y: -0.152, z: -0.217, fov: 84, rotDeg: [-15.8, -0.2, 0] },
+    smg:      { x: 0.206, y: -0.141, z: -0.462, fov: 84, rotDeg: [15.4, 6.0, 0] },
+    p90:      { x: 0.075, y: -0.020, z: -0.141, fov: 84, rotDeg: [0, 0, 0] },
+    pistol:   { x: 0.100, y: -0.100, z: -0.220, fov: 55, rotDeg: [0, 15, -5], drawDrop: 0.34 },
+    shotgun:  { x: 0.057, y: -0.114, z: -0.159, fov: 84, rotDeg: [-8.9, 0, 0] },
+    sniper:   { x: 0.118, y: -0.128, z: 0.029, fov: 84, rotDeg: [-11.9, 0, 0] },
+    bolt:     { x: 0.055, y: -0.083, z: -0.254, fov: 84, rotDeg: [-1.6, -0.3, 0] },
+    g3:       { x: 0.117, y: -0.062, z: -0.202, fov: 84, rotDeg: [1.0, -0.2, 0] },
+    marksman: { x: 0.107, y: -0.070, z: -0.187, fov: 84, rotDeg: [0.5, -0.3, 0] },
+    svd:      { x: 0.107, y: -0.060, z: -0.419, fov: 84, rotDeg: [1.9, 0.5, 0] },
+    lmg:      { x: 0.153, y: -0.116, z: -0.409, fov: 84, rotDeg: [-5.2, -0.3, 0] },
+    revolver: { x: 0.075, y: -0.042, z: -0.110, fov: 84, rotDeg: [0, 0, 0] },
+    grenade:  { x: 0.045, y: -0.035, z: -0.080, fov: 84, rotDeg: [0, 0, 0] },
+  }),
+  // Moldes GoldSrc: offsets preservam a calibração por arma; rotDeg.z gira o
+  // pacote inteiro (arma + mãos + clipes + sockets) para manter o eixo de tela
+  // entre 22° e 42° nos dois aspectos. O ADS auto realinha cano/alça depois.
   goldsrc: Object.freeze({
-    ...MOLDE_FRAME,
+    awp:        { x: 0.141, y: 0.031, z: -0.100 },
+    ak:         { x: 0.092, y: 0.064, z: 0, rotDeg: [0, 0, 4] },
+    m4:         { x: 0.092, y: 0.009, z: 0 },
+    mp5:        { x: 0.133, y: 0.068, z: 0 },
+    shotgun:    { x: 0.355, y: 0.040, z: -0.240 },
+    deagle:     { x: 0.012, y: 0.084, z: 0, rotDeg: [0, 0, 31], drawDrop: 0.513 },
+    pistol:     { x: 0.061, y: -0.043, z: 0, rotDeg: [0, 0, 41], drawDrop: 0.367 },
+    m92:        { x: 0.086, y: 0.012, z: -0.100 },
     akm:        { x: 0.092, y: 0.064, z: 0 },
     g3:         { x: 0.183, y: 0.120, z: -0.080, rotDeg: [0, 0, -19] },
+    revolver38: { x: 0.053, y: 0.013, z: 0, rotDeg: [0, 0, 28], drawDrop: 0.333 },
+    md97:       { x: 0.064, y: 0.099, z: -0.080, rotDeg: [0, 0, -11] },
+    carbine:    { x: 0.117, y: 0.085, z: 0 },
     m400:       { x: 0.141, y: 0.031, z: -0.040, rotDeg: [0, 0, -20] },
+    mosin:      { x: 0.221, y: -0.140, z: -0.080 },
     rem700:     { x: 0.221, y: -0.140, z: -0.080 },
+    lmg:        { x: 0.356, y: 0.173, z: -0.080, rotDeg: [0, 0, -16] },
+    scar:       { x: 0.150, y: 0.013, z: -0.040 },
     tavor:      { x: 0.046, y: 0.005, z: 0 },
+    famas:      { x: 0.046, y: 0.005, z: -0.150, rotDeg: [0, 0, 12] },
+    uzi:        { x: 0.345, y: 0.177, z: 0, rotDeg: [0, 0, -36], drawDrop: 0.280 },
+    p90:        { x: 0.042, y: -0.046, z: 0, rotDeg: [0, 0, 17] },
+    svd:        { x: 0.183, y: 0.120, z: -0.080, rotDeg: [0, 0, -21] },
     g3sg1:      { x: 0.183, y: 0.120, z: -0.080, rotDeg: [0, 0, -20] },
+    sks:        { x: 0.158, y: 0.078, z: -0.080, rotDeg: [0, 0, -20] },
   }),
 });
 
@@ -569,10 +557,12 @@ export function authoredFrameFor(weapon, family, sourceKey = '', cameraFov = 84)
   if (sourceKey.startsWith('gold#')) return { x: 0, y: 0, z: 0, fov: cameraFov };
   if (sourceKey.startsWith('rt#')) return { x: 0, y: 0, z: 0, fov: 74 };
   if (sourceKey.startsWith('gs#')) {
-    const frame = VM_AUTHORED_FRAME.goldsrc[weapon] || MOLDE_FRAME.default;
+    const frame = VM_AUTHORED_FRAME.goldsrc[weapon];
+    if (!frame) throw new Error(`sem frame goldsrc para ${weapon}`);
     return { ...frame, fov: 74 };
   }
-  const familyFrame = VM_AUTHORED_FRAME.family[family] || FAMILY_FRAME.default;
+  const familyFrame = VM_AUTHORED_FRAME.family[family];
+  if (!familyFrame) throw new Error(`sem frame de família para ${family}`);
   const measured = VM_WEAPON_FRAME[weapon];
   const override = VM_WEAPON[weapon]?.frame;
   return {
