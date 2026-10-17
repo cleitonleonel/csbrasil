@@ -14,7 +14,7 @@ import { preloadFPArms } from './fparms.js';
 import { preloadMapProps, COMMON_MAP_PROPS } from './mapprops.js';
 import { preloadAmbientLife } from './ambientlife.js';   // fauna do mapa (MAPS[id].ambience)
 import { apiUrl, fetchComRetry, versaoComOrigem } from './apibase.js';   // rotas /api de banco moram no backend (docs/APIS.md)
-import { MAPS, DEFAULT_MAP, resolveMapId, mapaDaSessao, mapasDoMenu, MAPAS_PARADOS, defineSeedHavan } from './maps.js';
+import { MAPS, DEFAULT_MAP, resolveMapId, mapaDaSessao, mapasDoMenu, MAPAS_PARADOS, comMapaCarregado, defineSeedHavan } from './maps.js';
 import { PALETA } from './paleta.js';
 import { preloadWeapons, WEAPON_IDS } from './weapons.js';
 import { preloadAuthoredFamilies, authoredBootFamilies } from './authoredvm.js';
@@ -252,8 +252,6 @@ if (!urlMap) { settings.map = currentMap; saveSettings(); }
 // Mint building/statue GLBs used by the Brasília map (loaded once, cloned per placement).
 const MAP_PROPS = COMMON_MAP_PROPS;   // props do Piscinão de Ramos (Mint); carros/estátua do Havan carregam por-mapa   // Havan (estátua + carros + carrinho)
 let menuScene = new THREE.Scene();
-MAPS[currentMap].build(menuScene, textures);
-ajustarAnisotropia(menuScene, settings.quality);
 const menuCam = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 400);
 /* ---------------- loading real (barra via LoadingManager compartilhado) ---------------- */
 // GLTFLoader sem manager cai no THREE.DefaultLoadingManager — TODOS os GLBs (personagens,
@@ -372,34 +370,40 @@ function hideLoading() {
   loadingStage.hide();
   _lo.box.classList.add('hidden');
 }
-function rebuildMenuBackdrop() {
+function rebuildMenuBackdrop(mapa) {
   renderer.liberaPosDaCena?.(menuScene);
   menuScene = new THREE.Scene();
-  MAPS[currentMap].build(menuScene, textures);
+  mapa.build(menuScene, textures);
   ajustarAnisotropia(menuScene, settings.quality);
 }
-function menuProps(id) {
-  return [...MAP_PROPS, ...((MAPS[id] && MAPS[id].props) || [])];
+function menuProps(mapa) {
+  return [...MAP_PROPS, ...(mapa.props || [])];
 }
 let _menuLoadSeq = 0;
 function loadMenuBackdrop() {
   const id = currentMap, seq = ++_menuLoadSeq;
-  const propsReady = preloadMapProps(menuProps(id));
-  let propsLoaded = false;
-  const rebuildCurrent = () => {
-    if (seq === _menuLoadSeq && id === currentMap) rebuildMenuBackdrop();
-  };
-  // Fauna decorativa pode chegar depois; não segura a entrada com o cenário pronto.
-  const ambienceReady = preloadAmbientLife((MAPS[id] && MAPS[id].ambience) || [])
-    .then(() => { if (propsLoaded) rebuildCurrent(); }).catch(() => {});
-  return propsReady.then(() => {
-    propsLoaded = true;
-    rebuildCurrent();
+  return comMapaCarregado(id, (mapa) => {
+    if (seq !== _menuLoadSeq || id !== currentMap) return;
+    // Monta uma vez assim que o construtor existe; props e fauna refinam a mesma arena.
+    rebuildMenuBackdrop(mapa);
+    const propsReady = preloadMapProps(menuProps(mapa));
+    let propsLoaded = false;
+    const rebuildCurrent = () => {
+      if (seq === _menuLoadSeq && id === currentMap) rebuildMenuBackdrop(mapa);
+    };
+    // Fauna decorativa pode chegar depois; não segura a entrada com o cenário pronto.
+    preloadAmbientLife(mapa.ambience || [])
+      .then(() => { if (propsLoaded) rebuildCurrent(); }).catch(() => {});
+    return propsReady.then(() => {
+      propsLoaded = true;
+      rebuildCurrent();
+    });
   });
 }
-// The first backdrop is built before props load; rebuild once they're ready so the
-// menu shows the real Brasília landmarks too. A fauna continua carregando em paralelo.
-loadMenuBackdrop().then(_splashSetReady).catch(_splashSetReady);
+// A avaliação do main só continua depois que o módulo lazy instalou o construtor.
+// Rejeição real permanece rejeição do módulo; não há cenário vazio nem splash liberada.
+await loadMenuBackdrop();
+_splashSetReady();
 
 /* ---------------- screens ---------------- */
 const screens = ['main-menu', 'map-screen', 'team-select', 'char-select', 'settings-panel', 'howto-panel', 'ranking-panel', 'mp-panel', 'feedback-panel', 'support-panel', 'pause-menu', 'match-end'];
@@ -1652,12 +1656,17 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
   // LOADING REAL da partida: overlay opaco cobre TUDO enquanto os GLBs entram e o mundo
   // é construído — nada de cena parcial/"minecraft" aparecendo aos poucos
   showLoading(frase('carregando', MAPS[currentMap].name.toUpperCase()), 'CARREGANDO MODELOS 3D…', MAPS[currentMap].name.toUpperCase());
+  let mapaPartida;
+  if (currentMap === 'loja_h') {
+    const seedMapa = sessao ? (sessao.net.meta.mapSeed ?? 1) : (Math.random() * 1e9) | 0;
+    mapaPartida = await defineSeedHavan(seedMapa);
+  } else {
+    mapaPartida = await comMapaCarregado(currentMap, (mapa) => mapa);
+  }
   await sfxReady;   // make sure voice/CS samples are registered before round 1 sounds
   // Preload real GLB character models + shared animation clips (bots). Falls back to
   // procedural box meshes for any archetype that isn't modeled yet. Map props (statues)
   // load in parallel and are optional — the map renders fine if they're missing.
-  // sorteia os carros da Havan desta partida ANTES do preload (seleção = props do mapa)
-  void defineSeedHavan(sessao ? (sessao.net.meta.mapSeed ?? 1) : (Math.random() * 1e9) | 0);
   /* SÓ OS PERSONAGENS DA PARTIDA: o roster é sorteado ANTES do preload e só esses GLBs sobem
      (jogador + times montados). Filtro vazio = rede de segurança: elenco inteiro. Régua: PL1. */
   /* FORMATO: no multiplayer o tamanho vem do SERVIDOR, nunca do ajuste local (senão sobram
@@ -1707,12 +1716,12 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
         preloadCosmeticAssets(matchSkins),
         preloadEyewearAssets(matchEyewear),
         sfx.preloadWeaponSamples(_armasDaPartida),
-        preloadMapProps([...MAP_PROPS, ...((MAPS[currentMap] && MAPS[currentMap].props) || [])]),   // + props do mapa (Havan: carros/estátua)
+        preloadMapProps([...MAP_PROPS, ...(mapaPartida.props || [])]),   // + props do mapa (Havan: carros/estátua)
         /* fauna: sem esta linha o mapa constrói, o `ambience` existe e TODO bicho cai
            no fallback procedural sem textura — verde na régua de registro, feio na tela.
            Foi literalmente o BUG-57. Lista vazia é tratada como "tudo" no ambientlife. */
-        preloadAmbientLife((MAPS[currentMap] && MAPS[currentMap].ambience) || []),
-        MAPS[currentMap]?.preload?.(),
+        preloadAmbientLife(mapaPartida.ambience || []),
+        mapaPartida.preload ? mapaPartida.preload() : null,
         preloadFPArms(),   // braços FP dedicados (falha → fallback procedural, sem bloquear)
         // Famílias PRONTAS do loadout + texturas de braço compartilhadas (~3 MB
         // pós-de-dup): mata o pop legado→autorado do primeiro saque (BUG-75 M4).
@@ -1721,7 +1730,7 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
     }
   } catch (e) { console.error('preload da partida falhou parcialmente', e); }
   if (lancamentoPerdeu(meuLancamento)) return;
-  if (sessao) await preloadMapProps(MAPS[currentMap]?.props || [], { required: true });
+  if (sessao) await preloadMapProps(mapaPartida.props || [], { required: true });
   /* RÉGUA:launch-race nascimento início — extraído por `tools/eval/launch-race-check.mjs` */
   /* O preload leva segundos: sem esta saída, uma queda de socket no meio dele fazia nascer um
      Game zumbi por cima do menu que a desconexão já havia aberto. */
@@ -2601,8 +2610,7 @@ function gotoMap(i, updateRoute = true) {
   // aqui que a escolha dele morria (main.js:692 na versão anterior).
   if (!modoEscolhido) matchMode = MAPS[currentMap].ctfMode ? 'ctf' : 'rounds';
   setMapMode();
-  rebuildMenuBackdrop();
-  loadMenuBackdrop().catch(() => {});
+  void loadMenuBackdrop();
   renderMapScreen();   // se a tela cheia estiver aberta, ela acompanha o carrossel
   if (updateRoute) hubNavigate({ map: currentMap });
 }
@@ -4667,13 +4675,15 @@ function mpPreCarregarProximo(m) {
   pinta();
   mpContagemProximo = setInterval(pinta, 250);
   const armas = [...new Set([charWeapon(currentChar), ...plano.weapons])].filter(Boolean);
-  if (plano.seed != null) void defineSeedHavan(plano.seed);
+  const mapaReady = plano.mapId === 'loja_h' && plano.seed != null
+    ? defineSeedHavan(plano.seed)
+    : comMapaCarregado(plano.mapId, (mapa) => mapa);
   Promise.all([
     plano.chars.length ? preloadCharacterAssets(plano.chars, { weapons: armas }) : null,
     sfx.preloadWeaponSamples(armas),
-    preloadMapProps([...MAP_PROPS, ...plano.props]),
-    preloadAmbientLife(plano.ambience),
-    MAPS[plano.mapId]?.preload?.(),
+    mapaReady.then((mapa) => preloadMapProps([...MAP_PROPS, ...(mapa.props || [])])),
+    mapaReady.then((mapa) => preloadAmbientLife(mapa.ambience || [])),
+    mapaReady.then((mapa) => mapa.preload ? mapa.preload() : null),
     preloadAuthoredFamilies(authoredBootFamilies(armas)),
   ]).catch((e) => console.warn('[mp] pré-carga do próximo mapa falhou (a virada carrega):', e && e.message));
 }

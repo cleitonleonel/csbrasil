@@ -159,6 +159,14 @@ export function carregaMapa(id) {
   return promessa;
 }
 
+/* Fronteira única entre o registro lazy e quem constrói uma cena. A callback só
+   recebe o mapa depois que o módulo instalou `build`; rejeição não vira fallback. */
+export async function comMapaCarregado(id, usar, carregar = carregaMapa, mapas = MAPS) {
+  const alvo = resolveMapId(id);
+  await carregar(alvo);
+  return usar(mapas[alvo], alvo);
+}
+
 export const mapaCarregado = (id) => typeof MAPS[resolveMapId(id)]?.build === 'function';
 
 /* Seed dos carros da Loja H: o main.js importava setHavanCarSeed direto do módulo
@@ -166,6 +174,7 @@ export const mapaCarregado = (id) => typeof MAPS[resolveMapId(id)]?.build === 'f
 export async function defineSeedHavan(seed) {
   const m = await carregaMapa('loja_h');
   m.setHavanCarSeed(seed);
+  return MAPS.loja_h;
 }
 
 export const MAP_IDS = Object.keys(MAPS);
