@@ -45,6 +45,9 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 | Código do jogo | 62.236 linhas em 148 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
 | `game.js` | **8.488** linhas | `wc -l public/js/game.js` |
 | `main.js` | 4.869 linhas | `wc -l public/js/main.js` |
+| Código do jogo | 62.708 linhas em 150 arquivos | `git ls-files public/js/*.js \| xargs wc -l` |
+| `game.js` | **8.576** linhas | `wc -l public/js/game.js` |
+| `main.js` | 4.890 linhas | `wc -l public/js/main.js` |
 | Armas com GLB | 27 | `git ls-files 'public/models/weapons/*.glb' \| wc -l` |
 | GLBs de personagem | 74 | `git ls-files 'public/models/characters/*.glb' \| wc -l` |
 | Props em GLB | 217 | `git ls-files 'public/models/props/*.glb' \| wc -l` |
@@ -58,9 +61,10 @@ multiplayer beta, direto na aba. Sem download ou instalação para jogar.
 | Scripts do arnês | 775 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
 | Scripts de pipeline | 112 | `git ls-files 'tools/*.mjs' \| wc -l` |
 | Scripts do arnês | 772 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
-| Scripts de pipeline | 111 | `git ls-files 'tools/*.mjs' \| wc -l` |
+| Scripts do arnês | 816 | `git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \| wc -l` |
+| Scripts de pipeline | 113 | `git ls-files 'tools/*.mjs' \| wc -l` |
 | Tarefas de entrada escritas | 26 | `git ls-files 'docs/issues/[0-9]*.md' \| wc -l` |
-| Versão | `2.1.0-alpha.100` | `public/js/version.js` e `package.json` (batem) |
+| Versão | `2.1.0-alpha.101` | `public/js/version.js` e `package.json` (batem) |
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `o comando da coluna direita de cada linha`
 
@@ -105,7 +109,7 @@ arquitetura): `cd docs && npm install && npm start` → <http://localhost:3000/d
 | Camada | Ferramenta | Versão |
 |---|---|---|
 | Motor 3D (WebGL) | **Three.js**, vendorizado | `r160` |
-| Jogo | ES modules vanilla, **zero build** | 148 arquivos |
+| Jogo | ES modules vanilla, **zero build** | 150 arquivos |
 | Site | **Astro** com SSR | `^7.1.1` |
 | Hospedagem | adapter **Vercel** | `^11.0.6` |
 | Banco | **Postgres gerenciado** (RLS; schema privado, fora do repo) | `^2.110.7` |
@@ -116,7 +120,7 @@ arquitetura): `cd docs && npm install && npm start` → <http://localhost:3000/d
 | Esta documentação | **Docusaurus** | `3.10.2` |
 | Runtime de CI | **Node** | `22` |
 
-Three.js sai de `public/vendor/three.module.js` (**sem CDN, sem npm no runtime**). Astro e Vercel de `package.json` + `astro.config.mjs` + `vercel.json`. Dos scripts de `tools/`, **262** importam Playwright, **119** importam gltf-transform e **11** importam meshoptimizer.
+Three.js sai de `public/vendor/three.module.js` (**sem CDN, sem npm no runtime**). Astro e Vercel de `package.json` + `astro.config.mjs` + `vercel.json`. Dos scripts de `tools/`, **271** importam Playwright, **119** importam gltf-transform e **11** importam meshoptimizer.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `dependencies/devDependencies do package.json · REVISION de public/vendor/three.module.js`
 

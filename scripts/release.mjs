@@ -34,7 +34,7 @@
      npm run release -- --seco       # mostra o que faria e não escreve nada
    ============================================================================ */
 import { execSync, spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 const argv = process.argv.slice(2);
 const flag = (n) => argv.includes(`--${n}`);
@@ -52,7 +52,7 @@ const ARQUIVOS_RELEASE = [
   'package.json', 'package-lock.json', 'public/js/version.js', 'CHANGELOG.md',
   'README.md', 'AGENTS.md', 'STATUS.md', 'docs', 'public/docs',
   'tools/eval/ARCH.md', 'tools/eval/README.md',
-];
+].filter(existsSync);   // STATUS.md saiu do repo; add de ausente derrubava o release
 const desfazRelease = (headAntes, tag) => {
   const headAtual = sh('git rev-parse HEAD');
   const dropTag = spawnSync('git', ['update-ref', '-d', `refs/tags/${tag}`], { stdio: 'inherit' });
