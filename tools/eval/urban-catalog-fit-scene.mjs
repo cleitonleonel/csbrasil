@@ -122,7 +122,6 @@ function outfitFor(index) {
     jacket: APPAREL_FAMILIES.outer[0],
     legs: APPAREL_FAMILIES.legs[Math.floor(index / 2) % APPAREL_FAMILIES.legs.length],
     shoes: APPAREL_FAMILIES.feet[index % APPAREL_FAMILIES.feet.length],
-    headwear: RIGID_FAMILIES.head[index % RIGID_FAMILIES.head.length],
     backpack: RIGID_FAMILIES.back[Math.floor(index / 3) % RIGID_FAMILIES.back.length],
     accessory: RIGID_FAMILIES.accessory[Math.floor(index / 5) % RIGID_FAMILIES.accessory.length],
   };
@@ -232,17 +231,17 @@ async function loadBody(record, index) {
   current.body = body;
   current.mounts = outfit.mounts;
   const audit = auditCurrent(body, outfit.mounts);
-  const status = incompatible ? 'incompatible' : outfit.failures.length ? 'fail-closed' : 'candidate';
+  const status = incompatible ? 'not-applicable' : 'study-only';
   return {
     bodyId: record.bodyId,
     status,
-    reason: incompatible ? 'auxiliary body is not selectable' : outfit.failures.join('; ') || 'all-deterministic-proxy-factories-mounted',
+    reason: incompatible ? 'auxiliary body is not selectable' : 'silhouette contact render only; exact per-body compatibility remains unassessed',
     familiesRequested: Object.values(outfit.requested),
     familiesMounted: outfit.mounted,
     failures: outfit.failures,
     selections: outfit.selections,
     cleanupBeforeLoad,
-    fitStatus: 'fit-proxy-not-mint-asset',
+    fitStatus: 'silhouette-study-not-body-fit',
     approved: false,
     certified: false,
     runtimeEnabled: false,
@@ -306,7 +305,7 @@ async function loadFamily({family, anchorPath = 'public/models/characters/capita
     assetId: EYEWEAR_FAMILY_ASSETS[family] || null,
     selection: selectionRecord(candidate.selection),
     cleanupBeforeLoad,
-    fitStatus: 'fit-proxy-not-mint-asset',
+    fitStatus: 'silhouette-study-not-body-fit',
     approved: false,
     certified: false,
     runtimeEnabled: false,

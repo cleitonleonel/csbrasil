@@ -8,6 +8,13 @@
     "certified": false,
     "runtimeEnabled": false
   },
+  "fitPolicy": {
+    "status": "research-only",
+    "compatibility": "exact-body-and-item-profile-required",
+    "unmeasuredResult": "not-compatible",
+    "headwear": "deferred-per-body",
+    "reason": "User review invalidated universal body/head fitting; catalog geometry families are silhouette references only."
+  },
   "rightsPolicy": {
     "allowed": [
       "original-safe",

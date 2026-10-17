@@ -31,8 +31,21 @@
       "allowedModes": ["rigid"],
       "layer": 30,
       "regions": ["head"],
-      "conflicts": [],
-      "socketRole": "head"
+      "conflicts": ["baked-headwear", "asymmetric-head-axis"],
+      "socketRole": "head",
+      "fitPolicy": "deferred-per-body",
+      "knownIncompatibleBodies": [
+        {
+          "bodyId": "character:lobisomem",
+          "bodySha256": "6b3839025c194b1418c71c7ddb68a9a9afe59794d50d49c4409197edf6f0093d",
+          "reason": "Rosto focinhudo e orientado para a lateral; o eixo Head não representa uma coroa vertical utilizável."
+        },
+        {
+          "bodyId": "character:julia-zanatta",
+          "bodySha256": "961ff061920733e7f9e6acad46fb96379529ee2078e93f3a9eb2b33aff8f7769",
+          "reason": "Tiara de flores faz parte da identidade e ocupa o mesmo volume do boné."
+        }
+      ]
     },
     "face": {
       "allowedModes": ["rigid"],
@@ -109,7 +122,7 @@
       "category": "cap",
       "slot": "head",
       "attachmentMode": "rigid",
-      "inventoryStatus": "versioned",
+      "inventoryStatus": "deferred",
       "asset": {
         "path": "public/js/procedural-cap.js",
         "sha256": "3d30bc6e84f88d400f85b4daec7e3ceede9ac2b82d347c5370171dd9dfa22aa7",
@@ -127,35 +140,10 @@
       "certifiedFamilies": [],
       "certifiedBodies": [],
       "incompatibleBodies": [],
-      "fitProfiles": [
-        {
-          "profileId": "character:barbudo@2aaace3d7d18",
-          "bodyId": "character:barbudo",
-          "familyId": "rig-cf26b508edb3",
-          "status": "candidate",
-          "reason": "Private idle/walk/crouch proof imported for this exact body hash; brim clearance and human commercial approval remain pending.",
-          "transform": {"position": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1], "space": "bone-local", "source": "treta-cap-procedural-v1 bounds profile"}
-        },
-        {
-          "profileId": "character:capitao@433fc02554e8",
-          "bodyId": "character:capitao",
-          "familyId": "rig-cf26b508edb3",
-          "status": "candidate",
-          "reason": "Private idle/walk/crouch proof imported for this exact body hash; brim clearance and human commercial approval remain pending.",
-          "transform": {"position": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1], "space": "bone-local", "source": "treta-cap-procedural-v1 bounds profile"}
-        },
-        {
-          "profileId": "character:esquerdomacho@51bd7a1aaa6f",
-          "bodyId": "character:esquerdomacho",
-          "familyId": "rig-c9ebfa9c881d",
-          "status": "candidate",
-          "reason": "Private idle/walk/crouch proof imported for this exact body hash; brim clearance and human commercial approval remain pending.",
-          "transform": {"position": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1], "space": "bone-local", "source": "treta-cap-procedural-v1 bounds profile"}
-        }
-      ],
+      "fitProfiles": [],
       "approvals": {"asset": false, "fit": false, "clipping": false, "human": false},
       "runtimeEnabled": false,
-      "reason": "Procedural cap source is versioned and three body-hash candidates are measured; no fit or commercial approval is granted."
+      "reason": "Headwear fitting deferred after user review: every head shape needs an individual profile, and baked hair, tiaras or non-human skull axes may make a cap incompatible."
     },
     {
       "id": "gap:piercing",

@@ -2,6 +2,12 @@
   "schemaVersion": "cs-face-landmarks/1",
   "status": "candidate",
   "runtimeEnabled": false,
+  "profilePolicy": {
+    "identity": "bodyId+bodySha256",
+    "inheritance": "forbidden",
+    "unmeasuredResult": "not-compatible",
+    "review": "required-per-item-per-body"
+  },
   "coordinateSystem": {
     "space": "normalized-character-world",
     "units": "meters",
@@ -36,7 +42,7 @@
         "bakedEyewearConflict": false
       },
       "headwear": {
-        "status": "candidate-proof",
+        "status": "invalidated-user-review",
         "generator": "treta-cap-procedural-v1",
         "dimensions": {"rx": 0.13293933525681498, "ry": 0.11469276428222656, "rz": 0.1466242700815201, "baseY": 1.7675645995140075},
         "motions": ["idle", "walk", "crouch"]
@@ -61,7 +67,7 @@
         "conflictReason": "Óculos redondos originais fundidos na malha; o perfil TRETA não pode ser certificado sem uma variante base preparada."
       },
       "headwear": {
-        "status": "candidate-proof",
+        "status": "invalidated-user-review",
         "generator": "treta-cap-procedural-v1",
         "dimensions": {"rx": 0.10239921525120736, "ry": 0.07984344482421875, "rz": 0.1275498975813389, "baseY": 1.6426124525070191},
         "motions": ["idle", "walk", "crouch"]
@@ -75,7 +81,7 @@
       "origin": "private-cap-proof+current-hash",
       "eyewear": null,
       "headwear": {
-        "status": "candidate-proof",
+        "status": "invalidated-user-review",
         "generator": "treta-cap-procedural-v1",
         "dimensions": {"rx": 0.1704328715801239, "ry": 0.12729862213134766, "rz": 0.1810849240422249, "baseY": 1.5885040628910065},
         "motions": ["idle", "walk", "crouch"]

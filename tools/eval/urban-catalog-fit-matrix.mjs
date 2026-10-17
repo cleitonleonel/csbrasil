@@ -93,12 +93,12 @@ async function bodyCell(front, threeQuarter, row) {
     sharp(front).resize(280, 373, {fit: 'fill'}).png().toBuffer(),
     sharp(threeQuarter).resize(280, 373, {fit: 'fill'}).png().toBuffer(),
   ]);
-  const statusColor = row.status === 'candidate' ? '#63e6a5' : row.status === 'incompatible' ? '#ffbf69' : '#ff7272';
-  const statusText = row.status === 'candidate'
-    ? `CANDIDATE PROXY · CONTATO ${row.clipping.overlapPct}%`
+  const statusColor = row.status === 'study-only' ? '#f2d76b' : '#aebbd0';
+  const statusText = row.status === 'study-only'
+    ? 'ESTUDO DE SILHUETA · ENCAIXE NÃO AVALIADO'
     : row.status.toUpperCase();
   const requested = row.familiesRequested.map(value => value.replace(/^(headwear|backpack|accessory)-/, '')).join(' · ');
-  const label = Buffer.from(`<svg width="560" height="72"><rect width="560" height="72" fill="#0b1220"/><text x="12" y="22" font-family="Arial" font-size="15" font-weight="700" fill="white">${escape(row.bodyId)}</text><text x="548" y="22" text-anchor="end" font-family="Arial" font-size="12" font-weight="700" fill="${statusColor}">${escape(statusText)}</text><text x="12" y="43" font-family="Arial" font-size="11" fill="#f2d76b">${escape(requested.slice(0, 82))}</text><text x="12" y="62" font-family="Arial" font-size="10" fill="#aebbd0">frente · 3/4 · fit-proxy-not-mint-asset · certified:false</text></svg>`);
+  const label = Buffer.from(`<svg width="560" height="72"><rect width="560" height="72" fill="#0b1220"/><text x="12" y="22" font-family="Arial" font-size="15" font-weight="700" fill="white">${escape(row.bodyId)}</text><text x="548" y="22" text-anchor="end" font-family="Arial" font-size="12" font-weight="700" fill="${statusColor}">${escape(statusText)}</text><text x="12" y="43" font-family="Arial" font-size="11" fill="#f2d76b">${escape(requested.slice(0, 82))}</text><text x="12" y="62" font-family="Arial" font-size="10" fill="#aebbd0">frente · 3/4 · sem headwear · perfil individual obrigatório · certified:false</text></svg>`);
   return sharp({create: {width: 560, height: 445, channels: 4, background: '#111927'}})
     .composite([{input: a, left: 0, top: 0}, {input: b, left: 280, top: 0}, {input: label, left: 0, top: 373}])
     .png().toBuffer();
@@ -107,7 +107,7 @@ async function bodyCell(front, threeQuarter, row) {
 async function writeBodySheet(rows, cells, index) {
   const columns = 2, cellWidth = 560, cellHeight = 445;
   const sheetName = `bodies-${String(index + 1).padStart(2, '0')}.png`;
-  const title = Buffer.from(`<svg width="${columns * cellWidth}" height="74"><rect width="100%" height="74" fill="#101827"/><text x="20" y="30" font-family="Arial" font-size="23" font-weight="700" fill="white">Catálogo urbano · corpos ${index * BODY_CHUNK + 1}–${index * BODY_CHUNK + rows.length} de 88</text><text x="20" y="55" font-family="Arial" font-size="13" fill="#f2d76b">CONTATO VISUAL REAL · frente + 3/4 · proxies candidatos, nenhum asset Mint final</text></svg>`);
+  const title = Buffer.from(`<svg width="${columns * cellWidth}" height="74"><rect width="100%" height="74" fill="#101827"/><text x="20" y="30" font-family="Arial" font-size="23" font-weight="700" fill="white">Estudo urbano · corpos ${index * BODY_CHUNK + 1}–${index * BODY_CHUNK + rows.length} de 88</text><text x="20" y="55" font-family="Arial" font-size="13" fill="#f2d76b">SILHUETA APENAS · frente + 3/4 · bonés adiados · nenhum encaixe corporal aprovado</text></svg>`);
   const composites = [{input: title, left: 0, top: 0}];
   cells.forEach((cell, cellIndex) => composites.push({input: cell, left: (cellIndex % columns) * cellWidth, top: 74 + Math.floor(cellIndex / columns) * cellHeight}));
   await sharp({create: {width: columns * cellWidth, height: 74 + Math.ceil(cells.length / columns) * cellHeight, channels: 4, background: '#111927'}})
@@ -124,7 +124,7 @@ async function familyCell(buffer, row) {
 
 async function writeFamilySheet(rows, cells) {
   const columns = 4, cellWidth = 300, cellHeight = 474, sheetName = 'families-34.png';
-  const header = Buffer.from(`<svg width="${columns * cellWidth}" height="74"><rect width="100%" height="74" fill="#101827"/><text x="20" y="30" font-family="Arial" font-size="23" font-weight="700" fill="white">34 famílias geométricas sobre corpo âncora real</text><text x="20" y="55" font-family="Arial" font-size="13" fill="#f2d76b">22 rígidas · 8 apparel · 4 GLBs/perfis eyewear · fit-proxy-not-mint-asset</text></svg>`);
+  const header = Buffer.from(`<svg width="${columns * cellWidth}" height="74"><rect width="100%" height="74" fill="#101827"/><text x="20" y="30" font-family="Arial" font-size="23" font-weight="700" fill="white">34 famílias geométricas · estudo de forma</text><text x="20" y="55" font-family="Arial" font-size="13" fill="#f2d76b">Não demonstra compatibilidade corporal · headwear adiado · nenhum asset Mint final</text></svg>`);
   const composites = [{input: header, left: 0, top: 0}];
   cells.forEach((cell, index) => composites.push({input: cell, left: (index % columns) * cellWidth, top: 74 + Math.floor(index / columns) * cellHeight}));
   await sharp({create: {width: columns * cellWidth, height: 74 + Math.ceil(cells.length / columns) * cellHeight, channels: 4, background: '#111927'}})
@@ -164,18 +164,18 @@ async function capture() {
   const blockedItems = catalog.items.filter(item => item.rightsStatus === 'permission-needed');
   const report = {
     schemaVersion: 'cs-urban-catalog-fit/1',
-    status: 'fit-proxy-not-mint-asset',
+    status: 'silhouette-study-not-body-fit',
     approved: false,
     certified: false,
     runtimeEnabled: false,
     sourceHashes: hashes,
     views: ['front', 'threeQuarter'],
-    summary: {catalogItems: catalog.items.length, mountableSafe: safeItems.length, blockedPermissionNeeded: blockedItems.length, bodiesObserved: census.bodies.length, selectableBodies: census.bodies.filter(body => body.sourceKind !== 'auxiliary').length, auxiliaryBodies: census.bodies.filter(body => body.sourceKind === 'auxiliary').length, geometryFamiliesObserved: allFamilies.length, certified: 0, mintSubmitted: false},
+    summary: {catalogItems: catalog.items.length, safeConcepts: safeItems.length, blockedPermissionNeeded: blockedItems.length, bodiesObserved: census.bodies.length, selectableBodies: census.bodies.filter(body => body.sourceKind !== 'auxiliary').length, auxiliaryBodies: census.bodies.filter(body => body.sourceKind === 'auxiliary').length, bodyFitCandidates: 0, bodyFitUnassessed: census.bodies.filter(body => body.sourceKind !== 'auxiliary').length, headwearDeferred: true, geometryFamiliesObserved: allFamilies.length, certified: 0, mintSubmitted: false},
     catalog: catalog.items.map(item => {
-      const mapping = factoryFor(item.geometryFamily);
+      const mapping = factoryFor(item.geometryFamily), headwearDeferred = item.geometryFamily.startsWith('headwear-');
       return item.rightsStatus === 'permission-needed'
         ? {itemId: item.id, geometryFamily: item.geometryFamily, rightsStatus: item.rightsStatus, resolution: 'blocked-permission-needed', mounted: false, artIncluded: false, status: 'blocked', approved: false, certified: false, runtimeEnabled: false}
-        : {itemId: item.id, geometryFamily: item.geometryFamily, rightsStatus: item.rightsStatus, resolution: mapping ? 'mountable-proxy' : 'missing-factory', mounted: false, fitStatus: mapping ? 'fit-proxy-not-mint-asset' : null, ...mapping, approved: false, certified: false, runtimeEnabled: false};
+        : {itemId: item.id, geometryFamily: item.geometryFamily, rightsStatus: item.rightsStatus, resolution: headwearDeferred ? 'deferred-headwear' : mapping ? 'research-proxy' : 'missing-factory', mounted: false, fitStatus: headwearDeferred ? 'unassessed-per-body' : mapping ? 'silhouette-study-not-body-fit' : null, ...mapping, approved: false, certified: false, runtimeEnabled: false};
     }),
     bodies: [],
     families: [],
@@ -264,7 +264,7 @@ async function capture() {
     }
     const evidence = {schemaVersion: 'cs-urban-catalog-fit-evidence/1', sourceHashes: hashes, files};
     writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
-    console.log(`urban-catalog-fit write: ${report.bodies.filter(row => row.status === 'candidate').length}/87 selectable candidate, ${report.bodies.filter(row => row.status === 'incompatible').length}/1 auxiliary incompatible, ${report.families.length}/34 families, ${report.catalog.filter(row => row.resolution === 'mountable-proxy').length}/147 safe, ${report.blockedCards.length}/13 blocked, ${Object.keys(files).length} hash-pinned sheets`);
+    console.log(`urban-catalog-fit write: ${report.bodies.filter(row => row.status === 'study-only').length}/87 selectable study-only, ${report.bodies.filter(row => row.status === 'not-applicable').length}/1 auxiliary not-applicable, ${report.families.length}/34 shape families, ${report.catalog.filter(row => row.resolution === 'deferred-headwear').length} headwear concepts deferred, ${report.blockedCards.length}/13 rights-blocked, ${Object.keys(files).length} hash-pinned sheets`);
   } finally {
     await browser.close();
     await new Promise(resolve => http.close(resolve));
@@ -286,7 +286,7 @@ async function check() {
     assert.equal(metadata.width, expected.width, `${file}: evidence width changed`);
     assert.equal(metadata.height, expected.height, `${file}: evidence height changed`);
   }
-  console.log(`urban-catalog-fit check: ${report.bodies.filter(row => row.status === 'candidate').length}/87 selectable candidate, ${report.bodies.filter(row => row.status === 'incompatible').length}/1 auxiliary incompatible, ${report.families.length}/34 families, ${Object.keys(evidence.files).length} hash-pinned sheets, console errors=0`);
+  console.log(`urban-catalog-fit check: ${report.bodies.filter(row => row.status === 'study-only').length}/87 selectable study-only, ${report.bodies.filter(row => row.status === 'not-applicable').length}/1 auxiliary not-applicable, ${report.families.length}/34 shape families, ${Object.keys(evidence.files).length} hash-pinned sheets, console errors=0`);
 }
 
 const mode = process.argv[2] || '--check';
