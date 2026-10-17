@@ -71,7 +71,7 @@ Cobertura: **3933 de 8489 linhas (46%)** do `game.js` têm dono declarado. O res
 | 60 | `VM_QA_CICLO` | 3 |
 | 64 | `VM_QA_ADS` | 8 |
 | 72 | `VM_MAT_LEGACY` | 4 |
-| 78 | `DROP_TTL` | 8 |
+| 82 | `RECUPERA_BOOM` | 8 |
 | 86 | `ROUNDS_MAX` | 27 |
 | 114 | `CTF_ROUNDS_TO_WIN` | 4 |
 | 119 | `sanitizeRounds` | 4 |
@@ -217,7 +217,17 @@ Cobertura: **3933 de 8489 linhas (46%)** do `game.js` têm dono declarado. O res
 | 3751 | `_meleeHit()` | 16 |
 | 3767 | `_meleeRange()` | 5 |
 | 3772 | `_botMelee()` | 28 |
+| 3798 | `_distanceDamage()` | 7 |
 | 3800 | `_shotDamage()` | 11 |
+| 3809 | `_consultarTiro()` | 13 |
+| 3822 | `_origemTiroBot()` | 6 |
+| 3828 | `_miraTiroBot()` | 5 |
+| 3833 | `_participanteHumano()` | 4 |
+| 3837 | `_resolverTiroBot()` | 23 |
+| 3848 | `_danoTiroBot()` | 12 |
+| 3860 | `_aplicarTiroBot()` | 12 |
+| 3872 | `_dispararBot()` | 29 |
+| 3901 | `_rastroTiroBot()` | 6 |
 | 3811 | `_fireHitscan()` | 70 |
 | 3881 | `_targetFromHit()` | 9 |
 | 3890 | `_penetrationExit()` | 20 |
@@ -235,6 +245,7 @@ Cobertura: **3933 de 8489 linhas (46%)** do `game.js` têm dono declarado. O res
 | 4229 | `_mkBanner()` | 9 |
 | 4238 | `_updateKillSequenceHud()` | 12 |
 | 4250 | `_resetKillSequence()` | 5 |
+| 4270 | `_fragRestockStep()` | 7 |
 | 4255 | `_playerKillFeedback()` | 18 |
 | 4273 | `_acertoPrevisto()` | 5 |
 | 4278 | `_hitmarker()` | 15 |
@@ -334,6 +345,7 @@ Cobertura: **3933 de 8489 linhas (46%)** do `game.js` têm dono declarado. O res
 | 6938 | `_trocarPersonagem()` | 19 |
 | 6957 | `_syncRemoteWeapon()` | 23 |
 | 6980 | `_updateTeamMark()` | 7 |
+| 7049 | `_posturaBot()` | 4 |
 | 6987 | `_botEye()` | 1 |
 | 6988 | `_enemyOf()` | 8 |
 | 6996 | `_duelToken()` | 22 |

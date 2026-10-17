@@ -38,6 +38,11 @@ import { viewmodelVisibility } from './vmvisibility.js';
 import { urlDoBrasao } from './brasoes_versao.js';
 
 import { WEAPONS } from './data/weapons.js';
+import { perfilArma } from './data/weapon-profiles.js';
+export { perfilArma };
+import { saidaPenetracao, direcaoDesviada, resolverRaio } from './ballistics.js';
+import { entradaCombatente, ALCANCE_TIRO, alturaDoOlho } from './hitboxes.js';
+export { saidaPenetracao, resolverRaio };
 // Reexporta pra não quebrar quem já consumia a tabela daqui: server/room.js (servidor
 // autoritativo) e tools/eval/botdiag.mjs. Consumidor novo importa de data/weapons.js.
 export { WEAPONS };
@@ -76,6 +81,8 @@ const VM_MAT_LEGACY = QS.get('vmmat') === 'legacy';
 const ROUND_TIME = 99, ROUNDS_TO_WIN = 3, RESPAWN_DELAY = 2.2, PICKUP_RESPAWN = 8, SPAWN_PROT = 2;
 // Prazo e teto do drop de morte; procedência dos dois números em tools/eval/drop-check.mjs.
 const DROP_TTL = 18, DROP_MAX = 12;
+// m/s de recomposição do boom da câmera ao sair de trás de prop (entra na hora, sai andando).
+const RECUPERA_BOOM = 5;
 /* TETO PADRÃO DE RODADAS — "melhor de 5", que é o que o índice promete inicialmente
    (src/pages/index.astro:503, "Vence quem ganhar 3 rounds"). Sem este teto o formato NÃO
    ERA melhor de 5: round EMPATADO não dá ponto pra ninguém (game.js:_endRound), então uma
@@ -423,17 +430,7 @@ const DMG_FALLOFF = {
 const HS_MUL = { rifle: 4, smg: 4, pistol: 4, lmg: 3.6, shotgun: 1.7, sniper: 2.5 };
 // Classe BALÍSTICA (≠ STATIC_CLASS, que é do viewmodel: lá SMG mora em 'rifle' e a M400
 // mora em 'awp'). Usada só por falloff/headshot.
-const BALL_CLASS = {};
-for (const w of ['awp', 'mosin', 'svd', 'sks']) BALL_CLASS[w] = 'sniper';
-BALL_CLASS.shotgun = 'shotgun';
-// MD97 saiu de 'shotgun' (fica no default 'rifle'). Ela é o IMBEL MD97, fuzil 5,56 do
-// Exército — estava na classe balística de espingarda só por herdar a malha do viewmodel.
-// O estrago era grande e invisível: DMG_FALLOFF.shotgun [8, 26, 0.30] derrubava o dano
-// dela pra 30% depois de 26 m (um FUZIL inútil a média distância) e HS_MUL.shotgun 1.7
-// tirava o headshot (rifle = 4). Som corrigido junto em audio.js (GUN_CLASS 'ar').
-for (const w of ['mp5', 'uzi', 'p90']) BALL_CLASS[w] = 'smg';
-for (const w of ['pistol', 'deagle', 'revolver38']) BALL_CLASS[w] = 'pistol';
-BALL_CLASS.lmg = 'lmg';
+const BALL_CLASS = Object.fromEntries(Object.keys(WEAPONS).map(w => [w, perfilArma(w).perfilDano]));
 // Classe de viewmodel por arma — usada pelo caminho ATIVO (ADS `_adsPose`, kickMul de
 // pistola, boca de cano `_muzzleWorld`) e lida pelo auditor (invariants.mjs/vm-project.mjs
 // fatiam o trecho da declaração até a linha do 'knife' e AVALIAM como JS — não citar a
@@ -922,6 +919,7 @@ export class Game {
         isPlayer: false, name: (this.online || this.dedicated) ? def.name : `[BOT] ${def.name}`, def, team,   // SP rotula aqui; online o snapshot rotula (BUG-124)
         mesh: c, pos: new THREE.Vector3(), yaw: 0, hp: 100, alive: true,
         respawnAt: 0, protUntil: 0, kills: 0, deaths: 0,
+        crouchF: 0,
         target: null, reactAt: 0, nextShotAt: 0, skill: rollBotSkill(this._diffMul) * (0.9 + Math.random() * 0.2), weapon: wpn,
         _meshWeapon: wpn,
         mag: (WEAPONS[wpn] && WEAPONS[wpn].mag) || 30, aimErr: 0.2, burst: 0, alertUntil: 0,
@@ -2654,10 +2652,14 @@ export class Game {
     /* game.js:1878 — o banner tem que DECLARAR a condição de vitória do modo, senão o
        jogador não sabe pelo que está jogando. No CAPTURA a condição é bandeira, não
        relógio: dizer "primeiro a 2 bandeiras" é o que substitui o cronômetro que saiu. */
-    this._banner(frase('round', this.roundNum), this.ctf
+    // O ROUND 1 ainda declara o FORMATO (melhor de N, primeiro a X): o teto só vivia no
+    // menu/HUD e jogador achava que não existia (relato out/2026).
+    const subRound = this.ctf
       ? frase('alvoBandeiras', this.capsToWin)
       : (PACE ? frase('alvoAbates', this.killsToWin)
-        : (this.roundNum === 1 ? frase('comeceTreta') : frase('voltaTreta'))));
+        : (this.roundNum === 1 ? frase('comeceTreta') : frase('voltaTreta')));
+    this._banner(frase('round', this.roundNum),
+      this.roundNum === 1 ? `${subRound} · ${frase('formatoMelhorDe', this.roundsMax, this.roundsToWin)}` : subRound);
     if (!this.sfx.roundNumber(this.roundNum) && !this.sfx.csSound('roundstart')) this.sfx.vuvuzela(1.4);
   }
   _resetPositions() {
@@ -2691,6 +2693,10 @@ export class Game {
     this.player.ammo.awp = { mag: WEAPONS.awp.mag, res: WEAPONS.awp.reserve };
     this.player.ammo.pistol = { mag: WEAPONS.pistol.mag, res: WEAPONS.pistol.reserve };
     this.player.smokes = 5; this.player.frags = 1; this._updateSmokeHud();   // 5 fumaças + 1 frag por round
+    // sequência de frag é da RODADA (jogador e combatentes: no nó autoritativo o
+    // _resetPositions roda pro slot remoto também). Régua: frag-restock-check.mjs
+    this.player._fragSeq = 0;
+    for (const c of this.combatants || []) c._fragSeq = 0;
     // modo de armas: aplica o loadout inicial. No modo 'all', o player entra com a arma do
     // personagem dele (a mesma da tela de seleção) em vez da AWP padrão.
     const mode = this._wpnMode();
@@ -2712,6 +2718,12 @@ export class Game {
     // reset slot memory to the loadout (1 = primary, 2 = sidearm)
     this.player.primary = PISTOLS.has(this.player.weapon) ? 'pistol' : (this.player.weapon === 'knife' ? cw : this.player.weapon);
     this.player.secondary = 'pistol';
+    // ROUND NOVO, LOADOUT CHEIO: quem SOBREVIVE o corte não chega sem balas (relato out/2026).
+    // Mesma guarda do _respawn; história e números em tools/eval/round-municao-check.mjs.
+    for (const slot of [this.player.primary, this.player.secondary]) {
+      if (slot && this._pickupAllowed(slot) && this.player.ammo[slot])
+        this.player.ammo[slot] = { mag: WEAPONS[slot].mag, res: WEAPONS[slot].reserve };
+    }
     // QA visual: congela o ADS somente nas URLs de debug para permitir validar
     // enquadramento/linha de mira sem depender de manter o RMB pressionado.
     this.player.scoped = VM_QA_ADS && this.player.weapon !== 'knife'; this.player.reloadUntil = 0;
@@ -2878,6 +2890,7 @@ export class Game {
       const botSpawn = place(b, b.team, slots[b.team]++);
       b.yaw = this._spawnYaw(botSpawn, b.team, true);
       b.target = null; b.path = null; b.repathAt = 0;
+      this._posturaBot(b, false);
       b.mesh.group.rotation.set(0, b.yaw, 0);
       b.mesh.group.position.copy(b.pos);
       b.mesh.group.visible = true;
@@ -3503,10 +3516,9 @@ export class Game {
     // quanto a faca). Estes segundos alimentam DUAS coisas: `p.drawUntil` (trava do tiro) e
     // a duração do estado 'draw' do rig (a arma entrando pela borda de baixo, y -0,34 /
     // rx -1,05 no início do arco) — antes era uma rampa linear dividida por 0,28 fixo.
-    const DEPLOY = { knife: 0.25, pistol: 0.34, smg: 0.38, rifle: 0.42, shotgun: 0.42, awp: 0.45 };
     const _dcls = BALL_CLASS[w] === 'smg' ? 'smg' : (STATIC_CLASS[w] || 'rifle');
     p.lastInv = p.weapon;   // #261: Q alterna entre as duas últimas (lastinv do CS)
-    p.weapon = w; p.reloadUntil = 0; p.drawUntil = this.time + (GUNFEEL ? (DEPLOY[_dcls] || 0.38) : 0.28);
+    p.weapon = w; p.reloadUntil = 0; p.drawUntil = this.time + (GUNFEEL ? perfilArma(w).saque : 0.28);
     p.sprayI = 0; p.lastShotAt = -9;   // rajada nova: padrão de recuo recomeça do tiro 1
     // remember the slot so 1/2 recall the LAST weapon of that kind (primary vs sidearm)
     if (w !== 'knife') { if (PISTOLS.has(w)) p.secondary = w; else p.primary = w; }
@@ -3515,7 +3527,7 @@ export class Game {
     // trocar no meio da recarga. Sem `startSwap` de propósito: o holster do rig exige adiar
     // a TROCA DA MALHA até o fundo do arco, e a malha visível é lida por `poseToWeapon`,
     // pelo flash de boca e pelo ADS a partir de `p.weapon` — adiar isso é outra tarefa.
-    const drawDur = GUNFEEL ? (DEPLOY[_dcls] || 0.38) : 0.28;
+    const drawDur = GUNFEEL ? perfilArma(w).saque : 0.28;
     // Atualiza primeiro o controlador que possui a nova arma. Antes, ao trocar para a faca,
     // `melee.active` ainda refletia a arma anterior e o saque dedicado não era disparado.
     this._applyVmVisibility();
@@ -3652,7 +3664,7 @@ export class Game {
     st.last = this.time;
     st.sh = Math.min(0.020, st.sh + g * 0.22);
   }
-  _tryShoot() {
+  _tryShoot(continuo = false) {
     const p = this.player, w = WEAPONS[p.weapon];
     if (this.espectando()) return;   // quem assiste não tem corpo: o tiro sairia do nada
     if (!p.alive || this.state !== 'live') return;
@@ -3664,7 +3676,9 @@ export class Game {
     const a = p.ammo[p.weapon];
     if (a.mag <= 0) { this.sfx.dryFire(); this._startReload(); return; }
     a.mag--;
-    p.nextShotAt = this.time + w.rate;
+    // #969: conserva a fase da rajada; interrupções longas não acumulam tiros.
+    p.nextShotAt = continuo && this.time - p.nextShotAt < w.rate
+      ? p.nextShotAt + w.rate : this.time + w.rate;
     p.revealedAt = this.time;
     if (BOT_SENTIDOS) this._botOuve(p.pos, BOT_OUVE_TIRO, 3);   // tiro faz barulho
     this.vm.authored?.shoot(p.weapon);
@@ -3795,65 +3809,141 @@ export class Game {
     }
     if (e.isPlayer) this._noteHit(b, W.short || 'FACA', dmg, false, d);
   }
-  /* Dano de um tiro: base × falloff por classe × multiplicador de headshot. O servidor usa a
-     MESMA conta — duas cópias envelheceriam separadas. Ver docs/MULTIPLAYER.md. */
+  _distanceDamage(dmg, wid, dist) {
+    const fo = DMG_FALLOFF[perfilArma(wid).perfilDano];
+    if (!fo) return dmg;
+    const [inicio, fim, minimo] = fo;
+    const progresso = Math.max(0, Math.min(1, (dist - inicio) / (fim - inicio)));
+    return dmg * (1 - (1 - minimo) * progresso);
+  }
   _shotDamage(dmg, wid, dist, head) {
     let d = dmg;
     if (GUNFEEL && wid) {
-      const bc = BALL_CLASS[wid] || 'rifle';
-      const fo = DMG_FALLOFF[bc];
-      if (fo) { const [s0, s1, mn] = fo; d *= Math.max(mn, Math.min(1, 1 - (dist - s0) / (s1 - s0))); }
+      const bc = perfilArma(wid).perfilDano;
+      d = this._distanceDamage(dmg, wid, dist);
       if (head) d *= HS_MUL[bc] ?? 4;
     } else if (head && d < 100) d = 100;
     return d;
   }
 
+  _consultarTiro(shooter, from, dir, wid) {
+    this.ray.set(from, dir); this.ray.far = ALCANCE_TIRO;
+    const paredes = this.ray.intersectObjects(this.world.occluders, false);
+    const atores = [...(this.bots || []), ...(this.dedicated ? [] : [this.player])];
+    const alvos = atores.filter(e => e && e !== shooter && e.alive && !e._idle && e.team !== shooter.team)
+      .map(ent => ({ ent, pos: ent.pos, crouchF: ent.crouchF || 0 }));
+    const hit = resolverRaio({ origem: from, direcao: dir, alvos, paredes, alcance: ALCANCE_TIRO,
+      intersectar: entradaCombatente,
+      atravessar: parede => this._penetrationExit(parede, dir, wid, this._surfaceOf(parede.object)) });
+    if (hit?.object) hit.sup = this._surfaceOf(hit.object);
+    return hit;
+  }
+
+  _origemTiroBot(bot) {
+    return this._botEye(bot);
+  }
+
+  _miraTiroBot(ent) {
+    return this._participanteHumano(ent) ? new THREE.Vector3(ent.pos.x, ent.pos.y + alturaDoOlho(ent.crouchF || 0), ent.pos.z)
+      : this._origemTiroBot(ent);
+  }
+
+  _participanteHumano(ent) {
+    return !!(ent.isPlayer || (ent._remote && ent._remote !== 'ghost' && ent._netBot !== true));
+  }
+
+  _resolverTiroBot(bot, from, dir, W, permiteCabeca = false) {
+    const wid = WEAPONS[bot.weapon] ? bot.weapon : 'ak';
+    const hit = this._consultarTiro(bot, from, dir, wid);
+    if (!hit?.ent) return hit;
+    const head = !!(hit.head && permiteCabeca);
+    const dano = Math.max(6, Math.min(this._participanteHumano(hit.ent) ? 100 : 130,
+      Math.round(this._danoTiroBot(bot, hit, W, head))));
+    this._aplicarTiroBot(bot, hit, dir, W, head, dano);
+    return { ...hit, head, dano };
+  }
+
+  _danoTiroBot(bot, hit, W, head) {
+    const wid = WEAPONS[bot.weapon] ? bot.weapon : 'ak';
+    const classe = perfilArma(wid).perfilDano;
+    let dano = W.dmg || 30;
+    dano = this._distanceDamage(dano, wid, hit.dist);
+    if (head) dano *= BOT_FAIR ? (BOT_HS_MUL[classe] || 2) : (HS_MUL[classe] || 3) * .8;
+    dano *= hit.damageMul ?? 1;
+    const humano = this._participanteHumano(hit.ent);
+    const mul = humano ? (BOT_FAIR ? this._botDmgPlayer : BOT_DMG_PLAYER) : 1;
+    return dano * mul;
+  }
+
+  _aplicarTiroBot(bot, hit, dir, W, head, dano) {
+    const alvo = hit.ent;
+    this._damage(alvo, dano, bot, W.short || 'ARMA', head, hit.point);
+    if (hit.atravessou) this._puff(hit.atravessou.point, hit.atravessou.face?.normal || null,
+      this._surfaceOf(hit.atravessou.object), false);
+    if (BLOOD) {
+      if (alvo.isPlayer) this._bloodSpatter(hit.point, dir, head, alvo.pos.y);
+      else this._fleshImpact(hit.point, dir, head, alvo.pos.y, false);
+    }
+    if (alvo.isPlayer) this._noteHit(bot, W.short || 'ARMA', dano, head, hit.dist);
+  }
+
+  _dispararBot(bot, from, dir, W, permiteCabeca = false) {
+    if (!W.pellets) return this._resolverTiroBot(bot, from, dir, W, permiteCabeca);
+    const cone = coneDoDisparo({ crouchF: bot.crouchF || 0, sp: Math.hypot(bot.vel?.x || 0, bot.vel?.z || 0),
+      grounded: bot.grounded !== false, adsF: bot._adsF || 0, bloom: 0, scoped: !!bot.scoped }, W, Math.random);
+    const orientacao = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, -1), dir);
+    const peso = Math.min(W.pellets, 6) * .55 / cone.length, porAtor = new Map(), raios = [];
+    let bruto = 0;
+    for (const o of cone) {
+      const direcao = GUNFEEL ? new THREE.Vector3(o.x, o.y, -1).applyQuaternion(orientacao).normalize()
+        : dir.clone().add(new THREE.Vector3(o.x, o.y, o.z)).normalize();
+      const hit = this._consultarTiro(bot, from, direcao, bot.weapon);
+      raios.push({ dir: direcao, point: hit?.point || from.clone().addScaledVector(direcao, 120), hit });
+      if (!hit?.ent) continue;
+      const head = !!(hit.head && permiteCabeca), dano = this._danoTiroBot(bot, hit, W, head) * peso;
+      if (!(dano > 0)) continue;
+      const grupo = porAtor.get(hit.ent) || { hit, dir: direcao, dano: 0, head: false };
+      if (head && !grupo.head) { grupo.hit = hit; grupo.dir = direcao; }
+      grupo.dano += dano; grupo.head ||= head; porAtor.set(hit.ent, grupo); bruto += dano;
+    }
+    const total = bruto > 0 ? Math.max(6, Math.round(bruto)) : 0;
+    for (const grupo of porAtor.values()) {
+      const dano = Math.min(this._participanteHumano(grupo.hit.ent) ? 100 : 130, total * grupo.dano / bruto);
+      this._aplicarTiroBot(bot, grupo.hit, grupo.dir, W, grupo.head, dano);
+    }
+    const primeiro = porAtor.values().next().value?.hit || raios[0]?.hit;
+    return { ...primeiro, point: primeiro?.point || raios[0]?.point, raios,
+      atingiuJogadorLocal: [...porAtor.keys()].some(ent => ent.isPlayer) };
+  }
+
+  _rastroTiroBot(from, dir, end, resultado) {
+    if (resultado?.raios) {
+      for (const r of resultado.raios.slice(0, 4)) this._tracer(from.clone().addScaledVector(r.dir, .7), r.point);
+    } else this._tracer(from.clone().addScaledVector(dir, .7), end);
+  }
+
   _fireHitscan(shooter, from, dir, dmg, byPlayer = false, weap = 'AWP', wid = null, tracer = true) {
-    this.ray.set(from, dir); this.ray.far = 200;
-    const enemyGroups = this.bots.filter(b => b.alive && (byPlayer ? b.team !== this.playerTeam : true)).map(b => b.mesh.group);
-    const hitsChar = enemyGroups.length ? this.ray.intersectObjects(enemyGroups, true) : [];
-    const hitsWorld = this.ray.intersectObjects(this.world.occluders, false);
-    const hC = hitsChar[0], hW = hitsWorld[0];
-    let end;
-    if (hC && (!hW || hC.distance < hW.distance)) {
-      const { bot, head } = this._targetFromHit(hC);
-      end = hC.point;
-      if (bot) {
-        if (bot.team === shooter.team) { /* friendly fire off */ }
-        else {
-          /* Online: o cliente desenha o impacto mas NÃO aplica dano — o hp vem no snapshot.
-             Aplicar aqui contaria o dano duas vezes. Ver docs/MULTIPLAYER.md. */
-          if (!this.online) this._damage(bot, this._shotDamage(dmg, wid, hC.distance, head), shooter, weap, head, end);
-          else if (byPlayer) this._acertoPrevisto(bot, this._shotDamage(dmg, wid, hC.distance, head), head, end);
-          this._fleshImpact(end, dir, head, bot.pos ? bot.pos.y : null, byPlayer, this._armoredTarget(bot));
-        }
+    const hit = this._consultarTiro(shooter, from, dir, wid);
+    const end = hit?.point || from.clone().addScaledVector(dir, 120);
+    if (hit?.ent) {
+      const bot = hit.ent, head = hit.head;
+      if (hit.atravessou) {
+        const parede = hit.atravessou, surf = this._surfaceOf(parede.object);
+        this._puff(parede.point, parede.face?.normal || null, surf, false);
+        if (byPlayer) this._impactSfx(surf, parede.point, parede.distance);
       }
-    } else if (hW) {
-      end = hW.point;
-      const n = hW.face ? hW.face.normal : null;
-      const surf = this._surfaceOf(hW.object);
-      this._puff(hW.point, n, surf, false);   // BUG-187: impacto de bala sem fumaça (furo, faísca e som ficam)
+      const base = this._shotDamage(dmg, wid, hit.dist, head);
+      const dano = hit.damageMul == null ? base : Math.round(base * hit.damageMul);
+      if (!this.online) this._damage(bot, dano, shooter, weap, head, end);
+      else if (byPlayer && !hit.atravessou) this._acertoPrevisto(bot, dano, head, end);
+      this._fleshImpact(end, dir, head, bot.pos.y, byPlayer, this._armoredTarget(bot));
+    } else if (hit?.object) {
+      const surf = hit.sup;
+      this._puff(hit.point, hit.n, surf, false);   // BUG-187: impacto de bala sem fumaça (furo, faísca e som ficam)
       // som de impacto em 100% dos tiros do jogador (era `ricochet()` — um BIP de sine — em
       // 30%: 70% dos tiros na parede eram literalmente mudos).
-      if (GUNFEEL) { if (byPlayer || Math.random() < 0.35) this._impactSfx(surf, hW.point, from.distanceTo(hW.point)); }
+      if (GUNFEEL) { if (byPlayer || Math.random() < 0.35) this._impactSfx(surf, hit.point, hit.dist); }
       else if (Math.random() < 0.3) this.sfx.ricochet();
-      const pen = this._penetrationExit(hW, dir, wid, surf);
-      if (pen) {
-        const nextWorld = hitsWorld.find(hit => hit.distance > pen.exitDistance + 0.005);
-        const hP = hitsChar.find(hit => hit.distance > pen.exitDistance + 0.005
-          && (!nextWorld || hit.distance < nextWorld.distance - 0.005));
-        if (hP) {
-          const { bot, head } = this._targetFromHit(hP);
-          if (bot && bot.team !== shooter.team) {
-            end = hP.point;
-            const penDamage = Math.round(this._shotDamage(dmg, wid, hP.distance, head) * pen.damageMul);
-            if (!this.online) this._damage(bot, penDamage, shooter, weap, head, end);
-            this._fleshImpact(end, dir, head, bot.pos ? bot.pos.y : null, byPlayer, this._armoredTarget(bot));
-          }
-        }
-      }
-    } else {
-      end = from.clone().add(dir.clone().multiplyScalar(120));
     }
     this.world.ambience?.onShot(from, end);
     if (byPlayer && tracer) {
@@ -3890,19 +3980,7 @@ export class Game {
   _penetrationExit(hit, dir, wid, surf) {
     const cfg = WEAPONS[wid]?.penetration;
     if (!cfg || this.online || !cfg.surfaces.includes(surf)) return null;
-    const box = new THREE.Box3().setFromObject(hit.object);
-    if (box.isEmpty()) return null;
-    const origin = hit.point.clone().addScaledVector(dir, 1e-4);
-    let exit = Infinity;
-    for (const axis of ['x', 'y', 'z']) {
-      const d = dir[axis], p = origin[axis], lo = box.min[axis], hi = box.max[axis];
-      if (Math.abs(d) < 1e-8) { if (p < lo || p > hi) return null; continue; }
-      const t0 = (lo - p) / d, t1 = (hi - p) / d;
-      exit = Math.min(exit, Math.max(t0, t1));
-    }
-    const thickness = exit + 1e-4;
-    if (!(thickness > 0 && thickness <= cfg.maxThickness)) return null;
-    return { exitDistance: hit.distance + thickness, damageMul: cfg.damageMul };
+    return saidaPenetracao(hit, dir, cfg, this.world.occluders);
   }
   // MATERIAL da superfície atingida, inferido do material do mesh (os mapas não marcam
   // userData.surf; quando marcarem, ela ganha prioridade). Cache em WeakMap — o raycast roda
@@ -4089,6 +4167,7 @@ export class Game {
       // TELEMETRIA DE ARMA: quando o JOGADOR mata, conta a arma usada (param `weap`
       // já vem do _damage/_tryShoot). Bot mata não conta — não há balanço a inferir.
       if (attacker.isPlayer && weap) this._wperf[weap] = (this._wperf[weap] || 0) + 1;
+      this._fragRestockStep(attacker);
       if (attacker.isPlayer) {
         this._playerKillFeedback(attacker, head);
       }
@@ -4251,6 +4330,15 @@ export class Game {
     this.mk.life = 0; this.mk.count = 0; this.mk.until = 0;
     this._updateKillSequenceHud();
     this.el.killStreak?.classList.remove('pulse');
+  }
+  // FRAG DE VOLTA POR SEQUÊNCIA (pedido de jogador, out/2026): a cada 3 abates NA RODADA,
+  // +1 frag pra quem está sem (teto 1). Régua: tools/eval/frag-restock-check.mjs.
+  _fragRestockStep(attacker) {
+    if (!attacker) return;
+    attacker._fragSeq = ((attacker._fragSeq | 0) + 1) % 3;
+    if (attacker._fragSeq !== 0 || (attacker.frags | 0) >= 1) return;
+    attacker.frags = 1;
+    if (attacker.isPlayer) this._updateSmokeHud();
   }
   _playerKillFeedback(attacker = this.player, head = false) {
     try { this.sfx.killConfirm(); } catch { /* contexto de áudio indisponível */ }
@@ -5943,6 +6031,37 @@ export class Game {
     cam.position.y += TP_UP - 0.45 * orbitBlend;
     const gy = this.world.groundHeightAt(cam.position.x, cam.position.z, cam.position.y) + 0.2;
     if (cam.position.y < gy) cam.position.y = gy;   // não atravessa o chão
+    /* OCLUSÃO DO BOOM: câmera de 3ª pessoa não entra em prop atrás do jogador (relato
+       out/2026). Occluders seguram bala; world.camBlockers é PANO (câmera para, tiro passa). */
+    const eyePos = this._tpEyePos || (this._tpEyePos = new THREE.Vector3());
+    eyePos.set(p.pos.x, p.pos.y + eye, p.pos.z);
+    const boom = this._tpBoom || (this._tpBoom = new THREE.Vector3());
+    boom.copy(cam.position).sub(eyePos);
+    const boomLen = boom.length();
+    if (boomLen > 1e-4) {
+      boom.multiplyScalar(1 / boomLen);
+      let claro = boomLen;
+      if (this.world.occluders?.length) {
+        this.ray.set(eyePos, boom);
+        this.ray.far = boomLen;
+        const hit = this.ray.intersectObjects(this.world.occluders, false)[0];
+        if (hit && hit.distance < claro) claro = hit.distance;
+      }
+      if (this.world.camBlockers?.length) {
+        const pt = this._tpBoxPt || (this._tpBoxPt = new THREE.Vector3());
+        for (const box of this.world.camBlockers) {
+          if (this.ray.ray.intersectBox(box, pt)) {
+            const d = eyePos.distanceTo(pt);
+            if (d < claro) claro = d;
+          }
+        }
+      }
+      const piso = Math.max(0.35, claro - 0.18);   // 18 cm de folga pro near plane
+      const atual = this._tpBoomClear ?? boomLen;
+      this._tpBoomClear = piso < atual ? piso : Math.min(boomLen, atual + dt * RECUPERA_BOOM);
+      if (this._tpBoomClear < boomLen - 1e-3)
+        cam.position.copy(eyePos).addScaledVector(boom, this._tpBoomClear);
+    }
     // Cruz no alvo do raio autoritativo a distância de combate; o tiro continua
     // saindo do olho com yaw/pitch, igual ao servidor multiplayer.
     const aimPoint = this._tpAimPoint || (this._tpAimPoint = new THREE.Vector3());
@@ -6179,7 +6298,7 @@ export class Game {
        input pro servidor, que roda esta MESMA função. */
     if (this.online) this._mp?.stepPlayer(p, _inp, dt);
     // auto-fire (ak/m4/mp5) enquanto o botão está segurado
-    if (WEAPONS[p.weapon].auto && this.mouseDown0 && p.alive) this._tryShoot();
+    if (perfilArma(p.weapon).segurar && this.mouseDown0 && p.alive) this._tryShoot(true);
     this.bloom = Math.max(0, (this.bloom || 0) - dt * 1.8);
     // camera: crouch drop + landing dip (decays) + recoil recovery (decays) + speed bob
     p.landDip = (p.landDip || 0) + (0 - (p.landDip || 0)) * Math.min(1, dt * 7);
@@ -6984,7 +7103,11 @@ export class Game {
     m.halo.visible = true;
     m.halo.position.set(b.pos.x, b.pos.y + 0.05, b.pos.z);
   }
-  _botEye(b) { return new THREE.Vector3(b.pos.x, b.pos.y + BOT_EYE, b.pos.z); }
+  _posturaBot(b, agachar) {
+    b.crouchF = b.mesh?.isGLB && agachar ? 1 : 0;
+    if (b.mesh?.isGLB) b.mesh.ctrl.setCrouch(b.crouchF > 0.5);
+  }
+  _botEye(b) { return new THREE.Vector3(b.pos.x, b.pos.y + alturaDoOlho(b.crouchF || 0, BOT_EYE), b.pos.z); }
   _enemyOf(bot) { return this.combatants.filter(c => c.team !== bot.team && c.alive); }
   /* TURNO DE DUELO (attack token) — ver o comentário de BOT_DUEL_TOKENS.
      POR QUE existe: medido em botdiag, as rajadas que matavam o jogador vinham de 2-3 bots
@@ -7026,6 +7149,7 @@ export class Game {
     b.aimErr = 0.2; b.burst = 0; b.alertUntil = 0; b._hurtAt = 0; b.reloadUntil = 0;
     b.focusUntil = 0; b._spinAcc = 0; b._spinAt = 0; b._sideUntil = 0;   // estado de mira/anti-pirueta da vida anterior
     b.target = null; b.path = null; b.yaw = this._spawnYaw(s, b.team, true);
+    this._posturaBot(b, false);
     // Coluna, rota, juke e rumo são estado de VIDA: herdá-los repete rota e gira no spawn.
     b.laneX = undefined; b.roamUntil = 0;
     b._banNodes = null; b._unreach = null; b._escapeUntil = 0; b._jukeAt = 0;
@@ -7183,6 +7307,8 @@ export class Game {
         if (this.time - b._lostAt > grace) { b.target = null; b._losLost = false; b._lostAt = 0; }
       }
     }
+
+    this._posturaBot(b, !!b.target && b.crouchBias);
 
     // Lane/coluna do bot (sempre definida): usada tanto no roam quanto pela direção de
     // flanco no combate, pra o time ocupar os DOIS lados do mapa (não só a esquerda).
@@ -7441,49 +7567,25 @@ export class Game {
         }
         if ((Wb.mag || 0) > 0 && b.mag <= 0) { b.reloadUntil = this.time + (Wb.reload || 2.4); b.mag = Wb.mag; b.burst = 0; }
         b.aimErr += (Wb.recoil || 0.01) * (Wb.auto ? 0.6 : 0.4);   // cada tiro tira a mira do lugar (rajada abre)
-        const from = this._botEye(b);
-        const teye = (e.isPlayer ? this.camera.position.clone() : this._botEye(e));
+        const from = this._origemTiroBot(b);
+        const teye = this._miraTiroBot(e);
         const tdist = Math.max(1, from.distanceTo(teye));
         // tamanho angular do alvo (meia-largura de tronco ~0.5 m)
         const halfAng = Math.atan2(0.5, tdist);
         const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
         const ox = gauss() * b.aimErr, oy = gauss() * b.aimErr * 0.8;
         const off = Math.hypot(ox, oy);
-        let hit = off < halfAng;
+        const acertoAngular = off < halfAng;
         // CABEÇA: continua sendo consequência de mirar bem (off pequeno), mas com TETO
         // absoluto de 7% — sem isso o bot 'bom' virava o cheater que o dono descreveu.
         const hsChance = BOT_FAIR ? Math.min(BOT_HS_MAX, 0.05 * b.skill) : 0.16 * b.skill;
-        const head = hit && off < halfAng * 0.35 && Math.random() < hsChance;
-        const dir = teye.clone().sub(from).normalize();
-        {   // aplica o desvio na base direita/cima do próprio tiro
-          const rt = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0));
-          if (rt.lengthSq() < 1e-6) rt.set(1, 0, 0);
-          rt.normalize();
-          const up = new THREE.Vector3().crossVectors(rt, dir).normalize();
-          dir.addScaledVector(rt, Math.tan(ox)).addScaledVector(up, Math.tan(oy)).normalize();
-        }
-        // tracer & world impact
-        this.ray.set(from, dir); this.ray.far = 200;
-        const hitsW = this.ray.intersectObjects(this.world.occluders, false)[0];
-        // NUNCA acerta atrás de parede: se o mundo está na frente do alvo, a bala morre lá.
-        const blocked = !!(hitsW && hitsW.distance < tdist - 0.4);
-        if (blocked) hit = false;
-        let end = hitsW ? hitsW.point : from.clone().add(dir.clone().multiplyScalar(120));
-        if (hit) {
-          end = teye;
-          let dmg = (Wb.dmg || 30) * (Wb.pellets ? Math.min(Wb.pellets, 6) * 0.55 : 1);
-          const fo = DMG_FALLOFF[bcls];   // mesma tabela do jogador: P90 a 60m não mata como AWP
-          if (fo) { const t = Math.max(0, Math.min(1, (tdist - fo[0]) / (fo[1] - fo[0]))); dmg *= 1 - (1 - fo[2]) * t; }
-          // tabela de cabeça PRÓPRIA do bot (ver BOT_HS_MUL): rifle na cabeça = 72, não 115.
-          if (head) dmg *= BOT_FAIR ? (BOT_HS_MUL[bcls] || 2.0) : (HS_MUL[bcls] || 3) * 0.8;
-          const dmgMul = e.isPlayer ? (BOT_FAIR ? this._botDmgPlayer : BOT_DMG_PLAYER) : 1;
-          dmg = Math.max(6, Math.min(e.isPlayer ? 100 : 130, Math.round(dmg * dmgMul)));
-          this._damage(e, dmg, b, Wb.short || 'AWP', head, teye);   // arma real do bot no killfeed
-          // sangue do tiro do BOT: bot×bot = efeito completo (spray + chão); jogador levando
-          // tiro = só decals (chão/parede), sem o spray gordo estourando na câmera.
-          if (BLOOD) { if (e.isPlayer) this._bloodSpatter(teye, dir, head, e.pos ? e.pos.y : null); else this._fleshImpact(teye, dir, head, e.pos ? e.pos.y : null, false); }
-          if (e.isPlayer) this._noteHit(b, Wb.short || 'ARMA', dmg, head, tdist);
-        } else if (hitsW && Math.random() < 0.5) this._puff(hitsW.point, hitsW.face ? hitsW.face.normal : null, null, false);
+        const sorteioCabeca = acertoAngular && off < halfAng * 0.35 && Math.random() < hsChance;
+        const dir = direcaoDesviada(from, teye, ox, oy);
+        const resultado = this._dispararBot(b, from, dir, Wb, sorteioCabeca);
+        const hit = !!resultado?.ent;
+        const blocked = !!resultado?.object && resultado.dist < tdist - .4;
+        const end = resultado?.point || from.clone().addScaledVector(dir, 120);
+        if (!hit && resultado?.object && Math.random() < .5) this._puff(resultado.point, resultado.n, resultado.sup, false);
         /* COICE PROPORCIONAL AO ALVO (ver BOT_SPRAY_K). Somado DEPOIS de resolver o tiro: o
            1º tiro da rajada continua encostando (o jogador precisa sentir "levei tiro"), o 2º
            e o 3º abrem. Em múltiplos do tamanho angular do alvo pra degradar igual a 6 m e a
@@ -7519,9 +7621,10 @@ export class Game {
         // SEMPRE FX cheio quando o bot atira NO JOGADOR (dono: "não vejo de onde vem o tiro,
         // parece cheater"): tracer + som direcional em todo tiro contra o player, mesmo de longe
         // ou em quality low. Só o throttle bot-vs-bot distante segue valendo (orçamento de GPU).
-        const fxFull = e.isPlayer || (_sd < 45 && this.settings.quality !== 'low') || (fxTick % 2) === 0;
+        const fxFull = e.isPlayer || resultado?.ent?.isPlayer || resultado?.atingiuJogadorLocal
+          || (_sd < 45 && this.settings.quality !== 'low') || (fxTick % 2) === 0;
         if (fxFull) {
-          this._tracer(from.clone().add(dir.clone().multiplyScalar(0.7)), end);
+          this._rastroTiroBot(from, dir, end, resultado);
           this.sfx.shotWeapon(b.weapon, _sd, 0.45, _pan, Math.min(0.25, _sd / 343));   // bots MUITO mais baixos que a arma do jogador (carabina de bot estourava o mix)
         }
         this._flash(from.clone().add(dir.clone().multiplyScalar(0.85)), dir);   // GPU-batched: 1 draw call
@@ -7697,6 +7800,7 @@ export class Game {
           if (b.path.length <= 1 && from !== b.roamIdx) {
             (b._unreach || (b._unreach = new Set())).add(b.roamIdx);
             b.roamUntil = 0;
+            b.repathAt = 0;
           }
         }
       }
@@ -7862,7 +7966,6 @@ export class Game {
     g.position.copy(b.pos);
     g.rotation.set(0, b.yaw, 0);
     if (b.mesh.isGLB) {
-      b.mesh.ctrl.setCrouch(!!b.target && b.crouchBias);
       // "olhar pra baixo": os clipes de rifle-hold assam ~13° de inclinação da cabeça
       // pra baixo. Passa o pitch vertical olho→olho do alvo (clamp ±15°) pro controller
       // fechar o loop no osso da cabeça; sem alvo, 0 = olhar na horizontal pra onde anda.
@@ -7870,9 +7973,9 @@ export class Game {
         const e = b.target;
         let aim = 0;
         if (e) {
-          const teyeY = e.isPlayer ? this.camera.position.y : e.pos.y + BOT_EYE;
+          const teyeY = e.isPlayer ? this.camera.position.y : this._botEye(e).y;
           const hd = Math.hypot(e.pos.x - b.pos.x, e.pos.z - b.pos.z) || 1;
-          aim = Math.max(-BOT_AIM_PITCH, Math.min(BOT_AIM_PITCH, Math.atan2(teyeY - (b.pos.y + BOT_EYE), hd)));
+          aim = Math.max(-BOT_AIM_PITCH, Math.min(BOT_AIM_PITCH, Math.atan2(teyeY - this._botEye(b).y, hd)));
         }
         b.mesh.ctrl.aimPitch = aim;
       }
@@ -7940,6 +8043,7 @@ export class Game {
       b.target = b._nnMem.target || null;   // p/ o mesh (crouch/aimPitch) e o gate de tiro
     }
     const nn = b._nn || { moveFwd: 0, moveStrafe: 0, dyaw: 0, dpitch: 0, fire: 0, crouch: 0, reload: 0 };
+    this._posturaBot(b, !!b.target && nn.crouch > 0.5);
     const mix = Math.min(1, this.botBrainMix);
 
     // MIRA: aplica o dyaw da rede, limitado pelo teto de giro humano (YAW_CAP)
@@ -7972,12 +8076,11 @@ export class Game {
     g.position.copy(b.pos);
     g.rotation.set(0, b.yaw, 0);
     if (b.mesh.isGLB) {
-      b.mesh.ctrl.setCrouch(!!e && nn.crouch > 0.5);
       let aim = 0;
       if (e) {
-        const teyeY = e.isPlayer ? this.camera.position.y : e.pos.y + BOT_EYE;
+        const teyeY = e.isPlayer ? this.camera.position.y : this._botEye(e).y;
         const hd = Math.hypot(e.pos.x - b.pos.x, e.pos.z - b.pos.z) || 1;
-        aim = Math.max(-BOT_AIM_PITCH, Math.min(BOT_AIM_PITCH, Math.atan2(teyeY - (b.pos.y + BOT_EYE), hd)));
+        aim = Math.max(-BOT_AIM_PITCH, Math.min(BOT_AIM_PITCH, Math.atan2(teyeY - this._botEye(b).y, hd)));
       }
       b.mesh.ctrl.aimPitch = aim;
       const lp = b._lp || { x: b.pos.x, z: b.pos.z };
@@ -7995,36 +8098,21 @@ export class Game {
   // Tiro do bot-NN: honesto (arma real, falloff, teto no jogador, sem acerto atrás de parede).
   _botShootNN(b, e) {
     const Wb = WEAPONS[b.weapon] || WEAPONS.ak;
-    const bcls = BALL_CLASS[b.weapon] || 'rifle';
     b.mag--;
     b.revealedAt = this.time;
     b.nextShotAt = this.time + Math.max(Wb.rate || 0.1, (Wb.auto ? 0.12 : 0.4)) ;
     if ((Wb.mag || 0) > 0 && b.mag <= 0) { b.reloadUntil = this.time + (Wb.reload || 2.4); b.mag = Wb.mag; }
-    const from = this._botEye(b);
-    const teye = e.isPlayer ? this.camera.position.clone() : this._botEye(e);
-    const tdist = Math.max(1, from.distanceTo(teye));
-    const dir = teye.clone().sub(from).normalize();
+    const from = this._origemTiroBot(b);
+    const teye = this._miraTiroBot(e);
     // desvio de mira por skill (a rede diz "atira"; a precisão fina segue o tier do bot)
     const err = 0.02 + 0.03 / Math.max(0.4, b.skill || 1);
     const gs = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
-    const off = Math.hypot(gs() * err, gs() * err);
-    let hit = off < Math.atan2(0.5, tdist);
-    this.ray.set(from, dir); this.ray.far = 200;
-    const hw = this.ray.intersectObjects(this.world.occluders, false)[0];
-    if (hw && hw.distance < tdist - 0.4) hit = false;   // parede na frente: bala morre lá
-    const end = hit ? teye : (hw ? hw.point : from.clone().add(dir.clone().multiplyScalar(120)));
+    const ox = gs() * err, oy = gs() * err;
+    const dir = direcaoDesviada(from, teye, ox, oy);
+    const resultado = this._dispararBot(b, from, dir, Wb);
+    const end = resultado?.point || from.clone().addScaledVector(dir, 120);
     this.world.ambience?.onShot(from, end);
-    if (hit) {
-      let dmg = (Wb.dmg || 30) * (Wb.pellets ? Math.min(Wb.pellets, 6) * 0.55 : 1);
-      const fo = DMG_FALLOFF[bcls];
-      if (fo) { const t = Math.max(0, Math.min(1, (tdist - fo[0]) / (fo[1] - fo[0]))); dmg *= 1 - (1 - fo[2]) * t; }
-      const dmgMul = e.isPlayer ? (BOT_FAIR ? this._botDmgPlayer : BOT_DMG_PLAYER) : 1;
-      dmg = Math.max(6, Math.min(e.isPlayer ? 100 : 130, Math.round(dmg * dmgMul)));
-      this._damage(e, dmg, b, Wb.short || 'ARMA', false, teye);
-      if (BLOOD) { if (e.isPlayer) this._bloodSpatter(teye, dir, false, e.pos ? e.pos.y : null); else this._fleshImpact(teye, dir, false, e.pos ? e.pos.y : null, false); }
-      if (e.isPlayer) this._noteHit(b, Wb.short || 'ARMA', dmg, false, tdist);
-    }
-    this._tracer(from.clone().add(dir.clone().multiplyScalar(0.7)), end);
+    this._rastroTiroBot(from, dir, end, resultado);
     this._flash(from.clone().add(dir.clone().multiplyScalar(0.85)), dir);
     if (b.mesh.isGLB) b.mesh.ctrl.shoot();
   }

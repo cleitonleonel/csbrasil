@@ -16,10 +16,14 @@ com código 1 em falha crítica.
 
 | Arquivo | O que mede | Artefato |
 |---|---|---|
+| `ballistics-falloff-check.mjs` | Extremos e interpolação da queda de dano; mede jogador e ambas as IAs, com mutações da curva e da distância. | `npm run eval:ballistics-falloff` |
+| `firing-cadence-check.mjs` | Cadência pelo _updatePlayer real; calendário, cooldown, teto por passo, entrada e interrupções, com mutantes. | `npm run eval:firing-cadence` |
+| `recoil-contract-check.mjs` | Perfis históricos de #970; mede câmera, padrão e kick entregue ao viewmodel pelo disparo real. | `npm run eval:recoil-contract` |
 | `ranking-home-status.mjs` | Estado real dos renderers da home: 38 casos entre loading/OFF/rede/vazio/sucesso e oito mutantes; DOM em Node, sem aceite visual. | `npm run eval:ranking-home-status` |
 | `invariants.mjs` | **O portão principal.** As invariantes permanentes: toda vez que o dono reporta um bug, ele vira uma invariante aqui e nunca mais volta. Regenera `vm_kick_sim.json` sozinho e LÊ `vm_mint_audit.json`. | `npm run eval:invariants` |
 | `vm-mint-audit.mjs` | Enquadramento do viewmodel arma por arma, nos 26 GLBs reais. Mede a seção transversal perto de cada ponta em Z pra descobrir se a arma está de ré. | `vm_mint_audit.json` (**versionado — sem ele as invariantes VM1–VM6/VM9/VM10 viram PULADAS, que é portão verde por ausência de dado**) |
 | `vm-kick-sim.mjs` | Coice do viewmodel: near plane + pitch em rajada. Prova que a coronha não atravessa a lente no pico. | `vm_kick_sim.json` |
+| `duel-metrics-check.mjs` | BOT4 observa dano efetivo desde HP cheio, proteção, acerto fatal e cura; conserva a rajada final em diagnóstico e mata quatro mutantes. | `npm run eval:duel-metrics` |
 | `botsim.mjs` | Navegação dos bots: 60 s × 5 mapas com sementes fixas. Roda a classe `Game` de verdade com os mapas de verdade. | `npm run eval:bots` |
 | `release-check.mjs` | Release usa o nome CSBR e as notas nativas do GitHub, que preservam PRs e contribuidores. | `npm run eval:release` |
 | `error-provenance-check.mjs` | Preserva erro externo no console/banco sem atribuí-lo ao jogo ou abrir issue automática. | `npm run eval:error-origin` |
@@ -63,12 +67,27 @@ recusa DB/site remoto e restaura catálogo/contas no finally. Aprovação no man
 | `bot-routes.mjs`, `botdiag.mjs`, `bot-moving-loops.mjs` | Diagnóstico de rota e de estado dos bots. `npm run eval:bot-moving-loops` prova o detector; `SIM_MOVING_LOOPS=1 SIM_SEEDS=12345 node tools/eval/botsim.mjs 60 praca_poderes` imprime candidatos e contexto do alvo em stderr. `target.sampleShare` mede cobertura, `switches` conta trocas, e `travel`/`centerOffset` só aparecem com o mesmo alvo em toda a janela; isto não serve como aceite visual/MP. |
 | `stance-speed.mjs` | Velocidade por postura (andar/correr/agachar). |
 | `pulo-tiro-recarga-check.mjs` | Os 3 bugs de gameplay de 01/10/2026: (A) tiro no pulo tem piso ADITIVO de imprecisão — a AWP de luneta no ar não é laser (mesma `aberturaCone` do cliente e do nó MP), semente por tiro; (B) pulo agachado não corre no ar (mesma altura, distância ≤ pulo em pé); (C) gatilho preso/clique não rearma recarga vencendo — o pente vazio volta a 30. Mutantes: `cone-ar`, `crouch-ar`, `reload-rearma`. `npm run eval:pulotirorecarga` |
+| `round-municao-check.mjs` | Contrato de munição entre rounds (relato de out/2026): sobreviver ao corte de round não entrega o round seguinte sem balas — o loadout dos SLOTS (primária/secundária do modo) renasce cheio igual ao respawn, sem presentear slot proibido (SÓ AWP não ganha pistola, FACA não ganha pente de rifle). Mutantes: `sem-refill`, `refill-ignora-modo` (`mut:roundmunicao`). `npm run eval:roundmunicao` |
+| `camera-oclusao-check.mjs` | Oclusão do boom da câmera de 3ª pessoa/ombro (relato de out/2026, ferro velho/favela): a câmera para ANTES de prop alto atrás do jogador (occluders via raycaster) e do PANO que não segura bala (`world.camBlockers`, Box3 — varal da favela: câmera para, tiro passa), com piso de 0,35 m e boom recompondo a 5 m/s sem elástico. Mutantes: `sem-pull-in`, `ignora-camBlockers` (`mut:cameraoclusao`). `npm run eval:cameraoclusao` |
+| `pistola-cadencia-check.mjs` | Cadência das pistolas semi no piso do gênero (relato de out/2026: "firerate muito baixo"): PT-38 0,17 s e Deagle 0,24 s, TTK de corpo < 0,40 s, ordem de TTK preservada (pistola perde pra MP5, Deagle mais lenta que AK) e pente/reserva intactos. Mutantes: `rate-antigo`, `pistola-laser` (`mut:pistolacadencia`). `npm run eval:pistolacadencia` |
+| `frag-restock-check.mjs` | A granada volta por sequência (pedido de jogador, out/2026): a cada 3 abates NA rodada, +1 frag só pra quem está sem (teto 1, sem banco), contador zerado a cada round, slot remoto reposto no MESMO `_kill` que roda no nó autoritativo e o cliente MP prediz em `morteRemota`. Mutantes: `sem-restock`, `restock-empilha`, `sequencia-atravessa-round` (`mut:fragrestock`). `npm run eval:fragrestock` |
+| `formato-melhorde-check.mjs` | O banner do ROUND 1 declara o formato da partida (melhor de N, primeiro a X) nos dois modos e na transição replicada do MP, sem repetir nos rounds seguintes (relato de out/2026: jogador pediu melhor de 3/5/7 sem saber que já existia). Mutantes: `sem-formato-sp`, `sem-formato-mp`, `formato-todo-round` (`mut:formatomelhorde`). `npm run eval:formatomelhorde` |
 | `loadout-test.mjs` | Loadout por personagem/facção. |
 | `abateshud-check.mjs` | O contador de abates do JOGADOR existe no HUD, é legível por medida (piso de 24px fora de `@media`), imprime `player.kills` — não o placar do time — e sobrevive à virada de rodada. `npm run eval:abateshud` |
 | `killstreak-check.mjs` | A sequência da vida atual aparece somente após abate confirmado, é separada do total da partida e funciona em SP/MP sem contar previsão nem inventar histórico ao reconectar; morte e round zeram. `npm run eval:killstreak` |
 | `chao-check.mjs` | CHR7: nenhuma malha atravessa o chão na pose assentada (`idle`/`crouch`/`death`). O contato de pé só olhava os PES — `proerd`/`canarinho`/`lobisomem` enterravam 75/75/45 cm de corpo na morte sem nada acusar (BUG-148). Catraca por personagem em `chao_check.json`; `idle` tem teto absoluto. Mutante: `afunda`. `npm run eval:chao` |
 | `botfaca-check.mjs` | Rodada de faca: o bot fecha até o alcance da arma (a banda de fuzil recuava abaixo de 6 m com faca de 2,4 m), ataca por caminho de corpo a corpo — sem traçante, fogacho nem som de cano — e a rodada normal continua com bot que abre distância. `npm run eval:botfaca` |
 | `replaycam-check.mjs` | Headshot do jogador **não** pode tirar a câmera da primeira pessoa, escalar o relógio (hit-stop) nem esconder arma/mira — e segue contando abate. Mede o contrário do que media até 06/09/2026. `npm run eval:replaycam` |
+
+Os perfis explícitos do arsenal e seus consumidores de dano, entrada e saque são
+verificados por `npm run eval:weapon-profiles`, com mutantes que removem cada vínculo.
+`npm run eval:weapon-matrix` reprova a matriz quando diverge do consumidor de dano.
+
+`npm run eval:penetration-geometry` mede a travessia real em caixas rotacionadas,
+fechadas e sobrepostas, com mutantes de AABB global, validação e oclusão.
+
+`npm run eval:bot-shot-direction` mede o raio e o rastro efetivos do caminho NN,
+com mutante que restaura o raio central apesar do erro sorteado.
 
 ## 4. Viewmodel e rig — a família mais densa
 
@@ -194,3 +213,9 @@ grep -rn "<nome-do-arquivo>" tools/ .github/ package.json
 
 `__pycache__/` estava versionado (12 `.pyc`) e agora está no `.gitignore`.
 Se ele reaparecer no `git status`, é porque alguém removeu a regra.
+
+`npm run eval:bot-crouch-geometry` mede postura lógica/animação, origem, LOS,
+raios, respawn e round dos bots locais, incluindo três mutantes. O ensaio opcional
+`node tools/eval/ballistics-range-playtest.mjs [--fixed-five]` produz dados de
+TTK condicional e dispersão com cinco disparos; método e limites em
+`docs/qa/balistica/autorado/README.md`. Ele não impõe tuning ou teto novo ao gate.

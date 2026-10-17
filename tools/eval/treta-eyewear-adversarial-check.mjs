@@ -8,6 +8,7 @@ const read=p=>fs.readFileSync(resolve(repo,p),'utf8');
 const rawEye="const TRETA_ITEMS_ENABLED = true;\n"+read('public/js/eyewear.js').replace(/^import .*$/mg,'').replace(/export /g,'');
 const rawNet=read('public/js/netgame.js').replace(/^import .*$/mg,'').replace('export function makeNetcode','function makeNetcode');
 const rawGame=read('public/js/game.js');
+const {Game}=await import('./harness.mjs');
 function method(name,next){const s=rawGame.slice(rawGame.indexOf(`  ${name}(`),rawGame.indexOf(`  ${next}(`));return new Function(`return function ${s.trim().replace(new RegExp('^'+name+'\\('),'(')}`)();}
 const fire=method('_fireHitscan','_targetFromHit'),target=method('_targetFromHit','_penetrationExit'),change=method('_trocarPersonagem','_syncRemoteWeapon');
 function eyeModule(source,fetch,Loader){return new Function('fetch','GLTFLoader','THREE',source+';return {preloadEyewearAssets,mountEyewear};')(fetch,Loader,THREE);}
@@ -24,9 +25,10 @@ async function headshot(source){
  const body=new THREE.SkinnedMesh(geometry,new THREE.MeshBasicMaterial());model.add(body);body.bind(new THREE.Skeleton([bone]));
  const anchor=mod.mountEyewear(model,{id:'capitao',eyewearId:'test'});assert(anchor);model.remove(body);
  const head=new THREE.Mesh(new THREE.BoxGeometry(.26,.3,.26),new THREE.MeshBasicMaterial());model.add(head);model.updateMatrixWorld(true);
- const bot={alive:true,team:'B',mesh:{group:model,parts:{head}},pos:new THREE.Vector3()};model.traverse(o=>o.userData.botOwner=bot);
- let last;const game={ray:new THREE.Raycaster(),bots:[bot],playerTeam:'E',world:{occluders:[]},_targetFromHit:target,_shotDamage:(d,w,dist,h)=>h?100:d,_damage:(b,d,s,w,h)=>{last={damage:d,head:h};},_fleshImpact(){},_armoredTarget(){return false;}};
+ const bot={alive:true,team:'B',mesh:{group:model,parts:{head}},pos:new THREE.Vector3(0,-1.6,0)};model.traverse(o=>o.userData.botOwner=bot);
+ let last;const game={ray:new THREE.Raycaster(),bots:[bot],playerTeam:'E',world:{occluders:[]},_consultarTiro:Game.prototype._consultarTiro,_penetrationExit:Game.prototype._penetrationExit,_targetFromHit:target,_shotDamage:(d,w,dist,h)=>h?100:d,_damage:(b,d,s,w,h)=>{last={damage:d,head:h};},_fleshImpact(){},_armoredTarget(){return false;}};
  const from=new THREE.Vector3(0,0,3),dir=new THREE.Vector3(0,0,-1);
+ game.ray.set(from,dir);assert.equal(game.ray.intersectObjects([model],true)[0]?.object,head,'cosmetic raycast must remain disabled');
  fire.call(game,{team:'E'},from,dir,25,false,'AWP',null,false);
  const withEye=last;model.remove(bone);model.updateMatrixWorld(true);fire.call(game,{team:'E'},from,dir,25,false,'AWP',null,false);
  assert.deepEqual(withEye,last,'eyewear must preserve same real hitscan result');assert.deepEqual(last,{damage:100,head:true});
