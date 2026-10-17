@@ -217,7 +217,11 @@ export function ligar() {
 
   jogar.addEventListener('click', () => $('btn-again')?.click());
   q('.tp-res__lobby').addEventListener('click', () => $('btn-menu')?.click());
-  q('.tp-res__outro').addEventListener('click', () => { $('btn-menu')?.click(); $('map-preview')?.click(); });
+  q('.tp-res__outro').addEventListener('click', () => {
+    // sai pro menu e abre a escolha de mapa (tp/modos vive no hub-map-modal)
+    $('btn-menu')?.click();
+    setTimeout(() => { $('hub-map-change')?.click(); }, 150);
+  });
   const partilha = q('.tp-res__partilha');
   partilha.addEventListener('click', async () => {
     const mapa = window.__game?._mapId || new URLSearchParams(location.search).get('map') || '';

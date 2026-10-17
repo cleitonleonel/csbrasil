@@ -1,6 +1,6 @@
 /* Treta Pop · Ajustes (#settings-panel). Só vale com <html data-ui="v3">: todo seletor começa em :root[data-ui="v3"] ou numa classe .tp-. */
 :root[data-ui="v3"] #settings-panel{background:rgba(9,7,4,.86);backdrop-filter:none;font-family:var(--tp-ui)}
-:root[data-ui="v3"] #settings-panel .settings-wrap{width:1040px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;
+:root[data-ui="v3"] #settings-panel .settings-wrap{width:1040px;max-width:calc(100vw - 32px);height:min(640px,calc(100dvh - 32px));display:flex;flex-direction:column;
   background:var(--tp-painel);border:1px solid rgba(255,255,255,.09);border-radius:12px;clip-path:none}
 :root[data-ui="v3"] #settings-panel .set-head h2{font:400 40px/1 var(--tp-display);letter-spacing:.01em;color:var(--tp-tinta-1);transform:var(--tp-skew)}
 :root[data-ui="v3"] #settings-panel .set-close{min-height:44px;color:var(--tp-tinta-3);font:800 13px/1 var(--tp-ui);letter-spacing:.08em}
@@ -20,7 +20,7 @@
 :root[data-ui="v3"] #settings-panel .set-toggle b,:root[data-ui="v3"] #settings-panel .set-toggle i{font:800 12px/1 var(--tp-ui);letter-spacing:.08em}
 :root[data-ui="v3"] #settings-panel .set-toggle b{background:var(--tp-ganho);color:var(--tp-asfalto)}
 :root[data-ui="v3"] #settings-panel .set-toggle:has(input:not(:checked)) b{background:transparent;color:var(--tp-tinta-3)}
-:root[data-ui="v3"] #settings-panel .set-toggle:has(input:not(:checked)) i{background:var(--tp-elevado);color:var(--tp-tinta-1)}
+:root[data-ui="v3"] #settings-panel .set-toggle:has(input:not(:checked)) i{background:var(--tp-tinta-1);color:var(--tp-asfalto)}
 :root[data-ui="v3"] #settings-panel .set-toggle:has(input:disabled){opacity:.6}
 :root[data-ui="v3"] #settings-panel .set-toggle:has(input:focus-visible){outline:2px solid var(--tp-tinta-1);outline-offset:2px}
 :root[data-ui="v3"] #settings-panel .set-note{border-left-color:var(--tp-borda-forte);color:var(--tp-tinta-3)}
@@ -45,10 +45,12 @@
 :root[data-ui="v3"] #settings-panel .tp-aj-privacidade{display:flex;flex-direction:column;align-items:stretch;gap:10px;letter-spacing:0;text-transform:none;font:600 15px/1.35 var(--tp-ui);color:var(--tp-tinta-2)}
 :root[data-ui="v3"] #settings-panel .tp-aj-privacidade h3{margin:0;font:400 22px/1 var(--tp-display);text-transform:uppercase;color:var(--tp-tinta-1)}
 :root[data-ui="v3"] #settings-panel .tp-aj-privacidade *{text-transform:none;letter-spacing:0}
-:root[data-ui="v3"] #settings-panel .tp-aj-privacidade label{display:flex;gap:10px;align-items:flex-start;min-height:44px;cursor:pointer}
-:root[data-ui="v3"] #settings-panel .tp-aj-privacidade input[type="checkbox"]{width:20px;height:20px;margin:2px 0 0;flex:none;accent-color:var(--tp-ganho)}
-:root[data-ui="v3"] #settings-panel .tp-aj-privacidade p{margin:0;font-size:14px;color:var(--tp-tinta-3)}
-:root[data-ui="v3"] #settings-panel .tp-aj-privacidade button{align-self:flex-start;min-height:44px;padding:0 16px;border:0;border-radius:6px;background:var(--tp-elevado);color:var(--tp-tinta-1);font:400 18px/1 var(--tp-display);cursor:pointer}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade label{display:flex;gap:10px;align-items:flex-start;min-height:44px;cursor:pointer;font:600 15px/1.35 var(--tp-ui);color:var(--tp-tinta-2)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade input[type="checkbox"]{appearance:none;width:20px;height:20px;margin:2px 0 0;flex:none;border:2px solid var(--tp-tinta-3);border-radius:4px;background:var(--tp-fundo);display:grid;place-content:center}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade input[type="checkbox"]:checked{background:var(--tp-ganho);border-color:var(--tp-ganho)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade input[type="checkbox"]:checked::before{content:'';width:10px;height:10px;background:var(--tp-asfalto);clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0,43% 62%)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade p{margin:0;font:400 14px/1.4 var(--tp-ui);color:var(--tp-tinta-3)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade button{align-self:flex-start;min-height:44px;padding:0 16px;border:0;border-radius:6px;background:var(--tp-elevado);color:var(--tp-tinta-1);font:400 18px/1 var(--tp-display);cursor:pointer;box-shadow:none}
 /* a escolha de cookies e novidades mora em Ajustes > Privacidade; o perfil não repete o controle */
 :root[data-ui="v3"] #profile-preferences{display:none}
 

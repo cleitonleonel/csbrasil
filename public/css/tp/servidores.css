@@ -4,10 +4,11 @@
 :root[data-ui="v3"] #mp-panel.tp-srv-painel>.mp-shell{display:none}
 
 .tp-srv{--tp-srv-topo:0px;--tp-srv-colunas:92px minmax(0,1.6fr) minmax(0,1fr) 84px 56px 268px;
-  position:absolute;inset:var(--tp-srv-topo) 0 0 0;display:flex;flex-direction:column;gap:22px;padding:4px 32px 32px;box-sizing:border-box;
+  position:absolute;inset:var(--tp-srv-topo) 0 0 0;display:flex;flex-direction:column;gap:22px;padding:4px var(--tp-lobby-margem,32px) 32px var(--tp-lobby-margem,32px);box-sizing:border-box;
   color:var(--tp-tinta-1);font:500 15px/1.3 var(--tp-ui);
   background:radial-gradient(900px 500px at 80% 0%,rgba(180,217,46,.12) 0%,rgba(180,217,46,0) 70%),var(--tp-asfalto)}
-.tp-srv button{font-family:var(--tp-ui)}
+/* CTAs em Anton (SV12): reset por :where() deixa a regra por botão vencer */
+.tp-srv :where(button){font-family:var(--tp-ui)}
 
 .tp-srv__topo{display:flex;align-items:flex-end;gap:20px;min-height:64px}
 .tp-srv__voltar{height:44px;padding:0 16px;display:flex;align-items:center;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
@@ -25,8 +26,8 @@
 :root[data-ui="v3"] #main-menu #mp-panel .tp-srv__mais{display:block}
 :root[data-ui="v3"] #main-menu #mp-panel .tp-srv__rapido{display:inline-flex}
 .tp-srv__acoes{margin-left:auto;display:flex;gap:10px;align-items:stretch;flex:none}
-:root[data-ui="v3"] .tp-srv .tp-srv__criar{height:64px;padding:0 22px;border-radius:8px;width:auto;margin:0;clip-path:none;background:var(--tp-elevado);color:var(--tp-tinta-1)}
-:root[data-ui="v3"] .tp-srv .tp-srv__rapido{height:64px;padding:0 30px;gap:14px;width:auto;margin:0;font-size:34px;background:var(--tp-lima);color:var(--tp-lima-tinta);
+:root[data-ui="v3"] .tp-srv .tp-srv__criar{height:64px;padding:0 22px;border-radius:8px;width:auto;margin:0;clip-path:none;background:var(--tp-elevado);color:var(--tp-tinta-1);font:400 22px/1 var(--tp-display);letter-spacing:.02em}
+:root[data-ui="v3"] .tp-srv .tp-srv__rapido{height:64px;padding:0 30px;gap:14px;width:auto;margin:0;font:400 34px/1 var(--tp-display);background:var(--tp-lima);color:var(--tp-lima-tinta);
   --tp-corte:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%)}
 :root[data-ui="v3"] .tp-srv .tp-srv__rapido kbd{font:800 12px/1 var(--tp-num);border:2px solid rgba(19,19,19,.5);border-radius:6px;padding:2px 6px;background:none}
 
@@ -36,7 +37,11 @@
 .tp-srv__regiao{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:10px 14px;box-sizing:border-box;border-radius:10px;background:var(--tp-fundo);
   border:2px solid transparent;color:var(--tp-tinta-1);text-align:left;cursor:pointer}
 .tp-srv__regiao[aria-checked="true"]{border-color:var(--tp-lima)}
-.tp-srv__regiao[data-online="0"]{opacity:.6}
+:root[data-ui="v3"] .tp-srv[data-fora="todos"] .tp-srv__regiao[aria-checked="true"]{border-color:rgba(255,255,255,.14)}
+:root[data-ui="v3"] .tp-srv[data-fora="todos"] .tp-srv__rapido{background:var(--tp-elevado);color:var(--tp-tinta-3)}
+.tp-srv__bots{height:44px;padding:0 18px;border:0;border-radius:8px;background:none;color:var(--tp-tinta-2);font:800 15px/1 var(--tp-ui);letter-spacing:.04em;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+:root[data-ui="v3"] .tp-srv[data-fora="todos"] .tp-srv__bots{background:var(--tp-lima);color:var(--tp-lima-tinta);text-decoration:none}
+.tp-srv__regiao[data-online="0"] :is(.tp-srv__flag,.tp-srv__info b,.tp-srv__sinal){opacity:.6}
 .tp-srv__flag{width:30px;height:20px;border-radius:3px;object-fit:cover;flex:none}
 .tp-srv__info{flex:1;display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .tp-srv__info b{font-weight:800;font-size:17px}
@@ -69,7 +74,7 @@
 .tp-srv__h2{margin:0 10px 0 0;font-size:28px}
 .tp-srv__chip{height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:none;color:var(--tp-tinta-2);font:800 14px/1 var(--tp-ui);letter-spacing:.04em;cursor:pointer}
 .tp-srv__chip[aria-pressed="true"]{background:var(--tp-tinta-1);color:var(--tp-asfalto);border-color:var(--tp-tinta-1)}
-:root[data-ui="v3"] .tp-srv .tp-srv__codigo{margin:0 0 0 auto;display:flex;align-items:center;gap:6px;height:38px;padding:0 4px 0 12px;width:220px;box-sizing:border-box;border-radius:8px;background:var(--tp-fundo);border:1px solid rgba(255,255,255,.14)}
+:root[data-ui="v3"] .tp-srv .tp-srv__codigo{margin:0 0 0 auto;display:flex;align-items:center;gap:6px;height:38px;padding:0 4px 0 12px;width:170px;box-sizing:border-box;border-radius:8px;background:var(--tp-fundo);border:1px solid rgba(255,255,255,.14)}
 :root[data-ui="v3"] .tp-srv .tp-srv__codigo input{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;color:var(--tp-tinta-1);font:700 14px/1 var(--tp-num);text-transform:uppercase}
 :root[data-ui="v3"] .tp-srv .tp-srv__codigo:focus-within{border-color:var(--tp-tinta-1)}
 :root[data-ui="v3"] .tp-srv .tp-srv__codigo input::placeholder{letter-spacing:0;color:var(--tp-tinta-3);text-transform:none}
@@ -88,18 +93,20 @@
 .tp-srv__mapa{width:92px;height:56px;border-radius:6px;object-fit:cover;background:var(--tp-elevado)}
 .tp-srv__nome{display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .tp-srv__nome b{font-weight:800;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tp-srv__nome small{font-size:14px;color:var(--tp-tinta-3);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tp-srv__nome small{display:flex;align-items:center;gap:6px;min-width:0;font-size:14px;color:var(--tp-tinta-3);font-weight:600;white-space:nowrap}
+.tp-srv__nome small>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.tp-srv__conv{flex:none}
 .tp-srv__tag{display:inline-block;margin-right:6px;padding:1px 5px;border-radius:3px;background:var(--tp-elevado);color:var(--tp-tinta-2);font:800 11px/1.3 var(--tp-num);vertical-align:2px}
 .tp-srv__conv{padding:0;border:0;background:none;color:var(--tp-tinta-2);font:700 13px/1 var(--tp-num);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .tp-srv__sit{font-size:15px;font-weight:700;min-width:0}
 .tp-srv__sit[data-tom="ganho"]{color:var(--tp-ganho)}
 .tp-srv__lot{font-size:16px;font-weight:800}
-.tp-srv__ping{font-size:14px;font-weight:800;color:var(--tp-ganho)}
-.tp-srv__ping[data-q="medio"],.tp-srv__ping[data-q="ruim"]{color:var(--tp-ambar)}
+.tp-srv__ping{font-size:14px;font-weight:800;color:#63F2A2}
+.tp-srv__ping[data-q="medio"],.tp-srv__ping[data-q="ruim"]{color:#FFCB70}
 .tp-srv__entrar{display:flex;gap:6px;justify-content:flex-end}
 .tp-srv__lado-btn,.tp-srv__ver{height:40px;border:0;border-radius:8px;background:var(--tp-elevado);color:var(--tp-tinta-1);cursor:pointer;
   transition:transform var(--tp-d-rapido) var(--tp-ease-saida)}
-.tp-srv__lado-btn{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;font:400 14px/1 var(--tp-display);text-transform:uppercase;box-shadow:inset 3px 0 0 var(--tp-esq)}
+.tp-srv__lado-btn{font:400 17px/1 var(--tp-display);letter-spacing:.02em;flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;text-transform:uppercase;box-shadow:inset 3px 0 0 var(--tp-esq)}
 .tp-srv__lado-btn[data-lado="B"]{box-shadow:inset 3px 0 0 var(--tp-dir)}
 .tp-srv__lado-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tp-srv__lado-btn b{font:800 13px/1 var(--tp-num);color:var(--tp-tinta-3)}
@@ -119,8 +126,12 @@
   :root[data-ui="v3"] .tp-srv .tp-srv__rapido{font-size:28px;padding:0 22px}
 }
 @media (max-width:1300px){
-  .tp-srv{padding:4px 20px 20px}
   .tp-srv__vivo{display:none}
+  .tp-srv__titulo{font-size:38px}
+  .tp-srv__h2{font-size:22px}
+  .tp-srv__chip{height:32px;padding:0 10px;font-size:12px}
+  :root[data-ui="v3"] .tp-srv .tp-srv__criar{padding:0 16px;font-size:19px}
+  .tp-srv{--tp-srv-colunas:64px minmax(0,1.6fr) minmax(0,.9fr) 64px 40px 208px}
 }
 
 /* Celular deitado: a tela inteira rola, as regiões viram faixa e cada sala vira cartão de duas linhas. */
@@ -155,3 +166,10 @@
   :root[data-ui="v3"] .tp-srv .tp-srv__mais summary{min-height:44px}
   :root[data-ui="v3"] .tp-srv .tp-srv__mais input,:root[data-ui="v3"] .tp-srv .tp-srv__mais select,:root[data-ui="v3"] .tp-srv .tp-srv__mais button{min-height:44px;min-width:44px}
 }
+
+/* SV13: na tela de servidores o único lima é o JOGO RÁPIDO */
+body:has(#mp-panel.tp-srv-painel:not(.hidden)) .tp-resenha-botao{display:none}
+body:has(#mp-panel.tp-srv-painel:not(.hidden)) .tp-abas__risco{background:var(--tp-elevado)}
+body:has(#mp-panel.tp-srv-painel:not(.hidden)) #hub-ui #hub-treta-wallet>span{background:var(--tp-elevado);color:var(--tp-tinta-1)}
+.tp-srv .tp-abas__risco{background:var(--tp-elevado)}
+body:has(#mp-panel.tp-srv-painel:not(.hidden)) #pwa-install{display:none}

@@ -35,7 +35,7 @@ const MUT = {
   'mvp-volta': ['RS11a', 'v3pt', /\/js\/tp\/resultado\.js/, (t) => t.replace("if (d.combo >= 2) medalha(", "medalha('MVP', 'MVP da partida', 'mvp'); if (d.combo >= 2) medalha(")],
   'selo-por-cima': ['RS15', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('#match-end[data-tp-res]:not(.hidden)) #vm-debug-badge{display:none}', '#match-end[data-tp-res]:not(.hidden)) #vm-debug-badge{}')],
   'nome-desloca': ['RS16', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('.tp-res__assina{position:absolute;left:calc(var(--res-cx) - 200 * var(--k))', '.tp-res__assina{position:absolute;left:calc(var(--res-cx) - 80 * var(--k))')],
-  'heroi-pequeno': ['RS16', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('--res-fig:min(calc(790 * var(--k))', '--res-fig:min(calc(560 * var(--k))')],
+  'heroi-pequeno': ['RS16', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('--res-fig:min(calc(100dvh - 66px),calc(768 * var(--k) / var(--fh,.9)))', '--res-fig:min(calc(100dvh - 66px),calc(560 * var(--k) / var(--fh,.9)))')],
   'acoes-no-pe': ['RS17', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('justify-content:center;gap:calc(20 * var(--k))}', 'justify-content:flex-start;gap:calc(20 * var(--k))}.tp-res__acoes{margin-top:auto!important}')],
   'partilha-lima': ['RS18', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('.tp-res__partilha{background:var(--tp-elevado);color:var(--tp-tinta-1);', '.tp-res__partilha{background:var(--tp-ganho);color:var(--tp-asfalto);')],
   'online-revanche': ['RS12', 'v3pt', /\/js\/tp\/resultado\.js/, (t) => t.replace('jogar.hidden = !!semRevanche;', 'jogar.hidden = false;')],
@@ -296,7 +296,8 @@ async function medir(mutante = '') {
     await clicar(page, '.tp-res__outro');
     await page.waitForTimeout(1200);
     const mapa = await page.evaluate(() => ({ fim: document.getElementById('match-end').classList.contains('hidden'),
-      grade: !!document.getElementById('hub-map-grid')?.checkVisibility() || !!document.getElementById('map-screen')?.checkVisibility() }));
+      // v3: o escolhedor é o tp/modos dentro do hub-map-modal (a grade legada fica no guarda, oculta por design)
+      grade: !!document.querySelector('.tp-modos')?.checkVisibility() || !document.getElementById('hub-map-modal')?.hidden }));
     add('RS14b', mapa.fim && mapa.grade, `OUTRO MAPA: fim de partida ${mapa.fim ? 'fechou' : 'aberto'}, escolha de mapa ${mapa.grade ? 'aberta' : 'ausente'}`);
     await foto(page, 'v3-outro-mapa-1536x1024');
     await page.close();

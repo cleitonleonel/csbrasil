@@ -671,7 +671,7 @@ const DICT = {
   // tp:servidores
   'CRIAR SALA PRIVADA': 'CREATE PRIVATE ROOM', 'JOGO RÁPIDO': 'QUICK PLAY', 'Região': 'Region',
   'Região · escolhida pelo menor ping': 'Region · picked by lowest ping', 'TODOS OS MODOS': 'ALL MODES',
-  'COM VAGA': 'HAS ROOM', 'SEM SENHA': 'NO PASSWORD', 'Código da sala': 'Room code', 'SITUAÇÃO': 'STATUS',
+  'COM VAGA': 'OPEN SLOTS', 'SEM SENHA': 'NO PASSWORD', 'Código da sala': 'Room code', 'SITUAÇÃO': 'STATUS',
   'ENTRAR NO LADO': 'JOIN SIDE', 'Entrar no lado': 'Join side', 'Atualiza sozinho a cada 5 s': 'Refreshes by itself every 5 s',
   'medindo o ping dos servidores…': 'measuring server ping…', 'jogando': 'playing', 'jogando agora em': 'playing now in',
   'sala': 'room', 'salas': 'rooms', 'fora do ar agora': 'offline right now', 'fora do ar': 'offline',

@@ -4,7 +4,7 @@
 :root[data-ui="v3"] #match-end[data-tp-res]{padding:0;background:var(--tp-asfalto)}
 :root[data-ui="v3"] #match-end[data-tp-res]::before,:root[data-ui="v3"] #match-end[data-tp-res] .me-wrap{display:none}
 .tp-res{--k:min(calc(100vw / 1536),calc(100vh / 1024));--res-cx:calc(100vw - 246 * var(--k));--res-pe:calc(900 * var(--k));
-  --res-fig:min(calc(790 * var(--k)),calc(440 * var(--k) / var(--fa,.67)));--res-arte:calc(var(--res-fig) / var(--fh,1));position:absolute;inset:0;overflow:hidden;color:var(--tp-tinta-1);font-family:var(--tp-ui);
+  --res-fig:min(calc(100dvh - 66px),calc(768 * var(--k) / var(--fh,.9)));--res-arte:calc(var(--res-fig) / var(--fh,1));position:absolute;inset:0;overflow:hidden;color:var(--tp-tinta-1);font-family:var(--tp-ui);
   background:radial-gradient(calc(800 * var(--k)) calc(700 * var(--k)) at 78% 50%,rgba(70,224,138,.16),rgba(70,224,138,0) 65%),
     radial-gradient(calc(900 * var(--k)) calc(600 * var(--k)) at 0 0,rgba(243,185,88,.1),rgba(243,185,88,0) 70%),var(--tp-asfalto)}
 .tp-res[hidden]{display:none}

@@ -150,6 +150,10 @@ function desenharAviso() {
   const fora = nos.filter((n) => !n.online);
   const todos = !medindo && nos.length > 0 && fora.length === nos.length;
   raiz.dataset.fora = todos ? 'todos' : fora.length ? 'parte' : '';
+  // SV18: com todos fora, o JOGO RÁPIDO não promete partida (sai do lima e desliga);
+  // o único caminho lima da tela passa a ser o TREINAR CONTRA BOTS do aviso.
+  const quick = raiz.querySelector('#mp-quick');
+  if (quick) { quick.classList.toggle('tp-btn--primario', !todos); quick.disabled = todos; }
   aviso.hidden = medindo || !fora.length;
   if (aviso.hidden) { pararRelogio(); return; }
   aviso.replaceChildren();
@@ -160,7 +164,7 @@ function desenharAviso() {
   const acoes = el('div', 'tp-srv__aviso-acoes');
   const tentar = el('button', 'tp-srv__mini', tr('TENTAR AGORA'));
   tentar.type = 'button'; tentar.onclick = () => retentar();
-  const bots = el('button', 'tp-srv__link', `${tr('TREINAR CONTRA BOTS')} ▸`);
+  const bots = el('button', 'tp-srv__bots', `${tr('TREINAR CONTRA BOTS')} ▸`);
   bots.type = 'button'; bots.onclick = sairParaLobby;
   acoes.append(tentar, bots);
   aviso.append(acoes);
@@ -226,7 +230,8 @@ function desenharSalas() {
     if (r.oficial) b.append(el('span', 'tp-srv__tag', tr('OFICIAL')));
     if (r.private && r.senha !== false) b.append(el('span', 'tp-srv__tag', tr('SENHA')));
     b.append(tr(r.name || r.convite || ''));
-    const sub = el('small', '', `${tr(r.ctf ? 'Captura' : 'Mata-mata')} · ${r.mapNome || r.map}`);
+    const sub = el('small', '', '');
+    sub.append(el('span', '', `${tr(r.ctf ? 'Captura' : 'Mata-mata')} · ${r.mapNome || r.map}`));
     if (r.convite) {
       const conv = el('button', 'tp-num tp-srv__conv', r.convite);
       conv.type = 'button'; conv.title = tr('Copiar o link de convite desta sala');

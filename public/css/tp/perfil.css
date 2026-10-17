@@ -119,6 +119,8 @@
 .tp-carreira__hero{position:relative;height:300px;border-radius:14px;overflow:hidden;isolation:isolate;
   background:linear-gradient(130deg,color-mix(in srgb,var(--tp-ganho) 18%,var(--tp-asfalto)) 0%,color-mix(in srgb,var(--tp-rar-lendario) 10%,var(--tp-asfalto)) 60%,var(--tp-asfalto) 100%)}
 .tp-carreira__hero .tp-perfil__arte{right:-30px;top:-10px;height:450px}
+/* VP1: no celular deitado a arte da carreira cabe na tela (container query não aperta em 844) */
+@media (max-width:900px){.tp-carreira__hero .tp-perfil__arte{right:0;top:0;width:200px;height:300px;opacity:.55}}
 .tp-carreira__hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(9,7,4,.85) 0%,rgba(9,7,4,.2) 70%)}
 .tp-carreira__quem{position:absolute;left:22px;right:22px;bottom:22px;display:flex;flex-direction:column;gap:6px}
 :root[data-ui="v3"] .tp-perfil .tp-carreira__quem .tp-perfil__nick{font-size:58px}
@@ -167,6 +169,8 @@
 @container tp-perfil (max-width:760px){
   .tp-perfil__cartao{min-height:0;padding:18px}
   .tp-perfil__arte{right:-40px;top:0;width:200px;height:300px;opacity:.55}
+  /* VP1: a arte da carreira também precisa caber no celular deitado (sem rolagem lateral) */
+  .tp-carreira__hero .tp-perfil__arte{right:0;top:0;width:200px;height:300px;opacity:.55}
   .tp-perfil__id{gap:14px;margin-right:0}
   .tp-perfil__redes{margin-right:0}
   .tp-perfil__avatar{width:88px;height:88px;border-radius:14px;font-size:44px}
