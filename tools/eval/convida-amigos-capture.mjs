@@ -19,7 +19,7 @@ const _pw = await import(pathToFileURL(`${gRoot}/playwright/index.js`).href);
 const chromium = _pw.chromium || _pw.default?.chromium;
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--mute-audio'] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-await page.goto(`${BASE}/?social=friends`, { waitUntil: 'domcontentloaded', timeout: 240_000 });
+await page.goto(`${BASE}/comunidade/amigos?ui=v3`, { waitUntil: 'domcontentloaded', timeout: 240_000 });
 // Sem backend local o boot da comunidade mostra TENTAR DE NOVO em vez da aba de
 // amigos: o botão real é clicado quando existe; senão o modal é aberto pelo módulo
 // (a prova visual é do diálogo, não da aba).

@@ -11,7 +11,7 @@ const _pw = await import(pathToFileURL(`${gRoot}/playwright/index.js`).href);
 const chromium = _pw.chromium || _pw.default?.chromium;
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--mute-audio'] });
 const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
-await page.goto(`${BASE}/?debug=1&auto=P,mst&map=piscina_treta`, { waitUntil: 'domcontentloaded', timeout: 240000 });
+await page.goto(`${BASE}/?ui=v3&debug=1&auto=P,mst&map=piscina_treta`, { waitUntil: 'domcontentloaded', timeout: 240000 });
 await page.addStyleTag({ content: 'astro-dev-toolbar{display:none!important}' });
 await page.waitForFunction(() => window.__game && window.__game.state === 'live', null, { timeout: 300000 });
 // força o cenário do MP: online + um bot com pid do roster
