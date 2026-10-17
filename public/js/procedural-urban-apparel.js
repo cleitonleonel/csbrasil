@@ -18,6 +18,13 @@ const SIDE_BONE = Object.freeze({
   lowerLeg: Object.freeze({ left: 'LeftLowerLeg', right: 'RightLowerLeg' }),
   foot: Object.freeze({ left: 'LeftFoot', right: 'RightFoot' }),
 });
+const BONE_ALIASES = Object.freeze({
+  Spine: Object.freeze(['Spine01', 'Spine']),
+  LeftUpperArm: Object.freeze(['LeftUpperArm', 'LeftArm']),
+  RightUpperArm: Object.freeze(['RightUpperArm', 'RightArm']),
+  LeftLowerLeg: Object.freeze(['LeftLowerLeg', 'LeftLeg']),
+  RightLowerLeg: Object.freeze(['RightLowerLeg', 'RightLeg']),
+});
 const COLORS = Object.freeze({
   'boxy-tee': 0x315c8c,
   'oversized-tee': 0x4e355f,
@@ -120,7 +127,7 @@ function safeWorldScale(body) {
   const scale = new THREE.Vector3();
   body.matrixWorld.decompose(new THREE.Vector3(), new THREE.Quaternion(), scale);
   const values = scale.toArray().map(Math.abs);
-  return values.every(value => Number.isFinite(value) && value >= 0.2 && value <= 5)
+  return values.every(value => Number.isFinite(value) && value >= 0.005 && value <= 5)
     && Math.max(...values) / Math.min(...values) <= 4;
 }
 
@@ -136,14 +143,18 @@ function measureBody(body, definition) {
     || skeleton.bones.length !== skeleton.boneInverses?.length || !finiteMatrix(body.bindMatrix)
     || !safeWorldScale(body)) return null;
 
-  const names = new Map();
+  const actualNames = new Map();
   for (let index = 0; index < skeleton.bones.length; index++) {
     const name = skeleton.bones[index]?.name;
-    if (typeof name !== 'string' || !name || names.has(name) || !finiteMatrix(skeleton.boneInverses[index])) return null;
-    names.set(name, index);
+    if (typeof name !== 'string' || !name || actualNames.has(name) || !finiteMatrix(skeleton.boneInverses[index])) return null;
+    actualNames.set(name, index);
   }
   const requiredNames = [...new Set(definition.pieces.map(piece => piece.bone))];
-  if (requiredNames.some(name => !names.has(name))) return null;
+  const names = new Map(requiredNames.map(name => [
+    name,
+    (BONE_ALIASES[name] || [name]).map(candidate => actualNames.get(candidate)).find(Number.isSafeInteger),
+  ]));
+  if ([...names.values()].some(index => index === undefined)) return null;
 
   const regions = new Map(requiredNames.map(name => {
     const index = names.get(name);
@@ -173,10 +184,12 @@ function measureBody(body, definition) {
   }
   if (bodyBounds.isEmpty() || [...regions.values()].some(region => region.count < 8 || region.bounds.isEmpty())) return null;
   const bodySize = bodyBounds.getSize(new THREE.Vector3());
-  if (![bodySize.x, bodySize.y, bodySize.z].every(Number.isFinite)
+  const worldBodySize = new THREE.Box3().setFromObject(body).getSize(new THREE.Vector3());
+  if (![bodySize.x, bodySize.y, bodySize.z, worldBodySize.x, worldBodySize.y, worldBodySize.z].every(Number.isFinite)
     || bodySize.y < 0.5 || bodySize.y > 3.5 || bodySize.x < 0.12 || bodySize.x > 2
-    || bodySize.z < 0.08 || bodySize.z > 1.5 || bodySize.y / bodySize.x < 1.3) return null;
-  return { bodyBounds, bodySize, regions, names };
+    || bodySize.z < 0.08 || bodySize.z > 1.5 || bodySize.y / bodySize.x < 0.75
+    || worldBodySize.y <= 0) return null;
+  return { bodyBounds, bodySize, worldBodySize, regions, names };
 }
 
 function taperedBox(width, height, depth, topScale, bottomScale) {
@@ -254,7 +267,10 @@ export function createUrbanApparelProxy(target, family, options = {}) {
       Math.max(regionSize.z, measurement.bodySize.z * minimums[2]),
     ];
     const dimensions = base.map((value, axis) => value * spec.scale[axis]);
-    if (dimensions.some(value => !Number.isFinite(value) || value <= 0 || value > measurement.bodySize.y * 1.2)) {
+    const worldScale = region.bone.getWorldScale(new THREE.Vector3()).toArray().map(Math.abs);
+    const maximumWorldDimension = Math.max(...dimensions.map((value, axis) => value * worldScale[axis]));
+    if (dimensions.some(value => !Number.isFinite(value) || value <= 0) || !Number.isFinite(maximumWorldDimension)
+      || maximumWorldDimension > measurement.worldBodySize.y * 1.2) {
       for (const mesh of parts) mesh.geometry.dispose();
       if (ownsMaterial) material.dispose();
       return null;

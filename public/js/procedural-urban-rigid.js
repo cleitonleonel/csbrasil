@@ -156,7 +156,7 @@ function partKit(group, material) {
 
 function dimensions(bounds, options) {
   const size = factor(options, 'size'), width = factor(options, 'width'), height = factor(options, 'height'), depth = factor(options, 'depth');
-  const stature = bounds.bodySize.y * size;
+  const stature = bounds.bodySize.y * bounds.toSocket.getMaxScaleOnAxis() * size;
   return { stature, width, height, depth, detail: factor(options, 'detail'), center: bounds.socketBounds.getCenter(new THREE.Vector3()), socket: bounds.socketSize };
 }
 
