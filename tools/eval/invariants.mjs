@@ -1024,12 +1024,12 @@ PRE_DISPARO = false;
 // recuoZ, sem a trava nearX e sem VM_OFF, e mediu por rodadas inteiras um enquadramento
 // que não existia mais na tela. O resultado é a pior falha possível num portão: VERDE
 // mentindo. AUD1 fecha essa porta refazendo a cadeia AQUI, direto das fontes
-// (VM_FRAME de vmattach.js + VM_FOV_DEFAULT/VM_OFF de game.js), e conferindo contra o
+// (VM_FRAME de vmconfig.js + VM_FOV_DEFAULT/VM_OFF de game.js), e conferindo contra o
 // grip em view space que o auditor gravou. Diverge = o JSON está velho OU o espelho
 // quebrou; nos dois casos os números das VM não valem nada até alguém olhar.
 {
   const gsrc = readFileSync(join(ROOT, 'public', 'js', 'game.js'), 'utf8');
-  const vsrc = readFileSync(join(ROOT, 'public', 'js', 'vmattach.js'), 'utf8');
+  const vsrc = readFileSync(join(ROOT, 'public', 'js', 'data', 'vmconfig.js'), 'utf8');
   const pj = join(ROOT, 'tools', 'eval', 'vm_mint_audit.json');
   // as 3 etapas que o auditor tem que espelhar, conferidas no TEXTO do game.js: se alguém
   // tirar qualquer uma do caminho, o espelho continua "batendo" com si mesmo e mentindo.

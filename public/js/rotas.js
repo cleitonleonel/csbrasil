@@ -63,10 +63,10 @@ export function caminhoDoEstado(estado = {}, { perfilNoCaminho = false } = {}) {
     if (partida === 'multiplayer') return servidor === 'privado' ? '/jogar/multiplayer/privado' : '/jogar/multiplayer';
     return MODAIS_JOGAR.includes(janela) ? `/jogar/${janela}` : '/';
   }
-  if (secao === 'loja') return Object.hasOwn(ABAS_LOJA, loja) ? `/loja/${loja}` : '/loja';
+  if (secao === 'loja') return Object.prototype.hasOwnProperty.call(ABAS_LOJA, loja) ? `/loja/${loja}` : '/loja';
   if (secao === 'ranking') return '/ranking';
   if (secao === 'comunidade') {
-    if (perfil) return perfilNoCaminho ? `/u/${encodeURIComponent(perfil)}${Object.hasOwn(ABAS_PERFIL, aba || '') ? `/${aba}` : ''}` : null;
+    if (perfil) return perfilNoCaminho ? `/u/${encodeURIComponent(perfil)}${Object.prototype.hasOwnProperty.call(ABAS_PERFIL, aba || '') ? `/${aba}` : ''}` : null;
     const slug = ABAS_SOCIAIS[social || 'profile'];
     if (slug === undefined) return '/comunidade';
     return slug ? `/comunidade/${slug}` : '/comunidade';
@@ -85,7 +85,7 @@ export function estadoDaUrl(url) {
   if (rota) return { ...rota.estado, ...(q.get('origem') ? { origem: q.get('origem') } : {}) };
   const [, perfil, segundo] = PERFIL.exec(u.pathname) || [];
   /* /u/<perfil>/<aba> guarda a aba; outro segundo segmento é o nick da forma antiga. */
-  if (perfil) return { secao: 'comunidade', social: 'profile', perfil, ...(Object.hasOwn(ABAS_PERFIL, segundo || '') ? { aba: segundo } : {}) };
+  if (perfil) return { secao: 'comunidade', social: 'profile', perfil, ...(Object.prototype.hasOwnProperty.call(ABAS_PERFIL, segundo || '') ? { aba: segundo } : {}) };
   if (u.pathname !== '/') return null;
   const estado = {};
   for (const chave of [...CHAVES_DE_TELA, 'origem', 'perfil']) if (q.get(chave)) estado[chave] = q.get(chave);

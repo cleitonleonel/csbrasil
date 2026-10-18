@@ -2,16 +2,15 @@
 // e imprime, por arma, onde a coronha e a boca caem em NDC nos dois aspectos.
 //
 // REGRA DESTE ARQUIVO: ZERO constante copiada. V0 (VM_FOV_DEFAULT), recuoZ e nearX sao
-// LIDOS de game.js/vmattach.js. A versao anterior hardcodava V0=62, NEAR_X=0.80 e Zg*=1.35
+// LIDOS de game.js/vmconfig.js. A versao anterior hardcodava V0=62, NEAR_X=0.80 e Zg*=1.35
 // (numeros de rodadas mortas) e ainda apontava para /root/csb — media um jogo que nao existe.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { VM_FRAME as F } from '../../public/js/data/vmconfig.js';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
-const src = readFileSync(path.join(ROOT, 'public/js/vmattach.js'), 'utf8');
 const wsrc = readFileSync(path.join(ROOT, 'public/js/weapons.js'), 'utf8');
 const gsrc = readFileSync(path.join(ROOT, 'public/js/game.js'), 'utf8');
-const F = JSON.parse(JSON.stringify(eval('(' + src.slice(src.indexOf('export const VM_FRAME = {') + 24, src.indexOf('\n};', src.indexOf('export const VM_FRAME = {')) + 2) + ')')));
 const CFG = {};
 for (const m of wsrc.matchAll(/(\w+):\s*\{\s*len:\s*([\d.]+),\s*rot:[^}]*?gripZ:\s*([\d.]+)([^}]*)\}/g)) {
   const vm = /vm:\s*([\d.]+)/.exec(m[4]); CFG[m[1]] = { len: +m[2], gripZ: +m[3], vm: vm ? +vm[1] : 1 };

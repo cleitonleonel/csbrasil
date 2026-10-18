@@ -359,6 +359,8 @@ Cobertura: **3902 de 8578 linhas (45%)** do `game.js` têm dono declarado. O res
 | 8169 | `_updateRadar()` | 65 |
 | 8234 | `_banner()` | 26 |
 | 8260 | `_resultadoDaRodada()` | 4 |
+| 8277 | `_botaoAmigo()` | 5 |
+| 8282 | `_ligarAmigoPlacar()` | 22 |
 | 8264 | `_showScoreboard()` | 49 |
 | 8313 | `_updateWeaponHud()` | 35 |
 | 8348 | `_updateHud()` | 88 |

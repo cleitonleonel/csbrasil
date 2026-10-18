@@ -21,7 +21,7 @@ for(const [id,entry] of Object.entries(manifest.eyewear)){
   return n+json.accessors[p.indices??p.attributes.POSITION].count/3;
  },0);
  assert.equal(triangles,entry.triangles,`${id}: triangle provenance mismatch`);
- if(entry.approved===true)assert(Object.values(entry.profiles||{}).some(p=>p.approved===true),`${id}: approval without approved fit`);
+ if(entry.approved===true)assert(Object.values(entry.profiles||{}).some(p=>p.certified===true),`${id}: approval without certified fit`);
  totalBytes+=data.length;
 }
 console.log(`PASS: ${Object.keys(manifest.eyewear).length} item assets, ${totalBytes} bytes; hashes, geometry, posters and approval prerequisites. No visual fit approval.`);

@@ -1,12 +1,11 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { VM_FAMILY, VM_WEAPON, VM_FABRICA, VM_FABRICA_FRAME } from './data/vmconfig.js';
+import { authoredFrameFor, VM_FAMILY, VM_WEAPON, VM_FABRICA } from './data/vmconfig.js';
 import { VM_RUNTIME } from './vmlaunch.js';
 import { GOLDEN_VER } from './data/goldenver.js';
 import { FAMILY_VER } from './data/weaponver.js';
-import { VM_FRAME } from './data/vmframe.js';
 import { VM_BYTES } from './data/vmbytes.js';
-import { VM_FABRICA_BYTES, VM_FABRICA_POS } from './data/vmfabrica.js';
+import { VM_FABRICA_BYTES } from './data/vmfabrica.js';
 import { SHARED_VER } from './data/vmsharedver.js';
 import { attachMintWeapon, mintPointWorld, mintPointScene } from './vmweapon.js';
 import { VmRecoil } from './vmrecoil.js';
@@ -249,60 +248,6 @@ const CLIP_ALIASES = Object.freeze({
   pumpempty: 'pump_empty',
 });
 
-// Enquadramento por ARMA da trilha CS 1.6 (goldsrc). MEDIDO no jogo real por
-// `tools/eval/vm-frame-calibra.mjs`; o alvo de tamanho é a AK golden aprovada.
-const MOLDE_FRAME = Object.freeze({
-  awp:        { x: 0.141, y: 0.031, z: 0 },
-  ak:         { x: 0.092, y: 0.064, z: 0 },
-  m4:         { x: 0.092, y: 0.009, z: 0 },
-  mp5:        { x: 0.133, y: 0.068, z: 0 },
-  shotgun:    { x: 0.355, y: 0.04, z: -0.24 },
-  deagle:     { x: 0.012, y: 0.084, z: 0, drawDrop: 0.513 },
-  pistol:     { x: 0.061, y: -0.043, z: 0, drawDrop: 0.367 },
-  m92:        { x: 0.086, y: 0.012, z: 0 },
-  revolver38: { x: 0.053, y: 0.013, z: 0, drawDrop: 0.333 },
-  md97:       { x: 0.064, y: 0.099, z: 0 },
-  carbine:    { x: 0.117, y: 0.085, z: 0 },
-  mosin:      { x: 0.221, y: -0.14, z: -0.08 },
-  lmg:        { x: 0.356, y: 0.173, z: -0.08 },
-  scar:       { x: 0.15, y: 0.013, z: 0 },
-  famas:      { x: 0.046, y: 0.005, z: 0 },
-  uzi:        { x: 0.345, y: 0.177, z: 0, drawDrop: 0.28 },
-  p90:        { x: 0.042, y: -0.046, z: 0 },
-  svd:        { x: 0.183, y: 0.12, z: -0.08 },
-  sks:        { x: 0.158, y: 0.078, z: -0.08 },
-  default:    { x: 0.1, y: 0.02, z: 0 },
-});
-
-// O enquadramento move o pacote inteiro e preserva contatos. Armas longas ganham
-// distância ocular para o aspecto largo do navegador.
-const FAMILY_FRAME = Object.freeze({
-  // Âncoras MEDIDAS nos gabaritos CS 1.6 (vm-cs16-frames.mjs, razão angular
-  // alvo 1,00; relatórios em baked-preview/<arma>-cs16-template-report.json).
-  ak:      { x: 0.112, y: -0.068, z: -0.199, fov: 84, rotDeg: [0.6, -0.1, -5] },
-  ar:      { x: 0.096, y: -0.129, z: -0.198, fov: 84, rotDeg: [-8.0, 0.9, 0] },
-  mp5:     { x: 0.091, y: -0.187, z: -0.204, fov: 84, rotDeg: [-10.1, 0, 0] },
-  // O DGL50 final já traz a arma assada no rig. A calibração antiga incluía
-  // o wrap montado em runtime e deixava o punho abaixo do quadro.
-  deagle:  { x: 0.089, y: 0.000, z: -0.217, fov: 84, rotDeg: [-15.8, -0.2, 0] },
-  smg:     { x: 0.206, y: -0.141, z: -0.462, fov: 84, rotDeg: [15.4, 6.0, 0] },
-  // O pacote P90 nasceu 41,56 graus fora do eixo do gabarito. A rolagem final
-  // preserva arma e mãos juntas e devolve a silhueta horizontal ao ombro.
-  p90:     { x: 0.300, y: -0.200, z: -0.600, fov: 84, rotDeg: [15.4, 6.0, -60] },
-  // Yaw 15° aprovado em 05/09: VIEWMODEL-ASTRA-PISTOL-HANDOFF.md.
-  pistol:  { x: 0.100, y: -0.100, z: -0.220, fov: 55, rotDeg: [0, 15, -5], drawDrop: 0.34 },
-  shotgun: { x: 0.057, y: -0.114, z: -0.159, fov: 84, rotDeg: [-8.9, 0, 0] },
-  sniper:  { x: 0.118, y: -0.128, z: 0.029, fov: 84, rotDeg: [-11.9, 0, 0] },
-  bolt:    { x: 0.055, y: -0.083, z: -0.254, fov: 84, rotDeg: [-1.6, -0.3, 0] },
-  g3:      { x: 0.117, y: -0.062, z: -0.202, fov: 84, rotDeg: [1.0, -0.2, 0] },
-  marksman:{ x: 0.107, y: -0.07, z: -0.187, fov: 84, rotDeg: [0.5, -0.3, 0] },
-  svd:     { x: 0.107, y: -0.17, z: -0.419, fov: 84, rotDeg: [1.9, 0.5, 0] },
-  lmg:     { x: 0.153, y: -0.116, z: -0.409, fov: 84, rotDeg: [-5.2, -0.3, 0] },
-  // revolver: sem doador CS 1.6 (não existe no jogo fonte) — fica no olho antigo.
-  revolver:{ x: 0.075, y: -0.042, z: -0.110, fov: 84 },
-  grenade: { x: -0.050, y: 0.000, z: -0.080, fov: 84 },
-  default: { x: 0.050, y: -0.040, z: -0.140, fov: 84 },
-});
 
 // Portão de rollout: família só serve o jogo depois de `ready:true` no vmconfig.
 // ?vmready=ak,pistol é o override DEV para calibrar/A-B sem abrir o portão no repo.
@@ -415,25 +360,10 @@ function cameraSpacePackage(gltf, profile, parent, family, sourceKey = '') {
   const molde = VM_FONTE === 'goldsrc' || VM_FONTE === 'retarget';
   const golden = sourceKey.startsWith('gold#');
   const fabrica = sourceKey.startsWith('fab#');
-  // Precedência: família, medida por arma e override manual; `family` herda tudo.
-  // Medição: docs/reports/VIEWMODEL-ENQUADRAMENTO-ESCALA-2026-09-18.md.
-  const weaponId = sourceKey.split('#')[1];
-  const weaponFrame = VM_WEAPON[weaponId]?.frame;
-  const familyFrame = FAMILY_FRAME[family] || FAMILY_FRAME.default;
-  const medido = VM_FRAME[weaponId];
-  const frame = fabrica
-    ? { ...VM_FABRICA_FRAME, ...(VM_FABRICA_POS[weaponId] || {}), ...(VM_FABRICA[weaponId]?.frame || {}) }
-    : golden
-    ? { x: 0, y: 0, z: 0, fov: cameraFov }
-    : molde
-    ? { ...(VM_FONTE === 'goldsrc'
-      ? MOLDE_FRAME[weaponId] || MOLDE_FRAME.default
-      : { x: 0, y: 0, z: 0 }), fov: 74 }
-    : {
-      ...familyFrame,
-      ...(medido || {}),
-      ...(weaponFrame && typeof weaponFrame === 'object' ? weaponFrame : {}),
-    };
+  const weaponId = sourceKey.split('#')[1] || '';
+  // Retarget conserva frame neutro até a manga passar a régua; os demais
+  // caminhos compartilham a composição canônica de data/vmconfig.js.
+  const frame = authoredFrameFor(weaponId, family, sourceKey, cameraFov);
 
   const mount = new THREE.Group();
   mount.name = `paid_viewmodel_mount_${family}`;

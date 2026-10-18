@@ -10,7 +10,7 @@ const SRC = 'public/js/game.js';
 const OUT = 'artifacts/camera-oclusao';
 mkdirSync(OUT, { recursive: true });
 const source = readFileSync(SRC, 'utf8');
-const BLOCO = /    \/\* OCLUSÃO DO BOOM[\s\S]*?\n    \}\n(?=    \/\/ Cruz no alvo)/.exec(source)?.[0];
+const BLOCO = /    \/\* OCLUSÃO DO BOOM[\s\S]*?    tp\.selfOccluded = selfOccluded;\n/.exec(source)?.[0];
 if (!BLOCO) throw new Error('âncora da oclusão do boom não encontrada — mutante impossível');
 const CAMBLOCO = /      if \(this\.world\.camBlockers\?\.length\) \{[\s\S]*?\n      \}\n/.exec(BLOCO)?.[0];
 if (!CAMBLOCO) throw new Error('âncora do camBlockers não encontrada — mutante impossível');
@@ -18,9 +18,16 @@ if (!CAMBLOCO) throw new Error('âncora do camBlockers não encontrada — mutan
 const trials = [
   // o bug do relato de volta: boom entra dentro do prop e da tela atrás do jogador
   ['sem-pull-in', source.replace(BLOCO, ''),
-    ['câmera para ANTES do prop (pull-in)', 'ombro: piso de 0,35 m com prop colado', 'câmera não entra no varal']],
+    ['câmera para ANTES do prop (pull-in)', 'ombro: câmera fica antes do prop colado',
+      'ombro: malhas próprias somem só dentro da cápsula', 'câmera não entra no varal']],
   // pano do varal fora da régua da câmera: só o raycast de occluders fica
   ['ignora-camBlockers', source.replace(CAMBLOCO, ''), ['câmera não entra no varal']],
+  // O piso antigo passava através do blocker; sem a auto-oclusão, a arma volta à near plane.
+  ['piso-antigo', source.replace('const piso = Math.max(0, claro - 0.18);',
+    'const piso = Math.max(0.35, claro - 0.18);'), ['ombro: câmera fica antes do prop colado']],
+  ['sem-auto-oclusao', source.replace(
+    'const selfOccluded = (this._tpBoomClear ?? boomLen) < 0.38 + cam.near;',
+    'const selfOccluded = false;'), ['ombro: malhas próprias somem só dentro da cápsula']],
 ];
 
 const results = [];

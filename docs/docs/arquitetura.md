@@ -280,7 +280,10 @@ para além do fim do arquivo.
 
 {/* BEGIN:GERADO:ponteiros — não edite à mão, rode `npm run docs` */}
 
-Nenhum ponteiro `arquivo:linha` das docs aponta para fora do arquivo que ele cita. ✓
+⚠️ **Ponteiros que apontam para além do fim do arquivo** (a prosa envelheceu — corrija à mão):
+
+- `docs/docs/quality-gates.md` → `vmattach.js:387` (o arquivo tem 352 linhas)
+- `docs/docs/quality-gates.md` → `vmattach.js:395` (o arquivo tem 352 linhas)
 
 > Isto confere só o **limite** do arquivo: um ponteiro que ainda cabe mas mudou de assunto passa aqui. É a razão de a doutrina da casa ser declarar o SÍMBOLO e deixar a linha para o gerador — ver `tools/gen-arch.mjs`.
 

@@ -22,9 +22,11 @@ const SAIDA = path.join(ROOT, 'public/js/data/goldenver.js');
 
 export function gerar() {
   const mapa = {};
-  for (const f of fs.readdirSync(DIR).filter((n) => n.endsWith('-hires.glb')).sort()) {
-    const arma = f.replace('-hires.glb', '');
-    mapa[arma] = crypto.createHash('sha256').update(fs.readFileSync(path.join(DIR, f)))
+  const arquivos = fs.readdirSync(DIR).filter((n) => n.endsWith('-hires.glb')).sort()
+    .map((nome) => [nome.replace('-hires.glb', ''), path.join(DIR, nome)]);
+  arquivos.push(['knife', path.join(DIR, 'melee/knife-hires.glb')]);
+  for (const [arma, arquivo] of arquivos) {
+    mapa[arma] = crypto.createHash('sha256').update(fs.readFileSync(arquivo))
       .digest('hex').slice(0, 10);
   }
   const corpo = Object.entries(mapa).map(([k, v]) => `  ${k}: '${v}',`).join('\n');

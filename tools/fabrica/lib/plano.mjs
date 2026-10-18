@@ -5,6 +5,9 @@ import path from 'node:path';
 import { EQUIP_GERAL } from './chassis-pack.mjs';
 import { RAIZ_REPO, TRABALHO, lerJson, sha256 } from './comum.mjs';
 import { PACK_RAIZ } from './pack.mjs';
+import { factoryWeaponRecipe, loadCatalog } from '../weapon-skins-lib.mjs';
+
+const CATALOGO_SKINS = loadCatalog(path.join(RAIZ_REPO, 'tools/fabrica/skins/weapon-skins.v1.json'));
 
 export const CLIPES_DO_JOGO = ['idle', 'shoot', 'equip_rifle', 'reload_tactical', 'reload_empty',
   'reload_start', 'reload_loop', 'reload_end', 'pump', 'pump_empty', 'inspect', 'ads'];
@@ -57,8 +60,7 @@ export function montarPlano(fichaArquivo) {
   const chassi = lerChassi(ficha.chassi);
   const pasta = path.join(PACK_RAIZ, 'Animations', chassi.nome);
   const skin = lerJson(path.join(RAIZ_REPO, 'tools/fabrica/skins', `braco-${ficha.skinBraco || 'coro-ak'}.json`));
-  const skinArma = ficha.skinArma
-    ? lerJson(path.join(RAIZ_REPO, 'tools/fabrica/skins', `arma-${ficha.skinArma}.json`)) : null;
+  const skinArma = ficha.skinArma ? factoryWeaponRecipe(CATALOGO_SKINS, ficha.skinArma) : null;
   const dir = path.join(TRABALHO, ficha.id);
   const clipes = resolverClipes(ficha, chassi);
   const ancoraDe = (a) => {

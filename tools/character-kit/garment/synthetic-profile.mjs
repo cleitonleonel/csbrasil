@@ -29,6 +29,6 @@ export function exampleBytes(garment = false) {
 export function recipeFiles() {
   return ['public/vendor/three.module.js', 'public/vendor/addons/loaders/GLTFLoader.js',
     'public/vendor/addons/utils/SkeletonUtils.js', 'public/vendor/addons/utils/BufferGeometryUtils.js',
-    'tools/character-kit/bind-inspector.mjs', 'tools/character-kit/example.mjs', 'tools/character-kit/kit.mjs', ...['core.mjs', 'portable-assert.mjs', 'browser-example.mjs', 'node.mjs', 'synthetic-profile.mjs', 'build-example-record.mjs'].map(n => 'tools/character-kit/garment/' + n)]
+    'tools/character-kit/bind-inspector.mjs', 'tools/character-kit/example.mjs', 'tools/character-kit/kit.mjs', ...['core.mjs', 'portable-assert.mjs', 'wearables-schema.mjs', 'browser-example.mjs', 'node.mjs', 'synthetic-profile.mjs', 'build-example-record.mjs'].map(n => 'tools/character-kit/garment/' + n)]
     .map(name => [name, readFileSync(new URL('../../../' + name, import.meta.url))]);
 }

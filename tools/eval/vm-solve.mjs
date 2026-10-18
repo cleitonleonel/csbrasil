@@ -317,7 +317,7 @@ function autoteste() {
   const p = path.join(ROOT, 'tools/eval/vm_mint_audit.json');
   if (!fs.existsSync(p)) return 'vm_mint_audit.json ausente — autoteste pulado';
   const a = JSON.parse(fs.readFileSync(p, 'utf8'));
-  const { armas } = avaliar(paramsDoRepo());   // paramsDoRepo lê vmattach.js + game.js
+  const { armas } = avaliar(paramsDoRepo());   // paramsDoRepo lê vmconfig.js + game.js
   let pior = 0, quem = '';
   for (const [id, w] of Object.entries(a.armas)) {
     const m = armas[id]; if (!m) continue;

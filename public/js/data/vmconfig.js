@@ -1,3 +1,6 @@
+import { VM_FRAME as VM_WEAPON_FRAME } from './vmframe.js';
+import { VM_FABRICA_POS } from './vmfabrica.js';
+
 // Tabela pura do viewmodel autorado (BUG-75): famílias KINEMATION + as 26 armas.
 // `ready` é portão por arma; produção só liga com VM_LAUNCH e todas prontas (vmlaunch.js).
 
@@ -14,7 +17,7 @@ export const VM_MELEE = {
 // Por família: mount (socket→gun-space, +Z=cano, autorado no editor), equip
 // (par General rifle|pistol), camShake (preset do recoil.json), reloadStyle.
 export const VM_FAMILY = {
-  // mount/trim = resíduo arma↔mão; inclinação do PACOTE vive no FAMILY_FRAME.
+  // mount/trim = resíduo arma↔mão; inclinação do pacote vive em VM_AUTHORED_FRAME.
   // cs16 = máquina de 6 estados dos QC (cadências: tools/viewmodels/cs16-timings.json).
   ak:       { ready: true, mount: { pos: [0, 0, 0], rotDeg: [0, 0, 0], scale: 1 }, equip: 'rifle', camShake: 'Rifle_Light', reloadStyle: 'mag', cs16: { draw: 1.0, reload: 2.432, shoot: 0.8 } },
   ar:       { ready: true, mount: { pos: [0, 0, 0], rotDeg: [0, 0, 0], scale: 1 }, equip: 'rifle', camShake: 'Rifle_Light', reloadStyle: 'mag', cs16: { draw: 1.0, reload: 3.054, shoot: 1.5 } },
@@ -65,7 +68,7 @@ export const VM_WEAPON = {
   m4: W('ar', { baked: true, ads: { auto: true, off: [-0.0053, -0.0533, 0], rotDeg: [0, 0, 0], pull: 0.05, fovScale: 1 } }),
   // Quadril: +18° de rolagem deita o cano (eixo na tela 141° → 149°, AK 155°; o crítico via
   // "pitch 39° vs 26°"). ADS desfaz a rolagem e o resíduo leva o aro da massa à cruz (eval:vm-mira 44 → 0 px).
-  mp5: W('mp5', { baked: true, runtime: 'family', timing: 'gameplay', frame: { rotDeg: [-10.1, 0, 18] },
+  mp5: W('mp5', { baked: true, runtime: 'family', timing: 'gameplay', assetLimit: 'mint-sem-pente; weaponModel adiciona MAG procedimental', frame: { rotDeg: [-10.1, 0, 18] },
     ads: { auto: true, off: [-0.0925, 0.0245, 0], rotDeg: [0, 0, -18], pull: 0.05, fovScale: 1 } }),
   // KSG girada no produto (shotgun-k-fix.mjs): pacote 5× recua ao tamanho da AK e a alça
   // fica acima do cano; o resíduo de ADS põe alça e massa na cruz (vmads-sim.mjs).
@@ -89,7 +92,7 @@ export const VM_WEAPON = {
   pistol: W('pistol', { baked: true, runtime: 'family', timing: 'gameplay' }),
   // M92: arma até o
   // punho (grip-support.mjs), cabo na borda e ADS pela alça tangente (sockets 10° fora da linha).
-  m92: W('ak', { baked: true, ready: true,
+  m92: W('ak', { baked: true, ready: true, assetLimit: 'pente-fundido-na-malha Mint',
     frame: { x: 0.0948, y: 0.0409, z: -0.1014, fov: 57, rotDeg: [6, 15, 2] },
     ads: { auto: true, off: [-0.0007, 0.0526, 0], rotDeg: [-10.89, -0.77, 0], pull: 0.05, fovScale: 1,
       linhaDeMira: { ref: 'MINT_WEAPON_M92', alca: [0.04, 0.188, 0.021], massa: [-0.3, 0.193, 0.021] } } }),
@@ -127,7 +130,7 @@ export const VM_WEAPON = {
     } }),
   // Recuo de viewmodel abaixo de 4% da própria arma não se lê (P7 do gauntlet):
   // as duas armas mais leves do REC_DEG precisam de amplitude no mount.
-  md97: W('ar', { baked: true, recoilScale: 1.8, frame: { fov: 90, rotDeg: [-4, -4, -12] },
+  md97: W('ar', { baked: true, recoilScale: 1.8, assetLimit: 'mint-sem-pente; weaponModel adiciona MAG procedimental', frame: { fov: 90, rotDeg: [-4, -4, -12] },
     // linhaDeMira = alça e massa (nó + ponto local): o socket `sight` fica abaixo da alça.
     ads: { auto: true, off: [-0.006, 0, 0], rotDeg: [-4.31, 0.51, 0], pull: 0.05, fovScale: 1,
       linhaDeMira: { ref: 'MINT_WEAPON_MD97', alca: [0.24, 0.112, -0.0095], massa: [-0.265, 0.107, -0.010] } } }),
@@ -140,7 +143,7 @@ export const VM_WEAPON = {
   // ADS automático (alça medida no eixo). Frame: opção B do #632, decisão do dono (0,877× da AK;
   // faixa própria em FAIXA_ESCALA.lmg, vm-limiares.mjs).
   lmg: W('lmg', { baked: true, timing: 'gameplay', frame: { z: -0.375 }, ads: { auto: true, off: [-0.022, -0.003, 0], rotDeg: [0, 0, 0], pull: 0.05, fovScale: 1 } }),
-  scar: W('ar', { baked: true, ads: { auto: true, off: [0.0109, -0.0464, 0], rotDeg: [0, 0, -14], pull: 0.05, fovScale: 1 } }),
+  scar: W('ar', { baked: true, assetLimit: 'pente-fundido-na-malha Mint', ads: { auto: true, off: [0.0109, -0.0464, 0], rotDeg: [0, 0, -14], pull: 0.05, fovScale: 1 } }),
   tavor: W('ar', { baked: true, ads: { auto: true, off: [0, -0.051, 0], rotDeg: [0, 0, 0], pull: 0.05, fovScale: 1 } }),
   famas: W('ar', { baked: true, ads: { auto: true, off: [-0.0019, -0.063, 0], rotDeg: [0, 0, 0], pull: 0.05, fovScale: 1 } }),
   uzi: W('smg', { baked: true, timing: 'gameplay', ads: { auto: true, off: [-0.02, -0.03, 0], rotDeg: [0, 0, -15], pull: 0.05, fovScale: 1 } }),
@@ -197,3 +200,156 @@ export const VM_FABRICA = Object.freeze({
   carbine: F('bolt', 'Kar98K', { variante: true, recoilScale: 3.3, frame: { x: 0.115, y: -0.04, z: -0.123, fov: 50 }, ads: A(0.35) }),
   uzi: F('smg', 'X18', { variante: true, manga: true, recoilScale: 3, frame: { ...CURTA, x: 0.26, y: -0.2, z: -0.55, rotDeg: [21, 15, -5] }, ads: A(0.4) }),
 });
+export const VM_FRAME = {
+  vmScale: 0.72,
+  tanBarrel: 0.22,
+  adsPullZ: 0.02,
+  recuoZ: 1.50,
+  nearX: 6.00,
+  cls: {
+    rifle:   { roll: -0.0524, pitch: 0.1571, yaw: 0.2793, tanH: 0.360, clear: 0.020, minz: 0.3450, fwdTan: 1.60 },
+    sniper:  { roll: 0.580, pitch: 0.1571, yaw: 0.2094, tanH: 0.360, clear: 0.020, minz: 0.3350, fwdTan: 1.60 },
+    shotgun: { roll: -0.078, pitch: 0.1047, yaw: 0.3491, tanH: 0.360, clear: 0.020, minz: 0.3450, fwdTan: 1.60 },
+    smg:     { roll: -0.085, pitch: 0.4189, yaw: 0.4887, tanH: 0.360, clear: 0.020, minz: 0.3500, fwdTan: 1.60 },
+    // Armas curtas: yaw alto expõe o flanco da arma em hip-fire; no ADS o
+    // runtime zera pitch/yaw e realinha a alça ao centro.
+    pistol:  { roll: 0.000, pitch: 0.1745, yaw: 1.0472, tanH: 0.285, clear: 0.020, minz: 0.3500, fwdTan: 1.45 },
+    knife:   { roll: 0, pitch: 0.000, yaw: 0.000, tanH: 0.240, clear: 0.020, minz: 0.3100, fwdTan: 1.60 },
+  },
+  knifeRot: [-0.10, 0.50, -0.48],
+  zMul: { deagle: 0.90, mosin: 0.90, rem700: 0.90, uzi: 1.24, g3sg1: 0.75, sks: 0.80, p90: 1.16, mp5: 1.08 },
+  // classe de ENQUADRAMENTO (≠ STATIC_CLASS do pipeline Tripo, ≠ BALL_CLASS da balística)
+  classOf: {
+    ak: 'rifle', akm: 'rifle', m4: 'rifle', m92: 'rifle', g3: 'rifle', carbine: 'rifle',
+    scar: 'rifle', tavor: 'rifle', famas: 'rifle', lmg: 'rifle', md97: 'rifle',
+    mp5: 'smg', uzi: 'smg', p90: 'smg',
+    awp: 'sniper', mosin: 'sniper', rem700: 'sniper', m400: 'sniper', svd: 'sniper', g3sg1: 'sniper', sks: 'sniper',
+    shotgun: 'shotgun',
+    pistol: 'pistol', deagle: 'pistol', revolver38: 'pistol',
+    knife: 'knife',
+  },
+};
+
+// Composição em espaço de câmera dos pacotes autorados. O pacote inteiro move;
+// arma, mãos, clipes, ADS e sockets continuam no mesmo referencial.
+export const VM_AUTHORED_FRAME = Object.freeze({
+  family: Object.freeze({
+    ak:       { x: 0.112, y: -0.068, z: -0.199, fov: 84, rotDeg: [0.6, -0.1, -5] },
+    ar:       { x: 0.096, y: -0.129, z: -0.198, fov: 84, rotDeg: [-8.0, 0.9, 0] },
+    mp5:      { x: 0.091, y: -0.187, z: -0.204, fov: 84, rotDeg: [-10.1, 0, 0] },
+    deagle:   { x: 0.089, y: -0.152, z: -0.217, fov: 84, rotDeg: [-15.8, -0.2, 0] },
+    smg:      { x: 0.206, y: -0.141, z: -0.462, fov: 84, rotDeg: [15.4, 6.0, 0] },
+    p90:      { x: 0.075, y: -0.020, z: -0.141, fov: 84, rotDeg: [0, 0, 0] },
+    pistol:   { x: 0.100, y: -0.100, z: -0.220, fov: 55, rotDeg: [0, 15, -5], drawDrop: 0.34 },
+    shotgun:  { x: 0.057, y: -0.114, z: -0.159, fov: 84, rotDeg: [-8.9, 0, 0] },
+    sniper:   { x: 0.118, y: -0.128, z: 0.029, fov: 84, rotDeg: [-11.9, 0, 0] },
+    bolt:     { x: 0.055, y: -0.083, z: -0.254, fov: 84, rotDeg: [-1.6, -0.3, 0] },
+    g3:       { x: 0.117, y: -0.062, z: -0.202, fov: 84, rotDeg: [1.0, -0.2, 0] },
+    marksman: { x: 0.107, y: -0.070, z: -0.187, fov: 84, rotDeg: [0.5, -0.3, 0] },
+    svd:      { x: 0.107, y: -0.060, z: -0.419, fov: 84, rotDeg: [1.9, 0.5, 0] },
+    lmg:      { x: 0.153, y: -0.116, z: -0.409, fov: 84, rotDeg: [-5.2, -0.3, 0] },
+    revolver: { x: 0.075, y: -0.042, z: -0.110, fov: 84, rotDeg: [0, 0, 0] },
+    grenade:  { x: 0.045, y: -0.035, z: -0.080, fov: 84, rotDeg: [0, 0, 0] },
+  }),
+  goldsrc: Object.freeze({
+    awp:        { x: 0.141, y: 0.031, z: -0.100 },
+    ak:         { x: 0.092, y: 0.064, z: 0, rotDeg: [0, 0, 4] },
+    m4:         { x: 0.092, y: 0.009, z: 0 },
+    mp5:        { x: 0.133, y: 0.068, z: 0 },
+    shotgun:    { x: 0.355, y: 0.040, z: -0.240 },
+    deagle:     { x: 0.012, y: 0.084, z: 0, rotDeg: [0, 0, 31], drawDrop: 0.513 },
+    pistol:     { x: 0.061, y: -0.043, z: 0, rotDeg: [0, 0, 41], drawDrop: 0.367 },
+    m92:        { x: 0.086, y: 0.012, z: -0.100 },
+    akm:        { x: 0.092, y: 0.064, z: 0 },
+    g3:         { x: 0.183, y: 0.120, z: -0.080, rotDeg: [0, 0, -19] },
+    revolver38: { x: 0.053, y: 0.013, z: 0, rotDeg: [0, 0, 28], drawDrop: 0.333 },
+    md97:       { x: 0.064, y: 0.099, z: -0.080, rotDeg: [0, 0, -11] },
+    carbine:    { x: 0.117, y: 0.085, z: 0 },
+    m400:       { x: 0.141, y: 0.031, z: -0.040, rotDeg: [0, 0, -20] },
+    mosin:      { x: 0.221, y: -0.140, z: -0.080 },
+    rem700:     { x: 0.221, y: -0.140, z: -0.080 },
+    lmg:        { x: 0.356, y: 0.173, z: -0.080, rotDeg: [0, 0, -16] },
+    scar:       { x: 0.150, y: 0.013, z: -0.040 },
+    tavor:      { x: 0.046, y: 0.005, z: 0 },
+    famas:      { x: 0.046, y: 0.005, z: -0.150, rotDeg: [0, 0, 12] },
+    uzi:        { x: 0.345, y: 0.177, z: 0, rotDeg: [0, 0, -36], drawDrop: 0.280 },
+    p90:        { x: 0.042, y: -0.046, z: 0, rotDeg: [0, 0, 17] },
+    svd:        { x: 0.183, y: 0.120, z: -0.080, rotDeg: [0, 0, -21] },
+    g3sg1:      { x: 0.183, y: 0.120, z: -0.080, rotDeg: [0, 0, -20] },
+    sks:        { x: 0.158, y: 0.078, z: -0.080, rotDeg: [0, 0, -20] },
+  }),
+});
+
+export const VM_SIDE_CONTRACT = Object.freeze({
+  aspects: Object.freeze([16 / 9, 3 / 2]),
+  axisDeg: Object.freeze([22, 42]),
+  areaPct: Object.freeze([4, 16]),
+  contactMaxM: 0.025,
+  visibleMin: 0.70,
+  profileMin: 0.02,
+});
+
+export function authoredFrameFor(weapon, family, sourceKey = '', cameraFov = 84) {
+  if (sourceKey.startsWith('fab#')) {
+    return {
+      ...VM_FABRICA_FRAME,
+      ...(VM_FABRICA_POS[weapon] || {}),
+      ...(VM_FABRICA[weapon]?.frame || {}),
+    };
+  }
+  if (sourceKey.startsWith('gold#')) return { x: 0, y: 0, z: 0, fov: cameraFov };
+  if (sourceKey.startsWith('rt#')) return { x: 0, y: 0, z: 0, fov: 74 };
+  if (sourceKey.startsWith('gs#')) {
+    const frame = VM_AUTHORED_FRAME.goldsrc[weapon];
+    if (!frame) throw new Error(`sem frame goldsrc para ${weapon}`);
+    return { ...frame, fov: 74 };
+  }
+  const familyFrame = VM_AUTHORED_FRAME.family[family];
+  if (!familyFrame) throw new Error(`sem frame de família para ${family}`);
+  const measured = VM_WEAPON_FRAME[weapon];
+  const override = VM_WEAPON[weapon]?.frame;
+  return {
+    ...familyFrame,
+    ...(measured || {}),
+    ...(override && typeof override === 'object' ? override : {}),
+  };
+}
+
+const PIPELINE_LICENSE = Object.freeze({
+  legacy: 'Mint/project asset',
+  golden: 'CC0 mold + Mint/project asset',
+  goldsrc: 'CC0 mold + Mint/project asset',
+  paid: 'Fab Standard License (private runtime)',
+  retarget: 'Fab Standard License (private runtime)',
+});
+
+export function viewmodelPlan(weapon, source = 'default') {
+  const spec = VM_WEAPON[weapon];
+  if (!spec) throw new Error(`arma sem contrato 1P: ${weapon}`);
+  const family = spec.family;
+  const ready = VM_FAMILY[family]?.ready === true && spec.ready !== false;
+  let pipeline = 'legacy';
+  if (source === 'goldsrc') pipeline = 'goldsrc';
+  else if (source === 'retarget') pipeline = 'retarget';
+  else if (ready) pipeline = spec.golden ? 'golden' : 'paid';
+  const asset = pipeline === 'goldsrc'
+    ? `/private-assets/viewmodels/goldsrc-vm/${weapon}-runtime.glb`
+    : pipeline === 'retarget'
+      ? `/private-assets/viewmodels/retarget-vm/${weapon}-runtime.glb`
+      : pipeline === 'golden'
+        ? `/models/viewmodels/coro/${weapon}-hires.glb`
+        : pipeline === 'paid'
+          ? `/private-assets/viewmodels/${family}/${family}-runtime.glb`
+          : `/models/weapons/${weapon}.glb`;
+  return {
+    weapon,
+    family,
+    pipeline,
+    asset,
+    license: PIPELINE_LICENSE[pipeline],
+    fallback: 'legacy',
+    fallbackUsed: pipeline === 'legacy',
+    result: pipeline === 'legacy' ? 'fallback-explicito' : 'autorada',
+    assetLimit: spec.assetLimit || null,
+  };
+}

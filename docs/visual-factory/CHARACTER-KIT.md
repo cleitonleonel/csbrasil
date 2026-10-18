@@ -183,3 +183,30 @@ activation. Its static record authenticates one synthetic byte pair; known-famil
 and fit are technical draft identities. No body mask is applied, and all approval
 flags remain false. Gameplay, store, authored garments and cross-family fit remain
 outside this API experiment.
+
+### Fábrica offline de wearables — candidato de 17/10
+
+O [manifesto e censo executáveis](../../tools/character-kit/README.md#wearable-census-manifest-and-compatibility-matrix)
+definem os slots canônicos `back`, `head`, `face`, `piercing`, `tattoo`,
+`torso-inner`, `torso-outer`, `legs` e `feet`. A descoberta percorre todos os GLBs
+versionados de personagens, skins e o modelo auxiliar de dança; a saída agrupa
+somente vocabulário/hierarquia de joints e mantém um perfil distinto por hash de
+corpo. Família estrutural não transfere fit.
+
+O lote não encontrou asset 3D versionado, licenciado e com origem registrada para
+mochila, boné, piercing, tatuagem, camiseta, jaqueta, calça ou tênis. O manifesto
+registra essa ausência com `asset: null`; a matriz mantém toda combinação sem
+certificação e explica separadamente ausência de asset e incompatibilidade
+estrutural. Não transforma conceitos 2D ou roupa fundida no corpo em item.
+
+O censo também preserva as reprovações observáveis do inspetor — peso inválido,
+nomes de joints ambíguos ou ausência de papéis canônicos — em vez de inventar
+offset ou herdar aprovação da família. A lista exata de trabalho visual restante,
+com corpos e bloqueios por família, é o bloco gerado
+`humanVisualWorkByFamily` de `compatibility-matrix.json`.
+
+O attach sintético agora ocupa qualquer um dos oito slots-alvo, compartilha
+geometria/material autenticados e ossos do corpo, e possui apenas o wrapper de
+skeleton da montagem. Descarte e remontagem são idempotentes e não descartam
+recursos compartilhados. Isso prova ciclo de vida mecânico, não fit, clipping,
+máscara, arte, entitlement ou ativação de runtime.

@@ -11,8 +11,8 @@
  * A SOLUÇÃO É PARAMETRIZAR, NÃO DUPLICAR MAL: a geometria (GLB, weapons.js CFG,
  * triângulos) vem do módulo vm-mint-audit DESTA árvore — os GLBs não mudam entre commits,
  * e é o único lugar do repo que sabe ler GLB. Já os parâmetros de ENQUADRAMENTO
- * (VM_FRAME, VM_OFF, VM_FOV_DEFAULT, a fórmula do vmOffY) são lidos POR REGEX da árvore
- * ALVO, exatamente como o vm-mint-audit faz com a própria. Assim o mesmo código projeta
+ * (VM_FRAME, VM_OFF, VM_FOV_DEFAULT, a fórmula do vmOffY) são lidos POR REGEX das
+ * fontes canônicas da árvore ALVO. Assim o mesmo código projeta
  * o "antes" e o "depois" e a diferença na imagem é SÓ a mudança de enquadramento.
  *
  * A cadeia frame()/toView() aqui é um ESPELHO da do vm-mint-audit (que é, por sua vez,
@@ -47,7 +47,12 @@ function cfgDe(root) {
 }
 function paramsDe(root) {
   const gjs = fs.readFileSync(path.join(root, 'public/js/game.js'), 'utf8');
-  const vjs = fs.readFileSync(path.join(root, 'public/js/vmattach.js'), 'utf8');
+  const configFile = path.join(root, 'public/js/data/vmconfig.js');
+  let vjs = fs.existsSync(configFile) ? fs.readFileSync(configFile, 'utf8') : '';
+  // Árvores históricas guardavam VM_FRAME em vmattach.js.
+  if (!vjs.includes('export const VM_FRAME = {')) {
+    vjs = fs.readFileSync(path.join(root, 'public/js/vmattach.js'), 'utf8');
+  }
   const v0 = /const\s+VM_FOV_DEFAULT\s*=\s*([\d.]+)\s*;/.exec(gjs);
   const off = /const\s+VM_OFF\s*=[\s\S]*?:\s*\[\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\]/.exec(gjs);
   const foy = /const\s+vmOffY\s*=\s*\(\s*aspect\s*\)\s*=>\s*([^;]+);/.exec(gjs);

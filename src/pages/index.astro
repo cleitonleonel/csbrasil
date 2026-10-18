@@ -334,6 +334,8 @@ window.__GEO_LANG__ = (function () {
   }
 
   function mostraFalha(dados){
+    /* Contagem agregada sem id (js/contagem.js): falha antes do menu pronto é boot_error. */
+    try { if (!window.__CS_MAIN_READY__ && window.__csConta) window.__csConta('boot_error'); } catch(_) {}
     var el = ligaFalha();
     if (!el) { falhaPendente = dados; return; }
     var code = document.getElementById('launch-error-code');
@@ -704,6 +706,8 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
 </script>
 <!-- Todo módulo local precisa passar pelo import map versionado. -->
 <script type="importmap" is:inline set:html={IMPORTMAP}></script>
+<!-- Contagem agregada sem identificador: carrega sozinha, antes do grafo do main.js, para contar quem desiste no download. -->
+<script type="module" async src={`/js/contagem.js?v=${V}-${JS_REV}`} is:inline></script>
 <link rel="stylesheet" href={`/map-preview.css?v=${V}-${JS_REV}`} />
 </head>
 <body>
@@ -1134,7 +1138,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
       <div class="profile-card">
         <div class="pc-title">NOME NA CAMISA</div>
         <label class="map-label" for="nick-input">SEU NICK
-          <input id="nick-input" maxlength="14" placeholder="ex: Zé do AWP" autocomplete="off">
+          <input id="nick-input" maxlength="32" placeholder="ex: Zé do AWP" autocomplete="off">
         </label>
         <div class="map-label">REDES SOCIAIS (OPCIONAL)
           <div id="social-list"></div>

@@ -53,7 +53,7 @@ async function preparar(page, mutante) {
   if (!mutante) return;
   const [teste, troca] = MUTANTES[mutante];
   await page.route((u) => teste(u), async (r) => {
-    const res = await r.fetch();
+    const res = await r.fetch().catch(() => r.fetch());
     const antes = await res.text();
     const depois = troca(antes);
     if (depois !== antes) aplicados.add(mutante);

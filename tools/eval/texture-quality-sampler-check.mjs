@@ -59,9 +59,9 @@ function transitions(src, gameSrc = gameSource, mainSrc = mainSource) {
   vm.runInContext(mainSrc.split('\n').find(l => l.startsWith('qualEl.onchange = ')), ctx);
   ctx.qualEl.onchange(); const menuLow = menuClone.anisotropy;
   ctx.THREE.Scene = class { traverse(fn) { fn({ material: { map: menuClone } }); } };
-  ctx.MAPS = { test: { build() { menuClone.anisotropy = menuTexture.anisotropy; } } }; ctx.currentMap = 'test'; ctx.textures = {};
-  const rebuild = mainSrc.slice(mainSrc.indexOf('function rebuildMenuBackdrop() {'), mainSrc.indexOf('\nfunction menuProps('));
-  vm.runInContext(rebuild + '\nrebuildMenuBackdrop();', ctx);
+  ctx.MAPS = { test: { build() { menuClone.anisotropy = menuTexture.anisotropy; } } }; ctx.currentMap = 'test'; ctx.textures = {}; ctx.renderer = { liberaPosDaCena() {} };
+  const rebuild = mainSrc.slice(mainSrc.indexOf('function rebuildMenuBackdrop('), mainSrc.indexOf('\nfunction menuProps('));
+  vm.runInContext(rebuild + '\nrebuildMenuBackdrop(MAPS.test);', ctx);
   const rebuiltLow = menuClone.anisotropy;
   return { low, lowNew, med, medNew, unrelated: unrelated.anisotropy, boot, menuLow, rebuiltLow, pass: low === 4 && lowNew === 4 && med === 8 && medNew === 8 && unrelated.anisotropy === 16 && boot && menuLow === 4 && rebuiltLow === 4 };
 }

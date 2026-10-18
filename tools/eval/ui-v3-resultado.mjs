@@ -33,7 +33,7 @@ const MUT = {
   'tecla-nao-pula': ['RS7', 'v3pt', /\/js\/tp\/resultado\.js/, (t) => t.replace("if ('anim' in raiz.dataset) {", "if (false) {")],
   'mobile-sobrepoe': ['RS8', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace(/(@media \(max-height:520px\)\{[\s\S]*?\.tp-res__col\{)/, '$1width:760px!important;')],
   'mvp-volta': ['RS11a', 'v3pt', /\/js\/tp\/resultado\.js/, (t) => t.replace("if (d.combo >= 2) medalha(", "medalha('MVP', 'MVP da partida', 'mvp'); if (d.combo >= 2) medalha(")],
-  'selo-por-cima': ['RS15', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('#match-end[data-tp-res]:not(.hidden)) #vm-debug-badge{display:none}', '#match-end[data-tp-res]:not(.hidden)) #vm-debug-badge{}')],
+  'selo-por-cima': ['RS15', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('#match-end[data-tp-res]:not(.hidden)) #vm-debug-badge{display:none}', '#match-end[data-tp-res]:not(.hidden)) #vm-debug-badge{display:block!important;position:fixed!important;inset:0!important;z-index:2147483647!important;pointer-events:auto!important}')],
   'nome-desloca': ['RS16', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('.tp-res__assina{position:absolute;left:calc(var(--res-cx) - 200 * var(--k))', '.tp-res__assina{position:absolute;left:calc(var(--res-cx) - 80 * var(--k))')],
   'heroi-pequeno': ['RS16', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('--res-fig:min(calc(100dvh - 66px),calc(768 * var(--k) / var(--fh,.9)))', '--res-fig:min(calc(100dvh - 66px),calc(560 * var(--k) / var(--fh,.9)))')],
   'acoes-no-pe': ['RS17', 'v3pt', /\/css\/tp\/resultado\.css/, (t) => t.replace('justify-content:center;gap:calc(20 * var(--k))}', 'justify-content:flex-start;gap:calc(20 * var(--k))}.tp-res__acoes{margin-top:auto!important}')],

@@ -4,10 +4,13 @@ import {careerRankBadge,careerRankTitle} from './career-rank.js';
 import {questList} from './community-inbox.js';
 import {accountVerifiedBadge} from './account-verified.js';
 import {profileCharacterCard} from './profile-character.js';
+import {abrirConviteAmigos} from './convida-amigos.js';
+import {tr} from './i18n.js';
 import {WEAPONS} from './data/weapons.js';
 const root=document.getElementById('community');
 if(root) {
   const status=document.getElementById('social-status'),account=document.getElementById('social-account'),content=document.getElementById('social-content');
+  const UI_V3=document.documentElement?.dataset?.ui==='v3';
   let loginConfig={providers:[]};
   let inboxSection='quests',conversation=null,conversationBefore=null,messageDraft='',messageClientId=null,pendingSend=null;
   let auth=null,state=null,tab=root.dataset.tab || 'profile',profileId=root.dataset.profile || new URLSearchParams(location.search).get('perfil') || '',rankingScope='global',rankingQuery='',rankingOffset=0,rankingPeriod='all',rankingMode='all',rankingGameType='all',loadVersion=0;
@@ -15,7 +18,7 @@ if(root) {
   if(new URLSearchParams(location.search).get('perfil') || /^\/u\/[^/]/.test(location.pathname || ''))account.closest?.('details')?.removeAttribute('open');
   // O SSR de /u/<perfil> manda o perfil legível ao lado da comunidade (crawler e sem JS). Com a comunidade no ar, ela desenha o perfil.
   document.getElementById?.('perfil-ssr')?.remove();
-  const errors={handle_invalid:'Use de 3 a 24 letras, números ou _. Comece com letra.',handle_taken:'Esse ID já tem dono. Escolha outro.',handle_locked:'Seu ID já foi escolhido e fica fixo para preservar os links.',nick_invalid:'Use de 2 a 14 letras, números, _ . ou -.',nick_taken:'Esse nick já está em uso. Escolha outro.',account_hidden:'Esta conta está indisponível pela moderação.',session_expired:'Sua sessão expirou. Entre de novo para continuar.',social_unavailable:'A resenha está fora do ar. Tente de novo.',social_not_configured:'A comunidade aguarda configuração do servidor.',rate_limited:'Calma, fiscal da resenha. Tente de novo em um minuto.',blocked:'Esse jogador não pode interagir com você.',room_solo:'Essa sala é solo. Entre no multiplayer para chamar amigos.',room_full:'A sala lotou. Peça outro convite.',room_closed:'Essa sala já encerrou.',room_unavailable:'O servidor da sala não respondeu.',invite_expired:'O convite venceu. Peça outro.',invite_closed:'Esse convite já foi respondido.',join_room_first:'Entre numa sala do jogo antes de convidar.',provider_unavailable:'Esse login ainda não está habilitado.',account_conflict:'Esse nick ou progresso já pertence a outra conta.',guest_invalid:'Não foi possível comprovar o convidado. Seu progresso local continua salvo.',links_invalid:'Use links HTTPS das redes indicadas.',settings_invalid:'Revise a bio e as opções de privacidade.'};
+  const errors={handle_invalid:'Use de 3 a 24 letras, números ou _. Comece com letra.',handle_taken:'Esse ID já tem dono. Escolha outro.',handle_locked:'Seu ID já foi escolhido e fica fixo para preservar os links.',nick_invalid:'Use de 2 a 32 letras, números, _ . ou -.',nick_taken:'Esse nick já está em uso. Escolha outro.',account_hidden:'Esta conta está indisponível pela moderação.',session_expired:'Sua sessão expirou. Entre de novo para continuar.',social_unavailable:'A resenha está fora do ar. Tente de novo.',social_not_configured:'A comunidade aguarda configuração do servidor.',rate_limited:'Calma, fiscal da resenha. Tente de novo em um minuto.',blocked:'Esse jogador não pode interagir com você.',room_solo:'Essa sala é solo. Entre no multiplayer para chamar amigos.',room_full:'A sala lotou. Peça outro convite.',room_closed:'Essa sala já encerrou.',room_unavailable:'O servidor da sala não respondeu.',invite_expired:'O convite venceu. Peça outro.',invite_closed:'Esse convite já foi respondido.',join_room_first:'Entre numa sala do jogo antes de convidar.',provider_unavailable:'Esse login ainda não está habilitado.',account_conflict:'Esse nick ou progresso já pertence a outra conta.',guest_invalid:'Não foi possível comprovar o convidado. Seu progresso local continua salvo.',links_invalid:'Use links HTTPS das redes indicadas.',settings_invalid:'Revise a bio e as opções de privacidade.'};
   const el=(tag,text='',cls='')=>{const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n;};
   const message=(text)=>{status.textContent=text;};
   async function api(path,body) {
@@ -76,7 +79,7 @@ if(root) {
   function profileAchievements(p){
     const kills=Number(p.kills) || 0,wins=Math.max(Number(p.round_wins) || 0,Number(p.legacy_wins ?? p.wins) || 0),active=Number(p.verified_play_seconds ?? 0) || 0;
     const derived={first_kill:kills>=1,ten_kills:kills>=10,first_win:wins>=1,one_hour:active>=3600};
-    const saved=new Map((p.achievements || []).filter(a=>Object.hasOwn(names,a?.key)).map(a=>[a.key,a]));
+    const saved=new Map((p.achievements || []).filter(a=>Object.prototype.hasOwnProperty.call(names, a?.key)).map(a=>[a.key,a]));
     return Object.keys(names).filter(k=>saved.has(k) || derived[k]).map(k=>({key:k,at:saved.get(k)?.at || null,source:saved.has(k)?'server':'history'}));
   }
   const achievementText=a=>`${names[a.key]} · ${a.at?new Date(a.at).toLocaleDateString('pt-BR'):a.source==='history'?'pelo histórico preservado':'conquistada'}`;
@@ -192,7 +195,7 @@ if(root) {
     for(const [value,label] of [['abuse','Abuso ou assédio'],['cheating','Suspeita de cheat'],['profile','Conteúdo do perfil'],['other','Outro motivo']]){const o=el('option',label);o.value=value;reason.append(o);}
     c.append(empty('A denúncia vai para a fila de moderação. Ela não aplica punição automática.'),field('Motivo',reason),field('O que aconteceu? (5 a 1000 caracteres)',detail),button('ENVIAR DENÚNCIA',async()=>{if(!detail.reportValidity())return;await action('report',p.id,{reason:reason.value,detail:detail.value});message('Denúncia recebida para análise.');}));content.append(c);
   }
-  function searchForm(fn,value='') {const f=el('form','','social-search'),i=input(value,40,'search');const label=el('label','Buscar pelo nickname');label.append(i);const b=button('BUSCAR',()=>fn(i.value));f.append(label,b);f.onsubmit=e=>{e.preventDefault();b.click();};return f;}
+  function searchForm(fn,value='') {const f=el('form','','social-search'),i=input(value,40,'search');const label=el('label',UI_V3?tr('Buscar por nickname ou e-mail'):'Buscar pelo nickname');label.append(i);const b=button('BUSCAR',()=>fn(i.value));f.append(label,b);f.onsubmit=e=>{e.preventDefault();b.click();};return f;}
   function friendCard(f) {
     const c=card(f.nick);c.append(empty(f.state==='accepted'?presenceText(f.profile?.presence):f.direction==='incoming'?'Quer entrar na sua turma.':'Pedido enviado.'));
     const buttons=el('div','','social-actions');if(f.profile)buttons.append(link('VER PERFIL',f.profile.url));else buttons.append(empty('Perfil privado.'));
@@ -202,8 +205,15 @@ if(root) {
     c.append(buttons);return c;
   }
   function showFriends() {
-    content.append(button('ATUALIZAR TURMA',async()=>{await refresh();await render();}));
-    content.append(searchForm(async q=>{const r=await api(`/api/social?action=search&q=${encodeURIComponent(q)}`);const results=document.getElementById('social-search-results');results.replaceChildren();for(const p of r.players){const c=card(p.nick);c.append(link('VISITAR PERFIL',`/u/${p.id}/${encodeURIComponent(p.nick)}`));results.append(c);}if(!r.players.length)results.append(empty('Nenhum jogador encontrado.'));}));
+    const atualizar=button('ATUALIZAR TURMA',async()=>{await refresh();await render();});
+    if(UI_V3){const convidar=el('button',tr('CONVIDAR AMIGOS'));convidar.type='button';convidar.setAttribute('aria-haspopup','dialog');convidar.onclick=()=>abrirConviteAmigos(auth?.profile?.nick || state?.profile?.nick || '');content.append(atualizar,convidar);}
+    else content.append(atualizar);
+    content.append(searchForm(async q=>{
+      let players=[];
+      try{const r=await api(`/api/social?action=search&q=${encodeURIComponent(q)}`);players=Array.isArray(r.players)?r.players:[];}
+      catch(e){if(!UI_V3 || !q.includes('@'))throw e;}
+      const results=document.getElementById('social-search-results');results.replaceChildren();for(const p of players){const c=card(p.nick);c.append(link('VISITAR PERFIL',`/u/${p.id}/${encodeURIComponent(p.nick)}`));results.append(c);}if(!players.length)results.append(empty('Nenhum jogador encontrado.'));
+    }));
     const results=el('div','','social-grid');results.id='social-search-results';content.append(results);
     if(!state){content.append(empty('Entre na conta para reunir sua turma.'));return;}
     const grid=el('div','','social-grid');for(const f of state.friends)grid.append(friendCard(f));content.append(grid);
@@ -290,7 +300,7 @@ if(root) {
   }
   function showFeed(){content.append(empty('Só entram rodadas confirmadas pelo servidor, de amigos que compartilham a atividade.'));for(const f of state?.feed || []){const c=card(f.nick);c.append(empty(`${date(f.at)} · ${f.map} · ${f.mode} · ${f.kills} abates${f.result==='win'?' · levou a rodada':''}`),link('VER PERFIL',`/u/${f.player_id}/perfil`));content.append(c);}if(!state?.feed.length)content.append(empty('A resenha ainda está quieta. Jogue com amigos para ver novidades aqui.'));}
   function showSettings(){const p=state?.profile;if(!p){content.append(empty('Entre para configurar seu perfil.'));return;}const c=card('Seu perfil, suas regras.'),bio=el('textarea');bio.value=p.bio;bio.maxLength=280;const form=el('form');
-    const nick=input(auth.profile.nick,14);nick.pattern='[A-Za-z0-9_.\\-]{2,14}';nick.required=true;c.append(field('Seu nickname',nick),empty('2 a 14 caracteres: letras, números, _ . e -. Troque quando quiser; seu ID público e seus links não mudam.'),button('TROCAR NICK',async()=>{if(!nick.reportValidity())return;const out=await action('nick',null,{nick:nick.value});auth.profile.nick=out.nick;acceptAccount(auth);}));
+    const nick=input(auth.profile.nick,32);nick.pattern='[A-Za-z0-9_.\\-]{2,32}';nick.required=true;c.append(field('Seu nickname',nick),empty('2 a 32 caracteres: letras, números, _ . e -. Troque quando quiser; seu ID público e seus links não mudam.'),button('TROCAR NICK',async()=>{if(!nick.reportValidity())return;const out=await action('nick',null,{nick:nick.value});auth.profile.nick=out.nick;acceptAccount(auth);}));
     const handle=input(p.handle || '',24);handle.pattern='[A-Za-z][A-Za-z0-9_]{2,23}';handle.required=true;handle.disabled=Boolean(p.handle);c.append(field('Seu ID público único',handle),empty('3 a 24 caracteres: letras, números e _. O ID fica fixo; seu nickname continua separado.'));if(p.handle)c.append(empty(new URL(p.url,root.dataset.site).host+p.url));else c.append(button('ESCOLHER ID',async()=>{if(!handle.reportValidity())return;await action('handle',null,{handle:handle.value});}));const share=input('',undefined,'checkbox');share.checked=p.settings.share_character===true;form.append(field('Mostrar meu último personagem no perfil público e no cartão de compartilhamento',share),field('Bio (até 280 caracteres)',bio));const selections={};for(const [key,label,options] of [['profile','Quem vê seu perfil?',[['public','Todo mundo'],['friends','Amigos'],['private','Só você']]],['presence','Quem vê sua presença?',[['friends','Amigos'],['private','Só você']]],['activity','Quem vê sua atividade?',[['friends','Amigos'],['private','Só você']]]]){const select=el('select');for(const [value,text]of options){const o=el('option',text);o.value=value;select.append(o);}select.value=p.settings[key];selections[key]=select;form.append(field(label,select));}
     const urls=el('textarea');urls.value=(p.socials || []).map(s=>s.url).join('\n');urls.maxLength=1100;form.append(field('Links opcionais, um por linha: Instagram, TikTok, X, GitHub, YouTube ou Twitch',urls));
     const save=button('SALVAR PERFIL',async()=>{const list=urls.value.split('\n').map(s=>s.trim()).filter(Boolean).map(url=>({url}));await action('settings',null,{shareCharacter:share.checked,bio:bio.value,profile:selections.profile.value,presence:selections.presence.value,activity:selections.activity.value,links:list});});form.append(save);form.onsubmit=e=>{e.preventDefault();save.click();};c.append(form);

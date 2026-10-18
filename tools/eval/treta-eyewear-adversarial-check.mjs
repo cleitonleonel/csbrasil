@@ -12,11 +12,11 @@ const {Game}=await import('./harness.mjs');
 function method(name,next){const s=rawGame.slice(rawGame.indexOf(`  ${name}(`),rawGame.indexOf(`  ${next}(`));return new Function(`return function ${s.trim().replace(new RegExp('^'+name+'\\('),'(')}`)();}
 const fire=method('_fireHitscan','_targetFromHit'),target=method('_targetFromHit','_penetrationExit'),change=method('_trocarPersonagem','_syncRemoteWeapon');
 function eyeModule(source,fetch,Loader){return new Function('fetch','GLTFLoader','THREE',source+';return {preloadEyewearAssets,mountEyewear};')(fetch,Loader,THREE);}
-const entry={approved:true,model:'/models/items/test.glb',profiles:{capitao:{approved:true,width:1,height:.5,depth:.2}}};
-const response=()=>({ok:true,json:async()=>({eyewear:{test:entry}})});
+const bodySha='a'.repeat(64),profileId='character:capitao@aaaaaaaaaaaa';
+const entry={approved:true,model:'/models/items/test.glb',profiles:{capitao:{bodyId:'character:capitao',profileId,bodySha256:bodySha,status:'certified',classification:'certified',certified:true,source:'gpt-pilot+human-candidate',width:1,height:.5,depth:.2,lensY:.5,templeScale:1,templeSpreadL:0,templeSpreadR:0,templeLift:0}}},landmark={bodyId:'character:capitao',profileId,bodySha256:bodySha,origin:'gpt-pilot+human-candidate',eyewear:{status:'measured',eyeLineY:0,ears:{left:{frontZ:0,topY:0,backZ:0},right:{frontZ:0,topY:0,backZ:0}}}},response=url=>({ok:true,json:async()=>String(url).includes('face-landmarks')?{bodies:{capitao:landmark}}:{eyewear:{test:entry}}});
 async function headshot(source){
  const accessory=new THREE.Group();accessory.add(new THREE.Mesh(new THREE.BoxGeometry(.5,.15,.1),new THREE.MeshBasicMaterial()));
- const mod=eyeModule(source,async()=>response(),class{async loadAsync(){return {scene:accessory};}});
+ const mod=eyeModule(source,async url=>response(url),class{async loadAsync(){return {scene:accessory};}});
  await mod.preloadEyewearAssets(['test']);
  const model=new THREE.Group(),bone=new THREE.Bone();bone.name='Head';model.add(bone);
  const geometry=new THREE.BoxGeometry(.26,.3,.26),count=geometry.attributes.position.count,weights=new Float32Array(count*4);
@@ -33,7 +33,7 @@ async function headshot(source){
  const withEye=last;model.remove(bone);model.updateMatrixWorld(true);fire.call(game,{team:'E'},from,dir,25,false,'AWP',null,false);
  assert.deepEqual(withEye,last,'eyewear must preserve same real hitscan result');assert.deepEqual(last,{damage:100,head:true});
 }
-async function cacheRetry(source){let calls=0,loads=0;const mod=eyeModule(source,async()=>{calls++;if(calls===1)throw Error('transient');return response();},class{async loadAsync(){loads++;return {scene:new THREE.Group()};}});await mod.preloadEyewearAssets(['test']);await mod.preloadEyewearAssets(['test']);assert.equal(calls,2);assert.equal(loads,1);}
+async function cacheRetry(source){let calls=0,loads=0;const mod=eyeModule(source,async url=>{calls++;if(calls===1)throw Error('transient');return response(url);},class{async loadAsync(){loads++;return {scene:new THREE.Group()};}});await mod.preloadEyewearAssets(['test']);await mod.preloadEyewearAssets(['test']);assert.equal(calls,4);assert.equal(loads,1);}
 function netModule(source,pending){return new Function('THREE','byId','preloadCosmeticAssets','preloadEyewearAssets','setInterval',source+';return Netcode;')(THREE,id=>({id,name:id}),async()=>{},()=>pending,()=>0);}
 async function remap(source){
  let release;const pending=new Promise(r=>release=r),Netcode=netModule(source,pending);
@@ -61,8 +61,8 @@ const oldNet=rawNet.replace('if (row) this._onPersonagem({...row,ent:e.id},false
       }
       this._prevOnPersonagem?.(m);`);
 for(const [name,test,current,mutant] of [
- ['same hitscan/headshot',headshot,rawEye,rawEye.replace('o.raycast=()=>{};','')],
- ['transient manifest retry',cacheRetry,rawEye,rawEye.replace('manifest=null;return {eyewear:{}};','return {eyewear:{}};')],
+ ['same hitscan/headshot',headshot,rawEye,rawEye.replace('object.raycast=()=>{};','')],
+ ['transient manifest retry',cacheRetry,rawEye,rawEye.replace('fitRequest=null;console.warn','console.warn')],
  ['entity remap after preload',remap,rawNet,oldNet],
 ]){await test(current);let failed=false;try{await test(mutant);}catch(e){failed=true;console.log('RED mutation:',name,'=>',e.message.split('\n')[0]);}assert(failed,'mutation not detected: '+name);console.log('GREEN current:',name);}
 await remapSameEntity(rawNet);

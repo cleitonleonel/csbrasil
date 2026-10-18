@@ -69,7 +69,7 @@ async function preparar(page, mutante, { conta = true, registro = [] } = {}) {
     return json({ error: 'not_found' }, 404);
   });
   const reescreve = (teste, troca) => page.route(teste, async (r) => {
-    const res = await r.fetch();
+    const res = await r.fetch().catch(() => r.fetch());
     const antes = await res.text();
     const depois = troca(antes);
     if (depois === antes) throw new Error(`mutante ${mutante} não aplicou em ${r.request().url()}`);
@@ -86,7 +86,7 @@ async function preparar(page, mutante, { conta = true, registro = [] } = {}) {
   if (mutante === 'dois-lima') await reescreve(css, (t) => t.replace('.tp-convidar__entrar{height:52px;padding:0 28px;border-radius:10px;border:2px solid var(--tp-lima);background:none;', '.tp-convidar__entrar{height:52px;padding:0 28px;border-radius:10px;border:2px solid var(--tp-lima);background:var(--tp-lima);'));
   if (mutante === 'qr-torto') await reescreve(js, (t) => t.replace('qrSvg(publico,', "qrSvg(publico.replace('corosolto','errado'),"));
   if (mutante === 'cartao-fixo') await reescreve(css, (t) => t.replace('width:min(1120px,calc(100vw - 32px))', 'width:1400px'));
-  if (mutante === 'pwa-por-cima') await reescreve(css, (t) => t.replace(':root[data-ui="v3"] #main-menu:has(.tp-resenha[data-aberta]) .pwa-install{visibility:hidden}', ''));
+  if (mutante === 'pwa-por-cima') await reescreve(css, (t) => t.replace(':root[data-ui="v3"] #main-menu:has(.tp-resenha[data-aberta]) .pwa-install{visibility:hidden}', ':root[data-ui="v3"] #main-menu:has(.tp-resenha[data-aberta]) .pwa-install{visibility:visible!important;display:block!important;position:fixed!important;inset:0!important;z-index:2147483647!important;pointer-events:auto!important}'));
   if (mutante === 'toque-30') await reescreve(css, (t) => t.replace('@media (pointer:coarse){', '@media (pointer:fine) and (pointer:coarse){'));
   if (mutante === 'en-vaza') await reescreve(/\/js\/i18n\.js/, (t) => t.replace("'Chama a turma': 'Call the crew',", ''));
   if (mutante === 'offline-junto') await reescreve(js, (t) => t.replace('.filter((f) => f.profile?.presence?.online)', '.filter((f) => f)'));

@@ -855,7 +855,7 @@ export class Game {
     // primary/secondary remember the last weapon of each slot for the 1/2 keys.
     const startWeapon = charWeapon(playerCharId);
     this.player = {
-      isPlayer: true, name: (nickname || '').trim().slice(0, 14) || tr('VOCÊ'), def: this.playerDef, team: playerTeam,
+      isPlayer: true, name: (nickname || '').trim().slice(0, 32) || tr('VOCÊ'), def: this.playerDef, team: playerTeam,
       pos: new THREE.Vector3(), vel: new THREE.Vector3(),
       yaw: 0, pitch: 0, hp: 100, alive: true, respawnAt: 0, crouchF: 0,
       weapon: startWeapon, scoped: false, reloadUntil: 0, nextShotAt: 0, drawUntil: 0,
@@ -4406,7 +4406,7 @@ export class Game {
       // chip = tint da cor CHEIA do time; texto = tinta PÁLIDA do time (ver _teamInk):
       // texto na cor cheia sobre o próprio tint dava 3,2-3,9:1 (ui-check.mjs, UI1)
       const c = this._teamColor(e.team);
-      return `<span class="kf-n" style="background:${c}2e;color:${this._teamInk(e.team)}">${e.isPlayer ? tr('VOCÊ') : e.name}</span>`;
+      return `<span class="kf-n${e.isPlayer ? ' kf-voce' : ''}" style="background:${c}2e;color:${this._teamInk(e.team)}">${e.isPlayer ? tr('VOCÊ') : escapeClanName(e.name)}</span>`;
     };
     row.innerHTML = attacker && attacker !== victim
       ? `${cn(attacker)}${head ? this._skullIcon() : ''}${this._killfeedWeaponIcon(weap)}${cn(victim)}`
@@ -5915,7 +5915,7 @@ export class Game {
       for (const old of Array.from(this.el.respawn.querySelectorAll?.('.death-info') || [])) old.remove();
       const d = document.createElement('div');
       d.className = 'death-info';
-      d.style.cssText = 'margin-top:10px;font:600 13px/1.55 system-ui,sans-serif;letter-spacing:.05em;color:#ffd9a0;text-shadow:0 2px 8px #000;text-align:center';
+      d.style.cssText = 'margin-top:10px;font:600 13px/1.55 system-ui,sans-serif;letter-spacing:.05em;color:#ffd9a0;text-shadow:0 2px 8px #000;text-align:center;max-width:100%;overflow-wrap:anywhere';
       this.el.respawn.appendChild(d);
       this._deathPanel = d;
     }
@@ -5923,7 +5923,7 @@ export class Game {
       this._deathShown = h.at;
       const tier = { ruim: 'PERNA DE PAU', medio: 'MEDIANO', bom: 'BOM', muitobom: 'MONSTRO' }[h.tier] || '';
       this._deathPanel.innerHTML =
-        `<div style="font-size:15px;color:#fff">MORTO POR <b>${h.name}</b>${tier ? ` <span style="opacity:.65;font-size:11px">(${tier})</span>` : ''}</div>` +
+        `<div style="font-size:15px;color:#fff">MORTO POR <b>${escapeClanName(h.name)}</b>${tier ? ` <span style="opacity:.65;font-size:11px">(${tier})</span>` : ''}</div>` +
         `<div>${h.weap} · ${h.dist.toFixed(0)} m · ${h.head ? 'NA CABEÇA' : h.dmg + ' de dano'}</div>` +
         `<div style="opacity:.75;font-size:11px">veio ${h.quad || (h.behind ? '⚠ PELAS COSTAS' : 'DA SUA FRENTE')} · ${Math.round(h.total)} de dano nesta vida</div>`;
     }
@@ -5985,9 +5985,12 @@ export class Game {
       if (!this.playerTP.isGLB) this.playerTP.group.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     }
     const tp = glb || buildCharacter(def);
-    // O corpo do próprio jogador nunca é alvo/obstáculo de raycast (o hitscan mira só os
-    // grupos dos bots, mas marcamos por garantia — mesmo contrato do gun mount).
-    tp.group.traverse(o => { o.userData.noHit = true; o.userData.selfBody = true; });
+    tp.selfMeshes = [];
+    tp.group.traverse(o => {
+      o.userData.noHit = true;
+      o.userData.selfBody = true;
+      if (o.isMesh) tp.selfMeshes.push({ object: o, visible: o.visible });
+    });
     tp.group.visible = (this.camView === 'third');
     this.scene.add(tp.group);
     this.playerTP = tp;
@@ -6056,13 +6059,23 @@ export class Game {
           }
         }
       }
-      const piso = Math.max(0.35, claro - 0.18);   // 18 cm de folga pro near plane
+      // Nunca ultrapassa o blocker: quando não cabe boom, a câmera volta até o olho.
+      const piso = Math.max(0, claro - 0.18);   // 18 cm de folga pro near plane
       const atual = this._tpBoomClear ?? boomLen;
       // 5 m/s: entra na hora, sai andando (método autocontido: réguas recompilam _updatePlayerTP fora do módulo)
       this._tpBoomClear = piso < atual ? piso : Math.min(boomLen, atual + dt * 5);
       if (this._tpBoomClear < boomLen - 1e-3)
         cam.position.copy(eyePos).addScaledVector(boom, this._tpBoomClear);
     }
+    // Dentro da cápsula local não existe enquadramento útil: oculta só as malhas próprias
+    // até o boom recuperar, sem afetar o rig, a arma dos demais ou a silhueta à distância.
+    const selfOccluded = (this._tpBoomClear ?? boomLen) < 0.38 + cam.near;
+    if (selfOccluded) {
+      for (const item of tp.selfMeshes) item.object.visible = false;
+    } else if (tp.selfOccluded) {
+      for (const item of tp.selfMeshes) item.object.visible = item.visible;
+    }
+    tp.selfOccluded = selfOccluded;
     // Cruz no alvo do raio autoritativo a distância de combate; o tiro continua
     // saindo do olho com yaw/pitch, igual ao servidor multiplayer.
     const aimPoint = this._tpAimPoint || (this._tpAimPoint = new THREE.Vector3());
@@ -8261,6 +8274,33 @@ export class Game {
     this._resultado = { titulo, sub };
     this._showScoreboard(true);
   }
+  _botaoAmigo(c) {
+    if (document.documentElement.dataset.ui !== 'v3' || !this.online || c.isPlayer || !c._playerId || this._amigosPedidos?.has(c._playerId)) return '';
+    (this._amigosPedidos ||= new Set());
+    return `<button class="sb-amigo" data-amigo="${c._playerId}">${tr('+AMIGO')}</button>`;
+  }
+  _ligarAmigoPlacar() {
+    const cols = this.el.sbCols;
+    if (!cols || cols._amigoLigado) return;
+    cols._amigoLigado = true;
+    cols.addEventListener('click', async (ev) => {
+      const b = ev.target.closest('button.sb-amigo');
+      if (!b) return;
+      const pid = b.dataset.amigo;
+      b.disabled = true; b.textContent = '…';
+      try {
+        const r = await fetch('/api/social', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'request', target: pid }), signal: AbortSignal.timeout(12000) });
+        const out = await r.json().catch(() => ({}));
+        if (r.ok) {
+          (this._amigosPedidos ||= new Set()).add(pid);
+          b.textContent = tr('PEDIDO ENVIADO');
+          return;
+        }
+        b.textContent = tr({ session_expired: 'ENTRE NA CONTA', rate_limited: 'CALMA…', blocked: 'INDISPONÍVEL', not_found: 'SEM CONTA', self_action: 'VOCÊ :-)' }[out.error] || 'NÃO DEU');
+      } catch { b.textContent = tr('SEM REDE'); }
+      setTimeout(() => { b.disabled = false; }, 4000);
+    });
+  }
   _showScoreboard(v) {
     if (v) {
       const r = this._resultado;
@@ -8287,7 +8327,7 @@ export class Game {
           const ping = 12 + ((c.kills * 7 + c.deaths * 3 + i * 5) % 18);
           return (
           `<tr data-av="${/^[\w-]+$/.test(c.def?.id || '') ? c.def.id : ''}"${c.isPlayer ? ' class="me"' : ''}>
-            <td class="sb-n">${escapeClanName(c.name, c.clanTag)}${c.isPlayer ? ' ★' : ''}</td><td>${c.kills}</td><td>${c.deaths}</td><td class="sb-points">${score}</td><td class="sb-ping">${ping}</td>${this.ctf ? `<td>${c.captures || 0}</td>` : ''}</tr>`
+            <td class="sb-n">${escapeClanName(c.name, c.clanTag)}${c.isPlayer ? ' ★' : ''}${this._botaoAmigo(c)}</td><td>${c.kills}</td><td>${c.deaths}</td><td class="sb-points">${score}</td><td class="sb-ping">${ping}</td>${this.ctf ? `<td>${c.captures || 0}</td>` : ''}</tr>`
           );
         }).join('');
         return `<div class="sb-col ${side === 'E' ? 'tp' : 'tb'}${this.ctf ? ' ctf' : ''}">
@@ -8296,6 +8336,7 @@ export class Game {
           <tbody>${linhas}</tbody></table></div>`;
       };
       document.getElementById('sb-cols').innerHTML = coluna('E') + coluna('B');
+      this._ligarAmigoPlacar();
     }
     this.el.scoreboard.classList.toggle('hidden', !v);
     /* game.js:5933 — DEFEITO DO PRINT: "TIME B LEVARAM O ROUND" atravessando POR

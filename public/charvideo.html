@@ -44,7 +44,7 @@
           &map=loja_h&dist=&fov=&yaw=&spin=  (spin = graus por segundo)
    ============================================================================ */
 import * as THREE from 'three';
-import { MAPS, resolveMapId , carregaMapa } from './js/maps.js';
+import { comMapaCarregado, resolveMapId } from './js/maps.js';
 import { initTextures } from './js/textures.js';
 import { CHARACTERS } from './js/characters.js';
 import { preloadCharacterAssets, preloadCosmeticAssets, buildCharacterModel } from './js/glbchars.js';
@@ -87,8 +87,7 @@ document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(FOV, W / H, 0.05, 400);
 const textures = initTextures();
-await carregaMapa(MAPID);   // #959: build só existe depois de carregaMapa
-const world = MAPS[MAPID].build(scene, textures);
+const world = await comMapaCarregado(MAPID, (mapa) => mapa.build(scene, textures));
 
 /* IBL — CÓPIA FIEL de game.js `_buildEnv()`, igual ao charlineup.html. Sem isto o
    iblIrradiance é zero e o personagem sai com o piso de luz errado: seria outro

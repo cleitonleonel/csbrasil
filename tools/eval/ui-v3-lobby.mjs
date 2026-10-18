@@ -205,7 +205,7 @@ async function medir(mutante = '', alvo = '') {
       const passos = [];
       for (const [b, net, tab] of [['mp', 'mp', 'public'], ['privada', 'mp', 'private'], ['sp', 'sp', null]]) {
         const sel = `[data-tp-rede="${b}"]`;
-        if (b === 'sp') { await page.click('#hub-sp').catch(() => {}); } else if (await page.locator(sel).isVisible()) await page.click(sel); else await page.evaluate((s) => document.querySelector(s)?.click(), sel);
+        if (b === 'sp') await page.evaluate(() => document.getElementById('hub-sp')?.click()); else if (await page.locator(sel).isVisible()) await page.click(sel); else await page.evaluate((s) => document.querySelector(s)?.click(), sel);
         await page.waitForTimeout(500);
         const st = await page.evaluate((s) => ({ net: document.getElementById('main-menu').dataset.hubNet, tab: document.getElementById('main-menu').dataset.hubMpTab, pressed: document.querySelector(s)?.getAttribute('aria-pressed') }), sel);
         passos.push(st.net === net && (!tab || st.tab === tab) && st.pressed === 'true' ? '' : `${b}: net=${st.net} tab=${st.tab} pressed=${st.pressed}`);
@@ -238,7 +238,7 @@ async function medir(mutante = '', alvo = '') {
       await page.evaluate(() => document.querySelector('.tp-lobby-vaga__convidar')?.click());
       await page.waitForTimeout(1500);
       avisoErro = await page.evaluate(() => { clearInterval(window.__forcaErro); return window.__avisoErro || ''; });
-      await page.click('#hub-sp').catch(() => {});
+      await page.evaluate(() => document.getElementById('hub-sp')?.click());
       await page.waitForTimeout(500);
     }
     add('LB6', convite.net === 'mp' && (convite.pediu || convite.s === 'erro') && avisoErro.length > 10,

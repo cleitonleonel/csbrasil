@@ -60,7 +60,7 @@ async function contexto(mutante, { lang = 'pt', cla = MEU_CLA, viewport = { widt
   if (mutante) {
     const [, , teste, troca] = MUT[mutante];
     await ctx.route(teste, async (r) => {
-      const res = await r.fetch(); const antes = await res.text(); const depois = troca(antes);
+      const res = await r.fetch().catch(() => r.fetch()); const antes = await res.text(); const depois = troca(antes);
       if (depois === antes) throw new Error(`mutante ${mutante} não aplicou em ${r.request().url()}`);
       await r.fulfill({ response: res, body: depois });
     });

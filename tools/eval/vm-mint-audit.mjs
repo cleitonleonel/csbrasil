@@ -8,6 +8,7 @@
 // Saída: tools/eval/vm_mint_audit.json
 import fs from 'fs';
 import path from 'path';
+import { VM_FRAME, VM_SIDE_CONTRACT, VM_WEAPON } from '../../public/js/data/vmconfig.js';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
 export const WDIR = path.join(ROOT, 'public/models/weapons');
@@ -243,15 +244,7 @@ function loadOffYFn() {
 const offYFor = loadOffYFn();
 const A_REF = 16 / 9;
 
-function loadFrame() {
-  const src = fs.readFileSync(path.join(ROOT, 'public/js/vmattach.js'), 'utf8');
-  const i = src.indexOf('export const VM_FRAME = {');
-  const j = src.indexOf('\n};', i);
-  const body = src.slice(i + 'export const VM_FRAME = '.length, j + 2);
-  // eslint-disable-next-line no-new-func
-  return new Function('return ' + body)();
-}
-export const F = loadFrame();
+export const F = VM_FRAME;
 const CLS = F.classOf;
 
 /* ---------- POSE DE MIRA (ADS) — espelho de game.js `_updatePlayer` ----------
@@ -597,11 +590,17 @@ function r2(v) { return Math.round(v * 100) / 100; }
 // mesmo que antes.
 export function main() {
   const ONE_H = new Set(['pistol', 'deagle', 'revolver38', 'knife']);
-  const ASPECTS = { '16:9': 16 / 9, '3:2': 3 / 2 };
+  const ASPECTS = Object.fromEntries(VM_SIDE_CONTRACT.aspects.map((aspect) => [
+    aspect === 3 / 2 ? '3:2' : '16:9',
+    aspect,
+  ]));
   const report = { gerado: new Date().toISOString(), lente: { V0deg: V0DEG, halfTanH: +H.toFixed(4), vmOff: OFF, offYForma: 'VM_OFF[1]*(16/9)/aspecto (fração de altura; 16:9 == VM_OFF[1])', offY: { '16:9': +offYFor(16 / 9).toFixed(4), '3:2': +offYFor(3 / 2).toFixed(4) } }, tuning: F, armas: {} };
   const allModels = Object.keys(CFG).filter((id) => fs.existsSync(path.join(WDIR, id + '.glb')));
   const mutateDisplayIntoViewmodel = process.argv.includes('--mutante=display-no-fpvm');
   const ids = mutateDisplayIntoViewmodel ? allModels : WEAPON_IDS.filter((id) => allModels.includes(id));
+  const firearms = WEAPON_IDS.filter((id) => id !== 'knife');
+  const missingContract = firearms.filter((id) => !VM_WEAPON[id] || !F.classOf[id]);
+  if (missingContract.length) throw new Error(`arma(s) sem contrato 1P: ${missingContract.join(', ')}`);
   for (const id of ids) {
     const { P, T, cfg } = gunSpace(id);
     const bb = bbox(P);
@@ -708,7 +707,7 @@ for (const [id, e] of Object.entries(report.armas)) {
      correspondente na referência. Quem manda no ângulo agora é `anguloEixoGraus`. */
   for (const [an, a] of Object.entries(e.aspectos)) {
     if (a.silBordaEsq < 0.50 || a.silBordaEsq > 0.60) fails.push(`${id} ${an}: borda esq da silhueta ${a.silBordaEsq} (ref 0,520-0,565)`);
-    if (a.anguloEixoGraus < 22 || a.anguloEixoGraus > 42) fails.push(`${id} ${an}: eixo ${a.anguloEixoGraus}° (ref CS 27,3° e 34,8°)`);
+    if (a.anguloEixoGraus < VM_SIDE_CONTRACT.axisDeg[0] || a.anguloEixoGraus > VM_SIDE_CONTRACT.axisDeg[1]) fails.push(`${id} ${an}: eixo ${a.anguloEixoGraus}° (ref CS 27,3° e 34,8°)`);
     if (a.fatiaDir < 0.02 || a.fatiaDir > 0.20) fails.push(`${id} ${an}: fatia na borda direita ${a.fatiaDir} (ref 0,053-0,095)`);
     if (a.bracoBordaDir < 0.99) fails.push(`${id} ${an}: antebraço não sai pela borda direita (${a.bracoBordaDir})`);
     /* PISO CONDICIONAL — espelho exato da VM5 (invariants.mjs). 4% é PISO DE COBERTURA (a
@@ -716,7 +715,7 @@ for (const [id, e] of Object.entries(report.armas)) {
        (gordura >= 0,684, piso medido da VM18). Quem gateia ESCALA agora é a distância da
        boca até a mira, logo abaixo — área não distingue arma pequena inteira de pedaço
        ampliado de arma grande, e o foraPct desta mesma linha mostra por quê. */
-    const lim = [(a.gordura >= 0.684 ? 6 : 4), 16];
+    const lim = [(a.gordura >= 0.684 ? 6 : VM_SIDE_CONTRACT.areaPct[0]), VM_SIDE_CONTRACT.areaPct[1]];
     if (a.areaPct < lim[0] || a.areaPct > lim[1]) fails.push(`${id} ${an}: área ${a.areaPct}% (alvo ${lim[0]}-${lim[1]}, ref 9,76-13,09; gordura ${a.gordura})`);
     /* VM20: distância da boca do cano até a mira, em frações de ALTURA de tela.
        ref_viewmodel.json -> boca[]/aspecto: 0,103 (AK) · 0,131 (M4) · 0,277 (Vandal). */
