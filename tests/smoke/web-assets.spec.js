@@ -27,10 +27,6 @@ test('preload 3D real do elenco termina e renderiza GLB na vitrine', async ({ pa
   await page.locator('.cs-item[data-act="sp"]:visible').click();
   await expect(page.locator('#map-screen')).toBeVisible();
   await page.locator('#ms-continue').click();
-  await expect(page.locator('#menu-setup')).toHaveAttribute('data-step', 'profile');
-  await page.locator('#nick-input').fill('AssetBot');
-  await page.locator('#profile-ok').click();
-  await page.locator('#btn-jogar').click();
   await expect(page.locator('#team-select')).toBeVisible({ timeout: 30_000 });
 
   await page.locator('#btn-team-e').click();

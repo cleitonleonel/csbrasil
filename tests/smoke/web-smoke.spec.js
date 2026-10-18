@@ -57,7 +57,7 @@ test('nova home abre o ranking e volta para jogar', async ({ page }) => {
   await expect(page.locator('#hub-play')).toBeVisible();
 });
 
-test('menu, ranking, setup, teams, character and initial hud boot', async ({ page }, testInfo) => {
+test('menu, ranking, map, teams, character and initial hud boot', async ({ page }, testInfo) => {
   const base = process.env.BASE_URL || 'http://127.0.0.1:4321';
   const t0 = Date.now();
   const marcas = {};
@@ -104,14 +104,9 @@ test('menu, ranking, setup, teams, character and initial hud boot', async ({ pag
   await page.locator('.cs-item[data-act="sp"]:visible').click();
   await expect(page.locator('#map-screen')).toBeVisible();
   await page.locator('#ms-continue').click();
-  await expect(page.locator('#menu-setup')).toHaveClass(/open/);
-  await expect(page.locator('#menu-setup')).toHaveAttribute('data-step', 'profile');
-  await page.locator('#nick-input').fill('SmokeBot');
-  await page.locator('#profile-ok').click();
-  marcar('setup');
-
-  await page.locator('#btn-jogar').click();
   await expect(page.locator('#team-select')).toBeVisible();
+  await expect(page.locator('#menu-setup')).not.toHaveClass(/open/);
+  await expect(page.locator('#nick-input')).toHaveValue('');
   marcar('team-select');
 
   await page.locator('#btn-team-e').click();
