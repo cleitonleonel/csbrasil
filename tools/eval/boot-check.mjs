@@ -190,7 +190,7 @@ try {
   page.on('pageerror', (e) => erros.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') consoleErros.push(m.text()); });
   await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 120000 });
-  await page.waitForTimeout(3500);
+  await page.waitForFunction(() => window.__CS_MAIN_READY__ === true, null, { timeout: 15000 }).catch(() => {});
 
   console.log(`RÉGUA DE BOOT${MUTANTE ? `  [MUTAÇÃO: ${MUTANTE}]` : ''}   alvo ${BASE}\n`);
 
@@ -216,7 +216,7 @@ try {
   if (b1 && b2) {
     erros.length = 0;
     await page.goto(`${BASE}/?auto=E,`, { waitUntil: 'domcontentloaded', timeout: 120000 });
-    await page.waitForTimeout(1200);
+    await page.waitForFunction(() => !document.getElementById('launch-error')?.classList.contains('hidden'), null, { timeout: 15000 }).catch(() => {});
     const estado = await page.evaluate(() => {
       const modal = document.getElementById('launch-error');
       const card = modal?.querySelector('.launch-error-card');
@@ -340,7 +340,7 @@ try {
     pg.on('pageerror', (e) => errosPg.push(e.message));
     if (antes) await pg.addInitScript(antes);
     await pg.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 });
-    await pg.waitForTimeout(3500);
+    await pg.waitForFunction(() => !!document.getElementById('btn-jogar')?.onclick, null, { timeout: 15000 }).catch(() => {});
     const ligado = await pg.evaluate(() => !!document.getElementById('btn-jogar')?.onclick);
     await pg.close();
     return { errosPg, ligado };

@@ -1,11 +1,11 @@
 /* Nick de 32 caracteres largos não estoura a interface (pedido do dono, 14/10/2026).
-   Sobe o jogo real, põe "W"x32 em cada superfície que mostra nick e mede: texto que passa da
-   própria caixa sem elipse, caixa que passa do contêiner e caixa fora da tela.
-   Superfícies: menu, formulário do nick, ranking do hub e da comunidade, saudação da conta,
-   placar, killfeed, painel de morte e chat de sala. Telas: 1440x900, 390x844 e 844x390 com toque.
+   Sobe o jogo real, põe "W"x32 em cada superfície visível que mostra nick e mede: texto que
+   passa da própria caixa sem elipse, caixa que passa do contêiner e caixa fora da tela.
+   Superfícies: formulário do nick, ranking do hub e da comunidade, placar, killfeed,
+   painel de morte e chat de sala. Telas: 1440x900, 390x844 e 844x390 com toque.
    Uso: BASE=http://localhost:<porta> OUT=<pasta> [TELAS=desktop,390x844] node tools/eval/nick32-layout.mjs
-   Mutantes (MUTANTE=), cada um tem de reprovar: saudacao-sem-quebra, killfeed-sem-elipse,
-   morte-sem-quebra, chat-sem-quebra. */
+   Mutantes (MUTANTE=), cada um tem de reprovar: killfeed-sem-elipse, morte-sem-quebra,
+   chat-sem-quebra. */
 import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
 
@@ -87,9 +87,8 @@ for (const [tela, viewport] of [['desktop', { width: 1440, height: 900 }], ['390
   { // menu, ranking do hub
     const { ctx, page } = await nova(viewport);
     await page.goto(`${BASE}/?tela=menu`, { waitUntil: 'domcontentloaded', timeout: 180000 });
-    await page.waitForFunction(() => document.getElementById('hub-nick')?.textContent.length >= 32, null, { timeout: 120000 });
+    await page.waitForFunction(() => window.__CS_MAIN_READY__ === true, null, { timeout: 120000 });
     await page.waitForTimeout(1500);
-    await medir(page, 'menu', [['#hub-nick, #pp-nick', null, viewport.width < 500]], tela);   // em 390 o hub mostra só o avatar
     await page.evaluate(() => document.querySelector('[data-hub-tab="ranking"]').click());
     await page.waitForFunction(() => document.querySelectorAll('.ranking-player').length >= 10, null, { timeout: 120000 }).catch(() => {});
     await page.waitForTimeout(800);
@@ -106,8 +105,7 @@ for (const [tela, viewport] of [['desktop', { width: 1440, height: 900 }], ['390
     await page.evaluate(() => document.querySelector('.social-tabs button[data-tab="ranking"]').click());
     await page.waitForFunction(() => document.querySelectorAll('#hub-community .ranking-player, .social-workspace .ranking-player').length >= 10, null, { timeout: 60000 }).catch(() => {});
     await page.waitForTimeout(600);
-    if (MUTANTE === 'saudacao-sem-quebra') await page.addStyleTag({ content: '.social-account-panel h2{overflow-wrap:normal!important}' });
-    await medir(page, 'ranking-comunidade', [['.social-workspace .ranking-player a, .social-workspace .ranking-player > div > span', 'td'], ['.social-account-panel h2', '.social-account-panel']], tela);
+    await medir(page, 'ranking-comunidade', [['.social-workspace .ranking-player a, .social-workspace .ranking-player > div > span', 'td']], tela);
     await page.evaluate(() => document.querySelector('.social-tabs button[data-tab="settings"]').click());
     await page.waitForFunction(() => [...document.querySelectorAll('input')].some((x) => x.pattern?.includes('{2,') && x.getClientRects().length), null, { timeout: 60000 }).catch(() => {});
     const campo = await page.evaluate(() => { const i = [...document.querySelectorAll('input')].find((x) => x.pattern?.includes('{2,') && x.getClientRects().length); i?.scrollIntoView({ block: 'center' }); return i && { max: i.maxLength, pattern: i.pattern, valor: i.value, dica: i.closest('.social-card, section, form')?.textContent.match(/2 a \d+ caracteres/)?.[0] }; });

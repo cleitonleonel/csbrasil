@@ -89,7 +89,7 @@ const CFG = {
   md97:      { len: 1.05, rot: [0, 270, 0], gripZ: 0.62, vm: 0.87 },  // +180: estava invertido
   carbine:   { len: 0.98, rot: [0, 0, 0], gripZ: 0.6, vm: 0.92 },   // natively +Z; [0,90,0] threw the barrel onto X (giant)
   m400:      { len: 0.92, rot: [0, 270, 0], gripZ: 0.62, vm: 0.85 },  // +180: usuário confirmou invertido
-  mosin:     { len: 1.20, rot: [0, 270, 0], gripZ: 0.66, vm: 0.75 },  // +180: estava invertido
+  mosin:     { len: 1.20, rot: [0, 270, 0], gripZ: 0.66, vm: 1.00 },  // +180: estava invertido
   rem700:    { len: 1.15, rot: [0, 270, 0], gripZ: 0.66, vm: 0.78 },  // +180: estava invertido
   // arsenal-3 (military)
   lmg:       { len: 1.10, rot: [0, 90, 0], gripZ: 0.58, vm: 0.72 },   // vm: caixão preto gigante na tela
@@ -113,7 +113,7 @@ const CFG = {
   // snipers semi-auto — herdam a malha (MODEL_ALIAS) e o rot/len do modelo reusado
   svd:       { len: 1.15, rot: [0, 270, 0], gripZ: 0.64, vm: 0.8 },   // modelo próprio (Mint); +180 (estava invertida)
   g3sg1:     { len: 1.12, rot: [0, 270, 0], gripZ: 0.58, vm: 0.71 },   // modelo do G3
-  sks:       { len: 1.02, rot: [0, 270, 0], gripZ: 0.6, vm: 0.83 },    // modelo próprio (Mint), cano +Z como a SVD
+  sks:       { len: 1.02, rot: [0, 270, 0], gripZ: 0.6, vm: 1.00 },    // modelo próprio (Mint), cano +Z como a SVD
 };
 
 /* ===================== CARREGADOR (PENTE) — md97 e mp5 ==============================

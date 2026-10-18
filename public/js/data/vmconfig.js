@@ -217,7 +217,7 @@ export const VM_FRAME = {
     knife:   { roll: 0, pitch: 0.000, yaw: 0.000, tanH: 0.240, clear: 0.020, minz: 0.3100, fwdTan: 1.60 },
   },
   knifeRot: [-0.10, 0.50, -0.48],
-  zMul: { uzi: 1.34, p90: 1.16, mp5: 1.08 },
+  zMul: { deagle: 0.90, mosin: 0.90, rem700: 0.90, uzi: 1.24, g3sg1: 0.75, sks: 0.80, p90: 1.16, mp5: 1.08 },
   // classe de ENQUADRAMENTO (≠ STATIC_CLASS do pipeline Tripo, ≠ BALL_CLASS da balística)
   classOf: {
     ak: 'rifle', akm: 'rifle', m4: 'rifle', m92: 'rifle', g3: 'rifle', carbine: 'rifle',
