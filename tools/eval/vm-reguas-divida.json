@@ -4,16 +4,6 @@
  "placar": "0525a3c8517685fc",
  "dividas": {
   "carregador": {
-   "deagle": {
-    "valor": "9 falha(s)",
-    "dono": "vm-fix-mags (peça do carregador presa ao osso da mão nos clipes reload_*)",
-    "medido": "recarrega com objeto no meio do ar: vazia 15% — 3.64 palma da mão, deslocado 3.04 do encaixe, na tela; recarrega com objeto no meio do ar: vazia 38% — 1.20 palma da mão, deslocado 0.84 do encaixe, na tela; recarrega com objeto no ",
-    "aspectos": [
-     "16x9",
-     "3x2"
-    ],
-    "fila": "pose/IK (mag-na-mao) ou Blender (clipe de recarga)"
-   },
    "famas": {
     "valor": "1 falha(s)",
     "dono": "vm-fix-mags (peça do carregador presa ao osso da mão nos clipes reload_*)",
@@ -33,16 +23,6 @@
      "3x2"
     ],
     "fila": "pose/IK (mag-na-mao) ou Blender (clipe de recarga)"
-   },
-   "uzi": {
-    "valor": "1 falha(s)",
-    "dono": "vm-fix-mags (peça do carregador presa ao osso da mão nos clipes reload_*)",
-    "medido": "em repouso o carregador não encosta na arma (Infinity palma) — medido com o relógio segurado logo depois do saque (arco procedural da uzi); na recarga, com o pente assentado, dArma 0,00. O \"fantasma 100%\" saiu: a peça indexava ~110 vértices de um acessor de 6,6 mil compartilhado com o corpo (compacta-peca.mjs).",
-    "aspectos": [
-     "16x9",
-     "3x2"
-    ],
-    "fila": "régua (repouso amostrado durante o saque) — vm-reguas"
    },
    "pistol": {
     "valor": "1 falha(s) (intermitente)",
@@ -66,50 +46,10 @@
     ],
     "fila": "config (frame) — se o frame sozinho piora, pose/IK"
    },
-   "g3sg1": {
-    "valor": "1.06× AK",
-    "dono": "vm-fix-mesh (escala/enquadramento do produto; z/escala em vmframe.js)",
-    "medido": "ângulo esquisito: eixo da arma na tela 135° contra 155° da AK (-21°, teto ±12°) — tamanho 1.06× AK, rolagem +37° da AK (informativa), eixo -21° da AK, braço 1.08×, cruz 0 px, olho 1.44 palma, ADS: viewmodel some (luneta). Conserto",
-    "aspectos": [
-     "16x9",
-     "3x2"
-    ],
-    "fila": "config (frame) — se o frame sozinho piora, pose/IK"
-   },
    "m400": {
     "valor": "0.91× AK",
     "dono": "vm-fix-mesh (escala/enquadramento do produto; z/escala em vmframe.js)",
     "medido": "ângulo esquisito: eixo da arma na tela 133° contra 155° da AK (-22°, teto ±12°) — tamanho 0.91× AK, rolagem +44° da AK (informativa), eixo -22° da AK, braço 0.73×, cruz 0 px, olho 1.90 palma, ADS: viewmodel some (luneta). Conserto",
-    "aspectos": [
-     "16x9",
-     "3x2"
-    ],
-    "fila": "config (frame) — se o frame sozinho piora, pose/IK"
-   },
-   "mosin": {
-    "valor": "1.13× AK",
-    "dono": "vm-fix-mesh (escala/enquadramento do produto; z/escala em vmframe.js)",
-    "medido": "braço 2.44× a área do braço da AK (teto 1.4); 3479 px de arma/braço sobre a cruz no quadril — tamanho 1.13× AK, rolagem +25° da AK (informativa), eixo -11° da AK, braço 2.44×, cruz 3479 px, olho 0.76 palma, ADS: viewmodel some (lu",
-    "aspectos": [
-     "16x9",
-     "3x2"
-    ],
-    "fila": "config (frame) — se o frame sozinho piora, pose/IK"
-   },
-   "rem700": {
-    "valor": "1.07× AK",
-    "dono": "vm-fix-mesh (escala/enquadramento do produto; z/escala em vmframe.js)",
-    "medido": "2205 px de arma/braço sobre a cruz no quadril — tamanho 1.07× AK, rolagem +21° da AK (informativa), eixo -7° da AK, braço 1.01×, cruz 2205 px, olho 1.19 palma, ADS: viewmodel some (luneta). Conserto: z/escala do frame da arma (vmf",
-    "aspectos": [
-     "16x9",
-     "3x2"
-    ],
-    "fila": "config (frame) — se o frame sozinho piora, pose/IK"
-   },
-   "sks": {
-    "valor": "0.64× AK",
-    "dono": "vm-fix-mesh (escala/enquadramento do produto; z/escala em vmframe.js)",
-    "medido": "arma pequena: 64% da AK (faixa 0.8–1.25, classe longa); ângulo esquisito: eixo da arma na tela 138° contra 155° da AK (-17°, teto ±12°) — tamanho 0.64× AK, rolagem +9° da AK (informativa), eixo -17° da AK, braço 0.64×, cruz 0 px, ",
     "aspectos": [
      "16x9",
      "3x2"
@@ -203,16 +143,6 @@
     "valor": "41 px",
     "dono": "vm-fix-grips (ads.linhaDeMira/resíduo de ADS) ou socket SOCKET_MINT_SIGHT (vm-fix-mesh)",
     "medido": "mira fora da cruz a 41 px — massa a 41 px da cruz (+1, -41); teto 30 px; eixo no ADS -9° da vertical (teto ±12°) · socket sight (o que o AD1 lê) 0.000 NDC. Conserto: ads.off/rotDeg da arma (vmconfig) ou o socket SOCKET_MINT_SIGHT ",
-    "aspectos": [
-     "16x9",
-     "3x2"
-    ],
-    "fila": "config (ads.linhaDeMira/off por arma)"
-   },
-   "uzi": {
-    "valor": "25 px",
-    "dono": "vm-fix-grips (ads.linhaDeMira/resíduo de ADS) ou socket SOCKET_MINT_SIGHT (vm-fix-mesh)",
-    "medido": "ângulo esquisito no ADS: arma tombada +14° da vertical — massa a 25 px da cruz (+5, -25); teto 30 px; eixo no ADS +14° da vertical (teto ±12°) · socket sight (o que o AD1 lê) 0.000 NDC. Conserto: ads.off/rotDeg da arma (vmconfig) ",
     "aspectos": [
      "16x9",
      "3x2"
