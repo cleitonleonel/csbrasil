@@ -17,6 +17,10 @@ const storeEvent=(event,itemId='')=>{
   if(!window.__csPrivacy?.allowed())return;
   void socialApi('/api/treta',{action:'analytics',event,itemId}).catch(()=>{});
 };
+const inviteEvent=async event=>{
+  if(!window.__csPrivacy?.allowed())return false;
+  try{return (await socialApi('/api/treta',{action:'invite-analytics',event})).stored===true;}catch{return false;}
+};
 let lastStoreVisit=0;
 const storeVisit=()=>{
   const now=Date.now();
@@ -305,7 +309,17 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   onEquip=onEquipped;initTretaRewards();initProposals();
   $('treta-retry').onclick=()=>void refresh();
   const code=new URLSearchParams(location.search).get('treta');
-  if(code && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(code))stored('cs_treta_referral',code);
+  const inviteCode=code && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(code)?code:null;
+  if(inviteCode)stored('cs_treta_referral',inviteCode);
+  let landingPending=false;
+  const trackInviteLanding=()=>{
+    if(!inviteCode || landingPending || !globalThis.__csPrivacy?.allowed())return;
+    try{if(sessionStorage.getItem('cs_invite_landing'))return;}catch{}
+    landingPending=true;
+    void inviteEvent('landing').then(saved=>{if(saved && globalThis.__csPrivacy?.allowed())try{sessionStorage.setItem('cs_invite_landing','1');}catch{}}).finally(()=>{landingPending=false;});
+  };
+  trackInviteLanding();
+  globalThis.addEventListener?.('cs-privacy-change',trackInviteLanding);
   $('treta-buy').onclick=()=>void buy();
   ligarCompartilhar($('treta-share'),()=>({titulo:'Loja do CORO SOLTO',texto:`Olha a skin ${$('treta-detail-name').textContent} na loja do CORO SOLTO.`,url:linkCompartilhavel('/loja','skin')}));
   $('treta-preview-retry').onclick=()=>{if(selected)void detail(selected,false);};
@@ -324,7 +338,19 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   const introCoin=node('img');introCoin.src=TRETA_COIN_ART.poster;introCoin.alt='Moeda TRETA$ do Saci';$('treta-info-coin').append(introCoin);
   $('treta-coins').replaceChildren(...TRETA_COINS.map(c=>{const e=node('button','','treta-coin-card');e.type='button';e.onclick=()=>void explain(c.value);const text=node('div');text.append(node('b',money(c.value)),node('small',c.name));const img=node('img');img.src=c.poster;img.alt=`Moeda ${money(c.value)} com ${c.name}`;img.loading='lazy';e.append(img,text);return e;}));
   for(const button of document.querySelectorAll('[data-treta-filter]'))button.onclick=()=>{filter=button.dataset.tretaFilter;for(const b of document.querySelectorAll('[data-treta-filter]'))b.setAttribute('aria-pressed',String(b===button));draw();};
-  $('treta-invite').onclick=async()=>{if(!state?.wallet){login();return;}const url=new URL('/',location.origin);url.searchParams.set('treta',state.wallet.referral_code);try{await navigator.clipboard.writeText(url.href);$('treta-status').textContent='Convite copiado. Envie para sua turma!';}catch{$('treta-status').textContent=`Seu convite: ${url.href}`;}};
+  $('treta-invite').onclick=async()=>{
+    void inviteEvent('cta');
+    if(!state?.wallet){login();return;}
+    const url=new URL('/',location.origin);url.searchParams.set('treta',state.wallet.referral_code);
+    try{
+      await navigator.clipboard.writeText(url.href);
+      void inviteEvent('copied');
+      $('treta-status').textContent='Convite copiado. Envie para sua turma!';
+    }catch{
+      void inviteEvent('manual');
+      $('treta-status').textContent=`Seu convite: ${url.href}`;
+    }
+  };
   setInterval(()=>{if(account?.authenticated && !document.hidden)void refresh();},30000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden && account?.authenticated)void refresh();});
   document.addEventListener('cs-match-end',()=>{for(const delay of [2000,12000,30000])setTimeout(()=>{if(account?.authenticated)void refresh();},delay);});

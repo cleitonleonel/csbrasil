@@ -26,7 +26,7 @@
     script.defer=true;script.src='/_vercel/insights/script.js';document.head.appendChild(script);
   }
   function clearOptionalStorage() {
-    try { localStorage.removeItem('cs_acq');localStorage.removeItem('cs_ops_last');sessionStorage.removeItem('cs_session'); } catch {}
+    try { localStorage.removeItem('cs_acq');localStorage.removeItem('cs_ops_last');sessionStorage.removeItem('cs_session');sessionStorage.removeItem('cs_invite_landing'); } catch {}
   }
   function notify(value) { window.dispatchEvent(new CustomEvent('cs-privacy-change',{detail:value})); }
   function set(analytics) {

@@ -4,7 +4,7 @@
  * não registrava origem nem 'land', e a etapa 'menu' era consumida no clique que consentia.
  * Roda o código REAL de main.js (as duas regiões entre os marcadores) num vm com rede falsa.
  * Mutantes: --mutante=sem-listener | envia-antes | acq-antes | land-consumido | menu-consumido |
- * url-tardia | grava-antes | anon-antes
+ * url-tardia | grava-antes | anon-antes | treta-sem-handoff
  * (cada um tem de ficar VERMELHO; `--fonte=arquivo` mede outra versão de main.js). */
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
@@ -28,6 +28,7 @@ if (mut === 'menu-consumido') troca('if (_menuFuneled || !_landFuneled || !analy
 if (mut === 'url-tardia') troca('const payload = { anonId: getAnonId(), ..._landingOrigem };', "const payload = { anonId: getAnonId(), ..._landingOrigem, utmCampaign: new URLSearchParams(location.search).get('utm_campaign') };");
 if (mut === 'anon-antes') troca('const _landingOrigem = (() => {', 'getAnonId();\nconst _landingOrigem = (() => {');
 if (mut === 'grava-antes') troca('const _landingOrigem = (() => {', "try { localStorage.setItem('cs_landing', location.search); } catch {}\nconst _landingOrigem = (() => {");
+if (mut === 'treta-sem-handoff') troca("u.get('ref') || u.get('treta')", "u.get('ref')");
 
 const regiao = (ini, fim) => {
   const a = main.indexOf(ini), b = main.indexOf(fim, a);
@@ -38,13 +39,13 @@ const codigo = regiao('// FUNIL (017)', '// PERF (018)') + regiao('/* Telemetria
 
 const ENTRADA = { pathname: '/', search: '?utm_source=teste&utm_medium=post&utm_campaign=lancamento-out&utm_content=criativo-video&ref=AMIGO1' };
 
-function mundo({ consentido = false, testMode = false } = {}) {
+function mundo({ consentido = false, testMode = false, entrada = ENTRADA } = {}) {
   const enviados = [], gravados = [], ouvintes = {};
   let ok = consentido;
   const store = new Map();
   const ctx = {
     testMode,
-    location: { ...ENTRADA },
+    location: { ...entrada },
     document: { referrer: 'https://www.reddit.com/r/brasil/comments/abc?token=segredo' },
     localStorage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => { gravados.push(k); store.set(k, v); }, removeItem: (k) => store.delete(k) },
     analyticsAllowed: () => ok,
@@ -120,6 +121,13 @@ const cobra = (ok, msg) => { if (!ok) falhas.push(msg); };
   cobra(conta(m, '/api/acquisition') === 1 && conta(m, '/api/funnel', 'land') === 1, 'CF5 consentimento prévio: aquisição/land não saíram na carga');
   m.interage(); m.interage();
   cobra(conta(m, '/api/funnel', 'menu') === 1, `CF5 consentimento prévio: 'menu' ${conta(m, '/api/funnel', 'menu')}x, esperado 1`);
+}
+{ // CF5b: o código ?treta= do convite também alimenta a atribuição de primeira origem
+  const code = '00000000-0000-4000-8000-000000000001';
+  const m = mundo({ consentido: true, entrada: { pathname: '/', search: `?treta=${code}` } });
+  await passo();
+  const acq = m.enviados.find((e) => e.rota === '/api/acquisition');
+  cobra(acq?.corpo.ref === code, `CF5 convite ?treta= não chegou ao ref_code da aquisição (${JSON.stringify(acq?.corpo)})`);
 }
 { // CF6: testMode não envia nem depois de consentir
   const m = mundo({ testMode: true });
