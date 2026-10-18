@@ -15,7 +15,7 @@
 //   MAPAS       <- public/js/maps.js, objeto MAPS
 //   PERSONAGENS <- public/js/characters.js, arrays de roster (id/team/tribe/name/blurb)
 //
-// Extraído do código em 2026-08-03 (44 personagens, 5 facções, 5 mapas, 26 armas).
+// Extraído do código e reconferido em 2026-10-18; contagens abaixo vêm dos arrays.
 // Reconferido em 2026-08-05 - e a lista de MAPAS estava errada por DOIS motivos
 // que se anulavam na contagem e por isso ninguém tinha visto:
 //   · `praca_old` ("Praça (clássico)") SAIU do registro (`public/js/maps.js:11-20`,
@@ -196,7 +196,7 @@ export const MAPAS: Mapa[] = [
   {"id": "velho_oeste", "nome": "Sertão da Treta", "modo": "CTF · rounds opcional", "ctf": true, "resumo": "Arena no sertão, com construções e paisagem da caatinga.", "detalhe": "Explore as rotas da arena do sertão. Abre em Capture the Flag; escolha o modo no menu antes de jogar."},
 ];
 
-export interface Personagem { faccao: string; nome: string; blurb: string; }
+export interface Personagem { id: string; grupo: string; nome: string; blurb: string; }
 
 /* As CORES saem de `public/style.css:384-392` (`.team-p/-b/-u/-c/-f`, variável `--tc`),
    que é o que o jogador vê na tela de seleção. Elas estavam próximas mas diferentes
@@ -204,91 +204,94 @@ export interface Personagem { faccao: string; nome: string; blurb: string; }
    o bastante pra ninguém notar e longe o bastante pra não ser a mesma marca. Só o
    amarelo dos funkeiros já batia.
 
-   Os LEMAS são copiados do jogo - `src/pages/index.astro`, `span.team-slogan` das
-   5 team-cards. Três dos cinco divergiam ("A treta se faz na rua!" × "na quebrada!",
-   "A treta é um circo!" × "se faz no picadeiro!", "A treta é no fluxo!" × "se faz no
-   bailão!"), e o /personagens publicava a versão que ninguém vê na tela. Regra da casa:
-   se divergir, o JOGO está certo e este arquivo está velho. */
-export const FACCOES: { id: string; nome: string; lema: string; cor: string; nota: string }[] = [
-  { id: 'E', nome: 'Esquerda', lema: 'A treta se faz na praça!', cor: '#ff5555', nota: 'O lado vermelho da arena. Oito arquétipos de esquerda caricata - nenhum deles é uma pessoa real.' },
-  { id: 'B', nome: 'Direita', lema: 'A treta se faz na rodovia!', cor: '#3355ff', nota: 'O lado azul. Nove arquétipos de direita caricata, com a mesma dose de zoeira dos adversários.' },
+   Os LEMAS são copiados do jogo e descrevem grupos editoriais do elenco, não times.
+   A partida tem sempre dois times: Time E e Time B. GRUPOS só organiza o catálogo. */
+export const GRUPOS: { id: string; nome: string; lema: string; cor: string; nota: string }[] = [
+  { id: 'E', nome: 'Esquerda', lema: 'A treta se faz na praça!', cor: '#ff5555', nota: 'Arquétipos satíricos de esquerda do catálogo.' },
+  { id: 'B', nome: 'Direita', lema: 'A treta se faz na rodovia!', cor: '#3355ff', nota: 'Arquétipos satíricos de direita do catálogo.' },
   { id: 'P', nome: 'Políticos', lema: 'A treta atravessa os dois lados!', cor: '#d6b55a', nota: 'Caricaturas satíricas de figuras públicas. Na escalação do menu, é o primeiro grupo.' },
-  { id: 'urbanas', nome: 'Tribos Urbanas', lema: 'A treta se faz na quebrada!', cor: '#c79bff', nota: 'Facção sem lado político: emo, punk, metaleiro, skatista, rapper e companhia. Entra na treta pelo estilo.' },
-  { id: 'palhacos', nome: 'Palhaços', lema: 'A treta se faz no picadeiro!', cor: '#ff8ad1', nota: 'O picadeiro invadiu a arena. Nove palhaços, do clássico de cartola ao que dá medo de verdade.' },
+  { id: 'urbanas', nome: 'Tribos Urbanas', lema: 'A treta se faz na quebrada!', cor: '#c79bff', nota: 'Emo, punk, metaleiro, skatista, rapper e companhia. Entram na treta pelo estilo.' },
+  { id: 'palhacos', nome: 'Palhaços', lema: 'A treta se faz no picadeiro!', cor: '#ff8ad1', nota: 'O picadeiro invadiu a arena: do clássico de cartola ao que dá medo de verdade.' },
   { id: 'mitico', nome: 'Mítico', lema: 'A treta atravessa os séculos!', cor: '#9d4edd', nota: 'Personagens inspirados no folclore e na história brasileira.' },
   { id: 'funkeiros', nome: 'Funkeiros', lema: 'A treta se faz no bailão!', cor: '#ffd23f', nota: 'Mandrake, cria, trap e tamborzão. Ostenta antes, atira depois.' },
 ];
 
-/** 44 personagens (public/js/characters.js). `faccao` casa com FACCOES[].id */
+/** Os únicos times de gameplay; os grupos acima não mudam o lado da partida. */
+export const TIMES = [
+  { id: 'E', nome: 'Time E', cor: '#ff5555' },
+  { id: 'B', nome: 'Time B', cor: '#3355ff' },
+] as const;
+
+/** Elenco completo de public/js/characters.js. `grupo` casa com GRUPOS[].id. */
 export const PERSONAGENS: Personagem[] = [
-  { id: 'esquerdomacho', faccao: 'E', nome: 'Esquerdomacho', blurb: 'Barba, tote bag e 47 bottons. Mira acadêmica: analisa a treta antes de atirar.' },
-  { id: 'sindicato', faccao: 'E', nome: 'Líder do Sindicato', blurb: 'Boné vermelho, colete de assembleia e megafone. Convoca greve de fogo a cada round.' },
-  { id: 'mst', faccao: 'E', nome: 'Líder do MST', blurb: 'Do campo pra arena. Bandeira na mochila, bota no barro e tiro certeiro de enxada.' },
-  { id: 'doutora', faccao: 'E', nome: 'Doutora do SUS', blurb: 'Jaleco, estetoscópio e plantão de 24h. Receita tiro certeiro, na veia.' },
-  { id: 'mistico', faccao: 'E', nome: 'Jovem Místico', blurb: 'Faixa na testa, cristal no peito e aura calibrada. Só atira quando Mercúrio permite.' },
-  { id: 'gotinha', faccao: 'E', nome: 'Zé da Gotinha', blurb: 'Mascote da saúde. Imuniza a treta com dose de reforço - e ainda pega o SUS de graça.' },
-  { id: 'hipster', faccao: 'E', nome: 'Hipster Alternativo', blurb: 'Moicano colorido e camiseta de banda que você não conhece. Já jogava isso antes de ser mainstream.' },
-  { id: 'et', faccao: 'E', nome: 'ET de Varginha', blurb: 'Veio de longe pra treta. Abduz a direita e some no mato de Minas.' },
+  { id: 'esquerdomacho', grupo: 'E', nome: 'Esquerdomacho', blurb: 'Barba, tote bag e 47 bottons. Mira acadêmica: analisa a treta antes de atirar.' },
+  { id: 'sindicato', grupo: 'E', nome: 'Líder do Sindicato', blurb: 'Boné vermelho, colete de assembleia e megafone. Convoca greve de fogo a cada round.' },
+  { id: 'mst', grupo: 'E', nome: 'Líder do MST', blurb: 'Do campo pra arena. Bandeira na mochila, bota no barro e tiro certeiro de enxada.' },
+  { id: 'doutora', grupo: 'E', nome: 'Doutora do SUS', blurb: 'Jaleco, estetoscópio e plantão de 24h. Receita tiro certeiro, na veia.' },
+  { id: 'mistico', grupo: 'E', nome: 'Jovem Místico', blurb: 'Faixa na testa, cristal no peito e aura calibrada. Só atira quando Mercúrio permite.' },
+  { id: 'gotinha', grupo: 'E', nome: 'Zé da Gotinha', blurb: 'Mascote da saúde. Imuniza a treta com dose de reforço - e ainda pega o SUS de graça.' },
+  { id: 'hipster', grupo: 'E', nome: 'Hipster Alternativo', blurb: 'Moicano colorido e camiseta de banda que você não conhece. Já jogava isso antes de ser mainstream.' },
+  { id: 'et', grupo: 'E', nome: 'ET de Varginha', blurb: 'Veio de longe pra treta. Abduz a direita e some no mato de Minas.' },
 
-  { id: 'caminhoneiro', faccao: 'B', nome: 'Caminhoneiro', blurb: 'Camisa do Brasil, luva de estrada e 40h de BR na semana. Freia pra ninguém.' },
-  { id: 'sertanejo', faccao: 'B', nome: 'Cantor Sertanejo', blurb: 'Chapéu de cowboy, fivela de ouro e violão nas costas. Moda de viola em dose dupla.' },
-  { id: 'coach', faccao: 'B', nome: 'Coach Quântico', blurb: 'Blazer, headset e 47 técnicas de manifestação. Já venceu antes de começar - no quântico.' },
-  { id: 'farialimer', faccao: 'B', nome: 'Faria Limer', blurb: 'Colete, sapatênis e planilha de day trade. Compra na baixa, atira na alta.' },
-  { id: 'bombado', faccao: 'B', nome: 'Bombado da Academia', blurb: 'Peitoral gigante, perna de palito. Pulou o leg day pra treinar o gatilho.' },
-  { id: 'dollynho', faccao: 'B', nome: 'Dollynho', blurb: 'Mascote do guaraná polêmico. Efervescente, gelado e sempre do contra.' },
-  { id: 'ancap', faccao: 'B', nome: 'Ancap Medieval', blurb: 'Cota de malha, cruz templária e capa verde-amarela. Privatiza a treta e xinga o Banco Central.' },
-  { id: 'canarinho', faccao: 'B', nome: 'Canarinho Pistola', blurb: 'Pistola desde 2016. Bico torto, peito estufado e camisa 24: ele NÃO amarela.' },
-  { id: 'proerd', faccao: 'B', nome: 'Leão do Proerd', blurb: 'Camisa preta colada, rugido de mascote de formatura e garra afiada na defesa da treta.' },
+  { id: 'caminhoneiro', grupo: 'B', nome: 'Caminhoneiro', blurb: 'Camisa do Brasil, luva de estrada e 40h de BR na semana. Freia pra ninguém.' },
+  { id: 'sertanejo', grupo: 'B', nome: 'Cantor Sertanejo', blurb: 'Chapéu de cowboy, fivela de ouro e violão nas costas. Moda de viola em dose dupla.' },
+  { id: 'coach', grupo: 'B', nome: 'Coach Quântico', blurb: 'Blazer, headset e 47 técnicas de manifestação. Já venceu antes de começar - no quântico.' },
+  { id: 'farialimer', grupo: 'B', nome: 'Faria Limer', blurb: 'Colete, sapatênis e planilha de day trade. Compra na baixa, atira na alta.' },
+  { id: 'bombado', grupo: 'B', nome: 'Bombado da Academia', blurb: 'Peitoral gigante, perna de palito. Pulou o leg day pra treinar o gatilho.' },
+  { id: 'dollynho', grupo: 'B', nome: 'Dollynho', blurb: 'Mascote do guaraná polêmico. Efervescente, gelado e sempre do contra.' },
+  { id: 'ancap', grupo: 'B', nome: 'Ancap Medieval', blurb: 'Cota de malha, cruz templária e capa verde-amarela. Privatiza a treta e xinga o Banco Central.' },
+  { id: 'canarinho', grupo: 'B', nome: 'Canarinho Pistola', blurb: 'Pistola desde 2016. Bico torto, peito estufado e camisa 24: ele NÃO amarela.' },
+  { id: 'proerd', grupo: 'B', nome: 'Leão do Proerd', blurb: 'Camisa preta colada, rugido de mascote de formatura e garra afiada na defesa da treta.' },
 
-  { id: 'barbudo', faccao: 'P', nome: 'Barbudo do Planalto', blurb: 'Discurso de três horas e o microfone nunca cansa. Faixa no peito, churrasco no domingo.' },
-  { id: 'capitao', faccao: 'P', nome: 'Capitão do Cercadinho', blurb: 'Camisa amarela, cercadinho lotado e live toda quinta. Não leva desaforo pra casa.' },
-  { id: 'dama', faccao: 'P', nome: 'Dama da Mandioca', blurb: 'Estoca vento e saúda a mandioca. Ninguém entende a frase, todo mundo lembra.' },
-  { id: 'professor', faccao: 'P', nome: 'Professor do Arcabouço', blurb: 'Calcula o arcabouço de cabeça e ainda acha tempo de explicar a conta pro time.' },
-  { id: 'senador', faccao: 'P', nome: 'Zero Um', blurb: 'O 01 da família. Sorriso de campanha e broche sempre no lugar.' },
-  { id: 'ministro', faccao: 'P', nome: 'Xandão da Toga', blurb: 'A toga é capa e o despacho sai antes do café. Joga pelo Time E e ninguém discute.' },
-  { id: 'deputado', faccao: 'P', nome: 'Deputado da Peruca', blurb: 'Sobe na tribuna de peruca loira e vira meme antes de terminar a frase.' },
-  { id: 'juiz', faccao: 'P', nome: 'Juiz do Conje', blurb: 'Ex-juiz de sotaque marcado. O conje confirma: ele não perde um prazo.' },
-  { id: 'julia-zanatta', faccao: 'P', nome: 'Deputada da Tiara', blurb: 'Tiara de flores, blazer fúcsia e presença de plenário. A treta começa com pose e termina no placar.' },
-  { id: 'marina-silva', faccao: 'P', nome: 'Dona Floresta', blurb: 'Óculos vinho, coque grisalho e vestido verde-petróleo. A conversa é calma; a mira, firme.' },
+  { id: 'barbudo', grupo: 'P', nome: 'Barbudo do Planalto', blurb: 'Discurso de três horas e o microfone nunca cansa. Faixa no peito, churrasco no domingo.' },
+  { id: 'capitao', grupo: 'P', nome: 'Capitão do Cercadinho', blurb: 'Camisa amarela, cercadinho lotado e live toda quinta. Não leva desaforo pra casa.' },
+  { id: 'dama', grupo: 'P', nome: 'Dama da Mandioca', blurb: 'Estoca vento e saúda a mandioca. Ninguém entende a frase, todo mundo lembra.' },
+  { id: 'professor', grupo: 'P', nome: 'Professor do Arcabouço', blurb: 'Calcula o arcabouço de cabeça e ainda acha tempo de explicar a conta pro time.' },
+  { id: 'senador', grupo: 'P', nome: 'Zero Um', blurb: 'O 01 da família. Sorriso de campanha e broche sempre no lugar.' },
+  { id: 'ministro', grupo: 'P', nome: 'Xandão da Toga', blurb: 'A toga é capa e o despacho sai antes do café. Joga pelo Time E e ninguém discute.' },
+  { id: 'deputado', grupo: 'P', nome: 'Deputado da Peruca', blurb: 'Sobe na tribuna de peruca loira e vira meme antes de terminar a frase.' },
+  { id: 'juiz', grupo: 'P', nome: 'Juiz do Conje', blurb: 'Ex-juiz de sotaque marcado. O conje confirma: ele não perde um prazo.' },
+  { id: 'julia-zanatta', grupo: 'P', nome: 'Deputada da Tiara', blurb: 'Tiara de flores, blazer fúcsia e presença de plenário. A treta começa com pose e termina no placar.' },
+  { id: 'marina-silva', grupo: 'P', nome: 'Dona Floresta', blurb: 'Óculos vinho, coque grisalho e vestido verde-petróleo. A conversa é calma; a mira, firme.' },
 
-  { id: 'emo', faccao: 'urbanas', nome: 'Emo', blurb: 'Franja na cara e playlist de sofrência. Mira embaçada por um olho só.' },
-  { id: 'blackmetal', faccao: 'urbanas', nome: 'Black Metal', blurb: 'Corpse paint, cabelão e blast beat. Congela a treta num inverno norueguês.' },
-  { id: 'metaleiro', faccao: 'urbanas', nome: 'Metaleiro', blurb: 'Jaqueta jeans coberta de bottons e cabelo até a cintura. Headbang no recuo.' },
-  { id: 'punk', faccao: 'urbanas', nome: 'Punk', blurb: 'Moicano colorido e jaqueta de spikes. Anarquia, três acordes e um tiro só.' },
-  { id: 'skatista', faccao: 'urbanas', nome: 'Skatista', blurb: 'Gorro, camiseta larga e joelho ralado. Dropa a treta de flip.' },
-  { id: 'clubber', faccao: 'urbanas', nome: 'Clubber', blurb: 'Regata neon e glowstick. Só atira no drop da batida.' },
-  { id: 'rapper', faccao: 'urbanas', nome: 'Rapper', blurb: 'Camisão gigante, correntes de ouro e calça saggy. Rima e recarrega no flow.' },
-  { id: 'reggae', faccao: 'urbanas', nome: 'Rasta', blurb: 'Dreads, gorro rastafári e paz interior. Só que armado. Jah guia a mira.' },
-  { id: 'pagodeiro', faccao: 'urbanas', nome: 'Pagodeiro', blurb: 'Platinado, roupa toda branca e corrente de ouro. Canta o hit e acerta o tiro no refrão.' },
+  { id: 'emo', grupo: 'urbanas', nome: 'Emo', blurb: 'Franja na cara e playlist de sofrência. Mira embaçada por um olho só.' },
+  { id: 'blackmetal', grupo: 'urbanas', nome: 'Black Metal', blurb: 'Corpse paint, cabelão e blast beat. Congela a treta num inverno norueguês.' },
+  { id: 'metaleiro', grupo: 'urbanas', nome: 'Metaleiro', blurb: 'Jaqueta jeans coberta de bottons e cabelo até a cintura. Headbang no recuo.' },
+  { id: 'punk', grupo: 'urbanas', nome: 'Punk', blurb: 'Moicano colorido e jaqueta de spikes. Anarquia, três acordes e um tiro só.' },
+  { id: 'skatista', grupo: 'urbanas', nome: 'Skatista', blurb: 'Gorro, camiseta larga e joelho ralado. Dropa a treta de flip.' },
+  { id: 'clubber', grupo: 'urbanas', nome: 'Clubber', blurb: 'Regata neon e glowstick. Só atira no drop da batida.' },
+  { id: 'rapper', grupo: 'urbanas', nome: 'Rapper', blurb: 'Camisão gigante, correntes de ouro e calça saggy. Rima e recarrega no flow.' },
+  { id: 'reggae', grupo: 'urbanas', nome: 'Rasta', blurb: 'Dreads, gorro rastafári e paz interior. Só que armado. Jah guia a mira.' },
+  { id: 'pagodeiro', grupo: 'urbanas', nome: 'Pagodeiro', blurb: 'Platinado, roupa toda branca e corrente de ouro. Canta o hit e acerta o tiro no refrão.' },
 
-  { id: 'bonzo', faccao: 'palhacos', nome: 'Bonzo', blurb: 'Do picadeiro pra praça. Nariz vermelho, sapatão marrom e risada de quem arma o circo.' },
-  { id: 'palhacomal', faccao: 'palhacos', nome: 'Palhaço do Mal', blurb: 'Riso que gela a espinha. Sai do picadeiro direto pro pesadelo - e ainda cobra ingresso.' },
-  { id: 'jozo', faccao: 'palhacos', nome: 'Jozo', blurb: 'Mascote de lanche pirata. Fritou o juízo no óleo e agora só serve treta com batata.' },
-  { id: 'adjim', faccao: 'palhacos', nome: 'Adjim', blurb: 'Espirra, ri e atira. Metade da dupla que faz a criançada chorar de rir (e de medo).' },
-  { id: 'esbirro', faccao: 'palhacos', nome: 'Esbirro', blurb: 'A outra metade da dupla. Buzina no gatilho e resenha no recuo.' },
-  { id: 'titica', faccao: 'palhacos', nome: 'Titica', blurb: 'Do circo pro Congresso e do Congresso pra arena, sempre no bom humor e no gatilho leve.' },
-  { id: 'padati', faccao: 'palhacos', nome: 'Padati', blurb: 'Um da dupla mais colorida do picadeiro. Cambalhota, buzina e mira infantil.' },
-  { id: 'padata', faccao: 'palhacos', nome: 'Padata', blurb: 'O outro da dupla. Se um erra, o outro acerta - geralmente na risada.' },
-  { id: 'cadequinha', faccao: 'palhacos', nome: 'Cadequinha', blurb: 'Clássico dos clássicos. Cartola, xadrez e uma gargalhada que atravessa gerações.' },
+  { id: 'bonzo', grupo: 'palhacos', nome: 'Bonzo', blurb: 'Do picadeiro pra praça. Nariz vermelho, sapatão marrom e risada de quem arma o circo.' },
+  { id: 'palhacomal', grupo: 'palhacos', nome: 'Palhaço do Mal', blurb: 'Riso que gela a espinha. Sai do picadeiro direto pro pesadelo - e ainda cobra ingresso.' },
+  { id: 'jozo', grupo: 'palhacos', nome: 'Jozo', blurb: 'Mascote de lanche pirata. Fritou o juízo no óleo e agora só serve treta com batata.' },
+  { id: 'adjim', grupo: 'palhacos', nome: 'Adjim', blurb: 'Espirra, ri e atira. Metade da dupla que faz a criançada chorar de rir (e de medo).' },
+  { id: 'esbirro', grupo: 'palhacos', nome: 'Esbirro', blurb: 'A outra metade da dupla. Buzina no gatilho e resenha no recuo.' },
+  { id: 'titica', grupo: 'palhacos', nome: 'Titica', blurb: 'Do circo pro Congresso e do Congresso pra arena, sempre no bom humor e no gatilho leve.' },
+  { id: 'padati', grupo: 'palhacos', nome: 'Padati', blurb: 'Um da dupla mais colorida do picadeiro. Cambalhota, buzina e mira infantil.' },
+  { id: 'padata', grupo: 'palhacos', nome: 'Padata', blurb: 'O outro da dupla. Se um erra, o outro acerta - geralmente na risada.' },
+  { id: 'cadequinha', grupo: 'palhacos', nome: 'Cadequinha', blurb: 'Clássico dos clássicos. Cartola, xadrez e uma gargalhada que atravessa gerações.' },
 
-  { id: 'mandrake', faccao: 'funkeiros', nome: 'Mandrake', blurb: 'Boné, Juliet vermelho e corrente de ouro. Ostenta e domina na quebrada.' },
-  { id: 'raul', faccao: 'funkeiros', nome: 'Raul da Franja', blurb: 'Franja açucarada, camisa de grife e cordão de ouro falso. Desfila antes de atirar.' },
-  { id: 'oakley', faccao: 'funkeiros', nome: 'Oakley', blurb: 'Chapéu Medusa, colete tático e tattoo no braço. O corre só passa por ele.' },
-  { id: 'criarj', faccao: 'funkeiros', nome: 'Cria RJ', blurb: 'Cabelo zebrado platinado e camisa de time. Cria do morro, mira de craque.' },
-  { id: 'chave', faccao: 'funkeiros', nome: 'Chave SP', blurb: 'Polo, boné e óculos escuros. Só entra na treta se for chave.' },
-  { id: 'funkraiz', faccao: 'funkeiros', nome: 'Funk Raiz', blurb: 'Tamborzão na cabeça e passinho no recuo. O funk mais velho da arena.' },
-  { id: 'trapfunk', faccao: 'funkeiros', nome: 'Trap Funk', blurb: 'Autotune no grito de guerra e 808 no peito. Trap em dose dupla.' },
-  { id: 'fluxo', faccao: 'funkeiros', nome: 'Fluxo', blurb: 'Óculos espelhado e corte na régua. No fluxo, quem corre é a bala.' },
-  { id: 'ostentacao', faccao: 'funkeiros', nome: 'Ostentação', blurb: 'Corrente, anel e relógio brilhando. Se é pra atirar, que seja com estilo.' },
-  { id: 'lobisomem', faccao: 'mitico', nome: 'Lobisomem', blurb: 'Criatura das noites de lua cheia e das histórias de encruzilhada.' },
-  { id: 'mariabonita', faccao: 'mitico', nome: 'Maria Bonita', blurb: 'Personagem inspirada na história do cangaço brasileiro.' },
-  { id: 'lampiao', faccao: 'mitico', nome: 'Lampião', blurb: 'Figura do cangaço, com chapéu de couro e silhueta característica.' },
-  { id: 'bandeirante', faccao: 'mitico', nome: 'Bandeirante', blurb: 'Uma interpretação satírica de uma figura da história brasileira.' },
-  { id: 'boto', faccao: 'mitico', nome: 'Boto Cor de Rosa', blurb: 'Personagem inspirado na lenda amazônica do boto.' },
-  { id: 'zumbi', faccao: 'mitico', nome: 'Zumbi dos Palmares', blurb: 'Personagem inspirado na história de Zumbi e do Quilombo dos Palmares.' },
-  { id: 'curupira', faccao: 'mitico', nome: 'Curupira', blurb: 'Guardião do folclore brasileiro, com cabelo de fogo e pés virados.' },
-  { id: 'saci', faccao: 'mitico', nome: 'Saci-Pererê', blurb: 'O menino de uma perna só e gorro vermelho das lendas brasileiras.' },
-  { id: 'caipora', faccao: 'mitico', nome: 'Caipora', blurb: 'Guardiã da mata nas histórias do folclore brasileiro.' },
+  { id: 'mandrake', grupo: 'funkeiros', nome: 'Mandrake', blurb: 'Boné, Juliet vermelho e corrente de ouro. Ostenta e domina na quebrada.' },
+  { id: 'raul', grupo: 'funkeiros', nome: 'Raul da Franja', blurb: 'Franja açucarada, camisa de grife e cordão de ouro falso. Desfila antes de atirar.' },
+  { id: 'oakley', grupo: 'funkeiros', nome: 'Oakley', blurb: 'Chapéu Medusa, colete tático e tattoo no braço. O corre só passa por ele.' },
+  { id: 'criarj', grupo: 'funkeiros', nome: 'Cria RJ', blurb: 'Cabelo zebrado platinado e camisa de time. Cria do morro, mira de craque.' },
+  { id: 'chave', grupo: 'funkeiros', nome: 'Chave SP', blurb: 'Polo, boné e óculos escuros. Só entra na treta se for chave.' },
+  { id: 'funkraiz', grupo: 'funkeiros', nome: 'Funk Raiz', blurb: 'Tamborzão na cabeça e passinho no recuo. O funk mais velho da arena.' },
+  { id: 'trapfunk', grupo: 'funkeiros', nome: 'Trap Funk', blurb: 'Autotune no grito de guerra e 808 no peito. Trap em dose dupla.' },
+  { id: 'fluxo', grupo: 'funkeiros', nome: 'Fluxo', blurb: 'Óculos espelhado e corte na régua. No fluxo, quem corre é a bala.' },
+  { id: 'ostentacao', grupo: 'funkeiros', nome: 'Ostentação', blurb: 'Corrente, anel e relógio brilhando. Se é pra atirar, que seja com estilo.' },
+  { id: 'lobisomem', grupo: 'mitico', nome: 'Lobisomem', blurb: 'Criatura das noites de lua cheia e das histórias de encruzilhada.' },
+  { id: 'mariabonita', grupo: 'mitico', nome: 'Maria Bonita', blurb: 'Personagem inspirada na história do cangaço brasileiro.' },
+  { id: 'lampiao', grupo: 'mitico', nome: 'Lampião', blurb: 'Figura do cangaço, com chapéu de couro e silhueta característica.' },
+  { id: 'bandeirante', grupo: 'mitico', nome: 'Bandeirante', blurb: 'Uma interpretação satírica de uma figura da história brasileira.' },
+  { id: 'boto', grupo: 'mitico', nome: 'Boto Cor de Rosa', blurb: 'Personagem inspirado na lenda amazônica do boto.' },
+  { id: 'zumbi', grupo: 'mitico', nome: 'Zumbi dos Palmares', blurb: 'Personagem inspirado na história de Zumbi e do Quilombo dos Palmares.' },
+  { id: 'curupira', grupo: 'mitico', nome: 'Curupira', blurb: 'Guardião do folclore brasileiro, com cabelo de fogo e pés virados.' },
+  { id: 'saci', grupo: 'mitico', nome: 'Saci-Pererê', blurb: 'O menino de uma perna só e gorro vermelho das lendas brasileiras.' },
+  { id: 'caipora', grupo: 'mitico', nome: 'Caipora', blurb: 'Guardiã da mata nas histórias do folclore brasileiro.' },
 ];
 
 export interface Controle { tecla: string; acao: string; }

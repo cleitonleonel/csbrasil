@@ -34,8 +34,9 @@ const avatar=p?.avatar_url===`/api/social-avatar?id=${p?.id}`?p.avatar_url:https
    e o perfil legível no slot `perfil` (crawler e prévia de link). O hub não lê disco no render
    (revisão de CSS e manifesto vêm do build), então o SSR não volta a dar 200 com 0 bytes. */
 const hubRota={caminho:p?canonical.slice(SITE.length):'/',canonical:p?canonical.slice(SITE.length):'/',titulo:p?p.nick:'Perfil indisponível',tituloPagina:title,descricao:description,indexavel:!noindex,ogTipo:'profile',
-  imagem:image?{url:image,alt:`Perfil e placar de ${p.nick}`}:null,
-  jsonLd:p && !noindex?{'@context':'https://schema.org','@type':'ProfilePage',url:canonical,name:title,mainEntity:{'@type':'Person',name:p.nick,...(p.handle?{alternateName:`@${p.handle}`}:{}),url:SITE+p.url,...(image?{image}:{})},isPartOf:{'@id':`${SITE}/#website`}}:undefined};
+  estado:{secao:'comunidade',social:'profile',perfil:p?.id || key,...(aba?{aba}:{})},hasProfileHeading:true,
+  imagem:image?{url:image,alt:`Perfil e placar de ${p.nick}`} : null,
+  jsonLd:p && !noindex?{'@context':'https://schema.org','@type':'ProfilePage',url:canonical,name:title,mainEntity:{'@type':'Person',name:p.nick,...(p.handle?{alternateName:`@${p.handle}`} : {}),url:SITE+p.url,...(image?{image}:{})},isPartOf:{'@id':`${SITE}/#website`}}:undefined};
 ---
 <Hub rota={hubRota}><div slot="perfil" id="perfil-ssr" class="perfil-ssr">
 {p?<article class="profile-sheet">

@@ -13,7 +13,7 @@
 // lista); os números agora saem de src/data/jogo.ts, copiado do código do jogo.
 import Layout from '../layouts/Layout.astro';
 import pkg from '../../package.json';
-import { ARMAS, MAPAS, PERSONAGENS, FACCOES } from '../data/jogo';
+import { ARMAS, MAPAS, PERSONAGENS, GRUPOS } from '../data/jogo';
 import { BRAND_FULL, BRAND_ALT, DESC_LONG, GAME_ID, abs, RANKING_DESCRIPTION_PT } from '../lib/site';
 
 const jsonld = [
@@ -47,9 +47,9 @@ const jsonld = [
   heroImg="/img/map-previews/praca_poderes.jpg"
   heroPos="52%">
   <Fragment slot="sub">
-    Esquerda × Direita numa Brasília fictícia e satírica: urna gigante quebrada no meio da
+    Time E × Time B numa Brasília fictícia e satírica: urna gigante quebrada no meio da
     arena, boteco, pastel, acampamento e o Congresso no horizonte. {PERSONAGENS.length} personagens
-    no catálogo de {FACCOES.length} grupos, {MAPAS.length} mapas, {ARMAS.length} armas, bots,
+    em {GRUPOS.length} grupos de catálogo, {MAPAS.length} mapas, {ARMAS.length} armas, bots,
     rounds, CTF, headshots e multikills estilo Unreal Tournament.
   </Fragment>
 
@@ -79,7 +79,7 @@ const jsonld = [
 
   <div class="tstat" style="margin-top:26px">
     <div><b>{PERSONAGENS.length}</b><span>personagens</span></div>
-    <div><b>{FACCOES.length}</b><span>grupos no catálogo</span></div>
+    <div><b>{GRUPOS.length}</b><span>grupos no catálogo</span></div>
     <div><b>{MAPAS.length}</b><span>mapas</span></div>
     <div><b>{ARMAS.length}</b><span>armas</span></div>
   </div>
@@ -94,7 +94,7 @@ const jsonld = [
   <h2>Perguntas frequentes</h2>
   <details open><summary><strong>O que é {BRAND_FULL}?</strong></summary>
     <p>Um jogo FPS gratuito que roda no navegador: arena de sniper estilo praca_poderes do CS 1.6,
-      ambientada numa Brasília fictícia e satírica, com {FACCOES.length} grupos no catálogo,{' '}
+      ambientada numa Brasília fictícia e satírica, com dois times - Time E e Time B -, {GRUPOS.length} grupos no catálogo,{' '}
       {PERSONAGENS.length} personagens originais, {MAPAS.length} mapas, {ARMAS.length} armas, bots,
       sistema de rounds e Capture the Flag.</p></details>
   <details><summary><strong>Preciso instalar ou pagar algo?</strong></summary>
@@ -103,8 +103,8 @@ const jsonld = [
   <details><summary><strong>Funciona no celular?</strong></summary>
     <p>Sim. O beta web tem controles de toque; jogue na horizontal. O desempenho varia conforme o
       aparelho e o navegador.</p></details>
-  <details><summary><strong>Quais são as facções?</strong></summary>
-    <p>{FACCOES.map(f => f.nome).join(', ')}. O catálogo também tem grupos culturais e de folclore. O elenco mistura sátira brasileira, folclore e caricaturas políticas.</p></details>
+  <details><summary><strong>Quais são os times e grupos do elenco?</strong></summary>
+    <p>As partidas usam Time E e Time B. {GRUPOS.map(g => g.nome).join(', ')} são grupos do catálogo, não times extras.</p></details>
   <details><summary><strong>É um jogo oficial da Valve ou do Counter-Strike?</strong></summary>
     <p>Não. É uma paródia independente feita por fãs, sem qualquer afiliação com a Valve.
       Counter-Strike é marca da Valve Corporation.</p></details>

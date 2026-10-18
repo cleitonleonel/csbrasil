@@ -12,7 +12,7 @@
 .treta-heading p{font:400 16px/1.5 system-ui,sans-serif;color:var(--treta-muted);margin:8px 0 0}
 .treta-wallet{display:flex;align-items:center;gap:12px;background:#2a291d;border:1px solid #81743d;color:var(--treta-gold);padding:12px 20px;border-radius:4px;cursor:pointer;flex-shrink:0}
 .treta-wallet small,.treta-wallet b{display:block;text-align:left}.treta-wallet small{font-size:12px;letter-spacing:2px}.treta-wallet b{font:700 23px/1.3 'Barlow Condensed',sans-serif}
-.treta-coin-mark{display:inline-flex;align-items:center;justify-content:center;border:2px solid #ffdf7b;border-radius:50%;width:36px;height:36px;font-weight:700;background:linear-gradient(135deg,#fff0a3,#d88c0d);color:#593306;box-shadow:inset 0 0 0 2px #9c620e}
+.treta-coin-mark{display:block;width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 2px 5px #0008)}
 .treta-views{display:flex;gap:24px;border-bottom:1px solid var(--treta-line);margin-bottom:24px;overflow-x:auto;scrollbar-width:none}
 .treta-views button{flex-shrink:0;min-height:48px;padding:8px 0 16px;color:var(--treta-muted);font:700 17px/1.2 'Barlow Condensed',sans-serif;letter-spacing:1px;background:none;border:0;border-bottom:3px solid transparent;cursor:pointer}
 .treta-views button[aria-selected=true]{border-bottom-color:var(--treta-lime);color:var(--treta-lime)}

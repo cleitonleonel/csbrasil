@@ -6,7 +6,8 @@
 :root[data-ui="v3"] .community:has(.tp-perfil) #social-hello{display:none}
 :root[data-ui="v3"] .community:has(.tp-perfil) .social-heading{justify-content:flex-end;margin-bottom:0}
 
-:root[data-ui="v3"] .tp-perfil{container:tp-perfil/inline-size;display:flex;flex-direction:column;gap:16px;color:var(--tp-tinta-1);font:500 15px/1.3 var(--tp-ui)}
+:root[data-ui="v3"] .tp-perfil{container:tp-perfil/inline-size;display:flex;flex-direction:column;gap:16px;color:var(--tp-tinta-1);font:500 15px/1.3 var(--tp-ui);animation:tp-perfil-entra .35s var(--tp-ease-saida) both}
+@keyframes tp-perfil-entra{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 :root[data-ui="v3"] .tp-perfil h2,:root[data-ui="v3"] .tp-perfil h3,:root[data-ui="v3"] .tp-perfil p{margin:0;letter-spacing:.01em}
 :root[data-ui="v3"] .tp-perfil h3{font:400 24px/.92 var(--tp-display);text-transform:uppercase}
 /* .community button do legado tem borda, sombra e brilho no hover: aqui dentro quem manda é o kit */
@@ -47,10 +48,11 @@
 .tp-perfil__grade{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
 .tp-perfil__grade[data-dono]{grid-template-columns:minmax(0,1fr) 428px}
 .tp-perfil__principal{display:flex;flex-direction:column;gap:16px;min-width:0}
-.tp-perfil__cartao{position:relative;display:flex;flex-direction:column;gap:18px;min-height:330px;box-sizing:border-box;padding:28px 28px 24px;border-radius:16px;overflow:hidden;isolation:isolate;
-  background:linear-gradient(120deg,color-mix(in srgb,var(--tp-ganho) 16%,var(--tp-asfalto)) 0%,color-mix(in srgb,var(--tp-ambar) 14%,var(--tp-asfalto)) 55%,var(--tp-fundo-2) 100%)}
+.tp-perfil__cartao{position:relative;display:flex;flex-direction:column;gap:18px;min-height:330px;box-sizing:border-box;padding:28px 28px 24px;border:1px solid rgba(255,255,255,.09);border-radius:16px;overflow:hidden;isolation:isolate;
+  background:linear-gradient(120deg,color-mix(in srgb,var(--tp-ganho) 16%,var(--tp-asfalto)) 0%,color-mix(in srgb,var(--tp-ambar) 14%,var(--tp-asfalto)) 55%,var(--tp-fundo-2) 100%);box-shadow:0 28px 80px rgba(0,0,0,.26)}
 .tp-perfil__cartao::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(9,7,4,.9) 0%,rgba(9,7,4,.45) 60%,rgba(9,7,4,0) 100%)}
-.tp-perfil__arte{position:absolute;right:20px;top:-30px;z-index:-2;width:300px;height:450px;object-fit:cover;object-position:50% 12%}
+.tp-perfil__arte{position:absolute;right:20px;top:-30px;z-index:-2;width:300px;height:450px;object-fit:cover;object-position:50% 12%;animation:tp-perfil-arte .45s var(--tp-ease-saida) both}
+@keyframes tp-perfil-arte{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
 .tp-perfil__id{display:flex;gap:22px;align-items:flex-start;margin-right:300px}
 .tp-perfil__avatar{flex:none;width:132px;height:132px;box-sizing:border-box;border-radius:18px;border:4px solid var(--tp-lima);object-fit:cover;font-size:64px}
 .tp-perfil__quem{display:flex;flex-direction:column;gap:8px;min-width:0}
@@ -186,3 +188,5 @@
   :root[data-ui="v3"] .tp-perfil :is(.tp-aba,.tp-perfil__link,.tp-carreira__membro-nick){display:inline-flex;align-items:center}
   :root[data-ui="v3"] .tp-perfil .tp-perfil__check{min-height:44px}
 }
+@media(prefers-reduced-motion:reduce){:root[data-ui="v3"] .tp-perfil,.tp-perfil__arte{animation:none}}
+:root[data-ui="v3"][data-motion="reduzido"] .tp-perfil,:root[data-ui="v3"][data-motion="reduzido"] .tp-perfil__arte{animation:none}

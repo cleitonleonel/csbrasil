@@ -28,10 +28,8 @@ const mapPreviewPoster = (id, version) => escadaoMapPreviewPoster(id, `${version
 import { LANG, resolveGeoLang, translateDom, tr, frase } from './i18n.js';
 import { enableLightBloom } from './bloom.js';
 import { enableStylize } from './stylize.js';
-import { FACTIONS } from './factions.js';
-/* Literal exigido pela régua UIR1 (redesign-check lê a declaração, não o uso);
-   a fonte dos nomes é factions.js — mantenha os dois em sincronia. */
-const FACTION_NAME = { E: 'ESQUERDA', B: 'DIREITA', U: 'TRIBOS URBANAS', C: 'PALHACOS', F: 'FUNKEIROS', M: 'MITICOS', N: 'NERDOLAS', R: 'PROFISSIONAIS DO CORRE', O: 'NOIAS', T: 'TV', P: 'POLÍTICOS' };
+/* E/B são os dois times de gameplay; as demais chaves são grupos do elenco. */
+const FACTION_NAME = { E: 'TIME E', B: 'TIME B', U: 'TRIBOS URBANAS', C: 'PALHACOS', F: 'FUNKEIROS', M: 'MITICOS', N: 'NERDOLAS', R: 'PROFISSIONAIS DO CORRE', O: 'NOIAS', T: 'TV', P: 'POLÍTICOS' };
 import { resolveInspectionScreen } from './screenquery.js';
 import { LoadingCharacterStage } from './loading3d.js';
 import { MENU_MUSIC_ACTIVE_IDS } from './menu-music-selection.js';
@@ -408,10 +406,12 @@ async function loadMenuBackdrop() {
     });
   });
 }
-// A avaliação do main só continua depois que o módulo lazy instalou o construtor.
-// Rejeição real permanece rejeição do módulo; não há cenário vazio nem splash liberada.
-await loadMenuBackdrop();
-_splashSetReady();
+// Em rota compartilhada, a tela pedida abre já: cenário 3D e props continuam no fundo.
+// Na raiz, o primeiro acesso preserva o ritual da splash até o cenário estar pronto.
+const directRoute = document.documentElement.hasAttribute('data-direct-route');
+const menuBackdropReady = loadMenuBackdrop();
+if (directRoute) menuBackdropReady.then(_splashSetReady).catch((error) => console.error('[menu-background]', error));
+else { await menuBackdropReady; _splashSetReady(); }
 
 /* ---------------- screens ---------------- */
 const screens = ['main-menu', 'map-screen', 'team-select', 'char-select', 'settings-panel', 'howto-panel', 'ranking-panel', 'mp-panel', 'feedback-panel', 'support-panel', 'pause-menu', 'match-end'];
@@ -452,19 +452,19 @@ function show(id) {
   }
 }
 const $ = id => document.getElementById(id);
-const FACTION_ART_URLS = ['/img/faccoes/time-e.webp', '/img/faccoes/time-b.webp', '/img/faccoes/tribos.webp', '/img/faccoes/palhacos.webp', '/img/faccoes/funkeiros.webp', '/img/faccoes/mitico.webp'];
-const factionArtImages = FACTION_ART_URLS.map((src) => {
+const TEAM_ART_URLS = ['/img/faccoes/time-e.webp', '/img/faccoes/time-b.webp'];
+const teamArtImages = TEAM_ART_URLS.map((src) => {
   const image = new Image();
   image.decoding = 'async';
   image.src = src;
   return image;
 });
-const factionArtReady = Promise.all(factionArtImages.map((image) => (
+const factionArtReady = Promise.all(teamArtImages.map((image) => (
   image.decode ? image.decode() : new Promise((resolve, reject) => {
     image.onload = resolve;
     image.onerror = reject;
   })
-))).catch((error) => console.warn('[facções] preload parcial', error));
+))).catch((error) => console.warn('[times] preload parcial', error));
 
 /* Wallpapers rotativos (wall-10..28): 1 por tela no fluxo home→setup→lado→personagem, sem
    repetir; o offset rotaciona a cada acesso (localStorage) pra variar entre visitas.
@@ -901,11 +901,9 @@ function ensurePreview() {
   scene.add(new THREE.HemisphereLight(0xffe6c0, 0x5a4a38, 1.1));
   const key = new THREE.DirectionalLight(0xffe0b3, 1.8); key.position.set(2, 4, 3); scene.add(key);
   const rim = new THREE.DirectionalLight(0x88aaff, 0.55); rim.position.set(-3, 2, -2); scene.add(rim);
-  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.06, 26), new THREE.MeshLambertMaterial({ color: 0x2e331f }));
-  disc.position.y = -0.03; disc.receiveShadow = true; scene.add(disc);
   const cam = new THREE.PerspectiveCamera(34, 1, 0.1, 20);
   cam.position.set(0, 1.3, 3.2); cam.lookAt(0, 0.92, 0);
-  pv = { r, scene, cam, model: null, disc };
+  pv = { r, scene, cam, model: null };
   // GIRAR/ZOOM de verdade — a dica embaixo do canvas não pode ser enfeite.
   // Arrastar gira o modelo; scroll aproxima. Durante o arraste o giro automático pausa (ver loop()).
   canvas.addEventListener('pointerdown', e => {
@@ -957,7 +955,6 @@ function snapThumb(obj, fallbackUrl) {
   if (!p) return fallbackUrl;
   const prevVis = p.model ? p.model.visible : false;
   if (p.model) p.model.visible = false;
-  if (p.disc) p.disc.visible = false;   // o disco entra no quadro do retrato e só rouba contraste
   p.scene.add(obj);
   p.r.render(p.scene, thumbCam());
   const c = document.createElement('canvas'); c.width = c.height = THUMB_PX;
@@ -966,7 +963,6 @@ function snapThumb(obj, fallbackUrl) {
   x.fillRect(0, 0, THUMB_PX, THUMB_PX);
   x.drawImage(p.r.domElement, 0, 0, THUMB_PX, THUMB_PX);   // backing 640² -> 128²: downscale = antialias de graça
   p.scene.remove(obj);
-  if (p.disc) p.disc.visible = true;
   if (p.model) p.model.visible = prevVis;
   return c.toDataURL();
 }
@@ -2200,11 +2196,11 @@ $('main-menu').addEventListener('pointerdown', (e) => {
 });
 
 /* ---------------- menu wiring ---------------- */
-// JOGAR sem nick era um SHAKE depois do clique; agora é ESTADO (aria-disabled), atualizado
-// a cada tecla — o jogador vê que falta algo ANTES de tentar.
+// JOGAR nunca depende de cadastro: sem nick, a partida usa o perfil anônimo local.
+// O perfil continua disponível como escolha, não como pedágio para entrar na arena.
 function syncPlayState() {
   const nick = (nickEl.value || '').trim();
-  const b = $('btn-jogar'); if (b) b.setAttribute('aria-disabled', nick ? 'false' : 'true');
+  const b = $('btn-jogar'); if (b) b.setAttribute('aria-disabled', 'false');
   // o botão do passo de perfil mostra o nick de verdade: o jogador sabe com que nome
   // vai entrar sem ter que abrir o passo pra conferir
   const p = $('btn-profile');
@@ -2216,16 +2212,6 @@ function syncPlayState() {
   renderPlayerPlate();   // nick do card do menu acompanha a digitação
 }
 $('btn-jogar').onclick = async () => {
-  if (!(nickEl.value || '').trim()) {
-    // sem nick o JOGAR não morre: ele LEVA pro passo que falta (o nick não está mais
-    // nesta tela, então um shake num campo invisível não diria nada a ninguém)
-    nickEl.placeholder = 'SEM NOME NÃO TEM CORO!';
-    openProfileStep(true);
-    window.__gameLaunch?.ready('menu');
-    nickEl.classList.add('invalid');
-    setTimeout(() => nickEl.classList.remove('invalid'), 1500);
-    return;   // sem nick, sem treta
-  }
   sfx.uiClick();
   await factionArtReady;
   setTeamStep('side');
@@ -2239,9 +2225,11 @@ if (HUB_ENABLED) {
   $('hub-ui').hidden = false;
   const legacySocialLinks = document.querySelector('.menu-footer .mf-social');
   if (legacySocialLinks) $('hub-footer-social').appendChild(legacySocialLinks);
-  $('main-menu').dataset.hubTab = 'jogar';
-  $('main-menu').dataset.hubNet = 'sp';
-  $('main-menu').dataset.hubMpTab = 'public';
+  if (!directRoute) {
+    $('main-menu').dataset.hubTab = 'jogar';
+    $('main-menu').dataset.hubNet = 'sp';
+    $('main-menu').dataset.hubMpTab = 'public';
+  }
   menuSetup.classList.add('open');
   const mpPanel = $('mp-panel');
   $('hub-mp-host').appendChild(mpPanel);
@@ -2256,7 +2244,7 @@ if (HUB_ENABLED) {
       loja: 'Junte TRETA$, escolha uma skin e vista sua próxima treta.',
       comunidade: 'Encontre sua turma, compare o placar e combine a próxima treta.',
       ranking: 'Acompanhe suas partidas e consulte a disponibilidade do placar global.',
-      sobre: 'Conheça as facções, os mapas e as últimas novidades do jogo.',
+      sobre: 'Conheça os grupos do elenco, os mapas e as últimas novidades do jogo.',
       feedback: 'Descreva o bug ou a ideia; a mensagem chega à equipe do jogo.',
       apoie: 'Apoiar o jogo não dá vantagem dentro da partida.',
     };
@@ -2382,9 +2370,7 @@ if (HUB_ENABLED) {
     const name = document.createElement('span'); name.textContent = tr(FACTION_NAME[fac] || fac);
     item.append(crests, name); factionGrid.appendChild(item);
   }
-  const legacyPlay = $('btn-jogar').onclick;
   $('btn-jogar').onclick = () => {
-    if (!(nickEl.value || '').trim()) { legacyPlay(); return; }
     ui.click(); openHubQuick();
   };
   const closeQuick = (updateRoute = true) => { $('hub-quick').hidden = true; $('btn-jogar').focus(); if (updateRoute) hubNavigate({ janela: null, origem: null }); };
@@ -3028,9 +3014,10 @@ const stripStep = (dir) => {
 };
 $('strip-up').onclick = () => { ui.click(); stripStep(-1); };
 $('strip-down').onclick = () => { ui.click(); stripStep(1); };
-// Contador de elenco nos cards de facção ("8 PERSONAGENS" — referência telas/02)
-for (const f of ['e', 'b', 'u', 'c', 'f', 'm']) {
-  const n = CHARACTERS.filter(c => c.team === f.toUpperCase()).length;
+// Contador de personagens disponíveis nos dois cards de time.
+for (const f of ['e', 'b']) {
+  const lado = f.toUpperCase();
+  const n = CHARACTERS.filter(c => podeNoLado(c, lado)).length;
   const card = $('btn-team-' + f);
   if (!card) continue;
   const chip = document.createElement('span');
@@ -3043,8 +3030,7 @@ for (const f of ['e', 'b', 'u', 'c', 'f', 'm']) {
   card.setAttribute('aria-disabled', String(!(n > 0)));
   card.addEventListener('focus', () => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
 }
-/* O dossiê lateral de facção (`presentFaction`, #faction-hero) saiu com o
-   index.astro da branch no merge com a main; ficaram só as chamadas. */
+/* O dossiê lateral antigo saiu com o redesign; ficaram só as chamadas seguras. */
 for (const [id, direction] of [['team-prev', -1], ['team-next', 1]]) {
   const button = $(id);
   if (!button) continue;
@@ -3056,10 +3042,6 @@ for (const [id, direction] of [['team-prev', -1], ['team-next', 1]]) {
 }
 $('btn-team-e').onclick = () => { sfx.uiClick(); pickTeam('E'); };
 $('btn-team-b').onclick = () => { sfx.uiClick(); pickTeam('B'); };
-$('btn-team-u') && ($('btn-team-u').onclick = () => { sfx.uiClick(); pickTeam('U'); });
-$('btn-team-c') && ($('btn-team-c').onclick = () => { sfx.uiClick(); pickTeam('C'); });
-$('btn-team-f') && ($('btn-team-f').onclick = () => { sfx.uiClick(); pickTeam('F'); });
-$('btn-team-m') && ($('btn-team-m').onclick = () => { sfx.uiClick(); pickTeam('M'); });
 $('btn-resume').onclick = () => { sfx.uiClick(); game?.resume(); };
 $('btn-pause-settings').onclick = () => { sfx.uiClick(); settingsReturn = 'pause-menu'; show('settings-panel'); };
 $('btn-pause-controls').onclick = () => { sfx.uiClick(); howtoReturn = 'pause-menu'; show('howto-panel'); };
@@ -3177,29 +3159,25 @@ $('char-confirm').onclick = () => {
   }
 };
 
-// Esconde/mostra o card da sua facção na tela de adversário; os demais continuam juntos.
+// A tela tem somente os dois times de gameplay.
 function setEnemyPickMode(on, myFaction) {
-  for (const f of ['e', 'b', 'u', 'c', 'f', 'm']) {
+  for (const f of ['e', 'b']) {
     const b = $('btn-team-' + f);
     if (b) b.classList.toggle('hidden', !!(on && f.toUpperCase() === myFaction));
   }
 }
-/* A MESMA tela serve dois passos e precisa DIZER qual é. Antes o único sinal era o
-   título trocado por querySelector em 4 lugares diferentes do arquivo — e o 2º passo
-   ficava com cara de formulário ("escolha o adversário" e três caixas iguais).
-   Agora o passo é um estado (data-step) que a tela inteira lê: eyebrow, título, dica
-   e o texto da barra de ação de cada placa (ver .team-cta no style.css). */
+/* A mesma tela serve escolha do time e, no fluxo antigo, do adversário. */
 function setTeamStep(step, myFaction) {
   const ts = $('team-select'); if (ts) ts.dataset.step = step;
   const st = $('team-step'), tt = $('team-title'), hint = $('team-hint');
   if (step === 'enemy') {
     if (st) st.textContent = tr('PASSO 4 · O ADVERSÁRIO');
     if (tt) tt.textContent = tr('QUEM VAI LEVAR O CORO?');
-    if (hint) hint.textContent = frase('escolhaAdversario', tr(FACTION_NAME[myFaction] || 'os seus'));
+    if (hint) hint.textContent = frase('escolhaAdversario', tr(FACTION_NAME[myFaction] || 'o seu time'));
   } else {
-    if (st) st.textContent = tr('PASSO 2 · O SEU LADO');
-    if (tt) tt.textContent = tr('ESCOLHA SEU LADO DA TRETA');
-    if (hint) hint.textContent = tr('Cada facção tem elenco, grito e jeito de brigar. Escolha o coro.');
+    if (st) st.textContent = tr('PASSO 2 · O SEU TIME');
+    if (tt) tt.textContent = tr('ESCOLHA SEU TIME');
+    if (hint) hint.textContent = tr('Toda partida é Time E contra Time B.');
   }
 }
 
@@ -3533,17 +3511,16 @@ function glbThumb(def) {
   for (let i = 0; i < 42; i++) m.mixer.update(1 / 60); // settle into the idle pose
   return snapThumb(m.group, portraitUrl(def));
 }
-/* ---------------- previews 3D dos times nos cards (pedido do dono: "uma imagem
-   preview dos models, tipo um time") — renderiza 4 GLBs reais de cada facção no
-   renderer de preview (dataURL) e cacheia no card. Roda 1x por visita ao menu. */
+/* Previews 3D dos dois times: quatro personagens disponíveis por lado, cacheados
+   uma vez por visita. Grupos do catálogo não ganham cards nesta tela. */
 let teamPreviewsDone = false;
 function ensureTeamPreviews() {
   if (teamPreviewsDone) return;
   teamPreviewsDone = true;
-  for (const [btn, fac] of [['btn-team-e', 'E'], ['btn-team-b', 'B'], ['btn-team-u', 'U'], ['btn-team-c', 'C'], ['btn-team-f', 'F'], ['btn-team-m', 'M']]) {
+  for (const [btn, lado] of [['btn-team-e', 'E'], ['btn-team-b', 'B']]) {
     const box = document.querySelector(`#${btn} .team-chars`);
     if (!box) continue;
-    const chars = CHARACTERS.filter(c => c.team === fac && GLB_CHARS.has(c.id)).slice(0, 4);
+    const chars = CHARACTERS.filter(c => podeNoLado(c, lado) && GLB_CHARS.has(c.id)).slice(0, 4);
     if (!chars.length) continue;
     box.innerHTML = chars.map(() => '<span class="tc-slot"></span>').join('');
     const slots = [...box.children];
@@ -3557,15 +3534,13 @@ function ensureTeamPreviews() {
   }
 }
 function pickTeam(faction) {
-  /* Facção sem elenco não abre lista vazia: guarda única, cobre clique e teclado
-     (o card já nasce `aria-disabled` no laço do contador). */
-  if (!CHARACTERS.some(c => c.team === faction)) { ui.back(); return; }
-  // Card E/B escolhe o LADO e lista quem pode jogar nele; os outros cards são categorias do elenco.
-  const lado = faction === 'E' || faction === 'B' ? faction : null;
-  if (lado) currentTeam = lado;
+  /* Time sem elenco disponível não abre lista vazia. */
+  if (!CHARACTERS.some(c => podeNoLado(c, faction))) { ui.back(); return; }
+  const lado = faction;
+  currentTeam = lado;
   currentFaction = currentTeam;
   // estado de seleção persistente nos cards: ao voltar do personagem, a tela diz qual é o SEU lado
-  for (const f of ['e', 'b', 'u', 'c', 'f', 'm']) {
+  for (const f of ['e', 'b']) {
     const b = $('btn-team-' + f);
     if (b) b.setAttribute('aria-pressed', String(f.toUpperCase() === faction));
   }
@@ -3659,13 +3634,11 @@ function selectChar(c, row) {
   row.classList.add('sel'); row.setAttribute('aria-selected', 'true');
   pvSetChar(c);
   if (staticPreviews) pvSetVideo(c); else pvStopVideo();
-  // rótulo da facção + tamanho do elenco sobre o nome (referência 03: "PALHAÇOS · 8 PERSONAGENS")
+  // Grupo editorial do personagem; Time E/Time B já foi escolhido na etapa anterior.
   const tagEl = $('char-faction-tag');
-  // spans separados (não uma string só) pro CSS poder quebrar em 2 linhas no mobile: some o
-  // "·" e joga a contagem pra linha de baixo. No desktop segue inline numa linha.
-  const nFac = CHARACTERS.filter(x => x.team === currentFaction).length;
-  if (tagEl) tagEl.innerHTML = `<span class="cft-fac">${tr(FACTION_NAME[currentFaction] || '')}</span>`
-    + `<span class="cft-sep"> · </span><span class="cft-count">${nFac} ${tr('PERSONAGENS')}</span>`;
+  const nGrupo = CHARACTERS.filter(x => x.team === c.team).length;
+  if (tagEl) tagEl.innerHTML = `<span class="cft-fac">${tr(FACTION_NAME[c.team] || '')}</span>`
+    + `<span class="cft-sep"> · </span><span class="cft-count">${nGrupo} ${tr('PERSONAGENS')}</span>`;
   $('char-info-name').textContent = c.name;
   $('char-info-blurb').textContent = tr(c.blurb);
   renderCharAttrs(c);
@@ -4301,7 +4274,7 @@ async function mpAtualizarSalas() {
       `<div class="mp-sala-top"><div class="mp-sala-nome">${r.name}${tags}</div>`
       + `<div class="mp-lot"><span class="mp-lot-bar"><i style="width:${Math.round(frac * 100)}%"></i></span>`
       + `<b>${r.players}</b>/${r.max}${r.spectators ? `<span class="mp-lot-spec">+${r.spectators} assistindo</span>` : ''}</div></div>`
-      + `<div class="mp-sala-sub">${r.mapNome || MAPS[r.map]?.name || r.map} · ${r.nomeE} × ${r.nomeB}`
+      + `<div class="mp-sala-sub">${r.mapNome || MAPS[r.map]?.name || r.map} · ${FACTION_NAME.E} × ${FACTION_NAME.B}`
       + (Array.isArray(r.mapas) && r.mapas.length
         ? ` · ${r.mapas.length === 1 ? 'mapa fixo' : `${r.mapas.length} mapas na fila`}` : '')
       + '</div>'
@@ -4315,8 +4288,8 @@ async function mpAtualizarSalas() {
       const b = document.createElement('button');
       b.className = 'mp-entrar'; b.type = 'button';
       b.dataset.lado = lado;
-      b.textContent = `${lado === 'E' ? r.nomeE : r.nomeB} ${livres}`;
-      b.title = livres ? `Entrar no time ${lado === 'E' ? r.nomeE : r.nomeB} (${livres} vaga(s))` : 'Esse lado está cheio';
+      b.textContent = `${FACTION_NAME[lado]} ${livres}`;
+      b.title = livres ? `Entrar no ${FACTION_NAME[lado]} (${livres} vaga(s))` : 'Esse time está cheio';
       b.disabled = !livres;
       b.onclick = () => { ui.click(); mpEntrar(r, lado); };
       acoes.appendChild(b);
@@ -4752,10 +4725,10 @@ function mpPedirPersonagemPreferido(net, motivo = null) {
   if (d.acao === 'pedir') net.pedirPersonagem(d.id);
   else if (d.acao === 'avisar-servidor') mpAvisoPersonagem(`${escolhido.name}: este servidor ainda não troca o personagem.`);
   else if (d.acao === 'avisar-lado') {
-    const nomeLado = (l) => (l === 'E' ? 'ESQUERDA' : 'DIREITA');
-    const cheio = motivo === 'lado_cheio' ? ` A ${nomeLado(d.outroLado)} está cheia agora.` : '';
-    mpAvisoPersonagem(`${escolhido.name} não joga na ${nomeLado(net.yourTeam)}.${cheio}`, {
-      ir: `IR PARA A ${nomeLado(d.outroLado)}`,
+    const nomeLado = (l) => FACTION_NAME[l] || 'TIME';
+    const cheio = motivo === 'lado_cheio' ? ` O ${nomeLado(d.outroLado)} está cheio agora.` : '';
+    mpAvisoPersonagem(`${escolhido.name} não joga no ${nomeLado(net.yourTeam)}.${cheio}`, {
+      ir: `IR PARA O ${nomeLado(d.outroLado)}`,
       onIr: () => { ui.click(); net.pedirTime(d.outroLado); game?.resume(); },
     });
   }
@@ -4813,8 +4786,8 @@ function mpAtualizarBarraSpec(estado) {
     bar.innerHTML = '<span>ASSISTINDO <b id="mp-spec-quem">—</b></span>'
       + '<button id="mp-spec-prev" type="button">◂ ANTERIOR</button>'
       + '<button id="mp-spec-next" type="button">PRÓXIMO ▸</button>'
-      + '<button id="mp-spec-e" type="button">ENTRAR NA ESQUERDA</button>'
-      + '<button id="mp-spec-b" type="button">ENTRAR NA DIREITA</button>'
+      + '<button id="mp-spec-e" type="button">ENTRAR NO TIME E</button>'
+      + '<button id="mp-spec-b" type="button">ENTRAR NO TIME B</button>'
       + '<button id="mp-spec-sair" type="button">SAIR</button>';
     document.body.appendChild(bar);
     bar.querySelector('#mp-spec-prev').onclick = () => window.__game?._mp?.trocarAlvo(-1);
@@ -4830,9 +4803,7 @@ function mpAtualizarBarraSpec(estado) {
       const quem = document.getElementById('mp-spec-quem');
       if (quem) quem.textContent = mp?.nomeAlvo || '—';
       const be = document.getElementById('mp-spec-e'), bb = document.getElementById('mp-spec-b');
-      // nome da FACÇÃO, não a letra do lado (BUG-110)
-      const meta = mpSessao?.net?.meta || {};
-      const nomeE = meta.nomeE || 'ESQUERDA', nomeB = meta.nomeB || 'DIREITA';
+      const nomeE = FACTION_NAME.E, nomeB = FACTION_NAME.B;
       if (be) { be.disabled = !(vagas && vagas.E > 0); be.textContent = `ENTRAR: ${nomeE}${vagas ? ` (${vagas.E})` : ''}`; }
       if (bb) { bb.disabled = !(vagas && vagas.B > 0); bb.textContent = `ENTRAR: ${nomeB}${vagas ? ` (${vagas.B})` : ''}`; }
     }, 400);
@@ -4890,6 +4861,7 @@ void initAccountEntry({skipPrompt:Boolean(inspectionScreen || testMode || params
 initTretaStore({skipPrompt:Boolean(inspectionScreen || testMode || params.get('sala') || perfilCompartilhado),onEquipped:skin=>{currentChar=skin.character;const def=CHARACTERS.find(c=>c.id===currentChar);currentTeam=ladoValido(def,currentTeam);currentFaction=currentTeam;localStorage.setItem('csbr-home-character',currentChar);localStorage.setItem('csbr-home-side',currentTeam);syncHomeCharacter();hubNavigate({personagem:currentChar},true);}});
 document.addEventListener('cs-treta-inventory-change',()=>syncHomeCharacter());
 // Vitrine SKINS NOVAS: o módulo só baixa quando a loja responde com skin à venda.
+if (directRoute) document.getElementById('boot-splash')?.remove();
 const abrirVitrine=()=>{if(!tretaVitrine()?.length)return;document.removeEventListener('cs-treta-state',abrirVitrine);void import('./treta-vitrine.js').then(m=>m.iniciarVitrine()).catch(()=>{});};
 document.addEventListener('cs-treta-state',abrirVitrine);
 if (inspectionScreen) {

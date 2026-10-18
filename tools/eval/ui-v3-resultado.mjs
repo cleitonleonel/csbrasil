@@ -70,7 +70,7 @@ async function abrirPartida(lang, flag, mutante) {
   });
   await page.goto(`${BASE}/?${flag ? 'ui=v3&' : ''}lang=${lang}&debug=1&auto=E,esquerdomacho&map=praca_poderes`, { waitUntil: 'commit', timeout: 120000 });
   await page.waitForFunction(() => window.__game?.state === 'live', null, { timeout: 180000 });
-  await page.addStyleTag({ content: '#launch-error,#crash-overlay{display:none!important}' });
+  await page.addStyleTag({ content: '#launch-error,#crash-overlay,astro-dev-toolbar{display:none!important;pointer-events:none!important}' });
   await page.waitForTimeout(800);
   return { page, pedidos };
 }
@@ -254,7 +254,7 @@ async function medir(mutante = '') {
     const ficou = d.visivel && !(await page.evaluate(() => document.getElementById('match-end').classList.contains('hidden')));
     const rs7 = r.find((c) => c.id === 'RS7');
     if (!ficou) { rs7.ok = false; rs7.msg += '; ENTER durante a contagem saiu da tela'; }
-    add('RS4', fraseVit === 'A Esquerda levou a treta. O pastel da vitória está pago.' && d.frase === 'A Direita levou a melhor. Já pediram CPI da partida.' && !/venceram|levaram/.test(fraseVit + d.frase),
+    add('RS4', fraseVit === 'A Time E levou a treta. O pastel da vitória está pago.' && d.frase === 'A Time B levou a melhor. Já pediram CPI da partida.' && !/venceram|levaram/.test(fraseVit + d.frase),
       `vitória: "${fraseVit}"; derrota: "${d.frase}"`);
     add('RS11b', d.visivel && !d.mvp && !d.medalhas.length, `um bot com 30 abates e combo 1: MVP ${d.mvp ? 'visível' : 'escondido'}, medalhas [${d.medalhas.join(', ')}]`);
     await foto(page, 'v3-derrota-1536x1024');
@@ -314,7 +314,7 @@ async function medir(mutante = '') {
     await foto(page, 'v3-vitoria-en-844x390');
     const vazaEn = (e.texto.match(PT_VAZA) || [])[0];
     const vazaPt = ptTexto.length ? (ptTexto[0].match(EN_VAZA) || [])[0] : null;
-    add('RS9', e.titulo === 'VICTORY' && !vazaEn && !vazaPt && /^The Left took the fight/.test(e.frase),
+    add('RS9', e.titulo === 'VICTORY' && !vazaEn && !vazaPt && /^The Team E took the fight/.test(e.frase),
       vazaEn || vazaPt ? `idioma misturado: "${vazaEn || vazaPt}" ${vazaEn ? 'em EN' : 'em PT'}` : `EN: "${e.titulo}", "${e.frase}"${ptTexto.length ? '; PT sem string EN' : ''}`);
     await clicar(page, '.tp-res__lobby');
     const menu = await sai(page) && await page.evaluate(() => !document.getElementById('main-menu').classList.contains('hidden'));

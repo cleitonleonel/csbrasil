@@ -19,10 +19,11 @@
 //
 // Sai 1 se qualquer card não render 1200×630, então serve de portão.
 // ============================================================================
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { initWasm, Resvg } from '@resvg/resvg-wasm';
-import { CARDS, cardSvg, OG_W, OG_H } from '../../src/lib/og-card.ts';
+import { CARDS, cardSvg, routeCard, OG_W, OG_H } from '../../src/lib/og-card.ts';
 
 // A FONTE É LIDA COMO TEXTO, NÃO IMPORTADA. src/lib/font-data.ts tem 996 KB e
 // 7.844 linhas de base64 num único literal, e isso ESTOURA A PILHA de qualquer
@@ -76,7 +77,18 @@ const dims = (b) => [b.readUInt32BE(16), b.readUInt32BE(20)];
 const falhas = [];
 console.log('\n=============== OG CARDS — CORO SOLTO ===============');
 console.log(`fonte: DejaVu Sans Bold, ${Math.round(fonte.length / 1024)} KB decodificados\n`);
-for (const [tipo, monta] of Object.entries(CARDS)) {
+const rotas = [
+  { rota: '/ranking', titulo: 'Placar da Rua' },
+  { rota: '/loja', titulo: 'Loja de skins' },
+  { rota: '/configuracoes', titulo: 'Configurações' },
+  { rota: '/grupos/E', titulo: 'Arquétipos de Esquerda' },
+];
+const casos = [
+  ...Object.entries(CARDS).map(([tipo, monta]) => ({ id: tipo, path: `/api/og/${tipo}.png`, monta })),
+  ...rotas.map(({ rota, titulo }) => ({ id: `pagina-${rota.slice(1).replace('/', '-')}`, path: `/api/og/pagina.png?${new URLSearchParams({ rota, titulo })}`, monta: () => routeCard(rota, titulo), rota })),
+];
+const routeHashes = new Set();
+for (const { id: tipo, path, monta, rota } of casos) {
   let motivo = null, w = 0, h = 0, kb = 0, card = null;
   try {
     card = monta();
@@ -90,6 +102,10 @@ for (const [tipo, monta] of Object.entries(CARDS)) {
       [w, h] = dims(png);
       if (w !== OG_W || h !== OG_H) motivo = `${w}×${h}, esperado ${OG_W}×${OG_H}`;
     }
+    if (!motivo && rota) {
+      routeHashes.add(createHash('sha256').update(png).digest('hex'));
+      if (!card.itens.some(([, meta]) => meta === rota)) motivo = `card não identifica a rota ${rota}`;
+    }
     if (!motivo && !card.itens.length) motivo = 'card sem nenhuma linha de item';
     if (SALVAR && !motivo) {
       const p = `/tmp/og-${tipo}.png`;
@@ -101,12 +117,16 @@ for (const [tipo, monta] of Object.entries(CARDS)) {
     motivo = `exceção: ${String(e.message).slice(0, 90)}`;
   }
   if (motivo) falhas.push(tipo);
-  console.log(`${motivo ? '✗ FALHA' : '✓ PASSA'} /api/og/${tipo}.png  ${w}×${h}  ${kb} KB`);
+  console.log(`${motivo ? '✗ FALHA' : '✓ PASSA'} ${path}  ${w}×${h}  ${kb} KB`);
   if (card) console.log(`         "${card.titulo}" · ${card.etiqueta} · ${card.itens.length} linhas: ${card.itens.map(([n]) => n).join(', ').slice(0, 70)}`);
   if (motivo) console.log(`         └─ ${motivo}`);
 }
+if (routeHashes.size !== rotas.length) {
+  falhas.push('rotas-distintas');
+  console.log(`✗ FALHA cards de rota não são distintos: ${routeHashes.size}/${rotas.length} hashes`);
+}
 console.log('\n----------------------------------------------------');
-console.log(`${Object.keys(CARDS).length - falhas.length}/${Object.keys(CARDS).length} cards renderizam` +
+console.log(`${casos.length - falhas.length}/${casos.length} cards renderizam` +
   (falhas.length ? `  ← ${falhas.join(', ')} VERMELHOS` : '  ← tudo verde'));
 console.log('----------------------------------------------------\n');
 process.exit(falhas.length ? 1 : 0);

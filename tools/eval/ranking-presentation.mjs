@@ -38,7 +38,7 @@ try {
  assert(nodes.some(n=>n.tag==='a' && n.href==='/u/ruben'),'ranking does not use canonical profile handle');
  assert(nodes.some(n=>n.tag==='a' && n.href==='https://x.com/ruben'),'ranking has no social profile link');
  assert(!nodes.some(n=>n.href?.startsWith('javascript:')),'unsafe profile link rendered');
- assert(nodes.some(n=>n.textContent==='ESQUERDA') && nodes.some(n=>n.textContent==='DIREITA'),'current team headings absent');
+ assert(nodes.some(n=>n.textContent==='TIME E') && nodes.some(n=>n.textContent==='TIME B'),'current team headings absent');
  const weekly=nodes.find(n=>n.tag==='button' && n.textContent==='SEMANAL');
  assert(weekly,'dedicated weekly ranking tab absent');
  assert.equal(weekly.attributes['aria-pressed'],'false');

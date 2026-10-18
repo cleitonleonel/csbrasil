@@ -7,17 +7,16 @@
 // resolvido não bate (mesmas regras do public/js/i18n.js).
 import Layout from '../layouts/Layout.astro';
 import pkg from '../../package.json';
-import { ARMAS, MAPAS, PERSONAGENS, FACCOES } from '../data/jogo';
+import { ARMAS, MAPAS, PERSONAGENS, GRUPOS } from '../data/jogo';
 import { BRAND_FULL, BRAND_ALT, GAME_ID, abs, RANKING_DESCRIPTION_EN } from '../lib/site';
 
 // overlay EN: a DESC_LONG oficial é PT e mora em src/lib/site.ts; aqui a
 // tradução fica local, como os overlays de characters.astro.
 const DESC_LONG_EN =
-  'Free browser FPS game: a CS 1.6 praca_poderes-style sniper arena set in a fictional, ' +
-  'satirical Brazil. Factions, folklore characters, ' +
-  `${MAPAS.length} selectable maps, ${ARMAS.length} weapons, bots, multiplayer beta, rounds, CTF, scoreboard and voice radio. Touch-control web beta for phones; no sign-up.`;
-const FAC_NOME_EN: Record<string, string> = {
-  E: 'Team E', B: 'Team B', urbanas: 'Urban Tribes', palhacos: 'Clowns', funkeiros: 'Funkeiros', mitico: 'Mythic',
+  'Free browser FPS game: Team E versus Team B in a fictional, satirical Brazil, ' +
+  `with ${MAPAS.length} selectable maps, ${ARMAS.length} weapons, bots, multiplayer beta, rounds, CTF, scoreboard and voice radio. Touch-control web beta for phones; no sign-up.`;
+const GROUP_NAME_EN: Record<string, string> = {
+  E: 'Left', B: 'Right', P: 'Politicians', urbanas: 'Urban Tribes', palhacos: 'Clowns', funkeiros: 'Funkeiros', mitico: 'Mythic',
 };
 
 const jsonld = [
@@ -49,7 +48,7 @@ const jsonld = [
   <Fragment slot="sub">
     Team E × Team B in a fictional, satirical Brasília: a giant broken ballot box in the
     middle of the arena, a corner bar, pastel, a campsite and Congress on the horizon.
-    {PERSONAGENS.length} characters in {FACCOES.length} catalogue groups, {MAPAS.length} maps,
+    {PERSONAGENS.length} characters in {GRUPOS.length} catalogue groups, {MAPAS.length} maps,
     {ARMAS.length} weapons, bots, rounds, CTF, headshots and Unreal Tournament-style multikills.
   </Fragment>
 
@@ -72,7 +71,7 @@ const jsonld = [
 
   <div class="tstat" style="margin-top:26px">
     <div><b>{PERSONAGENS.length}</b><span>characters</span></div>
-    <div><b>{FACCOES.length}</b><span>catalogue groups</span></div>
+    <div><b>{GRUPOS.length}</b><span>catalogue groups</span></div>
     <div><b>{MAPAS.length}</b><span>maps</span></div>
     <div><b>{ARMAS.length}</b><span>weapons</span></div>
   </div>
@@ -87,7 +86,7 @@ const jsonld = [
   <h2>Frequently asked questions</h2>
   <details open><summary><strong>What is {BRAND_FULL}?</strong></summary>
     <p>A free FPS game that runs in the browser: a CS 1.6 praca_poderes-style sniper arena set in a
-      fictional, satirical Brasília, with {FACCOES.length} catalogue groups,{' '}
+      fictional, satirical Brasília, with Team E and Team B, {GRUPOS.length} catalogue groups,{' '}
       {PERSONAGENS.length} original characters, {MAPAS.length} maps, {ARMAS.length} weapons, bots,
       a round system and Capture the Flag.</p></details>
   <details><summary><strong>Do I need to install or pay anything?</strong></summary>
@@ -96,8 +95,8 @@ const jsonld = [
   <details><summary><strong>Does it work on mobile?</strong></summary>
     <p>Yes. The web beta has touch controls; play in landscape. Performance varies by device and
       browser.</p></details>
-  <details><summary><strong>What are the factions?</strong></summary>
-    <p>{FACCOES.map(f => FAC_NOME_EN[f.id] || f.nome).join(', ')}. The catalogue also includes cultural and folklore groups. The cast mixes Brazilian satire, folklore and political caricatures.</p></details>
+  <details><summary><strong>What are the teams and cast groups?</strong></summary>
+    <p>Matches use Team E and Team B. {GRUPOS.map(g => GROUP_NAME_EN[g.id] || g.nome).join(', ')} are catalogue groups, not extra teams.</p></details>
   <details><summary><strong>Is this an official Valve or Counter-Strike game?</strong></summary>
     <p>No. It's an independent fan-made parody, with no affiliation with Valve whatsoever.
       Counter-Strike is a trademark of Valve Corporation.</p></details>

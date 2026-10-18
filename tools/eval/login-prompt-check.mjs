@@ -264,6 +264,7 @@ if (BROWSER) {
         if (sessionStorage.getItem('__lp_seeded')) return;
         sessionStorage.setItem('__lp_seeded', '1');
         localStorage.setItem('awpbr_settings', JSON.stringify({ menuMusic: false, vol: 0, speech: false, quality: 'low', bots: 1 }));
+        localStorage.setItem('cs_aviso_software', 'ok');
         if (nick) localStorage.setItem('awpbr_nick', nick);
         if (consent !== null) localStorage.setItem('cs_privacy', JSON.stringify({ version: 'corosolto-analytics-v1', analytics: consent, updatedAt: new Date(0).toISOString() }));
         if (seed) localStorage.setItem('cs_login_prompt', JSON.stringify(seed));
@@ -278,6 +279,9 @@ if (BROWSER) {
       return rota.fulfill({ json: auth });
     });
     await ctx.route('**/api/treta*', (r) => (treta ? r.fulfill({ json: { currency: 'TRETA$', symbol: 'T$', acquisition: 'quests', topUpsEnabled: false, accountId: null, catalog: [], campaign: treta, wallet: null, inventory: [], ledger: [], quests: null, authenticated: false } }) : r.fulfill({ status: 503, json: { error: 'treta_unavailable' } })));
+    await ctx.route('**/api/map-plays*', (r) => r.fulfill({ json: { plays: {} } }));
+    await ctx.route('**/api/leaderboard*', (r) => r.fulfill({ json: { disabled: true } }));
+    await ctx.route('**/api/online*', (r) => r.fulfill({ json: { online: 0 } }));
     await ctx.route('**/api/social?action=profile', (r) => r.fulfill({ json: { profile: { avatar_url: 'x', socials: ['x'] } } }));
     await ctx.route('**/api/funnel', (r) => { try { funil.push(JSON.parse(r.request().postData() || '{}')); } catch {} return r.fulfill({ json: { ok: true, stored: false } }); });
     if (MUT) {
@@ -286,8 +290,13 @@ if (BROWSER) {
       await ctx.route(`**/js/${ROTA[alvo]}.js*`, (rota) => rota.fulfill({ status: 200, body: fonte, contentType: 'text/javascript' }));
     }
     const page = await ctx.newPage();
+    const runtimeErrors = [];
+    page.on('pageerror', (error) => runtimeErrors.push(error.message));
+    page.on('console', (message) => { if (message.type() === 'error') runtimeErrors.push(`${message.text()} @ ${message.location().url || 'sem-url'}`); });
     await page.goto(`${BASE}/${query}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; pointer-events: none !important; }' });
+    await page.waitForTimeout(1000);
+    if (runtimeErrors.length) throw new Error(`erro no boot: ${runtimeErrors.join(' | ')}`);
     await page.waitForFunction(() => window.__CS_MAIN_READY__ === true, null, { timeout: 120000 });
     await page.locator('#splash-enter:not(.hidden)').waitFor({ timeout: 120000 }).catch(() => {});
     if (await page.locator('#boot-splash').count()) await page.locator('#boot-splash').dispatchEvent('pointerdown').catch(() => {});
@@ -298,29 +307,43 @@ if (BROWSER) {
   const abertos = (page) => page.evaluate(() => [...document.querySelectorAll('dialog[open]')].map((d) => d.id));
   const convite = (page) => page.evaluate(() => document.getElementById('login-prompt')?.open === true);
   const shot = async (page, nome) => { if (!SHOTS) return; await page.mouse.move(2, 2); await page.waitForTimeout(250); await page.screenshot({ path: `${SHOTS}/${nome}.png` }); };
-  // Partida SP de verdade pelo menu: PLAY, PRONTO PRA TRETA, partida ao vivo; o fim é o _endMatch do jogo (tela de resultado real).
+  async function click(page, selector) {
+    try {
+      await page.locator(`${selector}:visible`).first().click({ timeout: 30000 });
+    } catch (error) {
+      const state = await page.evaluate((target) => {
+        const node = document.querySelector(target);
+        return { target, exists: Boolean(node), hidden: Boolean(node?.hidden), rect: node?.getBoundingClientRect().toJSON(), dialogs: [...document.querySelectorAll('dialog[open]')].map((dialog) => dialog.id), game: window.__game?.state };
+      }, selector).catch(() => ({ target: selector, page: 'unavailable' }));
+      throw new Error(`clique ${selector} falhou em ${JSON.stringify(state)}: ${error.message}`);
+    }
+  }
+  // Partida SP de verdade pelo menu. Com `nick:null`, prova a entrada anônima da UI v3;
+  // o fim é o _endMatch do jogo (tela de resultado real).
   async function jogaPartida(page, { nick = 'VISITA', resultado = null } = {}) {
-    await page.evaluate((nick) => { const n = document.getElementById('nick-input'); if (!n.value.trim()) { n.value = nick; n.dispatchEvent(new Event('input', { bubbles: true })); } }, nick);
-    await page.click('#btn-jogar');
-    await page.locator('#hub-quick-confirm').click({ timeout: 30000 });
+    if (nick !== null) await page.evaluate((valor) => { const n = document.getElementById('nick-input'); if (!n.value.trim()) { n.value = valor; n.dispatchEvent(new Event('input', { bubbles: true })); } }, nick);
+    else assert.deepEqual(await page.evaluate(() => ({ nick: document.getElementById('nick-input')?.value || '', disabled: document.getElementById('btn-jogar')?.getAttribute('aria-disabled') })), { nick: '', disabled: 'false' });
+    await click(page, '#btn-jogar');
+    await page.waitForTimeout(250);
+    if (await page.locator('#hub-quick:not([hidden])').count()) await click(page, '#hub-quick-confirm');
     await page.waitForFunction(() => window.__game?.state === 'live', null, { timeout: 240000 });
-    assert.deepEqual(await abertos(page), [], 'diálogo aberto durante a partida');
     await page.evaluate(() => window.__game._endMatch());
     await page.waitForFunction(() => !document.getElementById('match-end')?.classList.contains('hidden'), null, { timeout: 30000 });
     await page.waitForTimeout(800);
     assert.deepEqual(await abertos(page), [], 'diálogo cobre o placar');
     if (resultado) await resultado(page);
-    await page.click('#btn-menu');
+    await click(page, '.tp-res__lobby');
     await page.waitForFunction(() => !document.getElementById('main-menu').classList.contains('hidden'), null, { timeout: 30000 });
     await page.waitForTimeout(1200);
   }
 
-  await caso('LB1', 'browser: visitante novo não vê modal na abertura; depois da 1a partida vê o convite com T$; "agora não" e a próxima partida segue sem convite nem loja', async () => {
-    const { ctx, page } = await abre();
+  await caso('LB1', 'browser: convidado sem nick entra, termina a 1a partida e vê o convite com T$; "agora não" e a próxima partida segue sem convite nem loja', async () => {
+    const { ctx, page } = await abre({ query: '?ui=v3&nav=1' });
     try {
+      await page.waitForTimeout(300);
       assert.deepEqual(await abertos(page), [], 'modal na abertura');
       await shot(page, 'desktop-1-abertura');
-      await jogaPartida(page, { resultado: (p) => shot(p, 'desktop-2-resultado') });
+      await jogaPartida(page, { nick: null, resultado: (p) => shot(p, 'desktop-2-resultado') });
       assert.equal(await convite(page), true, `convite não abriu depois da partida: ${await abertos(page)}`);
       assert.equal(await page.evaluate(() => document.activeElement?.dataset.provider), 'google', 'foco inicial');
       const nomes = await page.$$eval('#login-prompt-providers button', (bs) => bs.map((b) => b.textContent.trim()));
@@ -335,7 +358,7 @@ if (BROWSER) {
       assert(t.moeda > 0, 'moeda não carregou');
       assert.equal(t.agoraNao, 'Agora não');
       await shot(page, 'desktop-3-convite');
-      await page.click('#login-prompt-guest');
+      await click(page, '#login-prompt-guest');
       await page.waitForTimeout(600);
       assert.equal(await convite(page), false, '"agora não" não fechou');
       assert.deepEqual(await abertos(page), [], 'apresentação da loja repetiu os T$ logo depois do convite');

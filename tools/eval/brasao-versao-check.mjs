@@ -26,7 +26,7 @@ if (!['', 'defasado', 'sem-v'].includes(MUTANTE)) { console.error(`mutante desco
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 
 /* Dívida fora desta frente (menu e CSS de outro dono). Só pode descer. */
-const DIVIDA = { 'public/js/main.js': 3, 'src/pages/index.astro': 7, 'public/style.css': 6 };
+const DIVIDA = { 'public/js/main.js': 3, 'public/style.css': 6 };
 
 const disco = versoes();
 let manifesto = readFileSync(OUT, 'utf8');

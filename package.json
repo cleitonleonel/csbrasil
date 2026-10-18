@@ -2,7 +2,7 @@
   "name": "coro-solto",
   "version": "2.1.0-alpha.106",
   "license": "AGPL-3.0-only",
-  "description": "CORO SOLTO: Treta Suprema (ex-CS BRASIL) — FPS satírico de navegador com facções brasileiras fictícias (site Astro + jogo vanilla em Three.js), gerado em par com agentes de IA (AI generated & AI friendly)",
+  "description": "CORO SOLTO: Treta Suprema (ex-CS BRASIL) — FPS satírico de navegador com 63 personagens em dois times (site Astro + jogo vanilla em Three.js), gerado em par com agentes de IA (AI generated & AI friendly)",
   "scripts": {
     "dev": "npm run copy-wasm && astro dev",
     "// ranking": "Relato de Ruben: fotos, perfis e times no placar; renderers reais e mutantes.",
@@ -445,7 +445,6 @@
     "eval:occluders": "node tools/eval/occluder-ray-check.mjs",
     "eval:slice-abilities": "node tools/eval/vertical-slice-abilities-check.mjs",
     "eval:map-source": "node tools/eval/map-source-check.mjs",
-    "eval:faction-registry": "node tools/eval/faction-registry-check.mjs",
     "eval:origmaps": "node tools/eval/original-map-check.mjs",
     "voices": "node tools/gen-character-voices.mjs --provider openrouter",
     "spec": "node tools/spec.mjs",

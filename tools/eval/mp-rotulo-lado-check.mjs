@@ -4,18 +4,17 @@
 
    Online, `_startGame` (main.js) faz `faction = charDef.team` e só no SP troca a facção pelo
    lado (`if (!online) faction = side`, commit 71f14c79). O servidor manda os lados E/B
-   (`GET /rooms`: faccaoE "E", faccaoB "B", nomeE "ESQUERDA", nomeB "DIREITA"), mas o
-   `playerFaction` do Game fica com a categoria do personagem (C/F/U/M/P). E tudo que dá nome
-   ao time lia essa letra: placar ("PALHAÇOS"), HUD ("PLH 0 × 0 DIR"), banners, vitória,
-   brasão (c.png/f.png), chip versus da tela de carregamento e o cartão "SEU PERSONAGEM NO
-   MULTIPLAYER". Político (P) nem tinha rótulo: aparecia "P".
+   (`GET /rooms`: faccaoE "E", faccaoB "B"), mas o `playerFaction` do Game fica com a
+   categoria visual do personagem (C/F/U/M/P). Tudo que nomeia o time deve ignorar essa
+   categoria: placar ("TIME E"), HUD ("E 0 × 0 B"), banners, vitória, brasão (e.png/b.png),
+   chip versus da tela de carregamento e o cartão "SEU PERSONAGEM NO MULTIPLAYER".
 
    A REGRA QUE ESTA RÉGUA SEGURA
 
      · rótulo, sigla e brasão do time saem do LADO (E/B);
      · a viewmodel (luva/braços, game.js `GLOVE[this.playerFaction]` e `buildFPArms`) continua
        com a categoria do PERSONAGEM online — a mão segue o personagem (regra do dono);
-     · no SP nada muda: lado, facção, rótulo, sigla, brasão e chip continuam iguais.
+     · no SP, a mesma regra de dois times vale; grupos editoriais não viram times.
 
    COMO ELA MEDE (Node puro, sem Chrome)
 
@@ -25,17 +24,17 @@
    `new Game({... playerTeam: side, playerFaction: faction, enemyFaction: enemyFac })` do main.
 
    CLÁUSULAS (cada uma roda em MP com corpo C, F, U, M e P em cada lado, E e B)
-     ML1  nome do time (`_teamName`, placar e banners) = ESQUERDA/DIREITA do lado
-     ML2  sigla (`_teamTag`) e linha do HUD "RODADA n/N · ESQ x × y DIR"
+     ML1  nome do time (`_teamName`, placar e banners) = TIME E/TIME B do lado
+     ML2  sigla (`_teamTag`) e linha do HUD "RODADA n/N · E x × y B"
      ML3  brasão do HUD (plaqueta) e do placar = e.png/b.png do lado
-     ML4  chip versus da tela de carregamento = ESQUERDA/DIREITA, os dois lados; o do
+     ML4  chip versus da tela de carregamento = TIME E/TIME B, os dois lados; o do
           adversário deriva do lado oposto mesmo se o servidor mandar uma categoria
-     ML5  subtítulo do cartão "SEU PERSONAGEM NO MULTIPLAYER" = ESQUERDA/DIREITA
+     ML5  subtítulo do cartão "SEU PERSONAGEM NO MULTIPLAYER" = TIME E/TIME B
      ML6  viewmodel: `playerFaction` (luva e braços) continua a categoria do personagem
      ML7  CTF online: o pano da bandeira do dono (netgame.js applyCtfState -> _flagTexFor) é
           o do LADO, não o brasão do corpo do jogador
-     SP1  SP com cada categoria em cada lado: facção = lado e rótulo/sigla/brasão/chip do lado,
-          exatamente como antes do conserto
+     SP1  SP com cada categoria em cada lado: rótulo/sigla/brasão/chip seguem E/B;
+          a viewmodel continua usando o lado como antes.
 
    MUTANTES (em memória; o disco não é tocado, salvo a cópia temporária do game.js)
      --mutante=rotulo-categoria   devolve rótulo/sigla/brasão/chip/cartão à categoria -> ML1-ML5 vermelhas
@@ -55,8 +54,8 @@ const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const MUT = (process.argv.find((a) => a.startsWith('--mutante=')) || '').split('=')[1] || '';
 if (MUT && !['rotulo-categoria', 'maos-lado', 'bandeira-categoria', 'chip-inimigo-faccao'].includes(MUT)) { console.error(`mutante desconhecido: ${MUT}`); process.exit(2); }
 
-const NOME = { E: 'ESQUERDA', B: 'DIREITA' };
-const SIGLA = { E: 'ESQ', B: 'DIR' };
+const NOME = { E: 'TIME E', B: 'TIME B' };
+const SIGLA = { E: 'E', B: 'B' };
 const outro = (s) => (s === 'E' ? 'B' : 'E');
 const { CHARACTERS } = H;
 const { ladosDe, podeNoLado } = await import(pathToFileURL(path.join(RAIZ, 'public/js/characters.js')).href);
@@ -72,8 +71,8 @@ const troca = (src, de, para, onde) => {
 if (MUT === 'rotulo-categoria') {
   gameSrc = troca(gameSrc, "_teamName(side) { return TEAM_LABEL[side] || side; }",
     "_teamName(side) { const f = this._factionOf(side); return f === 'U' ? 'TRIBOS URBANAS' : f === 'C' ? 'PALHAÇOS' : f === 'F' ? 'FUNKEIROS' : f === 'M' ? 'MÍTICO' : (TEAM_LABEL[f] || f); }", 'game.js');
-  gameSrc = troca(gameSrc, "_teamTag(side) { return side === 'B' ? 'DIR' : 'ESQ'; }",
-    "_teamTag(side) { const f = this._factionOf(side); return f === 'U' ? 'TRB' : f === 'C' ? 'PLH' : f === 'F' ? 'FNK' : f === 'M' ? 'MIT' : f === 'E' ? 'ESQ' : 'DIR'; }", 'game.js');
+  gameSrc = troca(gameSrc, "_teamTag(side) { return side === 'B' ? 'B' : 'E'; }",
+    "_teamTag(side) { const f = this._factionOf(side); return f === 'U' ? 'TRB' : f === 'C' ? 'PLH' : f === 'F' ? 'FNK' : f === 'M' ? 'MIT' : f === 'E' ? 'E' : 'B'; }", 'game.js');
   gameSrc = troca(gameSrc, "const f = String(side || '').toLowerCase();", "const f = String(this._factionOf(side) || '').toLowerCase();", 'game.js');
   gameSrc = troca(gameSrc, "const crest = (side) => String(side || 'E').toLowerCase();", "const crest = (side) => String(this._factionOf(side) || 'E').toLowerCase();", 'game.js');
   mainSrc = troca(mainSrc, "a.textContent = tr(FACTION_NAME[currentTeam] || '');", "a.textContent = tr(FACTION_NAME[currentFaction] || '');", 'main.js');
@@ -180,7 +179,7 @@ for (const cat of CATS) for (const team of ['E', 'B']) {
   marca('ML0', L === team, `${caso}: lado ${L}`);
   marca('ML1', r.nome[0] === NOME[L] && r.nome[1] === NOME[O] && r.nomesPlacar.join('|') === `${NOME.E}|${NOME.B}`,
     `${caso}: nome ${r.nome.join(' × ')} · placar ${r.nomesPlacar.join(' × ')}`);
-  marca('ML2', r.sigla[0] === SIGLA[L] && r.sigla[1] === SIGLA[O] && / · ESQ \d+ × \d+ DIR$/.test(r.hud),
+  marca('ML2', r.sigla[0] === SIGLA[L] && r.sigla[1] === SIGLA[O] && / · E \d+ × \d+ B$/.test(r.hud),
     `${caso}: sigla ${r.sigla.join('/')} · HUD "${r.hud}"`);
   marca('ML3', r.crestHud[0] === L.toLowerCase() && r.crestHud[1] === O.toLowerCase() && r.brasoesPlacar.join('') === 'eb',
     `${caso}: brasão HUD ${r.crestHud.join('/')} · placar ${r.brasoesPlacar.join('/')}`);
@@ -209,15 +208,15 @@ for (const cat of [...CATS, 'E', 'B']) for (const team of ['E', 'B']) {
 }
 
 const TIT = {
-  ML0: 'o lado do jogador online é o do servidor',
-  ML1: 'MP: nome do time (placar/banners) é ESQUERDA/DIREITA do lado',
-  ML2: 'MP: sigla e linha do HUD são ESQ/DIR',
-  ML3: 'MP: brasão do HUD e do placar é o do lado (e/b)',
-  ML4: 'MP: chip versus da carga diz ESQUERDA/DIREITA',
-  ML5: 'MP: cartão SEU PERSONAGEM diz o lado',
-  ML6: 'MP: viewmodel (luva/braços) segue a categoria do personagem',
-  ML7: 'MP CTF: pano da bandeira é o do lado dono',
-  SP1: 'SP: lado, facção, rótulo, sigla, brasão e chip iguais aos de antes',
+  ML0: 'o time do jogador online é o do servidor',
+  ML1: 'MP: nome do time (placar/banners) é TIME E/TIME B',
+  ML2: 'MP: sigla e linha do HUD são E/B',
+  ML3: 'MP: brasão do HUD e do placar é o do time (e/b)',
+  ML4: 'MP: chip versus da carga diz TIME E/TIME B',
+  ML5: 'MP: cartão SEU PERSONAGEM diz o time',
+  ML6: 'MP: viewmodel (luva/braços) segue a categoria visual do personagem',
+  ML7: 'MP CTF: pano da bandeira é o do time dono',
+  SP1: 'SP: time, rótulo, sigla, brasão e chip seguem E/B',
 };
 console.log(`\n${linhas.join('\n')}\n`);
 for (const [c, t] of Object.entries(TIT)) {

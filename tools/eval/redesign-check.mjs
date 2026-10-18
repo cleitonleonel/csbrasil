@@ -617,14 +617,14 @@ const funcLoop = blocoFuncao(main, 'loop');
 const funcShow = blocoFuncao(main, 'show');
 const funcMap = blocoFuncao(main, 'renderMapScreen');
 const i18nDinamico = /\$\{tr\('MAPA'\)\}[\s\S]{0,100}\$\{tr\('DE'\)\}/.test(main)
-  && /tr\(FACTION_NAME\[currentFaction\] \|\| ''\)[\s\S]{0,120}tr\('PERSONAGENS'\)/.test(main)
+  && /tr\(FACTION_NAME\[c\.team\] \|\| ''\)[\s\S]{0,160}tr\('PERSONAGENS'\)/.test(main)
   && /a\.textContent = tr\(FACTION_NAME\[currentTeam\] \|\| ''\)/.test(main)
   && /b\.textContent = tr\(FACTION_NAME\[ladoDele\] \|\| ''\)/.test(main)
   && /chip\.textContent = `\$\{n\} \$\{tr\('PERSONAGENS'\)\}`/.test(main)
   && /ms-desc'\)\.textContent = tr\(MAP_DESC\[currentMap\] \|\| ''\)/.test(main)
   && /frase\('escolhaAdversario', tr\(FACTION_NAME\[myFaction\]/.test(main)
   && /continuar\.textContent = frase\('continuarSetup'\)/.test(main)
-  && /const FACTION_NAME = \{ E: 'ESQUERDA'/.test(main)
+  && /const FACTION_NAME = \{ E: 'TIME E', B: 'TIME B'/.test(main)
   && /rEl\.textContent = tr\(RARITIES\[tier\]\[0\]\)/.test(main)
   && /char-spec-name'\)\.textContent = tr\(specName\)/.test(main);
 const previewUso = /if \(\(csOpen \|\| hubPreviewOpen\) && pv && pv\.model && !previewVideoVisible\(\)\)/.test(funcLoop)
@@ -940,9 +940,9 @@ const placarCentralizado = /<div class="sb-center">[\s\S]{0,180}<h3>CORO SOLTO -
 const submitNoteBlock = blocoFuncao(main, 'submitNote');
 const backendSoNoConsole = /console\.warn\('\[ranking\]', msg\)/.test(submitNoteBlock)
   && !/(?:document|appendChild|match-stats|SUPABASE_)/.test(submitNoteBlock);
-const faccaoPreloadBloqueante = /const FACTION_ART_URLS = \[[^\]]*time-e\.webp[^\]]*time-b\.webp[^\]]*tribos\.webp[^\]]*palhacos\.webp[^\]]*funkeiros\.webp[^\]]*\]/s.test(main)
-  && /const factionArtImages = FACTION_ART_URLS\.map/.test(main)
-  && /const factionArtReady = Promise\.all\(factionArtImages\.map/.test(main)
+const faccaoPreloadBloqueante = /const TEAM_ART_URLS = \[[^\]]*time-e\.webp[^\]]*time-b\.webp[^\]]*\]/s.test(main)
+  && /const teamArtImages = TEAM_ART_URLS\.map/.test(main)
+  && /const factionArtReady = Promise\.all\(teamArtImages\.map/.test(main)
   && /\$\('btn-jogar'\)\.onclick = async \(\) => \{[\s\S]{0,900}await factionArtReady;[\s\S]{0,120}show\('team-select'\)/.test(main)
   && /target\.screen === 'faction'[\s\S]{0,80}await factionArtReady;[\s\S]{0,120}show\('team-select'\)/.test(main);
 const trocaMConsistente = /game\.onRequestSwitch = \(\) => \{[\s\S]{0,180}game\.setPaused\(true\);[\s\S]{0,120}pickTeam\(game\.enemyFaction\)/.test(main)
@@ -1065,7 +1065,7 @@ const resultados = [
     'cabeçalho e tabelas formam um único bloco flex centrado no viewport'],
   ['UIR38', 'falha de ranking nunca vaza detalhe de backend na interface', backendSoNoConsole,
     'submitNote preserva diagnóstico no console e não escreve no DOM nem publica nomes de variáveis'],
-  ['UIR39', 'as cinco artes de facção terminam de decodificar antes da tela aparecer', faccaoPreloadBloqueante,
+  ['UIR39', 'as duas artes de time terminam de decodificar antes da tela aparecer', faccaoPreloadBloqueante,
     'o preload começa no boot e o primeiro acesso aguarda o mesmo Promise antes de mostrar team-select'],
   ['UIR40', 'troca com M pausa uma única camada e mantém facção, lado e volta coerentes', trocaMConsistente,
     'o jogo pausa antes do pointer lock sair; seleção usa enemyFaction e VOLTAR retoma a partida'],

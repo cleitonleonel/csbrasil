@@ -72,11 +72,11 @@ cobra(/createRoom\(/.test(main) && /teamSize:\s*\+mpEl\('mp-teamsize'\)\.value/.
 const quick = main.slice(main.indexOf("mp-quick'"), main.indexOf("mp-quick'") + 2200);
 cobra(!/teamSize/.test(quick), 'MRO5 · o JOGO RÁPIDO segue sem teamSize (padrão do servidor)');
 
-/* 6 · o servidor fixa E×B e ignora facção pedida; a UI não promete opção falsa. */
-cobra(/Toda sala é ESQUERDA × DIREITA\. Escolha o lado ao entrar\./.test(formCriar)
+/* 6 · o servidor fixa E×B e ignora grupo de personagem pedido; a UI não promete opção falsa. */
+cobra(/Toda sala é TIME E × TIME B\. Escolha o time ao entrar\./.test(formCriar)
     && !/id="mp-fac-[eb]"/.test(formCriar)
     && !/\b(?:faccaoE|faccaoB):/.test(main),
-  'MRO6 · criar sala e Jogo Rápido não pedem facções que o servidor ignora');
+  'MRO6 · criar sala e Jogo Rápido não pedem grupos que o servidor ignora');
 
 if (falhas.length) {
   console.error(`✗ MP-ROOM-OPTIONS — ${falhas.length} cláusula(s):`);

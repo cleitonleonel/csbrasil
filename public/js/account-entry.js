@@ -151,17 +151,21 @@ export async function mountProfilePreferences(container,{auth=null,message=()=>{
   const say=text=>{note.textContent=text;message(text);};
   let current=auth;
   const control=mountPrivacyChoice(section,{onChange:async value=>{try{setPrivacyChoice(value);if(current?.authenticated){await socialApi('/api/social-auth',{action:'privacy',analytics:value});current.privacy={analytics:value};}say(value?'Permissão salva neste navegador.':'Coleta opcional desativada neste navegador.');}catch(e){say('Escolha local aplicada; o registro na conta não respondeu. Tente novamente.');throw e;}}});
-  section.append(note);
+  const newsletter=node('div');
+  const mountGuestNewsletter=()=>{
+    const label=node('label','','account-consent'),check=node('input');check.type='checkbox';check.name='newsletter';check.checked=newsletterDraft;check.onchange=()=>{newsletterDraft=check.checked;say(check.checked?'Entre ou crie sua conta e confirme seu e-mail para receber novidades.':'Você não será inscrito na newsletter.');};label.append(check,document.createTextNode('Quero receber novidades por e-mail. Opcional; preciso entrar na conta e confirmar meu e-mail.'));
+    const login=node('button','ENTRAR OU CRIAR CONTA','account-button');login.type='button';login.onclick=()=>document.getElementById('hub-account-login')?.click();newsletter.replaceChildren(label,login);
+  };
+  section.append(note,newsletter);
+  if(!current)mountGuestNewsletter();
   if(!current)try{current=await loadAccount();}catch{}
   if(preferenceMounts.get(container)!==stamp)return;
-  if(current?.authenticated){const news=node('div');mountNewsletter(news,current,say);section.append(news);}else{
-    const label=node('label','','account-consent'),check=node('input');check.type='checkbox';check.name='newsletter';check.checked=newsletterDraft;check.onchange=()=>{newsletterDraft=check.checked;say(check.checked?'Entre ou crie sua conta e confirme seu e-mail para receber novidades.':'Você não será inscrito na newsletter.');};label.append(check,document.createTextNode('Quero receber novidades por e-mail. Opcional; preciso entrar na conta e confirmar meu e-mail.'));
-    const login=node('button','ENTRAR OU CRIAR CONTA','account-button');login.type='button';login.onclick=()=>document.getElementById('hub-account-login')?.click();section.append(label,login);
-  }
+  if(current?.authenticated)mountNewsletter(newsletter,current,say);
+  else if(!newsletter.childElementCount)mountGuestNewsletter();
   return control;
 }
 export function mountNewsletter(container,auth,message=()=>{}) {
-  container.replaceChildren();const label=node('label','','account-consent'),check=node('input');check.type='checkbox';check.checked=auth.newsletter?.status==='subscribed';label.append(check,document.createTextNode('Receber novidades do Coro Solto por e-mail'));
+  container.replaceChildren();const label=node('label','','account-consent'),check=node('input');check.type='checkbox';check.name='newsletter';check.checked=auth.newsletter?.status==='subscribed';label.append(check,document.createTextNode('Receber novidades do Coro Solto por e-mail'));
   const status=node('p',auth.newsletter?.status==='pending'?'Falta confirmar seu e-mail para receber novidades.':'Sua escolha é opcional e separada da conta.','social-muted');status.setAttribute('role','status');
   check.onchange=async()=>{check.disabled=true;try{if(check.checked){await socialApi('/api/social-auth',{action:'newsletter_start',returnTo:'community'});auth.newsletter={status:'pending'};check.checked=false;status.textContent='Enviamos o link. Confirme seu e-mail neste navegador para receber novidades.';mountNewsletter(container,auth,message);}else{await socialApi('/api/social-auth',{action:'newsletter',subscribed:false});auth.newsletter={status:'unsubscribed'};status.textContent='Você saiu da lista de novidades.';}message(status.textContent);}catch(e){check.checked=auth.newsletter?.status==='subscribed';status.textContent=accountError(e);message(status.textContent);}finally{check.disabled=false;}};
   container.append(label,status);

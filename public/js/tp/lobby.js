@@ -52,7 +52,7 @@ function montarAbas(header) {
     nav.appendChild(b);
   }
   nav.appendChild(risco);
-  header.querySelector('.hub-logo')?.after(nav);
+  header.querySelector('.hub-logo-link, .hub-logo')?.after(nav);
   const marcar = () => {
     const ativa = abaAtiva();
     let alvo = null;
@@ -154,6 +154,12 @@ function montarMais(header) {
 function montarCabecalho() {
   const header = document.querySelector('#hub-ui .hub-header');
   if (!header) return;
+  const logo = header.querySelector('.hub-logo-link');
+  logo?.addEventListener('click', (event) => {
+    event.preventDefault();
+    abaDoHub('jogar');
+    $('hub-sp')?.click();
+  });
   montarAbas(header);
   const amigos = no('a', 'tp-lobby-hdr');
   amigos.id = 'tp-lobby-amigos'; amigos.href = '/comunidade/amigos';
@@ -390,11 +396,11 @@ function montarPartida() {
   jogar.classList.add('tp-btn', 'tp-btn--primario');
 }
 
-/* JOGAR inicia direto: o #hub-quick ("Pronto pra treta?") sai em v3. Sem nick, segue o fluxo de sempre (passo do perfil). */
+/* JOGAR inicia direto: o #hub-quick ("Pronto pra treta?") sai em v3. Nick e conta
+   são opcionais; a partida anônima usa o mesmo perfil local e convida a criar conta ao terminar. */
 function ligarJogarDireto() {
-  const temNick = () => Boolean(($('nick-input')?.value || '').trim());
   document.addEventListener('click', (e) => {
-    if (!e.target.closest?.('#btn-jogar') || !temNick()) return;
+    if (!e.target.closest?.('#btn-jogar')) return;
     e.preventDefault(); e.stopImmediatePropagation();
     $('hub-quick-confirm')?.click();
   }, true);

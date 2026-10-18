@@ -1,5 +1,7 @@
 ---
 import { HOME_FAQ, HOME_FAQ_EN } from '../data/home-faq';
+import { MAPAS } from '../data/jogo';
+import { BRASAO_VERSAO } from '../../public/js/brasoes_versao.js';
 import pkg from '../../package.json';
 import Community from '../components/Community.astro';
 import AccountEntry from '../components/AccountEntry.astro';
@@ -7,7 +9,7 @@ import LoginPrompt from '../components/LoginPrompt.astro';
 import TretaStore from '../components/TretaStore.astro';
 import TretaDialogs from '../components/TretaDialogs.astro';
 import '../styles/career-rank.css';
-import { SITE, abs, DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON, DESC_LONG } from '../lib/site';
+import { SITE, abs, routeOgPath, DISCORD_URL, TELEGRAM_URL, GITHUB_URL, REDES_OFICIAIS, SUPPORT_URL_BR, SUPPORT_URL_INTL, RANKING_ON, RANKING_DESCRIPTION_PT, DESC_LONG } from '../lib/site';
 
 /* Revisão do CSS pelo CONTEÚDO: a versão do pacote não muda quando só o CSS muda, e o
    WebView servia CSS velho. Hash do arquivo na URL derruba o cache sozinho. Vem do build
@@ -30,12 +32,27 @@ const CONTENT_TABS = [
    O SSR de /u/<perfil> (src/pages/u/[...path].astro) também renderiza esta página: ele manda
    o head do perfil (título, og:image, og:type, JSON-LD) e o perfil legível no slot `perfil`. */
 const rota = Astro.props.rota as undefined | { caminho: string; titulo: string; descricao: string; indexavel: boolean; canonical?: string;
-  tituloPagina?: string; ogTipo?: string; imagem?: { url: string; alt: string } | null; jsonLd?: Record<string, unknown> };
+  estado?: Record<string, string>; hasProfileHeading?: boolean; tituloPagina?: string; ogTipo?: string; imagem?: { url: string; alt: string } | null; jsonLd?: Record<string, unknown> };
 const HOME_TITLE = 'CORO SOLTO: Treta Suprema - FPS grátis de navegador (ex-CS BRASIL)';
 const pageTitle = rota ? (rota.tituloPagina || `${rota.titulo} · CORO SOLTO: Treta Suprema`) : HOME_TITLE;
-const ogImage = rota?.imagem === undefined ? { url: abs('/og-image.jpg'), alt: 'CORO SOLTO: Treta Suprema - FPS satírico de navegador com facções brasileiras' } : rota.imagem;
+const ogImage = rota?.imagem === undefined
+  ? { url: rota ? abs(routeOgPath(rota.caminho, pageTitle)) : abs('/og-image.jpg'), alt: rota ? `${rota.titulo} · CORO SOLTO: Treta Suprema` : 'CORO SOLTO: Treta Suprema - FPS satírico de navegador com dois times' }
+  : rota.imagem;
 const ogTitle = rota ? pageTitle : 'CORO SOLTO: Treta Suprema - FPS grátis de navegador';
 const pageDesc = rota ? rota.descricao : DESC_LONG;
+const initialSection = rota?.estado?.secao || (rota?.hasProfileHeading ? 'comunidade' : 'jogar');
+const initialHubTab = ['jogar', 'loja', 'ranking', 'comunidade', 'sobre', 'feedback', 'apoie'].includes(initialSection)
+  ? initialSection : 'jogar';
+const directSettings = rota?.estado?.janela === 'configuracoes';
+const initialNetwork = rota?.estado?.partida === 'multiplayer' ? 'mp' : 'sp';
+const initialMpTab = rota?.estado?.servidor === 'privado' ? 'private' : 'public';
+const initialWindow = rota?.estado?.janela || '';
+const initialStoreView = rota?.estado?.loja === 'quests' ? 'quests' : rota?.estado?.loja === 'acessorios' ? 'accessories' : 'skins';
+const initialSocial = rota?.estado?.social || 'profile';
+const initialProfile = rota?.estado?.perfil || '';
+const brasaoE = `/img/brasoes/e.png?v=${BRASAO_VERSAO.e}`;
+const brasaoB = `/img/brasoes/b.png?v=${BRASAO_VERSAO.b}`;
+const initialGuide = rota?.estado?.guia || '';
 const pageUrl = abs(rota ? (rota.canonical || rota.caminho) : '/');
 const selfUrl = abs(rota ? rota.caminho : '/');
 const V = pkg.version;
@@ -52,7 +69,7 @@ const IMPORTMAP = JSON.stringify({
 });
 ---
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-direct-route={rota ? '' : undefined} data-home-ui={rota ? 'hub' : undefined}>
 <head>
 {import.meta.env.DEV && import.meta.env.SOCIAL_LOCAL_GAME_URL && <meta name="cs-local-game" content={import.meta.env.SOCIAL_LOCAL_GAME_URL} />}
 <meta charset="UTF-8">
@@ -711,7 +728,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
 <link rel="stylesheet" href={`/map-preview.css?v=${V}-${JS_REV}`} />
 </head>
 <body>
-<h1 class="sr-only">CORO SOLTO: Treta Suprema (ex-CS BRASIL) - FPS gratuito de navegador com bots e multiplayer beta</h1>
+{!rota?.hasProfileHeading && <h1 class="sr-only">CORO SOLTO: Treta Suprema (ex-CS BRASIL) - FPS gratuito de navegador com bots e multiplayer beta</h1>}
 
 <!-- SPLASH DE BOOT: cobre o load inicial (nada de cena parcial/"minecraft" visível) e
      destrava o áudio COM SOM no 1º gesto (política de autoplay do browser exige gesto;
@@ -720,7 +737,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
 <div id="boot-splash" style="position:fixed;inset:0;z-index:200;background-color:#141216">
   <div class="splash-frame">
     <canvas id="splash-logo" width="900" height="360"></canvas>
-    <div class="splash-sub">ARENA DE SNIPER · ESQUERDA × DIREITA</div>
+    <div class="splash-sub">ARENA DE SNIPER · TIME E × TIME B</div>
     <div id="splash-character-stage" aria-hidden="true">
       <canvas id="load-character-3d"></canvas>
     </div>
@@ -785,25 +802,25 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
 </div>
 
 <!-- Main menu -->
-<div id="main-menu" class="screen cs-screen">
+<div id="main-menu" class:list={['screen','cs-screen',{hidden:directSettings}]} data-hub-tab={initialHubTab} data-hub-net={initialNetwork} data-hub-mp-tab={initialMpTab}>
   <div class="cs-wallpaper"></div>
   <div class="cs-vignette"></div>
   <div class="scanlines"></div>
 
-  <div id="hub-ui" class="hub-ui" hidden>
+  <div id="hub-ui" class="hub-ui" hidden={!rota || directSettings}>
     <header class="hub-header">
-      <img class="hub-logo" src="/logo.png" alt="CORO SOLTO: Treta Suprema" width="160" height="96">
+      <a class="hub-logo-link" href="/?ui=v3" aria-label="Voltar à tela inicial"><img class="hub-logo" src="/logo.png" alt="CORO SOLTO: Treta Suprema" width="160" height="96"></a>
       <nav class="hub-tabs" role="tablist" aria-label="Seções da home">
-        <button type="button" role="tab" aria-selected="true" aria-controls="hub-play" data-hub-tab="jogar">JOGAR</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="hub-shop" data-hub-tab="loja">LOJA</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="hub-ranking" data-hub-tab="ranking">RANKING</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="hub-community" data-hub-tab="comunidade">COMUNIDADE <span id="hub-social-unread"></span></button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="hub-about" data-hub-tab="sobre">SOBRE O JOGO</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="hub-feedback" data-hub-tab="feedback">FEEDBACK</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="hub-support" data-hub-tab="apoie">APOIE O JOGO</button>
+        <button type="button" role="tab" aria-selected={initialHubTab === 'jogar'} aria-controls="hub-play" data-hub-tab="jogar">JOGAR</button>
+        <button type="button" role="tab" aria-selected={initialHubTab === 'loja'} aria-controls="hub-shop" data-hub-tab="loja">LOJA</button>
+        <button type="button" role="tab" aria-selected={initialHubTab === 'ranking'} aria-controls="hub-ranking" data-hub-tab="ranking">RANKING</button>
+        <button type="button" role="tab" aria-selected={initialHubTab === 'comunidade'} aria-controls="hub-community" data-hub-tab="comunidade">COMUNIDADE <span id="hub-social-unread"></span></button>
+        <button type="button" role="tab" aria-selected={initialHubTab === 'sobre'} aria-controls="hub-about" data-hub-tab="sobre">SOBRE O JOGO</button>
+        <button type="button" role="tab" aria-selected={initialHubTab === 'feedback'} aria-controls="hub-feedback" data-hub-tab="feedback">FEEDBACK</button>
+        <button type="button" role="tab" aria-selected={initialHubTab === 'apoie'} aria-controls="hub-support" data-hub-tab="apoie">APOIE O JOGO</button>
       </nav>
       <div class="hub-online" aria-live="polite"><i aria-hidden="true"></i><span id="hub-online-n">-</span> ONLINE</div>
-      <button id="hub-treta-wallet" class="hub-header-action treta-header-wallet" type="button" aria-label="Ver saldo TRETA$"><span aria-hidden="true">T$</span><b id="hub-treta-total">T$ · ENTRAR</b></button>
+      <button id="hub-treta-wallet" class="hub-header-action treta-header-wallet" type="button" aria-label="Ver saldo TRETA$"><img src="/img/treta/coin-classic-saci.webp" alt="" width="26" height="26" aria-hidden="true"><b id="hub-treta-total">T$ · ENTRAR</b></button>
       <button id="hub-music-toggle" class="hub-header-action hub-music-toggle" type="button" aria-pressed="true" aria-label="Desligar música do menu" title="Desligar música do menu"><span aria-hidden="true">♫</span><b>MÚSICA LIGADA</b></button>
       <button id="hub-social-resume" class="hub-header-action" type="button" hidden>VOLTAR À PARTIDA ▶</button>
       <div class="hub-identity-wrap">
@@ -814,45 +831,47 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
       <button id="hub-settings" class="hub-header-action hub-settings" type="button" aria-label="Configurações">⚙</button>
     </header>
 
-    <section id="hub-play" class="hub-pane hub-play" role="tabpanel" aria-label="Jogar">
+    <section id="hub-play" class="hub-pane hub-play" role="tabpanel" aria-label="Jogar" hidden={initialHubTab !== 'jogar'}>
       <div class="hub-net" role="group" aria-label="Tipo de partida">
-        <button id="hub-sp" type="button" aria-pressed="true">SINGLEPLAYER</button>
-        <button id="hub-mp" type="button" aria-pressed="false">MULTIPLAYER <small>BETA</small></button>
+        <button id="hub-sp" type="button" aria-pressed={initialNetwork === 'sp'}>SINGLEPLAYER</button>
+        <button id="hub-mp" type="button" aria-pressed={initialNetwork === 'mp'}>MULTIPLAYER <small>BETA</small></button>
       </div>
       <div id="hub-character" class="hub-character" aria-label="Personagem escolhido"></div>
       <button id="hub-change-character" class="hub-character-card" type="button">
-        <img id="hub-character-crest" src="/img/brasoes/e.png" width="38" height="38" alt="">
+        <img id="hub-character-crest" src={brasaoE} width="38" height="38" alt="">
         <span><small>SEU CORO · SEU PERSONAGEM</small><strong id="hub-character-name">ESCOLHA SEU PERSONAGEM</strong><span class="hub-character-change">TROCAR PERSONAGEM ▸</span></span>
       </button>
-      <div id="hub-multiplayer-entry" class="hub-multiplayer-entry" hidden>
+      <div id="hub-multiplayer-entry" class="hub-multiplayer-entry" hidden={initialNetwork !== 'mp'}>
         <div class="hub-mp-tabs" role="tablist" aria-label="Tipo de servidor">
-          <button id="hub-mp-public" type="button" role="tab" aria-selected="true">SERVIDORES PÚBLICOS</button>
-          <button id="hub-mp-private" type="button" role="tab" aria-selected="false">SERVIDOR PRIVADO</button>
+          <button id="hub-mp-public" type="button" role="tab" aria-selected={initialMpTab === 'public'}>SERVIDORES PÚBLICOS</button>
+          <button id="hub-mp-private" type="button" role="tab" aria-selected={initialMpTab === 'private'}>SERVIDOR PRIVADO</button>
         </div>
         <div id="hub-mp-host"></div>
       </div>
     </section>
 
-    <TretaStore />
-    <section id="hub-community" class="hub-pane hub-info" role="tabpanel" aria-label="Comunidade" hidden><Community /><slot name="perfil" /></section>
+    <TretaStore visible={initialHubTab === 'loja'} initialView={initialStoreView} />
+    <section id="hub-community" class="hub-pane hub-info" role="tabpanel" aria-label="Comunidade" hidden={initialHubTab !== 'comunidade'}><Community tab={initialSocial} profileId={initialProfile} /><slot name="perfil" /></section>
 
-    <section id="hub-ranking" class="hub-pane hub-info" role="tabpanel" aria-label="Ranking" hidden>
+    <section id="hub-ranking" class="hub-pane hub-info" role="tabpanel" aria-label="Ranking" hidden={initialHubTab !== 'ranking'}>
       <div class="hub-kicker">02 · ARQUIVO</div><h2>PLACAR DA RUA</h2>
       <p>Um placar para todas as partidas: cada abate soma um ponto. Abates multiplayer confirmados entre perfis distintos recebem um ponto extra.</p>
       <button id="hub-rank-profile" class="hub-rank-profile" type="button" hidden>{RANKING_ON ? 'CRIAR NICK PARA PARTICIPAR ▸' : 'CONFIGURAR SEU NICK ▸'}</button>
       <div id="hub-rank-local" class="hub-rank-stats"></div>
-      <div id="hub-rank-global" class="hub-rank-global"></div>
-      <a href="/comunidade/ranking">RANKING COMPLETO E ENTRE AMIGOS ▸</a>
-      <button id="hub-rank-share" class="hub-rank-profile" type="button">COMPARTILHAR RANKING</button>
+      <div id="hub-rank-global" class="hub-rank-global"><p>{RANKING_DESCRIPTION_PT}</p></div>
+      <div class="hub-rank-actions">
+        <a href="/comunidade/ranking">RANKING COMPLETO E ENTRE AMIGOS ▸</a>
+        <button id="hub-rank-share" class="hub-rank-profile" type="button">COMPARTILHAR RANKING</button>
+      </div>
     </section>
 
-    <section id="hub-about" class="hub-pane hub-info" role="tabpanel" aria-label="Sobre o jogo" hidden>
+    <section id="hub-about" class="hub-pane hub-info" role="tabpanel" aria-label="Sobre o jogo" hidden={initialHubTab !== 'sobre'}>
       <div class="hub-kicker">03 · O JOGO</div><h2>SOBRE O JOGO</h2>
       <nav class="hub-content-tabs" role="tablist" aria-label="Guias do jogo">
-        <button id="guide-overview" type="button" role="tab" aria-selected="true" aria-controls="hub-about-overview" data-guide="overview" data-content-en="OVERVIEW">GERAL</button>
-        {CONTENT_TABS.map(([route, label, en]) => <a id={`guide-${route}`} href={`/${route}`} role="tab" aria-selected="false" aria-controls="hub-about-content" tabindex="-1" data-guide={route} data-content-en={en}>{label}</a>)}
+        <button id="guide-overview" type="button" role="tab" aria-selected={!initialGuide} aria-controls="hub-about-overview" data-guide="overview" data-content-en="OVERVIEW">GERAL</button>
+        {CONTENT_TABS.map(([route, label, en]) => <a id={`guide-${route}`} href={`/${route}`} role="tab" aria-selected={initialGuide === route} aria-controls="hub-about-content" tabindex={initialGuide === route ? 0 : -1} data-guide={route} data-content-en={en}>{label}</a>)}
       </nav>
-      <div id="hub-about-overview" role="tabpanel" aria-labelledby="guide-overview">
+      <div id="hub-about-overview" role="tabpanel" aria-labelledby="guide-overview" hidden={!!initialGuide}>
       <p>CORO SOLTO: Treta Suprema é um FPS gratuito de navegador. Entre numa partida contra bots ou jogue com outras pessoas, escolha seu coro e dispute os mapas da treta.</p>
       <div id="hub-factions" class="hub-factions"></div>
       <a class="hub-changelog" href="/changelog"><small>NO ÚLTIMO PATCH</small><strong>Veja o que mudou na arena</strong><span>NOVIDADES ↗</span></a>
@@ -868,13 +887,13 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
         {HOME_FAQ.map(([q, a], i) => <details><summary data-en={HOME_FAQ_EN[i][0]}>{q}</summary><p data-en={HOME_FAQ_EN[i][1]}>{a}</p></details>)}
       </div>
       </div>
-      <div id="hub-about-content" class="hub-about-content" role="tabpanel" aria-labelledby="guide-sobre" hidden>
-        <p class="hub-guide-loading" role="status">CARREGANDO GUIA…</p>
-        <iframe id="hub-guide-frame" title="Guia do jogo" hidden></iframe>
+      <div id="hub-about-content" class="hub-about-content" role="tabpanel" aria-labelledby={initialGuide ? `guide-${initialGuide}` : 'guide-sobre'} hidden={!initialGuide}>
+        <p class="hub-guide-loading" role="status" hidden={!!initialGuide}>CARREGANDO GUIA…</p>
+        <iframe id="hub-guide-frame" title="Guia do jogo" src={initialGuide ? `/${initialGuide}?embed=1` : undefined} hidden={!initialGuide}></iframe>
       </div>
     </section>
 
-    <section id="hub-feedback" class="hub-pane hub-info" role="tabpanel" aria-label="Feedback" hidden>
+    <section id="hub-feedback" class="hub-pane hub-info" role="tabpanel" aria-label="Feedback" hidden={initialHubTab !== 'feedback'}>
       <div class="hub-kicker">04 · CANAL ABERTO</div><h2>MANDE O PAPO</h2>
       <p>Achou um bug ou tem uma ideia? Sua mensagem chega à equipe do jogo.</p>
       <div class="hub-feedback-grid"><div class="hub-feedback-main">
@@ -899,7 +918,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
       </aside></div>
     </section>
 
-    <section id="hub-support" class="hub-pane hub-info" role="tabpanel" aria-label="Apoie o jogo" hidden>
+    <section id="hub-support" class="hub-pane hub-info" role="tabpanel" aria-label="Apoie o jogo" hidden={initialHubTab !== 'apoie'}>
       <div class="hub-kicker">05 · BANCA DA TRETA</div><h2>APOIE O JOGO</h2>
       <p>O CORO SOLTO é gratuito e open source. O apoio ajuda a manter servidores, domínio e o desenvolvimento do jogo. Apoiar não dá vantagem na partida.</p>
       <div class="hub-support-choices">
@@ -915,7 +934,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
 
   <AccountEntry />
   <LoginPrompt />
-  <div id="hub-quick" class="hub-modal" hidden>
+  <div id="hub-quick" class="hub-modal" hidden={initialWindow !== 'confirmar'}>
     <div class="hub-modal-card" role="dialog" aria-modal="true" aria-labelledby="hub-quick-title">
       <header><small>ÚLTIMO CORTE</small><h2 id="hub-quick-title">PRONTO PRA TRETA?</h2><button id="hub-quick-close" type="button" aria-label="Fechar">ESC ✕</button></header>
       <img id="hub-quick-map-img" src="/img/map-previews/praca_poderes.jpg" alt="">
@@ -925,15 +944,17 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
     </div>
   </div>
 
-  <div id="hub-map-modal" class="hub-modal" hidden>
+  <div id="hub-map-modal" class="hub-modal" hidden={initialWindow !== 'mapas'}>
     <div class="hub-modal-card hub-modal-wide" role="dialog" aria-modal="true" aria-labelledby="hub-map-title">
       <header><small>O PALCO</small><h2 id="hub-map-title">ESCOLHA O MAPA</h2><button id="hub-map-close" type="button" aria-label="Fechar">ESC ✕</button></header>
       <div id="hub-map-filters" class="hub-modal-filters" role="group" aria-label="Categorias de mapa"></div>
-      <div id="hub-map-grid" class="hub-map-grid"></div>
+      <div id="hub-map-grid" class="hub-map-grid">
+        {initialWindow === 'mapas' && MAPAS.map((mapa) => <button type="button" data-map={mapa.id}><img src={`/img/map-previews/${mapa.id}.jpg`} alt="" width="320" height="180" /><span>{mapa.nome}</span></button>)}
+      </div>
     </div>
   </div>
 
-  <div id="hub-roster-modal" class="hub-modal" hidden>
+  <div id="hub-roster-modal" class="hub-modal" hidden={initialWindow !== 'personagens'}>
     <div class="hub-modal-card hub-modal-wide" role="dialog" aria-modal="true" aria-labelledby="hub-roster-title">
       <header><small>ESCALAÇÃO</small><h2 id="hub-roster-title">LADO E PERSONAGEM</h2><button id="hub-roster-close" type="button" aria-label="Fechar">ESC ✕</button></header>
       <div id="hub-roster-lados" class="hub-roster-lados" role="tablist" aria-label="Lados"></div>
@@ -1061,7 +1082,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
        O nick saiu daqui a pedido do dono: perfil virou um passo próprio, aberto pelo
        botão PERFIL. Dois passos no MESMO container pra não duplicar a máquina de
        estados do menu (closeSetup / ESC / clique fora / :has(.cs-setup.open)). -->
-  <div id="menu-setup" class="cs-setup" data-step="match">
+  <div id="menu-setup" class="cs-setup" data-step={initialWindow === 'perfil' ? 'profile' : 'match'}>
     <div class="cs-setup-head"><small id="setup-step">PASSO 1 · A PARTIDA</small><span id="setup-title">MATA-MATA</span></div>
 
     <!-- ---------- PASSO 1: A PARTIDA ---------- -->
@@ -1245,82 +1266,35 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
   </div>
 </div>
 
-<!-- Team selection - duas faces claras: cada facção é uma PLACA (arte + cor + slogan +
-     elenco), não um card de formulário. `data-step` troca a leitura da MESMA tela entre
-     "escolher o seu lado" (side) e "escolher o adversário" (enemy). O lugar da arte por
-     time já existe: .team-art consome --art (ver style.css) e, enquanto o arquivo não
-     existir, o degradê da facção continua sendo o fundo - sem ícone de imagem quebrada. -->
+<!-- Team selection - o jogo tem dois lados fixos. Grupos do elenco aparecem apenas
+     no seletor de personagem e nunca viram times extras. -->
 <div id="team-select" class="screen hidden" data-step="side">
   <header class="ts-head">
-    <small id="team-step">PASSO 2 · O SEU LADO</small>
-    <h2 class="screen-title" id="team-title">ESCOLHA SEU LADO DA TRETA</h2>
-    <p class="ts-hint" id="team-hint">Cada facção tem elenco, grito e jeito de brigar. Escolha o coro.</p>
+    <small id="team-step">PASSO 2 · O SEU TIME</small>
+    <h2 class="screen-title" id="team-title">ESCOLHA SEU TIME</h2>
+    <p class="ts-hint" id="team-hint">Toda partida é Time E contra Time B.</p>
   </header>
   <div class="team-row">
     <button id="btn-team-e" class="team-card team-e">
-      <img class="team-crest" src="/img/brasoes/e.png" alt="">
+      <img class="team-crest" src={brasaoE} alt="">
       <span class="team-art" aria-hidden="true"></span>
       <span class="team-plate">
-        <span class="team-name">ESQUERDA</span>
-        <span class="team-slogan">"A treta se faz na praça!"</span>
+        <span class="team-name">TIME E</span>
+        <span class="team-slogan">"A treta começa aqui."</span>
       </span>
       <span class="team-chars" aria-hidden="true"></span>
-      <span class="team-desc">Esquerdomacho · Líder do Sindicato · Líder do MST · Doutora do SUS · Jovem Místico</span>
+      <span class="team-desc">Escolha o Time E e depois monte seu personagem.</span>
       <span class="team-cta" aria-hidden="true"></span>
     </button>
     <button id="btn-team-b" class="team-card team-b">
-      <img class="team-crest" src="/img/brasoes/b.png" alt="">
+      <img class="team-crest" src={brasaoB} alt="">
       <span class="team-art" aria-hidden="true"></span>
       <span class="team-plate">
-        <span class="team-name">DIREITA</span>
-        <span class="team-slogan">"A treta se faz na rodovia!"</span>
+        <span class="team-name">TIME B</span>
+        <span class="team-slogan">"O outro lado vem forte."</span>
       </span>
       <span class="team-chars" aria-hidden="true"></span>
-      <span class="team-desc">Caminhoneiro · Influencer de Dubai · Cantor Sertanejo · Tia Zilá · Coach Quântico</span>
-      <span class="team-cta" aria-hidden="true"></span>
-    </button>
-    <button id="btn-team-u" class="team-card team-u">
-      <img class="team-crest" src="/img/brasoes/u.png" alt="">
-      <span class="team-art" aria-hidden="true"></span>
-      <span class="team-plate">
-        <span class="team-name">TRIBOS URBANAS</span>
-        <span class="team-slogan">"A treta se faz na quebrada!"</span>
-      </span>
-      <span class="team-chars" aria-hidden="true"></span>
-      <span class="team-desc">Emo · Black Metal · Metaleiro · Punk · Skatista · Clubber · Rapper · Rasta · Pagodeiro</span>
-      <span class="team-cta" aria-hidden="true"></span>
-    </button>
-    <button id="btn-team-c" class="team-card team-c">
-      <img class="team-crest" src="/img/brasoes/c.png" alt="">
-      <span class="team-art" aria-hidden="true"></span>
-      <span class="team-plate">
-        <span class="team-name">PALHAÇOS</span>
-        <span class="team-slogan">"A treta se faz no picadeiro!"</span>
-      </span>
-      <span class="team-chars" aria-hidden="true"></span>
-      <span class="team-desc">Bonzo · Palhaço do Mal · Jozo · Adjim · Esbirro · Titica · Padati · Padata · Cadequinha</span>
-      <span class="team-cta" aria-hidden="true"></span>
-    </button>
-    <button id="btn-team-f" class="team-card team-f">
-      <img class="team-crest" src="/img/brasoes/f.png" alt="">
-      <span class="team-art" aria-hidden="true"></span>
-      <span class="team-plate">
-        <span class="team-name">FUNKEIROS</span>
-        <span class="team-slogan">"A treta se faz no bailão!"</span>
-      </span>
-      <span class="team-chars" aria-hidden="true"></span>
-      <span class="team-desc">Mandrake · Raul da Franja · Oakley · Cria RJ · Chave SP · Funk Raiz · Trap Funk · Fluxo · Ostentação</span>
-      <span class="team-cta" aria-hidden="true"></span>
-    </button>
-    <button id="btn-team-m" class="team-card team-m">
-      <img class="team-crest" src="/img/brasoes/m.png" alt="">
-      <span class="team-art" aria-hidden="true"></span>
-      <span class="team-plate">
-        <span class="team-name">MÍTICO</span>
-        <span class="team-slogan">"A treta atravessa os séculos!"</span>
-      </span>
-      <span class="team-chars" aria-hidden="true"></span>
-      <span class="team-desc">Lobisomem · Bandeirante · Boto Cor de Rosa · Caipora · Curupira · Maria Bonita · Saci-Pererê · Zumbi dos Palmares · Lampião</span>
+      <span class="team-desc">Escolha o Time B e depois monte seu personagem.</span>
       <span class="team-cta" aria-hidden="true"></span>
     </button>
   </div>
@@ -1371,7 +1345,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
 
 <!-- Settings - abas por categoria (padrão CS2/Valorant). Os IDs dos inputs NÃO mudam:
      toda a persistência/wiring do main.js continua valendo. -->
-<div id="settings-panel" class="screen hidden" data-active-tab="video">
+<div id="settings-panel" class:list={['screen',{hidden:!directSettings}]} data-active-tab="video">
   <div class="panel settings-wrap">
     <div class="set-head">
       <h2>CONFIGURAÇÕES</h2>
@@ -1519,7 +1493,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
               </div>
               <div id="mp-mapas-grade" class="mp-mapas-grade" role="group" aria-label="Mapas que a sala vai girar"></div>
             </div>
-            <p class="mp-dica2 mp-lados-fixos">Toda sala é ESQUERDA × DIREITA. Escolha o lado ao entrar.</p>
+            <p class="mp-dica2 mp-lados-fixos">Toda sala é TIME E × TIME B. Escolha o time ao entrar.</p>
             <label>MODO
               <select id="mp-modo"><option value="rounds">MATA-MATA</option><option value="ctf">CAPTURE A BANDEIRA</option></select>
             </label>
@@ -1698,7 +1672,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
          game.js só quando a facção MUDA - a arte vem do CSS, então o laço de
          quadro não toca em imagem nenhuma. -->
     <div id="score-e" class="team-score ts-p">
-      <i class="ts-crest" id="crest-e" aria-hidden="true"></i><span class="so-leitor" id="sigla-e">ESQ</span><b>0</b>
+      <i class="ts-crest" id="crest-e" aria-hidden="true"></i><span class="so-leitor" id="sigla-e">E</span><b>0</b>
     </div>
     <div id="hud-mid">
       <div id="round-time">1:39</div>
@@ -1707,7 +1681,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
       <div id="rounds-row">RODADA 1 · ESQ 0 × 0 DIR</div>
     </div>
     <div id="score-b" class="team-score ts-b">
-      <i class="ts-crest" id="crest-b" aria-hidden="true"></i><span class="so-leitor" id="sigla-b">DIR</span><b>0</b>
+      <i class="ts-crest" id="crest-b" aria-hidden="true"></i><span class="so-leitor" id="sigla-b">B</span><b>0</b>
     </div>
   </div>
   <div id="ctf-hud" class="hidden"></div>
@@ -1745,8 +1719,7 @@ if (document.documentElement.dataset.ui === 'v3') TP_CSS.arquivos.forEach(functi
   <div id="scoreboard" class="hidden">
     <div class="sb-center">
       <h3>CORO SOLTO - PLACAR</h3>
-      <!-- Duas colunas, uma por time, com o brasão da facção no topo (referência
-           08_placar, pedido do dono 07/08). O JS preenche #sb-cols. -->
+      <!-- Duas colunas, uma por time, com o brasão no topo. O JS preenche #sb-cols. -->
       <div class="sb-cols" id="sb-cols"></div>
     </div>
     <div class="sb-foot"><span><b>TAB</b> SEGURAR PARA VER</span><span><b>MOUSE 2</b> ATIVAR CURSOR</span></div>

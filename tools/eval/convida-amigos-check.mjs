@@ -132,7 +132,7 @@ const semShare = docFalso();
 modulo.montaConvite({ doc: semShare.doc, nav: { clipboard }, abre: () => {} });
 if (botoesDe(semShare.dialog).some((b) => b.dataset.plataforma === 'nativo')) falhas.push('sem navigator.share, o botão MAIS APPS não devia existir');
 
-if (!/const UI_V3=document\.documentElement\.dataset\.ui==='v3'/.test(community)
+if (!/const UI_V3=document\.documentElement(?:\?\.|\.)dataset(?:\?\.|\.)ui==='v3'/.test(community)
   || !/if\(UI_V3\)\{const convidar=/.test(community)
   || !/UI_V3\?tr\('Buscar por nickname ou e-mail'\):'Buscar pelo nickname'/.test(community)) {
   falhas.push('integração do convite vaza para o legado');

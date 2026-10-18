@@ -1,5 +1,5 @@
 // Pedido de 11/10/2026: integrar páginas ao lobby sem perder HTML/SEO/AEO.
-// Baseline: AEO ignora EN/facções, idioma troca só o chrome e fundo exige Three.js.
+// Baseline: AEO ignorava EN/grupos, idioma trocava só o chrome e fundo exigia Three.js.
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { SITE } from '../../src/lib/site-origin.mjs';
@@ -7,7 +7,7 @@ const root = new URL('../../', import.meta.url);
 const dist = new URL('dist/client/', root);
 const read = (file) => readFileSync(new URL(file, dist), 'utf8');
 const pairs = [['como-jogar', 'how-to-play'], ['personagens', 'characters'], ['mapas', 'maps'], ['armas', 'weapons'], ['sobre', 'about'], ['changelog', 'whats-new']];
-const routes = [...pairs.flat(), 'apoie', ...readdirSync(new URL('faccoes/', dist), { withFileTypes: true }).filter(e => e.isDirectory()).map(e => `faccoes/${e.name}`)];
+const routes = [...pairs.flat(), 'apoie', ...readdirSync(new URL('grupos/', dist), { withFileTypes: true }).filter(e => e.isDirectory()).map(e => `grupos/${e.name}`)];
 const pages = Object.fromEntries(routes.map(route => [route, read(`${route}/index.html`)]));
 const index = JSON.parse(read('ai-index.json'));
 const urls = new Set(index.entries.map(e => new URL(e.url).href));
@@ -97,7 +97,7 @@ contract('AEO entregue na Vercel', () => {
 const registry = readFileSync(new URL('public/js/maps.js', root), 'utf8');
 const paused = new Set([...registry.match(/MAPAS_PARADOS = new Set\(\[([\s\S]*?)\]\)/)[1].matchAll(/'([^']+)'/g)].map(m => m[1]));
 const playable = [...registry.match(/export const MAPS = \{([\s\S]*?)\n\};/)[1].matchAll(/^\s+(\w+):\s*\{([^\n]+)/gm)].filter(m => !paused.has(m[1]));
-const editorial = readFileSync(new URL('src/data/jogo.ts', root), 'utf8').split('export const MAPAS: Mapa[] = [')[1].split('export const FACCOES')[0];
+const editorial = readFileSync(new URL('src/data/jogo.ts', root), 'utf8').split('export const MAPAS: Mapa[] = [')[1].split('export const GRUPOS')[0];
 const defaults = new Map([...editorial.matchAll(/["']?id["']?:\s*["']([^"']+)["'][^{}]*["']?ctf["']?:\s*(true|false)/g)].map(m => [m[1], m[2] === 'true']));
 const cards = nodes(pages.mapas).find(n => n['@type'] === 'ItemList').itemListElement;
 contract('catálogo: todos os mapas selecionáveis', () => {

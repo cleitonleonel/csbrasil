@@ -10,7 +10,7 @@
 // O VOCABULÁRIO VISUAL É O DA BADGE de propósito: fundo #0c0e11, âmbar #ffd23f,
 // faixa vermelha no topo e verde embaixo. Assim perfil e páginas de conteúdo
 // parecem o mesmo produto quando aparecem lado a lado num feed.
-import { MAPAS, ARMAS, PERSONAGENS, FACCOES } from '../data/jogo';
+import { MAPAS, ARMAS, PERSONAGENS, GRUPOS } from '../data/jogo';
 import { BRAND, HOST } from './site';
 
 export interface Card {
@@ -47,11 +47,42 @@ export const CARDS: Record<string, () => Card> = {
   personagens: () => ({
     etiqueta: `${PERSONAGENS.length} PERSONAGENS`,
     titulo: 'Elenco',
-    sub: `${FACCOES.length} facções · todos fictícios`,
-    itens: FACCOES.slice(0, 5).map((f) =>
-      [f.nome, `${PERSONAGENS.filter((p) => p.faccao === f.id).length} personagens`] as [string, string]),
+    sub: `${GRUPOS.length} grupos de catálogo · Time E × Time B`,
+    itens: GRUPOS.slice(0, 5).map((g) =>
+      [g.nome, `${PERSONAGENS.filter((p) => p.grupo === g.id).length} personagens`] as [string, string]),
   }),
 };
+
+const ROTAS: Record<string, string> = {
+  '/': 'Jogar agora', '/configuracoes': 'Configurações', '/loja': 'Loja de skins',
+  '/ranking': 'Placar da Rua', '/comunidade': 'Comunidade', '/clans': 'Clãs',
+  '/privacidade': 'Privacidade', '/termos': 'Termos de uso', '/excluir-dados': 'Excluir dados',
+  '/sobre': 'Sobre o jogo', '/about': 'About the game', '/como-jogar': 'Como jogar',
+  '/how-to-play': 'How to play', '/personagens': 'Personagens', '/characters': 'Characters',
+  '/mapas': 'Mapas', '/maps': 'Maps', '/armas': 'Armas', '/weapons': 'Weapons',
+  '/mapa': 'Mapa ao vivo', '/changelog': 'Novidades', '/whats-new': 'What’s new',
+  '/apoie': 'Apoie o jogo', '/feedback': 'Feedback',
+};
+const tituloDeRota = (caminho: string) => {
+  const limpo = caminho.replace(/\/+$/, '') || '/';
+  if (ROTAS[limpo]) return ROTAS[limpo];
+  const ultimo = limpo.split('/').filter(Boolean).at(-1) || 'Jogar agora';
+  return decodeURIComponent(ultimo).replace(/[-_]+/g, ' ').replace(/\b\p{L}/gu, (c) => c.toUpperCase());
+};
+export function routeCard(caminho: string, titulo?: string): Card {
+  const limpo = caminho.startsWith('/') ? caminho : `/${caminho}`;
+  const secao = limpo.split('/').filter(Boolean)[0] || 'jogar';
+  return {
+    etiqueta: secao.toUpperCase().slice(0, 24),
+    titulo: titulo || tituloDeRota(limpo),
+    sub: limpo === '/' ? 'Entre na arena direto do navegador' : `Abra direto em ${limpo}`,
+    itens: [
+      ['DOIS TIMES', 'Time E × Time B'],
+      ['SEM DOWNLOAD', 'Jogue no navegador'],
+      ['ROTA DIRETA', limpo],
+    ],
+  };
+}
 
 export const TIPOS = Object.keys(CARDS);
 

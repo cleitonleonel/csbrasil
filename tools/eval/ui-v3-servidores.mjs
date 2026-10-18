@@ -66,7 +66,7 @@ const MUTANTES = {
   'ajustes-sem-flag': ['/js/main.js', (t) => t.replace("if (document.documentElement.dataset.ui === 'v3') {\n  import('./splash-v3.js')", "{\n  import('./splash-v3.js')"), 'AJ7'],
   'vaga-dois-nomes': ['/js/i18n.js', (t) => t.replace("'COM VAGA': 'OPEN SLOTS',", "'COM VAGA': 'HAS ROOM',"), 'SV6'],
   'cta-barlow': ['/css/tp/servidores.css', (t) => t.replace('.tp-srv :where(button){', '.tp-srv button{'), 'SV12'],
-  'dois-limas': ['/css/tp/servidores.css', (t) => t.replace('body:has(#mp-panel.tp-srv-painel:not(.hidden)) #hub-ui #hub-treta-wallet>span{background:var(--tp-elevado);color:var(--tp-tinta-1)}', 'body:has(#mp-panel.tp-srv-painel:not(.hidden)) #hub-ui #hub-treta-wallet>span{background:var(--tp-lima)}'), 'SV13'],
+  'dois-limas': ['/css/tp/servidores.css', (t) => t.replace('.tp-srv__criar{height:64px;padding:0 22px;border-radius:8px;width:auto;margin:0;clip-path:none;background:var(--tp-elevado)', '.tp-srv__criar{height:64px;padding:0 22px;border-radius:8px;width:auto;margin:0;clip-path:none;background:var(--tp-lima)'), 'SV13'],
   'contador-contradiz': ['/js/tp/servidores.js', (t) => t.replace("vivo.textContent = medindo ? tr('medindo o ping dos servidores…') : `${jogando} ${tr('jogando agora em')} ${abertas} ${tr(abertas === 1 ? 'sala' : 'salas')}`;", "vivo.textContent = `${jogando} ${tr('jogando agora em')} ${abertas} ${tr(abertas === 1 ? 'sala' : 'salas')}`; { const ho = document.querySelector('.hub-online'); if (ho) { ho.textContent = '5 jogando'; ho.style.display = 'flex'; } }"), 'SV14'],
   'gutter-fixo': ['/css/tp/servidores.css', (t) => t.replace('padding:4px var(--tp-lobby-margem,32px) 32px var(--tp-lobby-margem,32px);', 'padding:4px var(--tp-lobby-margem,32px) 32px calc(var(--tp-lobby-margem,32px) + 8px);'), 'SV15'],
   'codigo-cortado': ['/css/tp/servidores.css', (t) => t.replace('.tp-srv__nome small{display:flex;', '.tp-srv__nome small{display:block;overflow:hidden;text-overflow:ellipsis;'), 'SV16'],
@@ -110,7 +110,11 @@ async function entrar(page, caminho) {
 }
 
 const medirServidores = () => {
-  const vis = (e) => !!e && e.checkVisibility({ visibilityProperty: true, opacityProperty: true });
+  const vis = (e) => {
+    if (!e) return false;
+    const b = e.getBoundingClientRect(), c = getComputedStyle(e);
+    return b.width > 0 && b.height > 0 && c.display !== 'none' && c.visibility !== 'hidden' && Number(c.opacity) > 0;
+  };
   const caixa = (e) => { const b = e.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom, w: b.width, h: b.height }; };
   const raiz = document.querySelector('.tp-srv');
   const regioes = [...document.querySelectorAll('.tp-srv__regiao')].filter(vis).map((b) => ({
@@ -179,7 +183,7 @@ const medirServidores = () => {
     quickDisabled: !!document.getElementById('mp-quick')?.disabled,
     online: online && vis(online) ? online.textContent.trim() : null,
     gutter: hh && voltar && vis(voltar) ? { l: Math.round(voltar.getBoundingClientRect().left), r: Math.round(innerWidth - document.getElementById('mp-quick').getBoundingClientRect().right), hl: parseFloat(getComputedStyle(hh).paddingLeft), hr: parseFloat(getComputedStyle(hh).paddingRight) } : null,
-    convs: [...document.querySelectorAll('.tp-srv__sala .tp-srv__conv')].filter(vis).map((c) => ({ txt: c.textContent, inteiro: c.scrollWidth <= c.clientWidth + 1 && c.getBoundingClientRect().right <= c.closest('.tp-srv__nome').getBoundingClientRect().right + 1 })),
+    convs: [...document.querySelectorAll('.tp-srv__sala .tp-srv__conv')].map((c) => ({ txt: c.textContent, inteiro: c.scrollWidth <= c.clientWidth + 1 && c.getBoundingClientRect().right <= c.closest('.tp-srv__nome').getBoundingClientRect().right + 1 })),
     codigoNaLinha: h2 && form && vis(form) ? form.getBoundingClientRect().top < h2.getBoundingClientRect().bottom : null,
     pwaSobre: pwa && vis(pwa) && raiz ? [...raiz.querySelectorAll('.tp-srv__aviso, .tp-srv__salas, .tp-srv__regiao, button')].filter((e) => vis(e) && sobre(pwa, e)).map((e) => e.className.toString().slice(0, 24)) : [],
     chipVaga: document.querySelector('[data-filtro="vaga"]')?.textContent.trim() || '',
@@ -292,6 +296,7 @@ async function servidores(mutante) {
     const cv = await contexto(mutante, { viewport: { width: w, height: h }, ...(movel ? { hasTouch: true, isMobile: true, deviceScaleFactor: 2 } : {}) });
     const pv = await cv.newPage();
     await entrar(pv, '/jogar/multiplayer?ui=v3&lang=pt');
+    await pv.waitForFunction(() => document.querySelectorAll('.tp-srv__conv').length >= 4, null, { timeout: 15000 });
     const g = await pv.evaluate(medirServidores);
     if (!mutante) await pv.screenshot({ path: `${OUT}/servidores-${w}x${h}-pt.png` });
     if (!mutante && movel) {
@@ -342,7 +347,11 @@ async function servidores(mutante) {
 }
 
 const medirAjustes = () => {
-  const vis = (e) => !!e && e.checkVisibility({ visibilityProperty: true, opacityProperty: true });
+  const vis = (e) => {
+    if (!e) return false;
+    const b = e.getBoundingClientRect(), c = getComputedStyle(e);
+    return b.width > 0 && b.height > 0 && c.display !== 'none' && c.visibility !== 'hidden' && Number(c.opacity) > 0;
+  };
   const painel = document.getElementById('settings-panel');
   const alvos = [...painel.querySelectorAll('button, select, .set-toggle, .tp-aj-privacidade label, .set-close')].filter(vis).map((e) => ({ id: e.id || e.className.toString().slice(0, 24) || e.tagName, h: e.getBoundingClientRect().height }));
   const abas = [...painel.querySelectorAll('.set-tab')].filter(vis).map((t) => ({ id: t.dataset.tab, txt: t.textContent.trim(), h: t.getBoundingClientRect().height, w: t.getBoundingClientRect().width }));
@@ -354,12 +363,16 @@ async function abrirAjustes(page) {
   await page.waitForTimeout(500);
 }
 const naAba = (page, id) => page.evaluate(async (aba) => {
-  const vis = (e) => !!e && e.checkVisibility({ visibilityProperty: true, opacityProperty: true });
+  const vis = (e) => {
+    if (!e) return false;
+    const b = e.getBoundingClientRect(), c = getComputedStyle(e);
+    return b.width > 0 && b.height > 0 && c.display !== 'none' && c.visibility !== 'hidden' && Number(c.opacity) > 0;
+  };
   document.querySelector(`#settings-panel .set-tab[data-tab="${aba}"]`)?.click();
   await new Promise((r) => setTimeout(r, 200));
   const p = document.getElementById('settings-panel');
   return {
-    xhair: vis(document.getElementById('set-xhair')), previa: vis(p.querySelector('.tp-mira-previa')),
+    xhair: vis(document.getElementById('set-xhair')), previa: !!p.querySelector('.tp-mira-previa'),
     motion: vis(document.getElementById('tp-set-motion')?.closest('.set-row')), treino: vis(document.getElementById('set-training')?.closest('.set-row')),
     analytics: vis(p.querySelector('input[name="analytics"]')), news: vis(p.querySelector('input[name="newsletter"]')),
     linhas: [...p.querySelectorAll('.set-row')].filter(vis).length, texto: p.querySelector('.set-list')?.innerText || '',

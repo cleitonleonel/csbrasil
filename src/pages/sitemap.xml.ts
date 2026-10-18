@@ -29,7 +29,7 @@ import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../lib/supabase';
 import { SITE, RANKING_ON } from '../lib/site';
 import { PT_EN_PAIRS } from '../lib/i18n-pairs';
-import { FACCOES, MAPAS } from '../data/jogo';
+import { GRUPOS, MAPAS } from '../data/jogo';
 import { ROTAS_HUB } from '../../public/js/rotas.js';
 import {
   POR_PAGINA, numeroDePaginas, offsetDaPagina, xmlUrlset, xmlIndex,
@@ -47,10 +47,8 @@ export const STATIC: [string, string, string][] = [
   ['/',            '1.0', 'daily'],
   ['/como-jogar',  '0.8', 'weekly'],
   ['/personagens', '0.8', 'weekly'],
-  /* As 5 facções saem de FACCOES, não de uma lista digitada aqui: facção nova
-     entra no sitemap sozinha. Prioridade abaixo de /personagens porque são
-     recortes dela, e acima de /sobre porque é conteúdo de produto. */
-  ...FACCOES.map((f) => [`/faccoes/${f.id}`, '0.7', 'weekly'] as [string, string, string]),
+  /* Os grupos saem do mesmo catálogo de /personagens e ganham recortes próprios. */
+  ...GRUPOS.map((g) => [`/grupos/${g.id}`, '0.7', 'weekly'] as [string, string, string]),
   ['/mapas',       '0.8', 'weekly'],
   /* Uma página por arena (ADR 0008), do mesmo MAPAS de /mapas. */
   ...MAPAS.map((m) => [`/mapas/${m.id}`, '0.6', 'weekly'] as [string, string, string]),

@@ -73,12 +73,17 @@ async function abrir({ w = 1536, h = 1024, lang = 'pt', flag = true, rota = '/jo
     localStorage.removeItem('tp-modos-favoritos');
   }, [salvo, lang]);
   await page.goto(`${BASE}${rota}?${flag ? 'ui=v3&' : ''}lang=${lang}`, { waitUntil: 'domcontentloaded', timeout: 180000 });
-  await page.waitForFunction(() => {
-    const j = document.getElementById('tp-splash-jogar'), s = document.getElementById('splash-enter');
-    return (j && !j.disabled) || (s && !s.classList.contains('hidden'));
-  }, null, { timeout: 120000 }).catch(() => {});
-  await page.keyboard.press('Enter');
-  await page.waitForFunction(() => { const s = document.getElementById('boot-splash'); return !s || s.classList.contains('gone') || !s.checkVisibility(); }, null, { timeout: 30000 }).catch(() => {});
+  const splash = page.locator('#boot-splash');
+  if (await splash.isVisible().catch(() => false)) {
+    await page.waitForFunction(() => {
+      const j = document.getElementById('tp-splash-jogar'), s = document.getElementById('splash-enter');
+      return (j && !j.disabled) || (s && !s.classList.contains('hidden'));
+    }, null, { timeout: 120000 });
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => { const s = document.getElementById('boot-splash'); return !s || s.classList.contains('gone') || !s.checkVisibility(); }, null, { timeout: 30000 });
+  } else {
+    await page.waitForFunction(() => window.__CS_MAIN_READY__ === true, null, { timeout: 120000 });
+  }
   await page.waitForTimeout(1500);
   return page;
 }

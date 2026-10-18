@@ -4,7 +4,7 @@
 // AQUI por overlay - o PT continua a fonte. Redirecionamento por idioma: cada página
 // manda pro par quando o idioma resolvido não bate (mesmas regras do public/js/i18n.js).
 import Layout from '../layouts/Layout.astro';
-import { FACCOES, PERSONAGENS } from '../data/jogo';
+import { GRUPOS, PERSONAGENS } from '../data/jogo';
 import { BRAND_FULL, GAME_ID } from '../lib/site';
 
 const FAC_EN: Record<string, { nome: string; lema: string; nota: string }> = {
@@ -71,10 +71,10 @@ const BLURB_EN: Record<string, string> = {
   "saci": "A character inspired by Brazilian folklore and history. Choose Saci-Pererê from the Mythic group in the game menu.",
   "caipora": "A character inspired by Brazilian folklore and history. Choose Caipora from the Mythic group in the game menu.",
 };
-const grupos = FACCOES.map(f => ({
-  ...f,
-  en: FAC_EN[f.id] || { nome: f.nome, lema: f.lema, nota: f.nota },
-  elenco: PERSONAGENS.filter(p => p.faccao === f.id),
+const grupos = GRUPOS.map(g => ({
+  ...g,
+  en: FAC_EN[g.id] || { nome: g.nome, lema: g.lema, nota: g.nota },
+  elenco: PERSONAGENS.filter(p => p.grupo === g.id),
 }));
 const total = PERSONAGENS.length;
 const PLACA: Record<string, string> = { E: 'time-e', B: 'time-b', urbanas: 'tribos', palhacos: 'palhacos', funkeiros: 'funkeiros', mitico: 'mitico' };
@@ -84,18 +84,18 @@ const jsonld = [{ '@id': GAME_ID }];
 ---
 <Layout
   title={`Characters - all ${total} | ${BRAND_FULL}`}
-  description={`The ${total} characters of ${BRAND_FULL} across ${FACCOES.length} catalog groups: Brazilian satire, folklore and political caricatures.`}
+  description={`The ${total} characters of ${BRAND_FULL} across ${GRUPOS.length} catalogue groups. Every match uses Team E and Team B.`}
   jsonld={jsonld}
   h1="Characters"
-  kicker={`${total} characters · ${FACCOES.length} factions`}
+  kicker={`${total} characters · ${GRUPOS.length} groups`}
   heroImg={placa('palhacos')}
   heroPos="64%">
   <Fragment slot="sub">
-    {total} characters across {FACCOES.length} catalog groups. Brazilian satire, folklore and
-    political caricatures, each with its own silhouette, props and style. Choose your character in the menu before playing.
+    {total} characters across {GRUPOS.length} catalogue groups. Those groups organize the cast, while every
+    match uses only Team E and Team B. The menu shows which characters are available for your team.
   </Fragment>
 
-  <nav class="tstat" aria-label="Factions">
+  <nav class="tstat" aria-label="Cast groups">
     {grupos.map(g => (
       <a href={`#${slug(g.en.nome)}`} style={`--fc:${g.cor}`}>
         <b style={`color:${g.cor}`}>{g.elenco.length}</b><span>{g.en.nome}</span>
@@ -104,16 +104,16 @@ const jsonld = [{ '@id': GAME_ID }];
   </nav>
 
   {grupos.map((g, i) => (
-    <section class="faccao" style={`--fc:${g.cor}`}>
+    <section class="grupo" style={`--fc:${g.cor}`}>
       <header class="fhead">
         {placa(g.id) && (
           <div class="fplate">
             <img src={placa(g.id)} width="640" height="1601" loading="lazy" decoding="async"
-                 alt={`${g.en.nome} faction characters in ${BRAND_FULL}`}>
+                 alt={`${g.en.nome} group characters in ${BRAND_FULL}`}>
           </div>
         )}
         <div class="fmeta">
-          <p class="meta"><b>Faction {String(i + 1).padStart(2, '0')}</b><i>·</i>
+          <p class="meta"><b>Group {String(i + 1).padStart(2, '0')}</b><i>·</i>
             {g.elenco.length} characters</p>
           <h2 id={slug(g.en.nome)} style={`color:${g.cor}`}>{g.en.nome}</h2>
           <p class="fmotto">“{g.en.lema}”</p>
@@ -147,7 +147,7 @@ const jsonld = [{ '@id': GAME_ID }];
 
 
 <style>
-  .faccao{margin:44px 0 0}
+  .grupo{margin:44px 0 0}
   .fhead{display:flex;overflow:hidden;background:var(--panel-2);
     border:1px solid var(--line);border-left:3px solid var(--fc)}
   .fplate{flex:0 0 210px;max-height:230px}

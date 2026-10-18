@@ -14,7 +14,7 @@
 import type { APIRoute } from 'astro';
 import { initWasm, Resvg } from '@resvg/resvg-wasm';
 import { FONT_BOLD_B64 } from '../../../lib/font-data';
-import { CARDS, cardSvg } from '../../../lib/og-card';
+import { CARDS, cardSvg, routeCard } from '../../../lib/og-card';
 
 export const prerender = false;
 
@@ -44,7 +44,10 @@ function init(req: Request) {
 export const GET: APIRoute = async ({ params, request }) => {
   try {
     const tipo = String(params.tipo || '').replace(/\.png$/, '');
-    const monta = CARDS[tipo];
+    const url = new URL(request.url);
+    const caminho = url.searchParams.get('rota') || '/';
+    const titulo = url.searchParams.get('titulo') || undefined;
+    const monta = tipo === 'pagina' ? () => routeCard(caminho, titulo) : CARDS[tipo];
     // 404 e não 500: tipo desconhecido é URL errada, não falha do servidor.
     if (!monta) return new Response('not found', { status: 404 });
 

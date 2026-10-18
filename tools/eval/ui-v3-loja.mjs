@@ -103,14 +103,20 @@ async function abrir({ w = 1536, h = 1024, flag = true, lang = 'pt', mutante = '
   await preparar(page, mutante);
   await fixture(page, conta);
   await page.goto(`${BASE}/loja?${flag ? 'ui=v3&' : ''}lang=${lang}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
-  if (flag && mutante !== 'sem-flag') {
-    await page.waitForFunction(() => document.getElementById('tp-splash-jogar') && !document.getElementById('tp-splash-jogar').disabled, null, { timeout: 90000 });
-    await page.keyboard.press('Enter');
+  const splash = page.locator('#boot-splash');
+  if (await splash.isVisible().catch(() => false)) {
+    if (flag && mutante !== 'sem-flag') {
+      await page.waitForFunction(() => document.getElementById('tp-splash-jogar') && !document.getElementById('tp-splash-jogar').disabled, null, { timeout: 90000 });
+      await page.keyboard.press('Enter');
+    } else {
+      await page.locator('#splash-enter:not(.hidden)').waitFor({ timeout: 90000 });
+      await splash.click({ force: true });
+    }
+    await splash.waitFor({ state: 'detached', timeout: 30000 }).catch(() => {});
   } else {
-    await page.locator('#splash-enter:not(.hidden)').waitFor({ timeout: 90000 });
-    await page.locator('#boot-splash').click({ force: true });
+    await page.waitForFunction(() => window.__CS_MAIN_READY__ === true, null, { timeout: 120000 });
   }
-  await page.locator('#boot-splash').waitFor({ state: 'detached', timeout: 30000 }).catch(() => {});
+  await page.addStyleTag({ content: 'astro-dev-toolbar{display:none!important;pointer-events:none!important}' });
   await page.locator('#hub-ui:not([hidden])').waitFor({ timeout: 90000 });
   if (!(await page.locator('#hub-shop:not([hidden])').count())) await page.locator('button[data-hub-tab="loja"]').click();
   await page.locator('#hub-shop:not([hidden])').waitFor({ timeout: 30000 });

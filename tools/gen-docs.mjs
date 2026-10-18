@@ -149,20 +149,25 @@ function medir() {
     const build = /build:\s*([A-Za-z0-9_]+)/.exec(l)?.[1];
     if (m) mapas.push({ id: m[1], nome: m[2], ctf: /ctfMode:\s*true/.test(l), arquivo: build ? importsDeMapa.get(build) || null : null });
   }
+  const pausados = new Set(
+    (msrc.match(/export const MAPAS_PARADOS = new Set\(\[([\s\S]*?)\]\)/)?.[1] || '')
+      .match(/'([^']+)'/g)?.map((id) => id.slice(1, -1)) || [],
+  );
+  const mapasJogaveis = mapas.filter((m) => !pausados.has(m.id));
   /* "Fora do registro" = existe no disco e NINGUÉM o importa em maps.js. É o caso do
      map_piscinao_ramos.js (o "Piscinão"), e a distinção importa: arquivo de mapa em
      public/js/ não implica mapa jogável — quem decide é o objeto MAPS. */
   const arquivosMapa = glob('public/js', (x) => /^map_.*\.js$/.test(x) && /export function build/.test(ler(`public/js/${x}`)));
   const importados = new Set([...msrc.matchAll(/from\s+'\.\/(map_[\w]+\.js)'/g)].map((m) => m[1]));
   f.mapas = {
-    registrados: mapas,
-    total: mapas.length,
-    emCaptura: mapas.filter((m) => m.ctf).length,
-    emRodadas: mapas.filter((m) => !m.ctf).length,
+    registrados: mapasJogaveis,
+    total: mapasJogaveis.length,
+    emCaptura: mapasJogaveis.filter((m) => m.ctf).length,
+    emRodadas: mapasJogaveis.filter((m) => !m.ctf).length,
     arquivosNoDisco: arquivosMapa.length,
     importados: [...importados],
     foraDoRegistro: arquivosMapa.filter((a) => !importados.has(a)),
-    cmd: 'objeto MAPS de public/js/maps.js',
+    cmd: 'objeto MAPS menos MAPAS_PARADOS de public/js/maps.js',
   };
 
   /* ---- regras de partida: lidas das constantes, não da memória de quem escreveu a doc ---- */
@@ -236,7 +241,7 @@ function medir() {
      de imagens/GLB para cada SDK. O mutante continua incluindo scripts locais. */
   const scriptsPipeline = incluiLocais
     ? globR('tools', (x) => x.endsWith('.mjs'))
-    : [...versionados].filter((p) => p.startsWith('tools/') && p.endsWith('.mjs')).sort();
+    : [...versionados].filter((p) => p.startsWith('tools/') && p.endsWith('.mjs') && existe(p)).sort();
   const fontesPipeline = scriptsPipeline.map((p) => ler(p));
   const consomem = (padrao) => fontesPipeline.filter((src) => src.includes(padrao)).length;
   f.pipeline = {
@@ -457,8 +462,8 @@ const BLOCOS = {
     `| GLBs de personagem | ${f.assets.personagens} | \`git ls-files 'public/models/characters/*.glb' \\| wc -l\` |`,
     `| Props em GLB | ${f.assets.props} | \`git ls-files 'public/models/props/*.glb' \\| wc -l\` |`,
     `| Clipes de animação versionados | ${num(f.assets.anims)} | \`git ls-files public/models/anims \\| wc -l\` |`,
-    `| Personagens jogáveis | ${f.elenco.total}, em ${f.elenco.faccoes} facções | array \`CHARACTERS\` de \`characters.js\` |`,
-    `| Mapas no registro | ${f.mapas.total} | objeto \`MAPS\` de \`maps.js\` |`,
+    `| Personagens jogáveis | ${f.elenco.total}, em ${f.elenco.faccoes} grupos | array \`CHARACTERS\` de \`characters.js\` |`,
+    `| Mapas no menu | ${f.mapas.total} | \`MAPS\` menos \`MAPAS_PARADOS\` |`,
     `| Arnêses visuais em HTML | ${f.portao.arnesesHtml} | \`git ls-files 'public/*.html' \\| wc -l\` |`,
     `| Scripts do arnês | ${f.portao.scriptsEval} | \`git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \\| wc -l\` |`,
     `| Scripts de pipeline | ${f.portao.scriptsTools} | \`git ls-files 'tools/*.mjs' \\| wc -l\` |`,
@@ -517,8 +522,8 @@ const BLOCOS = {
   regras: (f) => [
     '| Regra | Valor | Constante |',
     '|---|---|---|',
-    `| Facções · personagens | ${f.elenco.faccoes} · ${f.elenco.total} (${Object.entries(f.elenco.porFaccao).sort().map(([k, v]) => `${k} ${v}`).join(' · ')}) | \`CHARACTERS\` |`,
-    `| Mapas no menu | ${f.mapas.total} — ${f.mapas.emRodadas} abrem em rodadas, **${f.mapas.emCaptura} em captura** | \`MAPS\` / \`ctfMode\` |`,
+    `| Grupos · personagens | ${f.elenco.faccoes} · ${f.elenco.total} (${Object.entries(f.elenco.porFaccao).sort().map(([k, v]) => `${k} ${v}`).join(' · ')}) | \`CHARACTERS\` |`,
+    `| Mapas no menu | ${f.mapas.total} — ${f.mapas.emRodadas} abrem em rodadas, **${f.mapas.emCaptura} em captura** | \`MAPS\` menos \`MAPAS_PARADOS\` |`,
     `| Respawn | ${String(f.regras.respawn).replace('.', ',')} s | \`RESPAWN_DELAY\` |`,
     `| Round | ${f.regras.roundTime} s, ${f.regras.roundsToWin} vitórias | \`ROUND_TIME\` / \`ROUNDS_TO_WIN\` |`,
     /* O alvo da rodada de captura NÃO é mais derivável de uma constante: desde 05/08 ele é
@@ -542,9 +547,9 @@ const BLOCOS = {
       return `| \`${m.id}\` | ${m.nome} | ${m.ctf ? '**captura**' : 'rodadas'} | \`${arq || '—'}\` | ${arq ? v(num(linhas('public/js/' + arq))) : '—'} |`;
     }),
     '',
-    `**${f.mapas.total} mapas registrados** — ${f.mapas.emRodadas} abrem em rodadas e ${f.mapas.emCaptura} em captura. ` +
+    `**${f.mapas.total} mapas no menu** — ${f.mapas.emRodadas} abrem em rodadas e ${f.mapas.emCaptura} em captura. ` +
     `\`ctfMode\` **abre** o mapa em captura, não prende: o jogador troca no menu (é a \`MOD1\`). ` +
-    `Há ${f.mapas.arquivosNoDisco} arquivos \`map_*.js\` em \`public/js/\` — arquivo no disco **não** implica mapa jogável.`,
+    `Há ${f.mapas.arquivosNoDisco} arquivos \`map_*.js\` em \`public/js/\`; mapas em \`MAPAS_PARADOS\` ficam fora do menu.`,
     rodape(f.mapas.cmd),
   ].join('\n'),
 
@@ -764,8 +769,8 @@ const BLOCOS_EN = {
     `| Character GLBs | ${f.assets.personagens} | \`git ls-files 'public/models/characters/*.glb' \\| wc -l\` |`,
     `| Props in GLB | ${f.assets.props} | \`git ls-files 'public/models/props/*.glb' \\| wc -l\` |`,
     `| Versioned animation clips | ${numEn(f.assets.anims)} | \`git ls-files public/models/anims \\| wc -l\` |`,
-    `| Playable characters | ${f.elenco.total}, in ${f.elenco.faccoes} factions | \`CHARACTERS\` array in \`characters.js\` |`,
-    `| Maps in the registry | ${f.mapas.total} | \`MAPS\` object in \`maps.js\` |`,
+    `| Playable characters | ${f.elenco.total}, in ${f.elenco.faccoes} groups | \`CHARACTERS\` array in \`characters.js\` |`,
+    `| Maps in the menu | ${f.mapas.total} | \`MAPS\` minus \`MAPAS_PARADOS\` |`,
     `| Visual harnesses in HTML | ${f.portao.arnesesHtml} | \`git ls-files 'public/*.html' \\| wc -l\` |`,
     `| Harness scripts | ${f.portao.scriptsEval} | \`git ls-files 'tools/eval/*.mjs' 'tools/eval/*.py' \\| wc -l\` |`,
     `| Pipeline scripts | ${f.portao.scriptsTools} | \`git ls-files 'tools/*.mjs' \\| wc -l\` |`,
@@ -775,8 +780,8 @@ const BLOCOS_EN = {
   ].join('\n'),
   regras: (f) => [
     '| Rule | Value | Constant |', '|---|---|---|',
-    `| Factions · characters | ${f.elenco.faccoes} · ${f.elenco.total} (${Object.entries(f.elenco.porFaccao).sort().map(([k, v]) => `${k} ${v}`).join(' · ')}) | \`CHARACTERS\` |`,
-    `| Maps in the menu | ${f.mapas.total} - ${f.mapas.emRodadas} open in rounds, **${f.mapas.emCaptura} in capture** | \`MAPS\` / \`ctfMode\` |`,
+    `| Groups · characters | ${f.elenco.faccoes} · ${f.elenco.total} (${Object.entries(f.elenco.porFaccao).sort().map(([k, v]) => `${k} ${v}`).join(' · ')}) | \`CHARACTERS\` |`,
+    `| Maps in the menu | ${f.mapas.total} - ${f.mapas.emRodadas} open in rounds, **${f.mapas.emCaptura} in capture** | \`MAPS\` minus \`MAPAS_PARADOS\` |`,
     `| Respawn | ${f.regras.respawn} s | \`RESPAWN_DELAY\` |`,
     `| Round | ${f.regras.roundTime} s, ${f.regras.roundsToWin} wins | \`ROUND_TIME\` / \`ROUNDS_TO_WIN\` |`,
     `| Capture | target = **all flags on the map**, ${f.regras.ctfRounds} rounds (${f.regras.ctfMatchTime} s safety net) | \`capsToWin = ctfPts.length\` / \`CTF_ROUNDS_TO_WIN\` |`,
@@ -787,7 +792,7 @@ const BLOCOS_EN = {
   mapas: (f) => [
     '| Id | Menu name | Opens in | File in `public/js/` | Lines |', '|---|---|---|---|---:|',
     ...f.mapas.registrados.map((m) => `| \`${m.id}\` | ${m.nome} | ${m.ctf ? '**capture**' : 'rounds'} | \`${m.arquivo || '-'}\` | ${m.arquivo ? v(numEn(linhas('public/js/' + m.arquivo))) : '-'} |`),
-    '', `**${f.mapas.total} registered maps** - ${f.mapas.emRodadas} open in rounds and ${f.mapas.emCaptura} in capture. \`ctfMode\` sets the initial mode; it does not lock it. There are ${f.mapas.arquivosNoDisco} \`map_*.js\` files on disk, so a file alone does **not** make a map playable.`,
+    '', `**${f.mapas.total} maps in the menu** - ${f.mapas.emRodadas} open in rounds and ${f.mapas.emCaptura} in capture. \`ctfMode\` sets the initial mode; it does not lock it. There are ${f.mapas.arquivosNoDisco} \`map_*.js\` files on disk; entries in \`MAPAS_PARADOS\` stay out of the menu.`,
     rodapeEn(f.mapas.cmd),
   ].join('\n'),
   scripts: (f) => ['```bash', `npm run check:fast   # ${f.scripts.checkFast}`, '```', '', `\`package.json\` has **${v(f.scripts.total)} scripts**; the reason behind each one lives in \`SCRIPTS.md\`.`, rodapeEn(f.scripts.cmd)].join('\n'),

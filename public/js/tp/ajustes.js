@@ -39,11 +39,9 @@ function trocarAba(painel, aba) {
   if (aba === 'privacidade') montarPrivacidade(painel);
 }
 
-let privacidadeMontada = false;
 function montarPrivacidade(painel) {
-  if (privacidadeMontada) return;
-  privacidadeMontada = true;
   const caixa = painel.querySelector('.tp-aj-privacidade');
+  if (!caixa || caixa.childElementCount) return;
   /* o bloco vem do account-entry.js sem tr(): traduz depois de montar, e de novo quando a conta responde */
   const pronto = mountProfilePreferences(caixa);
   translateDom(caixa);
@@ -61,7 +59,7 @@ export function ligar() {
     const b = el('button', 'set-tab', tr(rot));
     b.type = 'button'; b.dataset.tab = id;
     b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', 'false');
-    b.onclick = () => trocarAba(painel, id);
+    b.addEventListener('click', () => trocarAba(painel, id));
     abas.append(b);
   }
 

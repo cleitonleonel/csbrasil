@@ -17,7 +17,7 @@ const panel = document.getElementById('hub-about-content');
 const frame = document.getElementById('hub-guide-frame');
 const loading = panel?.querySelector('[role="status"]');
 let observer;
-let currentUrl;
+let currentUrl = frame?.src || undefined;
 let focusOnLoad = false;
 const contentPaths = new Set([...Object.keys(pairs), ...Object.values(pairs), '/mapa', '/apoie']);
 // Páginas internas sem subtab própria (documentos legais, clãs) também abrem no lobby.
@@ -136,7 +136,7 @@ frame?.addEventListener('load', () => {
       }
       const hubTab = section && [...document.querySelectorAll('.hub-tabs [data-hub-tab]')].find(item => item.dataset.hubTab === section);
       (hubTab ?? document.querySelector('.hub-tabs [data-hub-tab="jogar"]'))?.click();
-    } else if (contentPaths.has(url.pathname) || url.pathname.startsWith('/faccoes/') || url.pathname.startsWith('/clans/')) {
+    } else if (contentPaths.has(url.pathname) || url.pathname.startsWith('/grupos/') || url.pathname.startsWith('/clans/')) {
       if (LANG === 'en' && pairs[url.pathname]) url.pathname = pairs[url.pathname];
       url.searchParams.set('embed', '1');
       link.href = url.href;

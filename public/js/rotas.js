@@ -13,7 +13,7 @@ export const CHAVES_DE_TELA = ['secao', 'partida', 'servidor', 'janela', 'social
 /* Abas da loja: valor do estado → data-treta-view do TretaStore. */
 export const ABAS_LOJA = { quests: 'quests', acessorios: 'accessories' };
 
-const DESC_APP = 'Jogo de tiro grátis no navegador, com facções brasileiras. Sem download.';
+const DESC_APP = 'Jogo de tiro grátis no navegador: Time E contra Time B. Sem download.';
 
 /* indexavel: entra no sitemap, robots index. Senão noindex, follow.
    canonical: quando a tela mostra uma página de conteúdo que já tem URL própria. */

@@ -71,7 +71,7 @@ async function abrir(cena, mutante) {
   const p = await browser.newPage({ viewport: { width: w, height: h } });
   await preparar(p, mutante);
   await p.addInitScript(([a, e]) => {
-    try { localStorage.setItem('awpbr_settings', JSON.stringify({ allyBots: a, enemyBots: e })); } catch {}
+    try { localStorage.setItem('awpbr_settings', JSON.stringify({ allyBots: a, enemyBots: e, quality: 'low', menuMusic: false, vol: 0, speech: false })); } catch {}
     /* o GLB preso é de propósito: o watchdog de lançamento não pode cobrir a tela medida com "a arena não abriu" */
     let lanc = null;
     Object.defineProperty(window, '__gameLaunch', { configurable: true, get: () => lanc, set: (v) => { if (v) v.fail = () => {}; lanc = v; } });
@@ -80,8 +80,8 @@ async function abrir(cena, mutante) {
       window.__reguaElenco = { lado: d.lado, eu: d.eu?.name, aliados: (d.aliados || []).map((c) => c.name), inimigos: (d.inimigos || []).map((c) => c.name) };
     });
   }, [cena.a ?? 3, cena.e ?? 4]);
-  /* GLB preso: o preload nunca termina e o overlay de carregamento fica medível */
-  await p.route(/\.glb(\?|$)/, () => {});
+  /* O GLB de personagem fica preso; os assets de fundo terminam para o boot alcançar a partida. */
+  await p.route(/\/models\/characters\/.*\.glb(?:\?|$)/, () => {});
   const flag = cena.legado ? '' : 'ui=v3&';
   const url = cena.vagas ? `${BASE}/?${flag}tela=loading&lang=pt`
     : `${BASE}/?${flag}lang=${cena.lang || 'pt'}&debug=1&auto=${cena.lado === 'B' ? 'B,sertanejo' : 'E,punk'}`;

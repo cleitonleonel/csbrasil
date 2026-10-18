@@ -36,9 +36,10 @@ function card(parent, clan, members = null) {
   element('h2', `[${clan.tag}] ${clan.name}`, parent);
   if (clan.description) element('p', clan.description, parent);
   element('p', `${clan.member_count} membro${clan.member_count === 1 ? '' : 's'}`, parent);
-  const link = element('a', 'Página do clã ↗', parent);
+  const actions = element('div', '', parent); actions.className = 'clan-actions';
+  const link = element('a', 'Página do clã ↗', actions);
   link.href = `/clans/${encodeURIComponent(clan.id)}`;
-  const share = element('button', 'COMPARTILHAR CLÃ', parent);
+  const share = element('button', 'COMPARTILHAR CLÃ', actions);
   share.type = 'button';
   share.onclick = async () => {
     const { compartilhar, linkCompartilhavel } = await import('./compartilhar.js');

@@ -29,10 +29,10 @@ const palette = read('public/js/paleta.js');
 expect(/FACCOES\s*=\s*\[[^\]]*'M'/.test(palette) && /M:\s*\{ base: '#9d4edd', escura: '#5e35b1', palida: '#d0a3f0' \}/.test(palette), 'paleta M está incompleta');
 expect(/M:\s*'m'/.test(read('public/js/brasoes.js')), 'brasão M não está registrado');
 const main = read('public/js/main.js');
-expect(/btn-team-m/.test(main) && /pickTeam\('M'\)/.test(main), 'seleção não expõe o card M');
-expect(/FACTION_ART_URLS[^;]*mitico\.webp/.test(main), 'arte M não entra no preload do menu');
+expect(/btn-team-e/.test(main) && /btn-team-b/.test(main) && !/btn-team-m/.test(main), 'seleção deve expor apenas Time E e Time B');
+expect(/TEAM_ART_URLS[^;]*time-e\.webp[^;]*time-b\.webp/.test(main) && !/TEAM_ART_URLS[^;]*mitico\.webp/.test(main), 'preload do menu deve carregar apenas as artes dos dois times');
 expect(/M:\s*'MÍTICO'/.test(read('public/js/mapcat.js')), 'nome M não entra na interface compartilhada');
-expect(/btn-team-m/.test(read('src/pages/index.astro')) && /team-m/.test(read('public/style.css')), 'card M não está completo no documento e estilo');
+expect(/id="btn-team-e"/.test(read('src/pages/index.astro')) && /id="btn-team-b"/.test(read('src/pages/index.astro')) && !/id="btn-team-m"/.test(read('src/pages/index.astro')), 'documento deve oferecer exatamente os dois times');
 
 const assets = [
   'public/models/characters/lobisomem.glb',
