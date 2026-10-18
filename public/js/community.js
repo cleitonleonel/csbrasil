@@ -10,7 +10,7 @@ import {WEAPONS} from './data/weapons.js';
 const root=document.getElementById('community');
 if(root) {
   const status=document.getElementById('social-status'),account=document.getElementById('social-account'),content=document.getElementById('social-content');
-  const UI_V3=document.documentElement.dataset.ui==='v3';
+  const UI_V3=document.documentElement?.dataset?.ui==='v3';
   let loginConfig={providers:[]};
   let inboxSection='quests',conversation=null,conversationBefore=null,messageDraft='',messageClientId=null,pendingSend=null;
   let auth=null,state=null,tab=root.dataset.tab || 'profile',profileId=root.dataset.profile || new URLSearchParams(location.search).get('perfil') || '',rankingScope='global',rankingQuery='',rankingOffset=0,rankingPeriod='all',rankingMode='all',rankingGameType='all',loadVersion=0;
@@ -79,7 +79,7 @@ if(root) {
   function profileAchievements(p){
     const kills=Number(p.kills) || 0,wins=Math.max(Number(p.round_wins) || 0,Number(p.legacy_wins ?? p.wins) || 0),active=Number(p.verified_play_seconds ?? 0) || 0;
     const derived={first_kill:kills>=1,ten_kills:kills>=10,first_win:wins>=1,one_hour:active>=3600};
-    const saved=new Map((p.achievements || []).filter(a=>Object.hasOwn(names,a?.key)).map(a=>[a.key,a]));
+    const saved=new Map((p.achievements || []).filter(a=>Object.prototype.hasOwnProperty.call(names, a?.key)).map(a=>[a.key,a]));
     return Object.keys(names).filter(k=>saved.has(k) || derived[k]).map(k=>({key:k,at:saved.get(k)?.at || null,source:saved.has(k)?'server':'history'}));
   }
   const achievementText=a=>`${names[a.key]} · ${a.at?new Date(a.at).toLocaleDateString('pt-BR'):a.source==='history'?'pelo histórico preservado':'conquistada'}`;

@@ -45,7 +45,7 @@ export function rankingPlayerCell(player,{careerOnly=false}={}) {
   if(photo){const image=node('img');image.src=photo;image.alt=`Avatar de ${player.nick}`;image.width=32;image.height=32;image.loading='lazy';image.referrerPolicy='no-referrer';image.onerror=()=>{image.hidden=true;};avatar.append(image);}
   const details=node('div'),name=node(path?'a':'span',player.nick);if(path)name.href=path;details.append(name);
   const badge=accountVerifiedBadge(player.account_verified);if(badge)details.append(badge);
-  const rank=careerRankBadge(Object.hasOwn(player,'career_points')?player.career_points:careerOnly?null:player.points);if(rank)details.append(rank);
+  const rank=careerRankBadge(Object.prototype.hasOwnProperty.call(player, 'career_points')?player.career_points:careerOnly?null:player.points);if(rank)details.append(rank);
   const socials=Array.isArray(player.socials)?player.socials:[];
   const links=socials.length?socials:player.social_link?[{net:'Perfil',url:player.social_link}]:[];
   if(links.length){const row=node('div','','ranking-socials');for(const s of links.slice(0,5)){const href=https(s.url);if(!href)continue;const a=node('a',`${s.net || 'Perfil'} ↗`);a.href=href;a.target='_blank';a.rel='noopener noreferrer nofollow';row.append(a);}details.append(row);}
