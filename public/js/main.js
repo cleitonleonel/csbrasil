@@ -5,6 +5,7 @@ import { ligarCompartilhar, linkCompartilhavel, textoDaPartida, origemPublica } 
 import {initAccountEntry,mountProfilePreferences} from './account-entry.js';
 import {initLoginPrompt,noteLoginPromptMatch} from './login-prompt.js';
 import {analyticsAllowed} from './privacy-preferences.js';
+import { contagem } from './contagem.js';   // contagem agregada sem id, independe do consentimento
 import {initTretaStore,equippedTretaSkin,equippedTretaEyewear,tretaVitrine} from './treta-store.js';
 import { initTextures, ajustarAnisotropia } from './textures.js';
 import { CHARACTERS, buildCharacter, charWeapon, ladosDe, podeNoLado } from './characters.js';
@@ -689,6 +690,7 @@ function dismissSplash(e) {
   dockLoadingCharacter();
   sp.classList.add('gone');
   window.__gameLaunch?.ready('entrada');
+  contagem.evento('splash_enter');
   setTimeout(() => sp.remove(), 480);
   setTimeout(focusMenu, 120);   // pós-splash: dá foco ao 1º botão pra ↑/↓ navegarem SEM precisar de Tab
   musicArmed = true;
@@ -1522,6 +1524,7 @@ if (MENU_MUSIC_REVIEW) params.set('debug', '1');
 /* `oficina` entra aqui: retrabalho é sessão de teste, senão cada volta de conserto
    viraria partida no ranking e linha de telemetria. */
 const testMode = params.get('debug') === '1' || !!inspectionScreen || oficina;
+if (testMode) contagem.desligar();
 // ?nav=1 isola transições de tela; web-assets.spec.js cobre preload e render 3D.
 const navOnly = params.get('nav') === '1';
 
@@ -1802,6 +1805,7 @@ async function _startGame(meuLancamento, team, charId, enemyFaction, online = fa
   _matchEventSent = false;   // partida nova = um evento rico novo (feat/telemetria)
   _funnel('match_start');    // funil: começou a jogar (017)
   if (!continuaPartida) sendGameStarted();
+  if (!continuaPartida) contagem.partidaIniciada({ map: currentMap, mode: matchMode, game: sessao ? 'mp' : 'sp' });
   retryPending();
   armSwitchHook();
   game.onOpenSettings = () => { game.setPaused(true); settingsReturn = 'pause-menu'; show('settings-panel'); };
@@ -3375,6 +3379,7 @@ async function recordMatchStats(s) {
   sendTelemetry();   // ANTES do guard de nick lá embaixo: telemetria cobre quem não registrou
   sendMatchEvent(s?.won ? 'won' : 'lost');   // evento rico anônimo (feat/telemetria, 016)
   _funnel('match_end');                        // funil: terminou (017)
+  contagem.partidaTerminada({ map: game?._mapId || currentMap, mode: game?.ctf ? 'ctf' : 'rounds', game: telemetryGameContext.gameType === 'multiplayer' ? 'mp' : 'sp' });
   const st = loadStats();
   st.matches++; if (s.won) st.wins++;
   st.kills += s.kills; st.deaths += s.deaths; st.headshots += s.headshots;
@@ -4636,6 +4641,7 @@ async function mpEntrar(sala, team = 'auto', senha = '') {
   if (MAPS[welcome.map]) currentMap = welcome.map;
   matchMode = welcome.ctf ? 'ctf' : 'rounds';
   modoEscolhido = true;
+  contagem.entrouNoMp({ map: currentMap, mode: matchMode });
   net.onClose = () => mpDesconectou();
   net.onSlot = async (m) => {
     if (mpSessao?.net === net) mpSessao.chat?.aoMudarSlot(m);
@@ -4876,6 +4882,7 @@ if (HUB_ENABLED) {
 }
 window.__CS_MAIN_READY__ = true;
 window.__gameLaunch?.ready('boot');
+contagem.evento('game_loaded');
 // Convite de sala e perfil compartilhado (/u/<perfil>) chegam com destino: nem o convite de conta nem o da loja cobrem esse destino.
 // /u/<perfil> é o hub (SSR); ?perfil= é o link antigo.
 const perfilCompartilhado = Boolean(params.get('perfil') || estadoDaUrl(location.href)?.perfil);
