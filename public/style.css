@@ -3471,6 +3471,7 @@ html[data-home-ui="hub"] #main-menu[data-hub-tab="sobre"] .hub-footer{position:r
 /* Splash (tela 01): a arte cobre a tela no primeiro quadro, antes de qualquer módulo JS. */
 .tp-splash{display:none}
 :root[data-ui="v3"] #boot-splash{--tp-splash-ajuste:cover;background-color:var(--tp-asfalto)}
+:root[data-direct-route] #boot-splash{display:none!important}
 :root[data-ui="v3"] #boot-splash::before,:root[data-ui="v3"] #boot-splash>.splash-frame,:root[data-ui="v3"] #boot-splash>.splash-ver{display:none}
 :root[data-ui="v3"] #boot-splash::after{
   background-image:linear-gradient(180deg,rgba(9,7,4,0) 50%,rgba(9,7,4,.85) 82%,rgba(9,7,4,.97) 100%),var(--tp-splash-arte,url('/img/loading-1.webp'));

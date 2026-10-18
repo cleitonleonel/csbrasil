@@ -65,7 +65,6 @@ export const ehComunidade = (id) => catsDe(id).includes('COMUNIDADE');
 export const ehOficial = (id) => !ehComunidade(id);
 export { MAP_CATS, MAP_AUTOR, MAP_DATA, CAT_DESC, AUTOR_CASA, catsDe, autorDe, oficialDe };
 
-/* Nomes de facção como a TELA os escreve. Mora aqui, junto do catálogo, porque o servidor
-   de multiplayer mostra os mesmos rótulos na lista de salas — dois dicionários virariam
-   "PALHAÇOS" numa tela e "Palhaços" na outra. A partida (game.js:_teamName) só usa E/B. */
-export const FACCAO_NOME_UI = { E: 'ESQUERDA', B: 'DIREITA', F: 'FUNKEIROS', C: 'PALHAÇOS', U: 'TRIBOS URBANAS', M: 'MÍTICO' };
+/* Nomes de grupo usados no catálogo visual. E/B são os dois times da partida; as demais
+   chaves descrevem grupos do elenco e nunca viram equipes de gameplay. */
+export const FACCAO_NOME_UI = { E: 'TIME E', B: 'TIME B', F: 'FUNKEIROS', C: 'PALHAÇOS', U: 'TRIBOS URBANAS', M: 'MÍTICO' };

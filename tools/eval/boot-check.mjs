@@ -314,13 +314,9 @@ try {
     // SINGLE PLAYER abre os modos contra bots; Mata-mata inicia a jornada padrão.
     await jornada.locator('.cs-item[data-act="single-player"]').click();
     await jornada.locator('.cs-item[data-act="sp"]:visible').click();
-    await jornada.evaluate(() => {
-      const nick = document.getElementById('nick-input');
-      nick.value = 'BOOT_CHECK';
-      nick.dispatchEvent(new Event('input', { bubbles: true }));
-    });
     await jornada.locator('#ms-continue').click();
-    await jornada.locator('#btn-team-c').click();
+    await jornada.locator('#team-select:not(.hidden)').waitFor({ timeout: 120000 });
+    await jornada.locator('#btn-team-e').click();
     await jornada.locator('#char-select:not(.hidden)').waitFor({ timeout: 120000 });
     await jornada.waitForTimeout(3100);
     const menuOk = await jornada.locator('#launch-error').evaluate((el) => el.classList.contains('hidden'));

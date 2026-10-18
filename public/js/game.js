@@ -346,7 +346,7 @@ const RACK_RETA = QS.get('rackreta') === '1';
    A simetria é parte do desenho: vale pra jogador E bots — meia regeneração faria o bot
    virar esponja. Régua: invariante REGEN de `tools/eval/regen-check.mjs`. */
 const REGEN = QS.get('regen') === '1', REGEN_DELAY = 6, REGEN_RATE = 22;
-const TEAM_LABEL = { E: 'ESQUERDA', B: 'DIREITA' };
+const TEAM_LABEL = { E: 'TIME E', B: 'TIME B' };
 const RADIO = {
   z: { title: 'COMANDOS', items: ['Bora, bora, bora!', 'Cobre eu!', 'Recua, recua!'] },
   x: { title: 'RESPOSTAS', items: ['Recebido!', 'Negativo!', 'Bonito tiro!'] },
@@ -3216,7 +3216,7 @@ export class Game {
        ele ENTRA. Sem ela o Game seguia corrompido: BUG-168, `eval:switchteam`. */
     if (charId) {
       const def = byId(charId);
-      if (!def) console.warn(`[elenco] troca de lado pediu '${charId}', fora do elenco — usando a reserva da facção`);
+      if (!def) console.warn(`[elenco] troca de lado pediu '${charId}', fora do elenco — usando a reserva do grupo`);
       this.playerDef = def || CHARACTERS.find(_doLado(this.enemyFaction)) || this.playerDef;
       this.playerCharId = this.playerDef.id;
       p.def = this.playerDef;
@@ -5078,7 +5078,7 @@ export class Game {
   _voiceKey(side) { return this._factionOf(side); }   // pack de vozes/round por facção (P/B/U)
   // Nome, sigla e brasão do time são do LADO: online a playerFaction é a categoria do corpo (só mãos).
   _teamName(side) { return TEAM_LABEL[side] || side; }
-  _teamTag(side) { return side === 'B' ? 'DIR' : 'ESQ'; }
+  _teamTag(side) { return side === 'B' ? 'B' : 'E'; }
 
   /* Uma plaqueta do HUD. Chamada por QUADRO, então tudo aqui é comparação barata:
      o número só é escrito se mudou, e o brasão (data-f, arte no CSS) só quando a

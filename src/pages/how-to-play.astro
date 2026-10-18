@@ -7,22 +7,20 @@
 import Layout from '../layouts/Layout.astro';
 import { CONTROLES, MAPAS } from '../data/jogo';
 import { BRAND_FULL, GAME_ID, HOST, abs, RANKING_DESCRIPTION_EN } from '../lib/site';
-import { FACTIONS } from '../../public/js/factions.js';
 
 const nCtf = MAPAS.filter(m => m.ctf).length;
 const nRounds = MAPAS.length - nCtf;
 const CTF_NOMES = MAPAS.filter(m => m.ctf).map(m => m.nome);
 const porExtenso = (n: number) => String(n);
-const faccoesProntas = FACTIONS.filter((f) => f.ready);
 
 // Nomes de mapa são marca própria (aparecem assim no menu do jogo): ficam em PT.
 const PASSOS = [
   { nome: 'Open the game in a browser',
     texto: `Go to ${HOST} in Chrome, Edge, Firefox or Safari. On a phone, play in landscape with the on-screen touch controls. Performance depends on your device and browser.` },
-  { nome: 'Pick a nick',
-    texto: 'The nick is 2 to 32 characters and stays saved in your browser: it’s the name shown on the match scoreboard and in kill announcements. The menu asks for this local nickname before starting; no account or registration is needed.' },
-  { nome: 'Pick a faction and a character',
-    texto: `${FACTIONS.length} factions in the catalogue, ${faccoesProntas.length} already playable: ${faccoesProntas.map((f) => f.name).join(', ')}. Check the character catalogue and choose your character in the menu.` },
+  { nome: 'Pick a nick - or enter anonymously',
+    texto: 'The nick is optional. If you enter 2 to 32 characters, it stays in this browser and appears on the scoreboard and in kill announcements. Leave it empty and PLAY starts as a guest; an account remains optional.' },
+  { nome: 'Pick a team and a character',
+    texto: 'Every match has only two teams: Team E and Team B. Then choose a character available for the selected team; catalogue categories never become extra teams.' },
   { nome: 'Pick the map and the mode',
     texto: `${porExtenso(MAPAS.length)} arenas: ${MAPAS.map(m => m.nome).join(', ')}. ${porExtenso(nRounds)} open in rounds and ${porExtenso(nCtf)} in Capture the Flag, but you can switch any map’s mode before starting. Team size is yours too: from 1v1 up to 8v8, with 4v4 as the default.` },
   { nome: 'Aim, crouch, shoot',
@@ -52,7 +50,7 @@ const FAQ: [string, string][] = [
   ['Can I play with friends?',
    'Yes. Open MULTIPLAYER and use QUICK PLAY, the room list, or an invite code or link. You can also create a public or private room and invite friends.'],
   ['Does the game take a political side?',
-   'No. It’s light satire distributed equally to all sides, with no gore and no hate, and satirical archetypes, Brazilian folklore and caricatures of public political figures. Urban Tribes, Funkeiros, Mythics and the new cultural factions are not political sides.'],
+   'No. It’s light satire distributed equally, with no gore and no hate. Matches only use Team E and Team B; Left, Right, Politicians, Urban Tribes, Clowns, Mythic and Funkeiros are cast groups, not political gameplay teams.'],
 ];
 
 // CONTROLES vem do dataset PT; aqui só a coluna "ação" é traduzida (a tecla é a mesma).

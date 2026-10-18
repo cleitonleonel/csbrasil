@@ -255,8 +255,8 @@ function desenharSalas() {
         const vagas = r.livre?.[lado] || 0;
         const bt = el('button', 'tp-srv__lado-btn');
         bt.type = 'button'; bt.dataset.lado = lado; bt.disabled = !vagas;
-        bt.append(el('span', '', tr(lado === 'E' ? r.nomeE || 'ESQUERDA' : r.nomeB || 'DIREITA')), el('b', 'tp-num', String(vagas)));
-        bt.setAttribute('aria-label', `${tr('Entrar no lado')} ${tr(lado === 'E' ? r.nomeE || 'ESQUERDA' : r.nomeB || 'DIREITA')}`);
+        bt.append(el('span', '', tr(lado === 'E' ? 'TIME E' : 'TIME B')), el('b', 'tp-num', String(vagas)));
+        bt.setAttribute('aria-label', `${tr('Entrar no time')} ${tr(lado === 'E' ? 'TIME E' : 'TIME B')}`);
         bt.onclick = () => legado[i]?.querySelector(`.mp-entrar[data-lado="${lado}"]`)?.click();
         entrar.append(bt);
       }

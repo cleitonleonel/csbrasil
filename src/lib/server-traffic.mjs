@@ -16,7 +16,7 @@ function landing(pathname) {
   if (path.startsWith('/u/')) return '/u/:perfil';
   if (path.startsWith('/sala/')) return '/sala/:convite';
   if (path.startsWith('/mapas/')) return '/mapas/:mapa';
-  if (path.startsWith('/faccoes/')) return '/faccoes/:faccao';
+  if (path.startsWith('/grupos/')) return '/grupos/:grupo';
   if (path.startsWith('/clans/')) return '/clans/:cla';
   if (path.startsWith('/docs/')) return '/docs/:pagina';
   return '/outra-rota';

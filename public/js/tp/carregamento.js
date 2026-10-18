@@ -6,7 +6,7 @@ import { VERSION } from '../version.js';
 
 const ATE_BANNER = 5;
 const PASSO_MS = { banners: 60, grade: 30 };
-const NOME_LADO = { E: 'ESQUERDA', B: 'DIREITA' };
+const NOME_LADO = { E: 'TIME E', B: 'TIME B' };
 
 const el = (tag, cls, txt) => {
   const e = document.createElement(tag);

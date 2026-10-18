@@ -11,6 +11,7 @@ const root=document.getElementById('community');
 if(root) {
   const status=document.getElementById('social-status'),account=document.getElementById('social-account'),content=document.getElementById('social-content');
   const UI_V3=document.documentElement?.dataset?.ui==='v3';
+  const GROUP_LABEL={E:'Time E',B:'Time B',P:'Políticos',U:'Tribos Urbanas',C:'Palhaços',F:'Funkeiros',M:'Mítico',N:'Nerdolas',R:'Profissionais do Corre',O:'Noias',T:'TV'};
   let loginConfig={providers:[]};
   let inboxSection='quests',conversation=null,conversationBefore=null,messageDraft='',messageClientId=null,pendingSend=null;
   let auth=null,state=null,tab=root.dataset.tab || 'profile',profileId=root.dataset.profile || new URLSearchParams(location.search).get('perfil') || '',rankingScope='global',rankingQuery='',rankingOffset=0,rankingPeriod='all',rankingMode='all',rankingGameType='all',loadVersion=0;
@@ -166,7 +167,7 @@ if(root) {
     // Rodadas e preferências: o servidor só manda para a própria pessoa e para amigos (activity_visibility). Vazio para os outros não quer dizer "sem rodada".
     const sees=auth?.profile?.id===p.id || p.relationship==='friend',noActivity=sees?(p.source==='historical_plus_server_verified'?'O histórico antigo guarda só os totais. As rodadas aparecem aqui a partir da primeira partida confirmada pelo servidor.':'Nenhuma rodada confirmada ainda.'):'As rodadas deste jogador aparecem só para os amigos dele.';
     const secPartidas=el('section','','social-profile-section');secPartidas.append(el('h3','Preferências na arena'));
-    const favorites=el('ul','','social-list');for(const f of p.favorites)favorites.append(el('li',`${f.map} · ${f.mode} · ${f.character || 'Personagem não registrado'} · ${f.faction || 'Facção não registrada'} (${f.rounds} rodadas)`));secPartidas.append(p.favorites.length?favorites:empty(noActivity));
+    const favorites=el('ul','','social-list');for(const f of p.favorites){const grupo=f.faction?(GROUP_LABEL[f.faction]||f.faction):'Grupo/time não registrado';favorites.append(el('li',`${f.map} · ${f.mode} · ${f.character || 'Personagem não registrado'} · ${grupo} (${f.rounds} rodadas)`));}secPartidas.append(p.favorites.length?favorites:empty(noActivity));
     secPartidas.append(el('h3','Rodadas recentes'));
     for(const h of p.history)secPartidas.append(empty(`${date(h.started_at)} · ${h.map} · ${h.mode} · ${h.kills} abates / ${h.deaths} mortes${h.complete?'':' · encerrada antes do placar'}`));
     if(!p.history.length)secPartidas.append(empty(noActivity));
@@ -235,7 +236,7 @@ if(root) {
     if(r.own)content.append(empty(`Sua posição: #${r.own.position} · ${r.own.points} pontos.`));
     const wrap=el('div','','social-table-wrap');wrap.append(rankingTable(r.players,{teams:true,offset:rankingOffset,careerOnly:true}));content.append(wrap,empty('Patentes usam os pontos acumulados da carreira e permanecem iguais ao trocar de período ou modo.'));
     if(!r.players.length)content.append(empty('Nenhum jogador encontrado nesse ranking.'));
-    const pages=el('div','','social-actions');if(rankingOffset>0)pages.append(button('ANTERIOR',async()=>{rankingOffset=Math.max(0,rankingOffset-25);await render();}));if(rankingOffset+25<r.total)pages.append(button('PRÓXIMA',async()=>{rankingOffset+=25;await render();}));content.append(pages,empty('Solo: 1 ponto por abate confirmado. MP: 2 pontos quando o servidor confirma contas distintas juntas na rodada. O placar geral preserva o histórico anterior; filtros e pontos de Esquerda/Direita usam apenas partidas confirmadas após a atualização. O time é o da partida.'));
+    const pages=el('div','','social-actions');if(rankingOffset>0)pages.append(button('ANTERIOR',async()=>{rankingOffset=Math.max(0,rankingOffset-25);await render();}));if(rankingOffset+25<r.total)pages.append(button('PRÓXIMA',async()=>{rankingOffset+=25;await render();}));content.append(pages,empty('Solo: 1 ponto por abate confirmado. MP: 2 pontos quando o servidor confirma contas distintas juntas na rodada. O placar geral preserva o histórico anterior; filtros e pontos de Time E/Time B usam apenas partidas confirmadas após a atualização. O time é o da partida.'));
   }
   function showQuests(){
     content.append(el('h2','Missões da resenha'),empty('Seu progresso vem da conta e das partidas confirmadas. Estas missões ainda não distribuem TRETa$.'));

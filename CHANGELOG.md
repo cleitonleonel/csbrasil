@@ -23,6 +23,18 @@
 > O conteúdo e as datas das entradas continuam intactos; só o rótulo mudou, porque chamar de
 > 3.3.0 um build com P0 em aberto promete ao jogador uma estabilidade que ele não tem.
 
+## Não lançado - 2026-10-18
+
+### Adicionado
+- Cada rota do hub abre pelo HTML inicial, sem splash, enquanto o cenário 3D carrega em segundo plano. Os cards Open Graph usam o título e o caminho da página em imagens 1200×630.
+
+### Alterado
+- Clãs, páginas estáticas, perfil, configurações, privacidade, ranking e loja usam o mesmo vocabulário visual Treta Pop. O catálogo público reflete 63 personagens, 12 mapas jogáveis e 26 armas.
+- Partidas usam somente Time E e Time B. Os antigos agrupamentos continuam como categorias editoriais do elenco.
+
+### Corrigido
+- JOGAR aceita visitante sem nick e oferece login ou cadastro depois da primeira partida. O botão ganhou chamada animada, a carteira usa a moeda do Saci, o personagem perdeu a base escura e o logo volta à tela inicial.
+
 ## Não lançado — 2026-10-17
 
 ### Adicionado

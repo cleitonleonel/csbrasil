@@ -53,7 +53,7 @@ export function rankingPlayerCell(player,{careerOnly=false}={}) {
 }
 export function rankingTable(players,{teams=false,offset=0,nick='',careerOnly=false}={}) {
   const table=node('table','','social-table'),head=node('thead'),header=node('tr');
-  for(const label of ['POS.','JOGADOR','PONTOS','ABATES','K/D',...(teams?['ESQUERDA','DIREITA']:[])])header.append(node('th',label));
+  for(const label of ['POS.','JOGADOR','PONTOS','ABATES','K/D',...(teams?['TIME E','TIME B']:[])])header.append(node('th',label));
   head.append(header);table.append(head);const body=node('tbody');
   for(const [i,p] of players.entries()){const row=node('tr');if(p.nick===nick)row.className='me';row.append(node('td',`#${p.position ?? offset+i+1}`),rankingPlayerCell(p,{careerOnly}),node('td',String(p.points ?? '—')),node('td',String(p.kills ?? '—')),node('td',String(p.kd ?? '—')));if(teams)row.append(node('td',String(p.left_points ?? 0)),node('td',String(p.right_points ?? 0)));body.append(row);}
   table.append(body);return table;

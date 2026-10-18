@@ -176,10 +176,6 @@ async function bootarPartida(page) {
   await page.locator('.cs-item[data-act="sp"]:visible').click();
   await expect(page.locator('#map-screen')).toBeVisible();
   await page.locator('#ms-continue').click();
-  await expect(page.locator('#menu-setup')).toHaveAttribute('data-step', 'profile');
-  await page.locator('#nick-input').fill('ALFA');
-  await page.locator('#profile-ok').click();
-  await page.locator('#btn-jogar').click();
   await expect(page.locator('#team-select')).toBeVisible();
   await page.locator('#btn-team-e').click();
   await expect(page.locator('#char-select')).toBeVisible();

@@ -1,7 +1,8 @@
 /* Treta Pop · Ajustes (#settings-panel). Só vale com <html data-ui="v3">: todo seletor começa em :root[data-ui="v3"] ou numa classe .tp-. */
 :root[data-ui="v3"] #settings-panel{background:rgba(9,7,4,.86);backdrop-filter:none;font-family:var(--tp-ui)}
 :root[data-ui="v3"] #settings-panel .settings-wrap{width:1040px;max-width:calc(100vw - 32px);height:min(640px,calc(100dvh - 32px));display:flex;flex-direction:column;
-  background:var(--tp-painel);border:1px solid rgba(255,255,255,.09);border-radius:12px;clip-path:none}
+  background:linear-gradient(145deg,var(--tp-painel),color-mix(in srgb,var(--tp-elevado) 45%,var(--tp-painel)));border:1px solid rgba(255,255,255,.12);border-radius:14px;clip-path:none;box-shadow:0 30px 90px rgba(0,0,0,.45);animation:tp-ajustes-entra .35s var(--tp-ease-saida) both}
+@keyframes tp-ajustes-entra{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
 :root[data-ui="v3"] #settings-panel .set-head h2{font:400 40px/1 var(--tp-display);letter-spacing:.01em;color:var(--tp-tinta-1);transform:var(--tp-skew)}
 :root[data-ui="v3"] #settings-panel .set-close{min-height:44px;color:var(--tp-tinta-3);font:800 13px/1 var(--tp-ui);letter-spacing:.08em}
 :root[data-ui="v3"] #settings-panel .set-close kbd{font:700 11px/1 var(--tp-num);border-color:var(--tp-borda-forte);border-radius:4px}
@@ -10,7 +11,8 @@
   font:400 20px/1 var(--tp-display);letter-spacing:.03em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
 :root[data-ui="v3"] #settings-panel .set-tab.active{color:var(--tp-tinta-1);border-bottom-color:var(--tp-lima)}
 :root[data-ui="v3"] #settings-panel .set-tab:focus-visible{outline:2px solid var(--tp-tinta-1);outline-offset:2px}
-:root[data-ui="v3"] #settings-panel .set-cols{min-height:0;overflow-y:auto}
+:root[data-ui="v3"] #settings-panel .set-cols{min-height:0;overflow-y:auto;animation:tp-ajustes-conteudo .25s var(--tp-ease-saida) both}
+@keyframes tp-ajustes-conteudo{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 :root[data-ui="v3"] #settings-panel .set-row{color:var(--tp-tinta-2);font:700 15px/1.2 var(--tp-ui);letter-spacing:.08em}
 :root[data-ui="v3"] #settings-panel .set-row:hover{color:var(--tp-tinta-1)}
 :root[data-ui="v3"] #settings-panel .set-row select{background-color:var(--tp-fundo);border:1px solid rgba(255,255,255,.14);border-radius:6px;color:var(--tp-tinta-1);font:700 14px/1 var(--tp-ui);letter-spacing:.04em}
@@ -42,8 +44,8 @@
 :root[data-ui="v3"] #settings-panel:not([data-active-tab="privacidade"]) .tp-aj-privacidade{display:none}
 :root[data-ui="v3"] #settings-panel[data-active-tab="acessibilidade"] .set-preview-wrap,
 :root[data-ui="v3"] #settings-panel[data-active-tab="privacidade"] .set-preview-wrap{display:none}
-:root[data-ui="v3"] #settings-panel .tp-aj-privacidade{display:flex;flex-direction:column;align-items:stretch;gap:10px;letter-spacing:0;text-transform:none;font:600 15px/1.35 var(--tp-ui);color:var(--tp-tinta-2)}
-:root[data-ui="v3"] #settings-panel .tp-aj-privacidade h3{margin:0;font:400 22px/1 var(--tp-display);text-transform:uppercase;color:var(--tp-tinta-1)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:18px;border:1px solid var(--tp-borda);border-radius:12px;background:var(--tp-fundo);letter-spacing:0;text-transform:none;font:600 15px/1.35 var(--tp-ui);color:var(--tp-tinta-2)}
+:root[data-ui="v3"] #settings-panel .tp-aj-privacidade h3{margin:0;color:var(--tp-lima);font:400 26px/1 var(--tp-display);text-transform:uppercase}
 :root[data-ui="v3"] #settings-panel .tp-aj-privacidade *{text-transform:none;letter-spacing:0}
 :root[data-ui="v3"] #settings-panel .tp-aj-privacidade label{display:flex;gap:10px;align-items:flex-start;min-height:44px;cursor:pointer;font:600 15px/1.35 var(--tp-ui);color:var(--tp-tinta-2)}
 :root[data-ui="v3"] #settings-panel .tp-aj-privacidade input[type="checkbox"]{appearance:none;width:20px;height:20px;margin:2px 0 0;flex:none;border:2px solid var(--tp-tinta-3);border-radius:4px;background:var(--tp-fundo);display:grid;place-content:center}
@@ -79,3 +81,5 @@
   :root[data-ui="v3"] #settings-panel .set-row select,:root[data-ui="v3"] #settings-panel .set-secondary,
   :root[data-ui="v3"] #settings-panel .set-apply,:root[data-ui="v3"] #settings-panel .set-save{min-height:44px}
 }
+@media(prefers-reduced-motion:reduce){:root[data-ui="v3"] #settings-panel .settings-wrap,:root[data-ui="v3"] #settings-panel .set-cols{animation:none}}
+:root[data-ui="v3"][data-motion="reduzido"] #settings-panel .settings-wrap,:root[data-ui="v3"][data-motion="reduzido"] #settings-panel .set-cols{animation:none}

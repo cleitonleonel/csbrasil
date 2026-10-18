@@ -173,7 +173,7 @@ function montar(){
     nav.append(t);
   }
   nav.append(el('span','tp-abas__risco'));
-  const carteira=el('div','tp-loja__carteira'),ic=el('span','tp-loja__moeda tp-disp','T$');ic.setAttribute('aria-hidden','true');
+  const carteira=el('div','tp-loja__carteira'),ic=el('img','tp-loja__moeda');ic.src='/img/treta/coin-classic-saci.webp';ic.alt='';ic.width=30;ic.height=30;ic.setAttribute('aria-hidden','true');
   carteira.append(ic,el('b','tp-loja__saldo tp-num','—'),botao('tp-btn tp-loja__ganhar',tr('GANHAR MAIS'),()=>irPara('ganhar')));
   topo.append(titulo,nav,carteira);
   const pLoja=el('section','tp-loja__painel'),pArm=el('section','tp-loja__painel tp-loja__armario');

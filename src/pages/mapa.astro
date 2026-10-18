@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { LIVE_MAP } from '../data/live-map.mjs';
 import { supabaseAdmin } from '../lib/supabase';
 import { BRAND_FULL, GAME_ID, abs } from '../lib/site';
-import { FACCOES } from '../data/jogo';
+import { TIMES } from '../data/jogo';
 
 export const prerender = false;
 
@@ -13,24 +13,23 @@ Astro.response.headers.set(
   'public, max-age=0, s-maxage=60, stale-while-revalidate=300',
 );
 
-const factionCode: Record<string, string> = { E: 'E', B: 'B', urbanas: 'U', palhacos: 'C', funkeiros: 'F' };
 let online: any[] = [], cities: any[] = [], configured = !!supabaseAdmin;
 let totals = { players: 0, matches: 0, kills: 0, mp: 0, mb: 0 };
-let factionSource: 'telemetry' | 'legacy' = 'telemetry';
-let factionCounts = FACCOES.map(f => ({ ...f, code: factionCode[f.id], matches: 0, pct: 0 }));
+let teamSource: 'telemetry' | 'legacy' = 'telemetry';
+let teamCounts = TIMES.map(t => ({ ...t, code: t.id, matches: 0, pct: 0 }));
 if (supabaseAdmin) {
   const { count } = await supabaseAdmin.from('player_points').select('id', { count: 'exact', head: true });
   totals.players = count ?? 0;
   const { data: st } = await supabaseAdmin.from('player_points').select('matches,kills,matches_p,matches_b');
   for(const r of st ?? []) {totals.matches+=r.matches;totals.kills+=r.kills;totals.mp+=r.matches_p;totals.mb+=r.matches_b;}
-  const fq = await Promise.all(factionCounts.map(f =>
-    supabaseAdmin!.from('match_event').select('*', { count: 'exact', head: true }).eq('faction', f.code),
+  const tq = await Promise.all(teamCounts.map(t =>
+    supabaseAdmin!.from('match_event').select('*', { count: 'exact', head: true }).eq('faction', t.code),
   ));
-  if (fq.some(r => r.error) || !fq.some(r => (r.count ?? 0) > 0)) {
-    factionSource = 'legacy';
-    factionCounts = factionCounts.map(f => ({ ...f, matches: f.code === 'E' ? totals.mp : f.code === 'B' ? totals.mb : 0 }));
+  if (tq.some(r => r.error) || !tq.some(r => (r.count ?? 0) > 0)) {
+    teamSource = 'legacy';
+    teamCounts = teamCounts.map(t => ({ ...t, matches: t.code === 'E' ? totals.mp : totals.mb }));
   } else {
-    factionCounts = factionCounts.map((f, i) => ({ ...f, matches: fq[i].count ?? 0 }));
+    teamCounts = teamCounts.map((t, i) => ({ ...t, matches: tq[i].count ?? 0 }));
   }
   // Agrega o histórico total e a presença por cidade.
   const { data: cd } = await supabaseAdmin.from('city_daily').select('*');
@@ -43,8 +42,8 @@ if (supabaseAdmin) {
     .map(c => ({ ...c, players: [...c.players].sort() }));
 }
 Astro.response.headers.set('cache-control','no-store');
-const factionTotal = factionCounts.reduce((sum, f) => sum + f.matches, 0);
-factionCounts = factionCounts.map(f => ({ ...f, pct: factionTotal ? Math.round((f.matches / factionTotal) * 100) : 0 }));
+const teamTotal = teamCounts.reduce((sum, t) => sum + t.matches, 0);
+teamCounts = teamCounts.map(t => ({ ...t, pct: teamTotal ? Math.round((t.matches / teamTotal) * 100) : 0 }));
 const mapData = { online: online.filter(o => o.lat && o.lon), cities: cities.filter(c => c.lat && c.lon) };
 ---
 <Layout
@@ -87,22 +86,22 @@ const mapData = { online: online.filter(o => o.lat && o.lon), cities: cities.fil
     </div>
   )}
   {configured && (
-    <section class="faction-stats" aria-labelledby="faction-title">
-      <div class="faction-head">
-        <h2 id="faction-title">Partidas por facção</h2>
-        <span>{factionTotal} com facção identificada</span>
+    <section class="team-stats" aria-labelledby="team-title">
+      <div class="team-head">
+        <h2 id="team-title">Partidas por time</h2>
+        <span>{teamTotal} com time identificado</span>
       </div>
-      <div class="faction-grid">
-        {factionCounts.map(f => (
-          <div class="faction-row">
-            <div><strong style={`color:${f.cor}`}>{f.nome}</strong><span>{f.matches} · {f.pct}%</span></div>
-            <span class="faction-track"><span style={`width:${f.pct}%;background:${f.cor}`}></span></span>
+      <div class="team-grid">
+        {teamCounts.map(t => (
+          <div class="team-row">
+            <div><strong style={`color:${t.cor}`}>{t.nome}</strong><span>{t.matches} · {t.pct}%</span></div>
+            <span class="team-track"><span style={`width:${t.pct}%;background:${t.cor}`}></span></span>
           </div>
         ))}
       </div>
-      <p>{factionSource === 'telemetry'
+      <p>{teamSource === 'telemetry'
         ? 'Contagem anônima de partidas registradas, separada do ranking de jogadores.'
-        : 'O histórico por facção ainda está indisponível no banco; os números E/B acima são o legado do ranking.'}</p>
+        : 'A telemetria recente ainda está indisponível; os números de Time E e Time B vêm do histórico do ranking.'}</p>
     </section>
   )}
   <p>A presença pessoal fica na lista de amigos. Em amarelo, o histórico total de partidas por cidade (localização aproximada, nível cidade - sem IP).</p>
@@ -154,11 +153,12 @@ const mapData = { online: online.filter(o => o.lat && o.lon), cities: cities.fil
 </Layout>
 
 <style>
-  .faction-stats{margin:18px 0 22px;padding:16px;border:1px solid #3a3325;background:rgba(16,19,12,.72)}
-  .faction-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:12px}
-  .faction-head h2{margin:0;font-size:16px}.faction-head>span,.faction-stats>p{font:11px Consolas,monospace;color:var(--bone-dim)}
-  .faction-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 16px}
-  .faction-row>div{display:flex;justify-content:space-between;gap:10px;font:12px Consolas,monospace}.faction-row>div span{color:var(--bone-dim)}
-  .faction-track{display:block;height:6px;margin-top:5px;border:1px solid #3a3325;background:#0b0d08;overflow:hidden}
-  .faction-track>span{display:block;height:100%;min-width:0}.faction-stats>p{margin:12px 0 0}
+  .team-stats{margin:18px 0 22px;padding:18px;border:1px solid var(--tp-borda);border-radius:12px;background:var(--panel)}
+  .team-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:12px}
+  .team-head h2{margin:0;font-size:22px}.team-head>span,.team-stats>p{font:11px var(--mono);color:var(--bone-dim)}
+  .team-grid{display:grid;grid-template-columns:repeat(2,minmax(190px,1fr));gap:12px 18px}
+  .team-row>div{display:flex;justify-content:space-between;gap:10px;font:12px var(--mono)}.team-row>div span{color:var(--bone-dim)}
+  .team-track{display:block;height:8px;margin-top:7px;border-radius:999px;background:#090704;overflow:hidden}
+  .team-track>span{display:block;height:100%;min-width:0;border-radius:inherit}.team-stats>p{margin:14px 0 0}
+  @media(max-width:600px){.team-grid{grid-template-columns:1fr}}
 </style>

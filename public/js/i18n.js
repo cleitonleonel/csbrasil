@@ -125,6 +125,7 @@ const DICT = {
   // setup da partida
   'PASSO 1 · A PARTIDA': 'STEP 1 · THE MATCH',
   'PASSO 2 · O SEU LADO': 'STEP 2 · YOUR SIDE',
+  'PASSO 2 · O SEU TIME': 'STEP 2 · YOUR TEAM',
   'PASSO 3 · O PERSONAGEM': 'STEP 3 · THE CHARACTER',
   'PASSO 4 · O ADVERSÁRIO': 'STEP 4 · THE OPPONENT',
   'PASSO À PARTE · NOME NA CAMISA': 'SIDE STEP · NAME ON THE JERSEY',
@@ -148,10 +149,10 @@ const DICT = {
   'Autoria da comunidade — o crachá de cada mapa diz quem fez.': 'Community-made maps — each badge says who built it.',
   'Construídos pelos agentes de IA da casa.': 'Built by the house AI agents.',
   'ESCOLHA SEU LADO DA TRETA': 'PICK YOUR SIDE',
+  'ESCOLHA SEU TIME': 'PICK YOUR TEAM',
   'QUEM VAI LEVAR O CORO?': "WHO'S GETTING THE BOOT?",
   'ESCOLHA SEU PERSONAGEM': 'PICK YOUR CHARACTER',
-  'Cada facção tem elenco, grito e jeito de brigar. Escolha o coro.':
-    'Every faction has its cast, chants and fighting style. Pick your crew.',
+  'Toda partida é Time E contra Time B.': 'Every match is Team E versus Team B.',
   'ARMAS': 'WEAPONS', 'BOTS / LADO': 'BOTS / SIDE', 'JOGADORES': 'PLAYERS', 'Nº DE ROUNDS': 'ROUNDS',
   'TODAS': 'ALL', 'VOLTAR': 'BACK', '◀ VOLTAR': '◀ BACK',
   'SEU PERFIL': 'YOUR PROFILE', 'PÔR O NOME NA CAMISA': 'PUT YOUR NAME ON THE JERSEY',
@@ -316,6 +317,8 @@ const DICT = {
   'Guardiã da mata, cabelo de fogo e pintura de guerra. Quem caça demais vira caça.':
     'Guardian of the forest, fire hair and war paint. Hunt too much and you become the hunt.',
   'ESQUERDA': 'LEFT', 'DIREITA': 'RIGHT', 'ESQ': 'LFT', 'DIR': 'RGT', 'POLÍTICOS': 'POLITICIANS',
+  'TIME E': 'TEAM E', 'TIME B': 'TEAM B', 'Time E': 'Team E', 'Time B': 'Team B',
+  'Entrar no time': 'Join team',
   'os seus': 'your crew',
   'TRIBOS URBANAS': 'URBAN TRIBES', 'PALHAÇOS': 'CLOWNS', 'FUNKEIROS': 'FUNKEIROS', 'MÍTICO': 'MYTHIC',
   '"A treta se faz na praça!"': '"The fight is at the square!"',

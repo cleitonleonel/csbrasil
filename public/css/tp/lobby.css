@@ -13,6 +13,8 @@
 /* Cabeçalho */
 :root[data-ui="v3"] #hub-ui .hub-header{display:flex;height:84px;min-height:0;box-sizing:border-box;flex-wrap:nowrap;align-items:center;gap:10px;padding:0 var(--tp-lobby-margem);background:linear-gradient(180deg,rgba(9,7,4,.85),rgba(9,7,4,0))}
 :root[data-ui="v3"] #hub-ui .hub-logo{width:96px;height:auto;max-height:72px;max-width:none;margin-right:26px}
+:root[data-ui="v3"] #hub-ui .hub-logo-link{flex:none;display:grid;place-items:center;min-width:44px;min-height:44px;border-radius:8px}
+:root[data-ui="v3"] #hub-ui .hub-logo-link:focus-visible{outline:2px solid var(--tp-tinta-1);outline-offset:2px}
 :root[data-ui="v3"] .hub-header .hub-tabs{display:none}
 :root[data-ui="v3"] #hub-ui .hub-online,:root[data-ui="v3"] #hub-ui #hub-music-toggle{display:none}
 .tp-lobby-abas{position:relative;display:flex;align-items:center;gap:30px;margin-right:auto;align-self:center}
@@ -34,7 +36,7 @@
   font:700 15px/1 var(--tp-ui);text-decoration:none;white-space:nowrap;cursor:pointer}
 :root[data-ui="v3"] #hub-ui #hub-treta-wallet:focus-visible,:root[data-ui="v3"] #hub-ui #hub-settings:focus-visible,:root[data-ui="v3"] #hub-ui #hub-account-login:focus-visible,.tp-lobby-hdr:focus-visible{outline:2px solid var(--tp-tinta-1);outline-offset:2px}
 .tp-lobby-hdr svg,:root[data-ui="v3"] #hub-settings svg{flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}
-:root[data-ui="v3"] #hub-ui #hub-treta-wallet>span{width:26px;height:26px;border:0;border-radius:50%;background:var(--tp-lima);color:var(--tp-lima-tinta);font:400 12px/1 var(--tp-display)}
+:root[data-ui="v3"] #hub-ui #hub-treta-wallet>img{display:block;width:26px;height:26px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45))}
 :root[data-ui="v3"] #hub-ui #hub-treta-wallet>b{max-width:none;color:var(--tp-ambar);font:800 16px/1 var(--tp-num);font-variant-numeric:tabular-nums}
 :root[data-ui="v3"] #hub-ui #hub-account-login{gap:10px;padding:0 14px 0 6px}
 :root[data-ui="v3"] #hub-ui #hub-avatar{flex:none;width:32px;height:32px;border-radius:50%;border:0}
@@ -56,7 +58,7 @@
 .tp-lobby-mais__item[hidden],.tp-lobby-so-compacto{display:none}
 
 /* Personagem no centro: o palco 3D de sempre (#char-preview), sem GLB novo */
-:root[data-ui="v3"][data-home-ui="hub"] #hub-ui .hub-character{left:calc(50% - var(--tp-lobby-heroi) / 2);right:auto;width:var(--tp-lobby-heroi);top:96px;bottom:96px;height:auto;
+:root[data-ui="v3"][data-home-ui="hub"] #hub-ui .hub-character{left:calc(50% - 290px);right:auto;width:var(--tp-lobby-heroi);top:96px;bottom:96px;height:auto;
   background:radial-gradient(280px 55px at 50% calc(100% - 60px),rgba(180,217,46,.4),rgba(180,217,46,.1) 45%,transparent 70%)}
 :root[data-ui="v3"][data-home-ui="hub"] #hub-ui .hub-character #char-preview{width:min(calc(100dvh - 192px),860px);height:min(calc(100dvh - 192px),860px)}
 :root[data-ui="v3"][data-home-ui="hub"] #hub-ui .hub-character-card{left:50%;right:auto;bottom:64px;width:auto;
@@ -105,10 +107,10 @@
 .tp-lobby-novidades__versao{color:var(--tp-tinta-3);font-size:12px}
 
 /* Party: o seu slot no palco e os dois de convite (fase 2 traz a party real) */
-.tp-lobby-vaga{position:fixed;bottom:210px;width:200px;height:min(420px,calc(100dvh - 400px));display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:12px;pointer-events:none}
-.tp-lobby-vaga--esq{left:calc(50% - 368px)}
-.tp-lobby-vaga--dir{left:calc(50% + 168px)}
-.tp-lobby-vaga__fantasma{flex:1;width:150px;max-height:330px;box-sizing:border-box;border-radius:80px 80px 20px 20px;border:2px dashed rgba(255,255,255,.18);
+.tp-lobby-vaga{position:fixed;bottom:210px;width:140px;height:min(420px,calc(100dvh - 400px));display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:12px;pointer-events:none}
+.tp-lobby-vaga--esq{left:calc(50% - 246px)}
+.tp-lobby-vaga--dir{left:calc(50% + 106px)}
+.tp-lobby-vaga__fantasma{flex:1;width:112px;max-height:330px;box-sizing:border-box;border-radius:80px 80px 20px 20px;border:2px dashed rgba(255,255,255,.18);
   background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02))}
 .tp-lobby-vaga__convidar{display:flex;align-items:center;height:var(--tp-lobby-toque);padding:0 18px;border:0;border-radius:999px;background:var(--tp-elevado);color:var(--tp-tinta-1);
   font:800 15px/1 var(--tp-ui);letter-spacing:.06em;cursor:pointer;pointer-events:auto;transition:transform var(--tp-d-rapido) var(--tp-ease-saida)}
@@ -120,10 +122,16 @@
 .tp-lobby-party__eu img{width:24px;height:24px;object-fit:contain}
 .tp-lobby-party__vaga{display:grid;place-items:center;width:32px;height:32px;box-sizing:border-box;border-radius:8px;border:1px dashed rgba(255,255,255,.35);color:var(--tp-tinta-2)}
 .tp-lobby-party__rotulo{flex:1}
+@media (max-width:1526px) and (min-height:501px){
+  :root[data-ui="v3"][data-home-ui="hub"] #hub-ui .hub-character{left:31vw}
+}
 @media (max-width:1439px),(max-height:799px){
   .tp-lobby-vaga{display:none}
   .tp-lobby-party{display:flex}
   .tp-lobby-novidades{display:none}
+}
+@media (max-height:799px){
+  .tp-lobby-dir{display:none}
 }
 
 
@@ -162,6 +170,15 @@
 :root[data-ui="v3"][data-home-ui="hub"] #menu-setup #btn-jogar:active:not(:disabled){filter:none;box-shadow:none}
 :root[data-ui="v3"][data-home-ui="hub"] #menu-setup #btn-jogar:focus-visible{outline:0;box-shadow:inset 0 0 0 3px var(--tp-lima-tinta)}
 :root[data-ui="v3"][data-home-ui="hub"] #menu-setup #btn-jogar kbd{padding:4px 8px;border:2px solid rgba(19,19,19,.5);border-radius:6px;background:none;font:800 14px/1 var(--tp-num);letter-spacing:.06em}
+/* O único CTA primário da tela chama a atenção sem bloquear entrada ou layout. */
+:root[data-ui="v3"][data-home-ui="hub"] #menu-setup #btn-jogar{isolation:isolate;overflow:hidden}
+:root[data-ui="v3"][data-home-ui="hub"] #menu-setup #btn-jogar::before{content:'';position:absolute;z-index:0;inset:-35% auto -35% -34%;width:26%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.52),transparent);transform:skewX(-18deg) translateX(-220%);
+  animation:tp-jogar-brilho 2.8s var(--tp-ease-saida) infinite;pointer-events:none}
+:root[data-ui="v3"][data-home-ui="hub"] #menu-setup #btn-jogar>*{position:relative;z-index:1}
+@keyframes tp-jogar-brilho{0%,56%{transform:skewX(-18deg) translateX(-220%)}82%,100%{transform:skewX(-18deg) translateX(650%)}}
+@media (prefers-reduced-motion:reduce){:root[data-ui="v3"][data-home-ui="hub"] #menu-setup #btn-jogar::before{animation:none}}
+:root[data-ui="v3"][data-motion="reduzido"][data-home-ui="hub"] #menu-setup #btn-jogar::before{animation:none}
 
 /* Rodapé: online e redes em chips; os links legais foram para o MAIS */
 :root[data-ui="v3"] #hub-ui .hub-footer{left:var(--tp-lobby-margem);right:auto;bottom:28px;min-height:0;padding:0;gap:18px;border:0;background:none;color:var(--tp-tinta-3);font:600 14px/1 var(--tp-ui)}
@@ -200,6 +217,7 @@
   .tp-lobby-mais__item,.tp-lobby-mais__item--fino{min-height:var(--tp-lobby-toque)}
   .tp-lobby-esq{width:230px;max-height:calc(100dvh - var(--tp-lobby-topo) - 172px);overflow:hidden}
   .tp-lobby-dir{display:none}
+  .tp-lobby-esq{display:none}
   .tp-lobby-painel{gap:8px;padding:10px;border-radius:10px}
   .tp-lobby-painel__titulo{font-size:15px}
   .tp-lobby-quests__lista{gap:8px}
@@ -208,7 +226,7 @@
   .tp-lobby-quest__nome,.tp-lobby-quest__premio{font-size:12px}
   .tp-lobby-quest__barra{height:5px}
   .tp-lobby-vazio{font-size:12px}
-  :root[data-ui="v3"][data-home-ui="hub"] #hub-ui .hub-character{top:44px;bottom:0}
+  :root[data-ui="v3"][data-home-ui="hub"] #hub-ui .hub-character{left:calc(50% - 150px);top:44px;bottom:0}
   /* o pacote (tela 18) põe o personagem no lobby deitado; o "sem 3D no mobile" de style.css vale para a seleção */
   :root[data-ui="v3"][data-home-ui="hub"] #hub-ui .hub-character .char-preview-box{display:flex}
   :root[data-ui="v3"][data-home-ui="hub"] #hub-ui .hub-character #char-preview{width:min(calc(100dvh - 40px),860px);height:min(calc(100dvh - 40px),860px)}
@@ -262,3 +280,24 @@
   .tp-lobby-partida__nome{font-size:20px}
   :root[data-ui="v3"][data-home-ui="hub"] #menu-setup #btn-jogar{height:72px;font-size:46px}
 }
+
+/* Transição compartilhada entre rotas do hub: o conteúdo chega; 3D termina no fundo. */
+:root[data-ui="v3"] #hub-ui .hub-pane:not([hidden])>h2,
+:root[data-ui="v3"] #hub-ui .hub-pane:not([hidden])>.hub-panel,
+:root[data-ui="v3"] #hub-ui .hub-pane:not([hidden])>.social-workspace,
+:root[data-ui="v3"] #hub-ui .hub-pane:not([hidden])>.tp-perfil,
+:root[data-ui="v3"] #hub-ui .hub-pane:not([hidden])>.store-shell{animation:tp-rota-heroi .45s var(--tp-ease-saida) both}
+:root[data-ui="v3"] #hub-ui .hub-guide-loading{display:none}
+@keyframes tp-rota-heroi{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  :root[data-ui="v3"] #hub-ui .hub-pane:not([hidden])>h2,
+  :root[data-ui="v3"] #hub-ui .hub-pane:not([hidden])>.hub-panel,
+  :root[data-ui="v3"] #hub-ui .hub-pane:not([hidden])>.social-workspace,
+  :root[data-ui="v3"] #hub-ui .hub-pane:not([hidden])>.tp-perfil,
+  :root[data-ui="v3"] #hub-ui .hub-pane:not([hidden])>.store-shell{animation:none}
+}
+:root[data-ui="v3"][data-motion="reduzido"] #hub-ui .hub-pane:not([hidden])>h2,
+:root[data-ui="v3"][data-motion="reduzido"] #hub-ui .hub-pane:not([hidden])>.hub-panel,
+:root[data-ui="v3"][data-motion="reduzido"] #hub-ui .hub-pane:not([hidden])>.social-workspace,
+:root[data-ui="v3"][data-motion="reduzido"] #hub-ui .hub-pane:not([hidden])>.tp-perfil,
+:root[data-ui="v3"][data-motion="reduzido"] #hub-ui .hub-pane:not([hidden])>.store-shell{animation:none}

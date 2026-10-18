@@ -4,7 +4,7 @@ import { tr } from '../i18n.js';
 import { compartilhar, linkCompartilhavel } from '../compartilhar.js';
 
 const $ = (id) => document.getElementById(id);
-const TIME = { E: 'Esquerda', B: 'Direita' };
+const TIME = { E: 'Time E', B: 'Time B' };
 const COMBO = { 2: 'Abate duplo', 3: 'Abate triplo', 4: 'Abate quádruplo' };
 const AVISO = { compartilhado: 'Compartilhado', copiado: 'Link copiado', manual: 'Copie o link' };
 

@@ -23,19 +23,19 @@ export const BRAND = 'CORO SOLTO';
 export const BRAND_FULL = 'CORO SOLTO: Treta Suprema';
 export const BRAND_ALT = 'CS BRASIL';
 
-// Descrições genéricas aqui evitam copiar a contagem editorial de src/data/jogo.ts:
-// o elenco e os mapas jogáveis mudam antes de aquela vitrine ser revalidada.
+// Descrições estáveis: gameplay tem dois times; catálogo e mapas mudam sem invalidá-las.
 export const DESC_SHORT =
-  'FPS gratuito de navegador estilo CS 1.6: arena de sniper satírica numa Brasília fictícia, ' +
-  'com Esquerda, Direita e outras facções originais.';
+  'FPS gratuito de navegador estilo CS 1.6: Time E contra Time B numa Brasília fictícia e satírica.';
 
 export const DESC_LONG =
-  'Jogo FPS gratuito de navegador com sátira brasileira, facções originais, arenas, armas, bots, rounds e Capture the Flag. Multiplayer beta e controles de toque no celular; sem cadastro.';
+  'Jogo FPS gratuito de navegador com dois times, Time E e Time B, sátira brasileira, arenas, armas, bots, rounds e Capture the Flag. Multiplayer beta e controles de toque no celular; sem cadastro.';
 
-export const RANKING_DESCRIPTION_PT = import.meta.env.RANKING_ON === 'true'
+const PUBLIC_ENV = import.meta.env || {};
+export const RANKING_ON = PUBLIC_ENV.RANKING_ON === 'true';
+export const RANKING_DESCRIPTION_PT = RANKING_ON
   ? 'O ranking soma a pontuação das partidas. Cada abate confirmado soma um ponto; abates multiplayer entre perfis distintos recebem um ponto extra. Consulte o ranking para ver os resultados.'
   : 'O ranking global está indisponível por enquanto. Os stats de partida ficam salvos no seu navegador e aparecem no menu RANKING do jogo.';
-export const RANKING_DESCRIPTION_EN = import.meta.env.RANKING_ON === 'true'
+export const RANKING_DESCRIPTION_EN = RANKING_ON
   ? 'The leaderboard adds up match scores. Each confirmed kill earns one point; multiplayer kills between distinct profiles earn one extra point. Check the leaderboard for results.'
   : 'The global leaderboard is currently unavailable. Your match stats are saved in your browser and appear in the game’s LEADERBOARD menu.';
 
@@ -47,6 +47,8 @@ export const ORG_ID = `${SITE}/#org`;
 export const WEBSITE_ID = `${SITE}/#website`;
 
 export const abs = (path = '/') => new URL(path, SITE).toString();
+export const routeOgPath = (path: string, title: string) =>
+  `/api/og/pagina.png?${new URLSearchParams({ rota: path, titulo: title })}`;
 
 /* URL externa, não o atalho `/discord`: o atalho só resolve na Vercel, e o rodapé
    também é servido no dev, no itch.io e na CrazyGames. Mude aqui e em `vercel.json`. */
@@ -65,8 +67,8 @@ export const REDES_OFICIAIS = [
 // Apoio: o endereço da campanha brasileira entra depois que ela for criada no MeApoia.
 // Os fallbacks deixam a página utilizável no primeiro deploy e podem ser trocados só por
 // variáveis públicas, sem espalhar URL de plataforma pelo jogo.
-export const SUPPORT_URL_BR = import.meta.env.PUBLIC_SUPPORT_URL_BR || 'https://meapoia.com/vaquinhas/ajude-a-manter-o-coro-solto-online';
-export const SUPPORT_URL_INTL = import.meta.env.PUBLIC_SUPPORT_URL_INTL || 'https://ko-fi.com/corosolto';
+export const SUPPORT_URL_BR = PUBLIC_ENV.PUBLIC_SUPPORT_URL_BR || 'https://meapoia.com/vaquinhas/ajude-a-manter-o-coro-solto-online';
+export const SUPPORT_URL_INTL = PUBLIC_ENV.PUBLIC_SUPPORT_URL_INTL || 'https://ko-fi.com/corosolto';
 
 /* ===========================================================================
    RANKING: DESLIGADO (decisão do dono, 04/08/2026)
@@ -91,4 +93,3 @@ export const SUPPORT_URL_INTL = import.meta.env.PUBLIC_SUPPORT_URL_INTL || 'http
    cliente monta o legado `/u/<nick>` (`main.js`, `renderGlobal`). Nick aceita
    caractere especial; a URL tem que ser montada a partir do **id**. */
 // Ativar apenas no build que seguir migration 037 + rollout compatível de API/nós.
-export const RANKING_ON = import.meta.env.RANKING_ON === 'true';

@@ -77,7 +77,7 @@ async function preparar(page, mutante, { conta = true, registro = [] } = {}) {
   });
   const css = /\/css\/tp\/social\.css/, js = /\/js\/tp\/social\.js/;
   if (mutante === 'vaza-flag') await reescreve(/\/js\/main\.js/, (t) => t.replace("if (document.documentElement.dataset.ui === 'v3') {\n  import('./splash-v3.js')", "if (true) {\n  import('./splash-v3.js')"));
-  if (mutante === 'botao-sobre') await reescreve(css, (t) => t.replace('--tp-resenha-chao:12px', '--tp-resenha-chao:80px'));
+  if (mutante === 'botao-sobre') await reescreve(css, (t) => t.replace('--tp-resenha-chao:12px', '--tp-resenha-chao:500px'));
   if (mutante === 'sem-y') await reescreve(js, (t) => t.replace("e.code !== 'KeyY'", "e.code !== 'KeyZ'"));
   if (mutante === 'gaveta-estreita') await reescreve(css, (t) => t.replace('.tp-resenha{width:100vw', '.tp-resenha{width:min(780px,100vw)'));
   if (mutante === 'inventa') await reescreve(js, (t) => t.replace(".filter((f) => f.state === 'accepted')", '.filter((f) => f)'));
@@ -102,6 +102,7 @@ async function lobby(opcoes = {}) {
   page.setDefaultTimeout(6000);
   const registro = await preparar(page, mutante, { conta });
   await page.goto(`${BASE}/?${flag ? 'ui=v3&' : ''}lang=${lang}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+  await page.addStyleTag({ content: 'astro-dev-toolbar{display:none!important;pointer-events:none!important}' });
   if (flag) await page.waitForFunction(() => !document.getElementById('tp-splash-jogar')?.disabled, null, { timeout: 60000 }).catch(() => {});
   else await page.waitForFunction(() => !document.getElementById('splash-enter')?.classList.contains('hidden'), null, { timeout: 60000 }).catch(() => {});
   await page.waitForTimeout(1500);

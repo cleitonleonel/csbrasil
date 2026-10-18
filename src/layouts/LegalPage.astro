@@ -1,7 +1,7 @@
 ---
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { SITE, BRAND_FULL, abs } from '../lib/site';
+import { SITE, BRAND_FULL, abs, routeOgPath } from '../lib/site';
 import { LEGAL_CONTACT, LEGAL_OPERATOR, LEGAL_UPDATED } from '../lib/legal';
 interface Props { title: string; description: string; noindex?: boolean; }
 const { title, description, noindex = false } = Astro.props;
@@ -10,7 +10,7 @@ const canonical = new URL(path, Astro.site ?? SITE).toString();
 const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).digest('hex').slice(0, 8);
 ---
 <!DOCTYPE html>
-<html lang="pt-BR" data-home-ui="hub" class="legal-document">
+<html lang="pt-BR" data-home-ui="hub" data-ui="v3" class="legal-document">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -24,10 +24,10 @@ const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content={BRAND_FULL} />
     <meta property="og:locale" content="pt_BR" />
-    <meta property="og:image" content={abs('/og-image.jpg')} />
+    <meta property="og:image" content={abs(routeOgPath(path, title))} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={BRAND_FULL} />
+    <meta property="og:image:alt" content={`${title} · ${BRAND_FULL}`} />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href={`/style.css?v=${cssRevision}`} />
@@ -66,40 +66,41 @@ const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).
   </body>
 </html>
 <style>
-  :global(html.legal-document), :global(.legal-document body) { height: auto; min-height: 100%; overflow: auto; background: var(--bg-900); }
+  :global(html.legal-document), :global(.legal-document body) { height: auto; min-height: 100%; overflow: auto; background: radial-gradient(900px 520px at 100% 0%,rgba(180,217,46,.1),transparent 70%),radial-gradient(720px 500px at 0 100%,rgba(243,185,88,.08),transparent 70%),var(--tp-asfalto,#090704); }
   :global(.legal-document *) { user-select: text; }
   :global(html.legal-document[data-embedded="true"]), :global(html.legal-document[data-embedded="true"] body) { min-height: 0; background: transparent; }
   :global(html[data-embedded="true"]) .legal-header, :global(html[data-embedded="true"]) .legal-footer, :global(html[data-embedded="true"]) .skip-link { display: none; }
   :global(html[data-embedded="true"]) main { max-width: none; padding: 0 0 24px; }
-  :global(.legal-document body) { --legal-accent: #b4d92e; --font: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; font-family: var(--font); font-weight: 400; color: var(--ink-200); }
-  a { color: var(--sys); text-underline-offset: 4px; }
+  :global(.legal-document body) { --legal-accent: var(--tp-lima,#b4d92e); --font: var(--tp-ui,'Barlow Semi Condensed',system-ui,sans-serif); font-family: var(--font); font-weight: 500; color: var(--tp-tinta-2,#d3d3d1); }
+  a { color: var(--tp-lima,#b4d92e); text-underline-offset: 4px; }
   a:focus-visible { outline: var(--focus-ring); outline-offset: 4px; }
   .skip-link { position: absolute; left: 16px; top: -80px; z-index: 10; padding: 12px; background: var(--bg-600); }
   .skip-link:focus { top: 12px; }
-  .legal-header { display: flex; align-items: center; gap: 32px; padding: 12px max(24px, calc((100vw - 1200px) / 2)); border-bottom: 1px solid var(--line); background: var(--bg-800); }
-  .hub-logo { display: block; height: 84px; }
+  .legal-header { display: flex; align-items: center; gap: 28px; padding: 8px max(24px, calc((100vw - 1200px) / 2)); border-bottom: 1px solid var(--tp-borda,rgba(255,255,255,.08)); background: rgba(9,7,4,.9); backdrop-filter:blur(12px) }
+  .hub-logo { display: block; height: 68px; }
   nav { display: flex; flex-wrap: wrap; gap: 24px; }
-  nav a { padding: 12px 0; color: var(--ink-200); font-weight: 700; font-size: 17px; text-decoration: none; text-transform: uppercase; letter-spacing: .8px; border-bottom: 2px solid transparent; }
+  nav a { min-height:44px;display:inline-flex;align-items:center;padding: 0; color: var(--tp-tinta-2,#d3d3d1); font:400 18px/1 var(--tp-display,Impact,sans-serif); text-decoration: none; text-transform: uppercase; letter-spacing: .03em; border-bottom: 3px solid transparent; }
   nav a[aria-current="page"] { color: var(--legal-accent); border-color: var(--legal-accent); }
-  .legal-play { display: grid; place-items: center; width: auto; min-width: 190px; padding: 12px 20px; margin-left: auto; color: #131313; text-decoration: none; font-size: 24px; }
+  .legal-play { display: grid; place-items: center; width: auto; min-width: 190px; min-height:48px;padding: 0 20px; margin-left: auto; background:var(--tp-lima,#b4d92e);color: #131313; text-decoration: none; font:400 21px/1 var(--tp-display,Impact,sans-serif);clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%)}
   .legal-play:focus-visible { outline: 0; box-shadow: inset 0 0 0 3px #131313; }
-  main { max-width: 1200px; margin: 0 auto; padding: 48px 24px 64px; }
-  .legal-heading { margin-bottom: 32px; }
-  h1 { margin: 12px 0; color: var(--ink-100); font: 400 clamp(44px, 6vw, 76px)/1 'Bebas Neue', Impact, sans-serif; text-transform: uppercase; }
-  .updated { color: var(--ink-300); font-size: 17px; }
-  .legal-content { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 40px; align-items: start; }
-  .legal-contact { border-top: 3px solid var(--legal-accent); padding: 20px; background: var(--bg-700); font-size: 17px; line-height: 1.6; overflow-wrap: anywhere; }
-  .legal-contact h2 { color: var(--ink-100); font-size: 22px; line-height: 1.2; margin-bottom: 16px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 54px 24px 72px;animation:legal-in .35s var(--tp-ease-saida,cubic-bezier(.2,.8,.2,1)) both}
+  @keyframes legal-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .legal-heading { margin-bottom: 34px; }
+  h1 { margin: 12px 0; color: var(--tp-tinta-1,#f0f0ed); font: 400 clamp(48px, 7vw, 88px)/.92 var(--tp-display,Impact,sans-serif); text-transform: uppercase; }
+  .updated { color: var(--tp-tinta-3,#a5a5a3); font:500 12px/1.4 var(--tp-num,monospace);letter-spacing:.12em;text-transform:uppercase }
+  .legal-content { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 24px; align-items: start; }
+  .legal-contact { border:1px solid var(--tp-borda,rgba(255,255,255,.08));border-radius:12px; padding: 20px; background: var(--tp-painel,#131418); font-size: 17px; line-height: 1.6; overflow-wrap: anywhere; }
+  .legal-contact h2 { color: var(--tp-lima,#b4d92e); font:400 24px/1 var(--tp-display,Impact,sans-serif); margin-bottom: 16px;text-transform:uppercase }
   .legal-contact p { margin-bottom: 16px; }
-  .legal-text { border-top: 1px solid var(--line-2); padding-top: 20px; font-size: 20px; line-height: 1.65; overflow-wrap: anywhere; }
-  .legal-text :global(h2) { margin: 36px 0 12px; color: var(--ink-100); font-weight: 700; font-size: 28px; line-height: 1.2; }
+  .legal-text { border:1px solid var(--tp-borda,rgba(255,255,255,.08));border-radius:14px;padding: 12px 28px 28px;background:rgba(19,20,24,.86); font-size: 19px; line-height: 1.65; overflow-wrap: anywhere; }
+  .legal-text :global(h2) { margin: 36px 0 12px; color: var(--tp-tinta-1,#f0f0ed); font:400 28px/1 var(--tp-display,Impact,sans-serif);text-transform:uppercase }
   .legal-text :global(p) { margin-bottom: 16px; }
   .legal-text :global(ul), .legal-text :global(ol) { padding-left: 24px; margin-bottom: 20px; }
   .legal-text :global(li) { margin-bottom: 10px; }
-  .legal-text :global(a) { color: var(--sys); text-decoration: underline; text-underline-offset: 4px; }
-  .legal-text :global(a.legal-request) { display: inline-grid; place-items: center; width: auto; padding: 12px 20px; margin: 4px 0 20px; color: #131313; text-decoration: none; font-size: 24px; }
+  .legal-text :global(a) { color: var(--tp-lima,#b4d92e); text-decoration: underline; text-underline-offset: 4px; }
+  .legal-text :global(a.legal-request) { display: inline-grid; place-items: center; width: auto; min-height:44px;padding: 0 20px; margin: 4px 0 20px; background:var(--tp-lima,#b4d92e);color: #131313; text-decoration: none; font-weight:800;border-radius:8px}
   .legal-text :global(a.legal-request:focus-visible) { outline: 0; box-shadow: inset 0 0 0 3px #131313; }
-  .legal-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; border-top: 1px solid var(--line); padding: 24px max(24px, calc((100vw - 1152px) / 2)); color: var(--ink-300); font: 12px/1.5 var(--mono); }
+  .legal-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; border-top: 1px solid var(--tp-borda,rgba(255,255,255,.08)); padding: 24px max(24px, calc((100vw - 1152px) / 2)); color: var(--tp-tinta-3,#a5a5a3); font: 12px/1.5 var(--tp-num,monospace); }
   @media (max-width: 760px) {
     .legal-header { flex-wrap: wrap; gap: 16px; padding: 12px 20px; }
     .hub-logo { height: 64px; max-width: 100px; }
@@ -110,4 +111,5 @@ const cssRevision = createHash('sha1').update(readFileSync('public/style.css')).
     .legal-contact { padding: 16px; }
     .legal-text { font-size: 19px; }
   }
+  @media(prefers-reduced-motion:reduce){main{animation:none}}
 </style>

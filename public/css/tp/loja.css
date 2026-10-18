@@ -1,9 +1,9 @@
 /* Treta Pop · 07 loja, 09 armário, 23 mobile. Só vale com <html data-ui="v3">: todo seletor começa em :root[data-ui="v3"] ou numa classe .tp-. */
 
 /* A loja v3 desenha cabeçalho, abas e grade próprios (tp/loja.js); os da loja antiga saem. */
-:root[data-ui="v3"] .treta-heading{display:none}
-:root[data-ui="v3"] .treta-views{display:none}
-:root[data-ui="v3"] #treta-skins-view{display:none!important}
+:root[data-ui="v3"] .treta-store:has(.tp-loja) .treta-heading{display:none}
+:root[data-ui="v3"] .treta-store:has(.tp-loja) .treta-views{display:none}
+:root[data-ui="v3"] .treta-store:has(.tp-loja) #treta-skins-view{display:none!important}
 :root[data-ui="v3"] .treta-store{--treta-bg:var(--tp-asfalto);--treta-panel:var(--tp-painel);--treta-muted:var(--tp-tinta-3);--treta-line:var(--tp-borda);
   --treta-gold:var(--tp-ambar);--treta-lime:var(--tp-lima);padding:20px 32px 28px!important;color:var(--tp-tinta-1);font-family:var(--tp-ui);
   background:radial-gradient(900px 500px at 20% 30%,color-mix(in srgb,var(--tp-novo) 18%,transparent),transparent 70%),var(--tp-asfalto)}
@@ -25,7 +25,7 @@
 
 .tp-loja__carteira{margin-left:auto;display:flex;align-items:center;gap:10px;height:48px;padding:0 6px 0 14px;border-radius:10px;
   background:var(--tp-painel);border:1px solid color-mix(in srgb,var(--tp-lima) 35%,transparent)}
-.tp-loja__moeda{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--tp-lima);color:var(--tp-lima-tinta);font-size:13px;line-height:1}
+.tp-loja__moeda{display:block;width:30px;height:30px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45))}
 .tp-loja__saldo{font-size:20px;font-weight:800;color:var(--tp-ambar)}
 .tp-loja__ganhar{min-height:36px;padding:0 12px;border-radius:7px;font:800 13px/1 var(--tp-ui);letter-spacing:.06em}
 

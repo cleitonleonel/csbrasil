@@ -28,9 +28,10 @@ const TRETA = {
 const MUTANTES = {
   'abas-velhas': [/\/css\/tp\/lobby\.css/, (t) => t.replace(':root[data-ui="v3"] .hub-header .hub-tabs{display:none}', '')],
   'ajustes-mudo': [/\/js\/tp\/lobby\.js/, (t) => t.replace("const rotuloAjustes = no('span', 'tp-lobby-hdr__rotulo', tr('AJUSTES'));", "const rotuloAjustes = '';")],
-  'confirma-de-novo': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (!e.target.closest?.('#btn-jogar') || !temNick()) return;", 'return;')],
+  'confirma-de-novo': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (!e.target.closest?.('#btn-jogar')) return;", 'return;')],
+  'convidado-bloqueado': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (!e.target.closest?.('#btn-jogar')) return;", "if (!e.target.closest?.('#btn-jogar') || !($('nick-input')?.value || '').trim()) return;")],
   'enter-do-splash': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (e.key !== 'Enter' || e.repeat || e.defaultPrevented ||", "if (e.key !== 'Enter' || e.repeat ||")],
-  'personagem-no-canto': [/\/css\/tp\/lobby\.css/, (t) => t.replace('left:calc(50% - var(--tp-lobby-heroi) / 2);right:auto;', '')],
+  'personagem-no-canto': [/\/css\/tp\/lobby\.css/, (t) => t.replace('left:calc(50% - 290px);right:auto;', '')],
   'convite-mudo': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (menu()?.dataset.hubNet !== 'mp') $('hub-mp')?.click();", 'return;')],
   'erro-mudo': [/\/js\/tp\/lobby\.js/, (t) => t.replace("if (estado?.dataset.s === 'erro') { mostrarAviso(tr('O multiplayer não respondeu agora. Tente de novo em um minuto.')); return; }", "if (estado?.dataset.s === 'erro') return;")],
   'quest-inventada': [/\/js\/tp\/lobby\.js/, (t) => t.replace("const recompensa = card.querySelector('strong')?.textContent || '';", "const recompensa = 'T$ 10';")],
@@ -46,10 +47,10 @@ const MUTANTES = {
   'dois-limas': [/\/css\/tp\/lobby\.css/, (t) => t.replace('.tp-lobby-rede__opcao[aria-pressed="true"]{background:var(--tp-tinta-1)', '.tp-lobby-rede__opcao[aria-pressed="true"]{background:var(--tp-lima)')],
 };
 
-async function abrir({ w = 1536, h = 1024, lang = 'pt', flag = true, toque = false, mutante = '', loja = true, sairSplash = true }) {
+async function abrir({ w = 1536, h = 1024, lang = 'pt', flag = true, toque = false, mutante = '', loja = true, sairSplash = true, nick = 'Regua' }) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, hasTouch: toque, isMobile: toque, deviceScaleFactor: 1 });
   const page = await ctx.newPage();
-  await page.addInitScript(() => { try { localStorage.setItem('awpbr_nick', 'Regua'); } catch { /* sem storage */ } });
+  await page.addInitScript((valor) => { try { if (valor) localStorage.setItem('awpbr_nick', valor); else localStorage.removeItem('awpbr_nick'); } catch { /* sem storage */ } }, nick);
   if (loja) await page.route('**/api/treta**', (r) => (r.request().method() === 'GET'
     ? r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(TRETA) }) : r.continue()));
   if (mutante) {
@@ -257,6 +258,27 @@ async function medir(mutante = '', alvo = '') {
     await ctx.close();
   }
 
+  /* Sessão convidado: JOGAR continua disponível e começa a partida sem nickname. */
+  if (quer('LB18')) {
+    const { page, ctx } = await abrir({ mutante, nick: '' });
+    const antes = await page.evaluate(() => ({
+      nick: document.getElementById('nick-input')?.value || '',
+      disabled: document.getElementById('btn-jogar')?.getAttribute('aria-disabled'),
+    }));
+    await page.evaluate(() => document.getElementById('btn-jogar')?.click());
+    await page.waitForTimeout(2500);
+    const depois = await page.evaluate(() => ({
+      quick: document.getElementById('hub-quick')?.hidden,
+      perfil: document.getElementById('menu-setup')?.dataset.step,
+      menu: document.getElementById('main-menu')?.classList.contains('hidden'),
+      carga: !document.getElementById('load-overlay')?.classList.contains('hidden'),
+      jogo: !!window.__game,
+    }));
+    add('LB18', antes.nick === '' && antes.disabled === 'false' && depois.quick === true && depois.perfil !== 'profile' && (depois.menu || depois.carga || depois.jogo),
+      `convidado: JOGAR aria-disabled=${antes.disabled}; destino ${depois.perfil === 'profile' ? 'perfil' : depois.quick === false ? 'confirmação' : depois.menu || depois.carga || depois.jogo ? 'partida' : 'lobby'}`);
+    await ctx.close();
+  }
+
   /* Sessão B: o ENTER do splash não inicia partida; o ENTER no lobby inicia. */
   if (quer('LB4')) {
     /* sem foco em botão: só a guarda do próprio ENTER pode segurar a partida */
@@ -361,7 +383,7 @@ async function medir(mutante = '', alvo = '') {
   }
   return r;
 }
-const MUT = [['abas-velhas', 'LB1'], ['ajustes-mudo', 'LB2'], ['confirma-de-novo', 'LB3'], ['enter-do-splash', 'LB4'],
+const MUT = [['abas-velhas', 'LB1'], ['ajustes-mudo', 'LB2'], ['confirma-de-novo', 'LB3'], ['convidado-bloqueado', 'LB18'], ['enter-do-splash', 'LB4'],
   ['personagem-no-canto', 'LB5'], ['convite-mudo', 'LB6'], ['erro-mudo', 'LB6'], ['quest-inventada', 'LB7'], ['passe-sem-backend', 'LB8'],
   ['rede-trocada', 'LB9'], ['coluna-larga', 'LB10'], ['toque-baixo', 'LB11'], ['sem-traducao', 'LB12'], ['flag-vaza', 'LB13'],
   ['gire-sem-arte', 'LB14'], ['mais-sem-feedback', 'LB15'], ['chip-sem-nome', 'LB16'], ['dois-limas', 'LB17']];
@@ -375,7 +397,7 @@ if (process.argv.includes('--mutantes')) {
     console.log(`${morde ? 'MORDE ' : 'CEGO  '} ${alvo} (${mut})  ${c.msg}`);
   }
 } else {
-  const r = await medir();
+  const r = await medir('', process.env.ALVO || '');
   for (const c of r) console.log(`${c.ok ? 'VERDE   ' : 'VERMELHO'} ${c.id}  ${c.msg}`);
   sair = r.every((c) => c.ok) ? 0 : 1;
   console.log(`\nlobby v3: ${r.filter((c) => c.ok).length}/${r.length}  (capturas em ${OUT})`);

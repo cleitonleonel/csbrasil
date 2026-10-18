@@ -1,7 +1,7 @@
 import { DESC_LONG, RANKING_DESCRIPTION_PT, RANKING_DESCRIPTION_EN } from '../lib/site';
-import { FACCOES, MAPAS, PERSONAGENS } from './jogo';
+import { GRUPOS, MAPAS, PERSONAGENS } from './jogo';
 
-const GRUPOS = FACCOES.map((f) => f.nome).join(', ');
+const NOMES_GRUPOS = GRUPOS.map((g) => g.nome).join(', ');
 // Mesma vitrine de /mapas, que o game-pages-check amarra ao registro jogável.
 const lista = (nomes: string[], e: string) => `${nomes.slice(0, -1).join(', ')} ${e} ${nomes.at(-1)}`;
 const NOMES_MAPAS = MAPAS.map((m) => m.nome);
@@ -20,8 +20,8 @@ export const HOME_FAQ: [string, string][] = [
     "WASD move, mouse mira, clique esquerdo atira, clique direito abre a luneta, Ctrl (ou C) agacha e melhora a mira, Shift corre, Espaço pula, R recarrega, as teclas 1/2/3 (ou a rodinha do mouse) trocam entre primária, pistola e faca, Z/X/V abrem os comandos de voz, M troca de time e Tab mostra o placar."
   ],
   [
-    "Quais são as facções e os personagens?",
-    `São ${PERSONAGENS.length} personagens em ${FACCOES.length} grupos: ${GRUPOS}. O catálogo reúne facções satíricas, arquétipos brasileiros, personagens do folclore e caricaturas de figuras políticas públicas.`
+    "Quais são os times e os personagens?",
+    `Toda partida usa só dois times: Time E e Time B. Os ${PERSONAGENS.length} personagens estão organizados em ${GRUPOS.length} grupos de catálogo: ${NOMES_GRUPOS}. Esses grupos organizam o elenco; não são times extras.`
   ],
   [
     "Quais mapas o jogo tem?",
@@ -45,10 +45,10 @@ export const HOME_FAQ: [string, string][] = [
   ]
 ];
 export const HOME_FAQ_EN: [string, string][] = [
-  ['What is CORO SOLTO: Treta Suprema?', 'A free browser FPS inspired by classic arena shooters, set in a satirical Brazil. Choose your faction and character, play against bots or join the multiplayer beta, and compete in rounds or Capture the Flag. Desktop uses mouse and keyboard; mobile has touch controls.'],
+  ['What is CORO SOLTO: Treta Suprema?', 'A free browser FPS inspired by classic arena shooters, set in a satirical Brazil. Pick Team E or Team B and a character, play against bots or join the multiplayer beta, and compete in rounds or Capture the Flag. Desktop uses mouse and keyboard; mobile has touch controls.'],
   ['Do I need to install or pay for anything?', 'No. The game is free and runs in your browser, with no download or account required. On mobile, you can add the web beta to your home screen when your browser offers that option.'],
   ['What are the controls?', 'WASD moves, mouse aims, left click fires, right click scopes, Ctrl (or C) crouches, Shift sprints, Space jumps, R reloads, 1/2/3 or the mouse wheel switches weapons, Z/X/V opens voice commands, M switches teams and Tab shows the scoreboard.'],
-  ['Which factions and characters are available?', `${PERSONAGENS.length} characters in ${FACCOES.length} groups. The catalogue includes satirical factions, Brazilian archetypes, folklore characters and caricatures of public political figures.`],
+  ['Which teams and characters are available?', `Every match has only two teams: Team E and Team B. The ${PERSONAGENS.length} characters are organized into ${GRUPOS.length} catalogue groups; those groups are not extra teams.`],
   ['Which maps does the game have?', `There are ${MAPAS.length} playable maps: ${lista(NOMES_MAPAS, 'and')}. The menu shows the available maps and lets you choose rounds or Capture the Flag.`],
   ['How does the global ranking work?', RANKING_DESCRIPTION_EN],
   ['Is this an official Valve or Counter-Strike game?', 'No. This is an independent fan parody with no affiliation with Valve. Counter-Strike is a trademark of Valve Corporation.'],

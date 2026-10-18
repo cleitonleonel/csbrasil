@@ -4,6 +4,11 @@
 :root[data-ui="v3"] #hub-map-modal{padding:0;display:block;background:radial-gradient(900px 500px at 80% 0%,rgba(42,35,18,1) 0%,rgba(42,35,18,0) 70%),var(--tp-asfalto);backdrop-filter:none;-webkit-backdrop-filter:none}
 :root[data-ui="v3"] #hub-map-modal .hub-modal-card{width:100%;height:100%;max-height:none;padding:0;border:0;background:none;box-shadow:none;clip-path:none;overflow:hidden}
 :root[data-ui="v3"] #hub-map-modal .hub-modal-card>header{display:none}
+:root[data-ui="v3"] #hub-map-modal .hub-modal-card:not(:has(.tp-modos)){box-sizing:border-box;padding:28px 32px;overflow:auto}
+:root[data-ui="v3"] #hub-map-modal .hub-modal-card:not(:has(.tp-modos))>header{display:grid}
+:root[data-ui="v3"] #hub-map-modal .hub-modal-card:not(:has(.tp-modos)) #hub-map-grid{grid-template-columns:repeat(4,minmax(0,1fr));max-height:none;margin-top:18px;overflow:visible}
+:root[data-ui="v3"] #hub-map-modal .hub-modal-card:not(:has(.tp-modos)) #hub-map-grid img{height:120px;object-fit:cover}
+@media(max-width:900px){:root[data-ui="v3"] #hub-map-modal .hub-modal-card:not(:has(.tp-modos)) #hub-map-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .tp-modos{--tp-modos-painel:420px;--tp-modos-alvo:44px;--tp-modos-linha:150px;box-sizing:border-box;width:100%;height:100%;padding:28px 32px;display:flex;flex-direction:column;gap:22px;
   color:var(--tp-tinta-1);font-family:var(--tp-ui);font-weight:500}

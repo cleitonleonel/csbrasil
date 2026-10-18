@@ -21,7 +21,7 @@ if (mutant) {
   source = changed;
 }
 const start = source.indexOf('    await jornada.goto(`${BASE}/?nav=1&home=legacy`');
-const end = source.indexOf('    await jornada.evaluate(() => {', start);
+const end = source.indexOf("    await jornada.locator('#ms-continue').click();", start);
 assert(start >= 0 && end > start, 'jornada B7 ausente');
 const body = source.slice(start, end);
 const veredito = source.match(/b7 = entradaOk[^;]*;/)?.[0] || '';

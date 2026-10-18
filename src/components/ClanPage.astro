@@ -3,18 +3,17 @@ import Layout from '../layouts/Layout.astro';
 import { SITE } from '../lib/site';
 const { clanId = '', clan = null } = Astro.props;
 const membros = clan && Number.isSafeInteger(clan.member_count) ? `${clan.member_count} ${clan.member_count === 1 ? 'membro' : 'membros'}` : null;
-const titulo = clan ? `[${clan.tag}] ${clan.name} · Clãs` : 'Clãs | CSBrasil';
+const titulo = clan ? `[${clan.tag}] ${clan.name} · Clãs` : 'Clãs · CORO SOLTO';
 const descricao = clan
   ? [typeof clan.description === 'string' && clan.description.trim() ? clan.description.trim().slice(0, 160) : `Clã [${clan.tag}] ${clan.name} na CORO SOLTO.`, membros].filter(Boolean).join(' · ')
   : 'Monte sua turma, convide amigos e leve a tag do seu clã para a arena.';
 const jsonld = clan ? [{ '@type': 'Organization', name: clan.name, alternateName: `[${clan.tag}]`, url: `${SITE}/clans/${clan.id}`, ...(typeof clan.description === 'string' && clan.description.trim() ? { description: clan.description.trim() } : {}) }] : [];
 ---
-<Layout title={titulo} description={descricao} jsonld={jsonld} noindex={Boolean(clanId) && !clan}>
-  <main id="clans-app" data-clan-id={clanId}>
-    <p class="eyebrow">SUA TURMA NA ARENA</p>
-    <h1>Clãs</h1>
-    <p>Junte os amigos e leve a tag do seu clã para o placar.</p>
-    <p id="clan-status" role="status" aria-live="polite">Carregando clãs…</p>
+<Layout title={titulo} description={descricao} jsonld={jsonld} noindex={Boolean(clanId) && !clan}
+  h1="Clãs" kicker="SUA TURMA NA ARENA" heroImg="/img/wall-40.webp" heroPos="50% 28%">
+  <span slot="sub">Junte os amigos e leve a tag do seu clã para o placar.</span>
+  <div id="clans-app" data-clan-id={clanId}>
+    <p id="clan-status" role="status" aria-live="polite"></p>
     <button id="clan-retry" type="button" hidden>Tentar novamente</button>
 
     <section id="clan-public" class="clan-card" hidden aria-label="Clã do convite"></section>
@@ -56,21 +55,22 @@ const jsonld = clan ? [{ '@type': 'Organization', name: clan.name, alternateName
       <h2>Clãs da comunidade</h2>
       <div id="clan-list"></div>
     </section>
-    <p><a href="/">Voltar ao jogo →</a></p>
-  </main>
+  </div>
 </Layout>
 <script type="module" is:inline>import '/js/clans.js';</script>
 <style is:global>
-  #clans-app{max-width:920px;margin:auto;padding:30px 0 60px}
-  #clans-app .eyebrow{color:var(--amber);letter-spacing:3px;font-size:12px}
-  #clans-app h1{font-size:clamp(40px,7vw,72px);margin:8px 0 14px}
-  #clans-app h2{font-size:22px;margin:0 0 14px}#clans-app p{line-height:1.6}
+  #clans-app{max-width:1100px;margin:auto;padding:4px 0 60px}
+  #clans-app h2{font-size:26px;margin:0 0 14px}#clans-app p{line-height:1.6}
   #clans-app fieldset{border:0;padding:0;margin:0;min-width:0}
-  #clans-app .clan-card{border:1px solid var(--line-hi);background:#12110e;padding:24px;margin:22px 0}
-  #clans-app label{display:block;margin:14px 0;font-size:13px}
-  #clans-app input,#clans-app textarea,#clans-app select{display:block;box-sizing:border-box;width:100%;max-width:540px;margin-top:7px;padding:12px;background:#090908;border:1px solid var(--line-hi);color:var(--bone);font:inherit}
-  #clans-app button{background:var(--amber);color:#111;border:0;padding:12px 18px;font:inherit;cursor:pointer;margin:6px 8px 6px 0}
-  #clans-app button:disabled{opacity:.5;cursor:wait}
-  #clans-app button:focus-visible,#clans-app input:focus-visible,#clans-app textarea:focus-visible,#clans-app select:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
-  #clans-app [hidden]{display:none!important}#clan-status{min-height:26px;color:var(--amber)}
+  #clans-app .clan-card{position:relative;overflow:hidden;border:1px solid var(--tp-borda);border-radius:12px;background:linear-gradient(145deg,rgba(38,34,27,.9),rgba(19,20,24,.96));padding:24px;margin:18px 0;box-shadow:0 18px 48px rgba(0,0,0,.2)}
+  #clans-app .clan-card:before{content:'';position:absolute;inset:0 auto 0 0;width:3px;background:var(--tp-lima)}
+  #clans-app label{display:block;margin:14px 0;color:var(--tp-tinta-2);font-weight:700;font-size:14px;letter-spacing:.03em}
+  #clans-app input,#clans-app textarea,#clans-app select{display:block;box-sizing:border-box;width:100%;max-width:620px;min-height:44px;margin-top:7px;padding:12px 14px;background:rgba(9,7,4,.8);border:1px solid var(--tp-borda-forte);border-radius:8px;color:var(--bone);font:inherit}
+  #clans-app button{min-height:44px;background:var(--tp-lima);color:#111;border:0;border-radius:8px;padding:12px 20px;font-weight:800;cursor:pointer;margin:6px 8px 6px 0;transition:transform .18s var(--tp-ease-saida),filter .18s var(--tp-ease-saida)}
+  #clans-app button:hover{transform:translateY(-2px);filter:brightness(1.08)}
+  #clans-app button:disabled{opacity:.5;cursor:wait;transform:none}
+  #clans-app button:focus-visible,#clans-app input:focus-visible,#clans-app textarea:focus-visible,#clans-app select:focus-visible{outline:2px solid var(--tp-lima);outline-offset:3px}
+  #clans-app [hidden]{display:none!important}#clan-status{min-height:26px;color:var(--tp-lima);font:500 12px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  #clan-directory{margin-top:34px}#clan-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  #clans-app .clan-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}#clans-app .clan-actions a{display:inline-flex;align-items:center;min-height:44px;margin-right:auto}#clans-app .clan-actions button{margin:0}
 </style>

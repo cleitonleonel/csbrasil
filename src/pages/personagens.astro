@@ -1,32 +1,15 @@
 ---
-// /personagens - o elenco inteiro.
-//
-// A versão anterior listava 8 personagens em 2 facções e afirmava "dezoito
-// arquétipos" no primeiro parágrafo. O jogo hoje tem 44 personagens em 5
-// facções (Tribos Urbanas, Palhaços e Funkeiros não apareciam), e o comentário
-// no próprio arquivo já avisava que faltava a seção dos Palhaços. Número errado
-// na página é o tipo de coisa que um assistente de IA repete como fato.
-//
-// VISUAL (05/08/2026). Eram 44 caixas de texto idênticas, empilhadas, sem uma
-// única imagem - num site cujo assunto é um elenco em 3D. As placas de facção
-// (`public/img/team-*.webp`) foram renderizadas dos GLB reais em 04/08 e nunca
-// tinham sido usadas em lugar nenhum.
-//
-// O DESENHO É O DA TELA 02 (references/telas/02_escolha_faccao.png): cada
-// facção abre com uma faixa da arte do time, com a etiqueta "FACÇÃO 01", o
-// nome na COR do time e o lema entre aspas por cima da imagem; o elenco vem
-// logo abaixo, em cartões finos com filete na mesma cor.
+// /personagens - catálogo completo. Os blocos são grupos editoriais do elenco;
+// a partida usa apenas Time E e Time B.
 import Layout from '../layouts/Layout.astro';
-import { FACCOES, PERSONAGENS } from '../data/jogo';
+import { GRUPOS, PERSONAGENS } from '../data/jogo';
 import { BRAND_FULL, GAME_ID, abs } from '../lib/site';
 
-const grupos = FACCOES.map(f => ({ ...f, elenco: PERSONAGENS.filter(p => p.faccao === f.id) }));
+const grupos = GRUPOS.map(g => ({ ...g, elenco: PERSONAGENS.filter(p => p.grupo === g.id) }));
 const total = PERSONAGENS.length;
 
-/* O `id` da facção (`P`, `B`, `urbanas`…) não é o nome do arquivo da placa, e
-   não dá pra derivar um do outro: `P` → `petistas`, `B` → `bolsonaristas`.
-   O mapa fica explícito aqui para que uma facção nova sem arte apareça como
-   ausente - e não como a arte errada de outro time. */
+/* Os ids do catálogo não derivam o nome dos arquivos de key art.
+   O mapa explícito faz grupo sem arte aparecer como ausente, nunca com arte errada. */
 const PLACA: Record<string, string> = {
   E: 'time-e', B: 'time-b', urbanas: 'tribos',
   palhacos: 'palhacos', funkeiros: 'funkeiros', mitico: 'mitico',
@@ -42,7 +25,7 @@ const jsonld = [
     '@type': 'ItemList',
     '@id': abs('/personagens') + '#lista',
     name: `Personagens do ${BRAND_FULL}`,
-    description: `Os ${total} personagens do catálogo, divididos em ${FACCOES.length} facções. Elenco de sátira brasileira, folclore e caricaturas políticas.`,
+    description: `Os ${total} personagens do catálogo, divididos em ${GRUPOS.length} grupos editoriais. Elenco de sátira brasileira, folclore e caricaturas políticas.`,
     numberOfItems: total,
     itemListElement: PERSONAGENS.map((p, i) => ({
       '@type': 'ListItem', position: i + 1, name: p.nome,
@@ -66,19 +49,19 @@ const jsonld = [
   ogImage={abs('/api/og/personagens.png')}
   ogImageAlt={`Card com o elenco do ${BRAND_FULL}`}
   title={`Personagens - os ${total} do elenco | ${BRAND_FULL}`}
-  description={`Conheça o elenco do ${BRAND_FULL}: ${FACCOES.map(f => f.nome).join(', ')}. Personagens, facções e estilos disponíveis no jogo.`}
+  description={`Conheça o elenco do ${BRAND_FULL}: ${GRUPOS.map(g => g.nome).join(', ')}. As partidas usam somente Time E e Time B.`}
   jsonld={jsonld}
   h1="Personagens"
-  kicker={`${total} personagens · ${FACCOES.length} facções`}
+  kicker={`${total} personagens · ${GRUPOS.length} grupos`}
   heroImg={placa('palhacos')}
   heroPos="64%">
   <Fragment slot="sub">
-    {total} personagens em {FACCOES.length} grupos do catálogo. Sátira brasileira, folclore e
-    caricaturas políticas, com silhuetas, acessórios e estilos próprios. Escolha seu personagem no menu antes da partida.
+    {total} personagens em {GRUPOS.length} grupos do catálogo. Esses grupos organizam o elenco, mas a partida
+    usa somente Time E e Time B. Escolha no menu um personagem disponível para o seu time.
   </Fragment>
 
-  {/* Índice em números, que também é a navegação: cada bloco leva à facção. */}
-  <nav class="tstat" aria-label="Facções">
+  {/* Índice em números: cada bloco abre um grupo editorial do elenco. */}
+  <nav class="tstat" aria-label="Grupos do elenco">
     {grupos.map(g => (
       <a href={`#${slug(g.nome)}`} style={`--fc:${g.cor}`}>
         <b style={`color:${g.cor}`}>{g.elenco.length}</b><span>{g.nome}</span>
@@ -87,7 +70,7 @@ const jsonld = [
   </nav>
 
   {grupos.map((g, i) => (
-    <section class="faccao" style={`--fc:${g.cor}`}>
+    <section class="grupo" style={`--fc:${g.cor}`}>
       {/* PLACA EM RETRATO, e não faixa larga. As placas são 640×1601 (0,4:1):
           num bloco largo e baixo o `cover` amplia 1,6× e sobra um close de olho
           e boca. Em 210×230 o recorte mostra o time inteiro da cintura pra
@@ -96,22 +79,20 @@ const jsonld = [
         {placa(g.id) && (
           <div class="fplate">
             <img src={placa(g.id)} width="640" height="1601" loading="lazy" decoding="async"
-                 alt={`Personagens da facção ${g.nome} no ${BRAND_FULL}`}>
+                 alt={`Personagens do grupo ${g.nome} no ${BRAND_FULL}`}>
           </div>
         )}
         <div class="fmeta">
-          <p class="meta"><b>Facção {String(i + 1).padStart(2, '0')}</b><i>·</i>
+          <p class="meta"><b>Grupo {String(i + 1).padStart(2, '0')}</b><i>·</i>
             {g.elenco.length} personagens</p>
           <h2 id={slug(g.nome)} style={`color:${g.cor}`}>
-            {/* Link pra página própria da facção (/faccoes/<id>). O <h2> continua
-                sendo o título da seção aqui - o link é o caminho pro recorte, não
-                uma navegação escondida. */}
-            <a href={`/faccoes/${g.id}`} style={`color:${g.cor};text-decoration:none`}>{g.nome}</a>
+            {/* O título abre o recorte próprio do grupo. */}
+            <a href={`/grupos/${g.id}`} style={`color:${g.cor};text-decoration:none`}>{g.nome}</a>
           </h2>
           <p class="fmotto">“{g.lema}”</p>
           <p class="fnota">{g.nota}</p>
           <p style="margin-top:8px;font-size:12px">
-            <a href={`/faccoes/${g.id}`}>Página da facção {g.nome} →</a>
+            <a href={`/grupos/${g.id}`}>Página do grupo {g.nome} →</a>
           </p>
         </div>
       </header>
@@ -142,8 +123,8 @@ const jsonld = [
 
 
 <style>
-  /* ---- facção: retrato do time + identificação (tela 02) ---- */
-  .faccao{margin:44px 0 0}
+  /* ---- grupo: key art + identificação editorial ---- */
+  .grupo{margin:44px 0 0}
   .fhead{display:flex;overflow:hidden;background:var(--panel-2);
     border:1px solid var(--line);border-left:3px solid var(--fc)}
   .fplate{flex:0 0 220px;position:relative;overflow:hidden;background:#0d0c07;
@@ -174,7 +155,7 @@ const jsonld = [
   .tstat a:hover{border-color:var(--fc);background:var(--panel-2)}
 
   @media (max-width:860px){
-    .faccao{margin-top:32px}
+    .grupo{margin-top:32px}
     /* a placa continua em RETRATO, só estreita: virar faixa aqui traria de volta
        o close de olho e boca que motivou este desenho. */
     .fplate{flex:0 0 108px;min-height:0}

@@ -1,4 +1,4 @@
-// Arquivos AEO derivados do HTML público: PT/EN, facções, apoio e FAQ da home.
+// Arquivos AEO derivados do HTML público: PT/EN, grupos, apoio e FAQ da home.
 // O mapa ao vivo exporta apenas explicações estáveis, nunca contagens de presença.
 // Curadoria exclui os laboratórios bloqueados em robots.txt. Schema, sitemap e
 // robots continuam sob suas fontes próprias. resolveConfig evita o atalho da lib
@@ -34,9 +34,9 @@ export function aeoCurado({ site, title, description }) {
         const clientDir = fileURLToPath(dir);
 
         const pages = [];
-        const factionDir = join(clientDir, 'faccoes');
-        const factionPages = readdirSync(factionDir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => `/faccoes/${e.name}`);
-        for (const p of [...CONTENT_PAGES, ...factionPages]) {
+        const groupDir = join(clientDir, 'grupos');
+        const groupPages = readdirSync(groupDir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => `/grupos/${e.name}`);
+        for (const p of [...CONTENT_PAGES, ...groupPages]) {
           const page = readPage(clientDir, p);
           if (page) pages.push(page);
           else throw new Error(`Página ${p} ausente do build AEO`);
@@ -48,7 +48,7 @@ export function aeoCurado({ site, title, description }) {
         const game = nodes.find(n => n['@type'] === 'VideoGame');
         const faq = nodes.find(n => n['@type'] === 'FAQPage');
         if (!game?.description || !faq?.mainEntity?.length) throw new Error('Home sem descrição e FAQ para AEO');
-        const links = [...CONTENT_PAGES, ...factionPages, LIVE_MAP.pathname].map(p => `- [${p}](${site}${p})`).join('\n');
+        const links = [...CONTENT_PAGES, ...groupPages, LIVE_MAP.pathname].map(p => `- [${p}](${site}${p})`).join('\n');
         const faqTxt = faq.mainEntity.map(q => `## ${q.name}\n\n${q.acceptedAnswer.text}`).join('\n\n');
         const summary = `# ${title}\n\n${game.description}\n\n` + faqTxt;
         writeFileSync(join(clientDir, 'llms.txt'), `# ${title}\n\n${game.description}\n\nSite: ${site}\n\n` + faqTxt + '\n\n## Páginas\n\n' + links + '\n');
