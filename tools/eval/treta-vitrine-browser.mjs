@@ -98,8 +98,10 @@ async function abrir(name,{viewport,touch=false,loja='on',caminho='/'}) {
   });
   page.setDefaultTimeout(20000);
   await page.goto(`${base}${caminho}`,{waitUntil:'commit',timeout:30000});
-  await page.locator('#splash-enter:not(.hidden)').waitFor({timeout:90000});
-  await page.locator('#boot-splash').click();
+  if(caminho==='/'){
+    await page.locator('#splash-enter:not(.hidden)').waitFor({timeout:90000});
+    await page.locator('#boot-splash').dispatchEvent('pointerdown');
+  }
   await page.locator('#hub-ui:not([hidden])').waitFor({timeout:90000});
   if(loja==='on')await page.waitForFunction(()=>document.querySelectorAll('#treta-vitrine:not([hidden]) .treta-vitrine-card').length>0,null,{timeout:20000}).catch(()=>{});
   else await page.waitForTimeout(4000);
