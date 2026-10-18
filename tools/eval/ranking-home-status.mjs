@@ -99,7 +99,7 @@ async function scenario(surface,flag,kind,period='all') {
   context.root=pane; // community.js lê root no escopo do módulo (render marca data-view)
   const start=community.indexOf('  const errors=');const stop=community.indexOf('  function presenceText',start);
   assert(start>=0 && stop>start,'community real DOM helpers unavailable');
-  body=community.slice(start,stop)+'\n'+extract(community,'  function searchForm(', '  function friendCard(')+'\n'+extract(community,'  async function showRanking(version)','  function showQuests(')+'\n'+extract(community,'  async function render(){','  async function boot(')+'\nrender()';
+  body=community.slice(start,stop)+'\n'+extract(community,'  function searchForm(', '  function friendCard(')+'\n'+extract(community,'  async function showRanking(version)','  const openTretaQuests=')+'\n'+extract(community,'  async function render(){','  async function boot(')+'\nrender()';
  }else body=extract(main,'async function api(path, body)')+'\n'+extract(main,surface==='hub'?'async function renderHubRanking()':'async function renderGlobal(nick)')+`\n${surface==='hub'?'renderHubRanking()':"renderGlobal('Renderer Fixture')"}`;
  // Mutation applied to measured runtime state after executing real product; no product bytes are written.
  const staleNodes=surface==='hub'?[...pane.querySelectorAll(':scope > p')]:surface==='panel'?[...pane.querySelectorAll('.rank-note')]:[];

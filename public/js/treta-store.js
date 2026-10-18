@@ -7,6 +7,7 @@ import {byId} from './characters.js';
 import {estadoDaUrl,urlDoEstado,ABAS_LOJA} from './rotas.js';
 import {ligarCompartilhar,linkCompartilhavel} from './compartilhar.js';
 import {eyewearFitCount,eyewearProfile,loadEyewearFitData} from './eyewear.js';
+import {VERSION} from './version.js';
 
 const node=(tag,text='',cls='')=>{const e=document.createElement(tag);e.textContent=text;e.className=cls;return e;};
 const errors={account_required:'Entre e escolha seu nick para guardar seus T$.',insufficient_balance:'Ainda faltam T$ para esta skin. Ganhe mais jogando e convidando amigos.',skin_unavailable:'Este visual ainda está em produção ou revisão.',request_reused:'Este pedido já foi usado. Atualize a carteira.',skin_not_owned:'Este visual ainda não está no seu armário.',referral_ineligible:'Este convite não é elegível para a recompensa.',rate_limited:'Espere um momento antes de tentar novamente.'};
@@ -19,7 +20,7 @@ const storeEvent=(event,itemId='')=>{
 };
 const inviteEvent=async event=>{
   if(!window.__csPrivacy?.allowed())return false;
-  try{return (await socialApi('/api/treta',{action:'invite-analytics',event})).stored===true;}catch{return false;}
+  try{return (await socialApi('/api/treta',{action:'invite-analytics',event,version:VERSION})).stored===true;}catch{return false;}
 };
 let lastStoreVisit=0;
 const storeVisit=()=>{
@@ -102,10 +103,11 @@ function rewards(container) {
   }));
 }
 function drawQuests() {
-  const c=state?.campaign || TRETA_DEFAULT_REWARDS,q=state?.quests || {},active=campaignActive();
+  const c=state?.campaign || TRETA_DEFAULT_REWARDS,q=state?.quests || {},invites=state?.invites || {},active=campaignActive();
+  const linked=invites.linked ?? q.referral ?? 0,rewarded=invites.rewarded ?? q.referral ?? 0,pending=invites.pending ?? 0;
   const specs=[
     {id:'email',name:'Confirme seu email',copy:'Entre com uma conta de email confirmado. Recompensa única.',reward:c.email_reward,done:q.email>0,progress:q.email>0?'CONCLUÍDA':'UMA VEZ POR CONTA',action:login,label:'ENTRAR E CONFIRMAR'},
-    {id:'referral',name:'Chame sua turma',copy:'Seu amigo confirma o email e conclui a primeira partida válida. Aceite o convite antes de entrar na primeira partida, em conta criada há até 7 dias.',reward:c.referral_reward,done:q.referral>=c.referral_cap,progress:`${q.referral || 0}/${c.referral_cap} AMIGOS`,action:()=>$('treta-invite').click(),label:'COPIAR CONVITE'},
+    {id:'referral',name:'Chame sua turma',copy:'Seu amigo confirma o email e conclui a primeira partida válida. Aceite o convite antes de entrar na primeira partida, em conta criada há até 7 dias.',reward:c.referral_reward,done:rewarded>=c.referral_cap,progress:state?.authenticated?`${linked} VINCULADOS · ${rewarded} PAGOS · ${pending} PENDENTES`:`ATÉ ${c.referral_cap} AMIGOS`,action:()=>$('treta-invite').click(),label:'COPIAR CONVITE'},
     {id:'singleplayer',name:'Conclua uma partida solo',copy:'Jogue a partida solo premiada até o fim, com ao menos 60 segundos de atividade.',reward:c.sp_reward,done:false,progress:`${q.singleplayer || 0} PARTIDAS · REPETÍVEL`,action:()=>$('treta-solo').click(),label:'JOGAR SOLO'},
     {id:'multiplayer',name:'Conclua uma partida multiplayer',copy:'Termine a partida com outro jogador autenticado e ao menos 60 segundos de atividade.',reward:c.mp_reward,done:false,progress:`${q.multiplayer || 0} PARTIDAS · REPETÍVEL`,action:()=>document.dispatchEvent(new CustomEvent('cs-treta-multiplayer')),label:'JOGAR MULTIPLAYER'},
   ];
@@ -120,6 +122,9 @@ function drawQuests() {
   }));
   const lastDay=c.ends_at?new Date(Date.parse(c.ends_at)-1).toLocaleDateString('pt-BR',{timeZone:'UTC'}):null;
   $('treta-quest-period').textContent=refreshFailed?'Não foi possível consultar suas quests. Tente atualizar a carteira.':active?`Quests disponíveis até ${lastDay}. O saldo conquistado continua na sua conta.`:c.ends_at && Date.now()>=Date.parse(c.ends_at)?'Este período de quests terminou. Seu saldo e suas skins continuam na conta.':'Quests de lançamento em preparação.';
+  const incoming=$('treta-incoming-status'),incomingState=invites.incoming;
+  incoming.hidden=!incomingState;
+  incoming.textContent=incomingState==='rewarded'?'Seu convite foi recompensado depois da primeira partida válida.':incomingState==='pending'?'Seu convite está vinculado. Complete a primeira partida válida para liberar a recompensa de quem convidou você.':'';
   $('treta-quest-limit').textContent=`Partidas hoje: ${money(q.dailyMatchEarned || 0)} de ${money(c.daily_match_cap)}. O limite renova à meia-noite UTC. Créditos entram automaticamente após confirmação.`;
 }
 function draw() {
@@ -133,12 +138,17 @@ function draw() {
   $('treta-retry').hidden=!refreshFailed;
   $('treta-view-title').replaceChildren(node('span',view==='quests'?'COMPLETE ':view==='accessories'?'SEU ':'LOJA '),node('em',view==='quests'?'QUESTS':view==='accessories'?'DRIP':filter==='owned'?'E ARMÁRIO':'DE SKINS'));
   $('treta-view-description').textContent=view==='quests'?'Ganhe TRETA$ jogando e completando quests.':view==='accessories'?'Mais jeitos de vestir seu coro.':filter==='owned'?'Seus visuais, prontos para a próxima partida.':'Seu estilo entra em jogo.';
-  const skins=TRETA_SKINS.filter(s=>manifest.skins[s.id]?.approved===true).filter(s=>filter==='owned'?owned(s.id):filter==='drip'?s.id.endsWith('-drip'):true);
+  const balance=state?.wallet?.balance;
+  const skins=TRETA_SKINS.filter(s=>manifest.skins[s.id]?.approved===true).filter(s=>filter==='owned'?owned(s.id):filter==='drip'?s.id.endsWith('-drip'):true).sort((a,b)=>{
+    if(balance==null)return 0;
+    const rank=s=>equipped(s.id)?0:owned(s.id)?1:available(s.id) && (item(s.id)?.price ?? s.price)<=balance?2:available(s.id)?3:4;
+    return rank(a)-rank(b) || (item(a.id)?.price ?? a.price)-(item(b.id)?.price ?? b.price);
+  });
   $('treta-grid').replaceChildren(...skins.map(s=>{
     const button=node('button','','treta-card');button.type='button';button.style.setProperty('--skin-color',s.color);
     const label=node('span',refreshFailed?'CONSULTA INDISPONÍVEL':loading?'CONSULTANDO…':equipped(s.id)?'EQUIPADA':owned(s.id)?'NO SEU ARMÁRIO':available(s.id)?manifest.skins[s.id]?.poster?'NOVA SKIN':'PRÉVIA 3D NO DETALHE':'EM PRODUÇÃO','treta-label');
     const image=node('img');image.src=portrait(s);image.alt=manifest.skins[s.id]?.poster?`Skin ${s.name}`:'Personagem base usado como referência de produção';image.loading='lazy';
-    const copy=node('div','','treta-card-copy');const price=node('b',money(item(s.id)?.price ?? s.price));price.append(node('span',owned(s.id)?'VER SKIN':'VER DETALHE'));
+    const copy=node('div','','treta-card-copy'),priceValue=item(s.id)?.price ?? s.price,missing=balance!=null && !owned(s.id)?Math.max(0,priceValue-balance):0,price=node('b',money(priceValue));price.append(node('span',owned(s.id)?'VER SKIN':missing?`FALTAM ${money(missing)}`:'VER DETALHE'));
     copy.append(node('small',manifest.skins[s.id]?.poster?s.series:`${s.series} · PERSONAGEM BASE`),node('strong',s.name),price);
     button.append(label,image,copy);const preview=skinPreview(button,s.id);button.onclick=()=>{if(preview.tap())return;void detail(s);};return button;
   }));
@@ -147,9 +157,12 @@ function draw() {
     empty.lastChild.type='button';empty.lastChild.onclick=()=>document.querySelector('[data-treta-filter=all]').click();$('treta-grid').append(empty);
   }
   rewards($('treta-rewards'));rewards($('treta-info-rewards'));
-  const c=state?.campaign,active=campaignActive();
+  const c=state?.campaign,active=campaignActive(),invites=state?.invites || {};
   $('treta-campaign-status').textContent=active?`Quests até ${new Date(Date.parse(c.ends_at)-1).toLocaleDateString('pt-BR',{timeZone:'UTC'})}. Limite de partidas: ${money(c.daily_match_cap)} por dia (UTC).`:'Não há quests ativas neste momento. Seu saldo e suas skins permanecem na conta.';
   $('treta-promo-copy').textContent=active?`Confirme seu email: ${money(c.email_reward)}. Convide um amigo elegível: ${money(c.referral_reward)}. Neste mês não há compra de moeda.`:'Neste mês, seus T$ vêm das quests. A compra de moeda não está disponível.';
+  $('treta-invite-progress').textContent=state?.authenticated?`${invites.linked ?? state?.quests?.referral ?? 0} convite(s) vinculado(s) · ${invites.rewarded ?? state?.quests?.referral ?? 0} recompensado(s) · ${invites.pending ?? 0} pendente(s).`:'Entre na conta para criar seu convite e acompanhar as recompensas.';
+  if(!$('treta-invite-arrival')?.hidden && c?.referral_reward)$('treta-invite-arrival-copy').textContent=`Entre com uma conta nova elegível antes da primeira partida. Depois da primeira partida válida, quem convidou você recebe ${money(c.referral_reward)}.`;
+  $('treta-invite').textContent=state?.wallet?'COPIAR MEU CONVITE ↗':'ENTRAR PARA CRIAR MEU CONVITE';
   $('treta-solo').disabled=!active;
   $('treta-solo').textContent=active?'JOGAR SOLO POR T$ ▸':'SOLO POR T$ · EM BREVE';
   $('treta-info-login').hidden=!!account?.authenticated;
@@ -173,7 +186,8 @@ export function equippedTretaEyewear() {
 export function tretaLoja() {
   const c=state?.campaign || TRETA_DEFAULT_REWARDS,q=state?.quests || {};
   return {loading,failed:refreshFailed,authenticated:Boolean(state?.authenticated),saldo:state?.wallet?.balance ?? null,campanha:campaignActive(),
-    ganhoHoje:q.dailyMatchEarned || 0,tetoDiario:c.daily_match_cap,amigos:q.referral || 0,tetoAmigos:c.referral_cap,porAmigo:c.referral_reward,
+    ganhoHoje:q.dailyMatchEarned || 0,tetoDiario:c.daily_match_cap,amigos:state?.invites?.rewarded ?? q.referral ?? 0,tetoAmigos:c.referral_cap,porAmigo:c.referral_reward,
+    convites:state?.invites || {linked:0,rewarded:0,pending:0,incoming:null},
     itens:TRETA_SKINS.filter(s=>manifest.skins[s.id]?.approved===true).map(s=>({id:s.id,name:s.name,series:s.series,color:s.color,poster:portrait(s),
       price:item(s.id)?.price ?? null,raridade:item(s.id)?.rarity || '',owned:Boolean(owned(s.id)),equipped:Boolean(equipped(s.id)),available:available(s.id)}))};
 }
@@ -311,6 +325,13 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
   const code=new URLSearchParams(location.search).get('treta');
   const inviteCode=code && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(code)?code:null;
   if(inviteCode)stored('cs_treta_referral',inviteCode);
+  const arrival=$('treta-invite-arrival');
+  if(inviteCode && arrival){arrival.hidden=false;$('treta-invite-arrival-close').onclick=()=>{arrival.hidden=true;};}
+  const clientVersion=typeof VERSION==='string'?VERSION:'';
+  const healthKey=`cs_invite_health:${clientVersion}`;
+  try{
+    if(!sessionStorage.getItem(healthKey))void socialApi('/api/treta',{action:'invite-health',version:clientVersion}).then(result=>{if(result.stored)sessionStorage.setItem(healthKey,'1');}).catch(()=>{});
+  }catch{}
   let landingPending=false;
   const trackInviteLanding=()=>{
     if(!inviteCode || landingPending || !globalThis.__csPrivacy?.allowed())return;
@@ -333,6 +354,7 @@ export function initTretaStore({skipPrompt=false,onEquipped=()=>{}}={}) {
     if(version!==infoVersion || !$('treta-info').open)loaded.dispose();else infoStage=loaded;
   };
   $('treta-how').onclick=()=>void explain();$('treta-balance').onclick=()=>void explain();
+  $('treta-open-quests').onclick=()=>document.querySelector('[data-treta-view=quests]')?.click();
   $('treta-solo').onclick=()=>{if(!state?.authenticated){login();return;}document.dispatchEvent(new CustomEvent('cs-treta-solo'));};
   $('treta-info-login').onclick=()=>{$('treta-info').close();login();};
   const introCoin=node('img');introCoin.src=TRETA_COIN_ART.poster;introCoin.alt='Moeda TRETA$ do Saci';$('treta-info-coin').append(introCoin);

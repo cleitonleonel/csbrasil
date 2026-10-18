@@ -27,13 +27,16 @@
 
 ### Adicionado
 - Cada rota do hub abre pelo HTML inicial, sem splash, enquanto o cenário 3D carrega em segundo plano. Os cards Open Graph usam o título e o caminho da página em imagens 1200×630.
+- Convites agora confirmam a chegada pelo link, mostram vínculos, recompensas e pendências na loja e na Comunidade, e atualizam o estado depois da primeira partida válida.
 
 ### Alterado
 - Clãs, páginas estáticas, perfil, configurações, privacidade, ranking e loja usam o mesmo vocabulário visual Treta Pop. O catálogo público reflete 63 personagens, 12 mapas jogáveis e 26 armas.
 - Partidas usam somente Time E e Time B. Os antigos agrupamentos continuam como categorias editoriais do elenco.
+- A loja coloca as formas de ganhar TRETA$ antes do catálogo, prioriza visuais equipados, adquiridos e compatíveis com o saldo, e mostra quanto falta para cada compra.
 
 ### Corrigido
 - JOGAR aceita visitante sem nick e oferece login ou cadastro depois da primeira partida. O botão ganhou chamada animada, a carteira usa a moeda do Saci, o personagem perdeu a base escura e o logo volta à tela inicial.
+- O botão de convite pede login antes de prometer uma cópia quando a pessoa ainda não tem conta.
 
 ## Não lançado — 2026-10-17
 

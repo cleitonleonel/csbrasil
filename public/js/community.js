@@ -238,8 +238,12 @@ if(root) {
     if(!r.players.length)content.append(empty('Nenhum jogador encontrado nesse ranking.'));
     const pages=el('div','','social-actions');if(rankingOffset>0)pages.append(button('ANTERIOR',async()=>{rankingOffset=Math.max(0,rankingOffset-25);await render();}));if(rankingOffset+25<r.total)pages.append(button('PRÓXIMA',async()=>{rankingOffset+=25;await render();}));content.append(pages,empty('Solo: 1 ponto por abate confirmado. MP: 2 pontos quando o servidor confirma contas distintas juntas na rodada. O placar geral preserva o histórico anterior; filtros e pontos de Time E/Time B usam apenas partidas confirmadas após a atualização. O time é o da partida.'));
   }
-  function showQuests(){
-    content.append(el('h2','Missões da resenha'),empty('Seu progresso vem da conta e das partidas confirmadas. Estas missões ainda não distribuem TRETa$.'));
+  const openTretaQuests=()=>{
+    document.querySelector('[data-hub-tab=loja]')?.click();
+    document.querySelector('[data-treta-view=quests]')?.click();
+  };
+  async function showQuests(version){
+    content.append(el('h2','Missões da resenha'),empty('Seu progresso vem da conta e das partidas confirmadas. As missões sociais abaixo não distribuem TRETA$.'));
     if(!auth?.profile)content.append(empty('Entre e escolha seu nickname para acompanhar suas missões.'));
     const grid=el('div','','social-grid');
     for(const q of questList({auth,state})){
@@ -248,13 +252,29 @@ if(root) {
       if(!q.complete)c.append(button(q.action==='play'?'JOGAR':q.action==='friends'?'ENCONTRAR AMIGOS':'ABRIR PERFIL',async()=>{
         if(q.action==='play')document.querySelector('[data-hub-tab=jogar]')?.click();else{tab=q.action;await render();}
       }));grid.append(c);
-    }content.append(grid);
+    }content.append(grid,el('h2','Quests com TRETA$'));
+    let treta;
+    try{treta=await api('/api/treta');}catch{if(version===loadVersion)content.append(empty('Não foi possível consultar as quests com TRETA$ agora.'));return;}
+    if(version!==loadVersion)return;
+    const campaign=treta.campaign || {},quests=treta.quests || {},invites=treta.invites || {},reward=Number(campaign.referral_reward || 0);
+    const active=campaign.starts_at && campaign.ends_at && Date.now()>=Date.parse(campaign.starts_at) && Date.now()<Date.parse(campaign.ends_at);
+    const c=card('Chame sua turma');
+    c.append(
+      empty(active && reward?`Cada amigo elegível que conclui a primeira partida válida rende T$ ${reward.toLocaleString('pt-BR')}.`:'A recompensa de convite está fora do período agora.'),
+      empty(treta.authenticated?`${invites.linked || 0} vinculado(s) · ${invites.rewarded || 0} recompensado(s) · ${invites.pending || 0} pendente(s).`:'Entre para criar seu link e acompanhar cada convite.'),
+    );
+    if(invites.incoming)c.append(empty(invites.incoming==='rewarded'?'O convite que trouxe você já foi recompensado.':'O convite que trouxe você está vinculado e aguarda sua primeira partida válida.'));
+    const actions=el('div','','social-actions'),invite=el('button',treta.authenticated?'COPIAR MEU CONVITE':'ENTRAR PARA CRIAR MEU CONVITE');invite.type='button';invite.onclick=()=>document.getElementById('treta-invite')?.click();
+    const all=el('button','VER TODAS AS QUESTS');all.type='button';all.onclick=openTretaQuests;actions.append(invite,all);c.append(actions);
+    const progress=card('Partidas premiadas');
+    progress.append(empty(`${quests.singleplayer || 0} solo · ${quests.multiplayer || 0} multiplayer · T$ ${(quests.dailyMatchEarned || 0).toLocaleString('pt-BR')} de T$ ${(campaign.daily_match_cap || 0).toLocaleString('pt-BR')} hoje.`),button('JOGAR',async()=>document.querySelector('[data-hub-tab=jogar]')?.click()));
+    content.append(c,progress);
   }
   function showNotifications(){if(!state){content.append(empty('Entre para receber avisos da turma.'));return;}if(state.notifications.some(n=>!n.read_at))content.append(button('MARCAR COMO LIDOS',()=>action('read_notifications')));for(const n of state.notifications){const c=card(({friend_request:'Pedido de amizade',friend_accepted:'Amizade confirmada',invite:'Convite para jogar',achievement:'Conquista desbloqueada'})[n.kind] || 'Aviso da turma');c.append(empty(`${n.nick || names[n.label] || 'Sua conta'} · ${date(n.created_at)}${n.read_at?'':' · NOVO'}`));if(n.actor_id)c.append(link('VER PERFIL',`/u/${n.actor_id}/perfil`));if(n.kind==='invite')c.append(button('VER CONVITES',async()=>{tab='friends';await render();}));content.append(c);}if(!state.notifications.length)content.append(empty('Sem avisos por enquanto. A paz é provisória.'));}
   async function showCentral(version){
     const sections=el('div','','social-inbox-sections');sections.setAttribute('aria-label','Central da conta');
     for(const [key,label] of [['quests','MISSÕES'],['notifications','AVISOS'],['messages','MENSAGENS']]){const b=button(label,async()=>{inboxSection=key;await render();});b.setAttribute('aria-pressed',String(inboxSection===key));sections.append(b);}content.append(sections);
-    if(inboxSection==='quests')showQuests();else if(inboxSection==='notifications')showNotifications();else await showMessages(version);
+    if(inboxSection==='quests')await showQuests(version);else if(inboxSection==='notifications')showNotifications();else await showMessages(version);
   }
   async function showMessages(version){
     content.append(el('h2','Mensagens da turma'),empty('Conversas privadas entre amigos. Só vocês podem abrir a conversa pela conta; a moderação pode investigar denúncias.'));
