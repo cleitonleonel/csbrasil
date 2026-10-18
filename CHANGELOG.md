@@ -10,7 +10,7 @@
 >
 <!-- BEGIN:GERADO:versao_atual — não edite à mão, rode `npm run docs` -->
 
-**O jogo está em `2.1.0-alpha.107`.** Prerelease do semver ordena sozinho
+**O jogo está em `2.1.0-alpha.108`.** Prerelease do semver ordena sozinho
 (`alpha` < `beta` < release), e o fluxo automático cuida do bump.
 
 > Bloco gerado por `node tools/gen-docs.mjs`. Fonte: `grep VERSION public/js/version.js · node -p "require('./package.json').version"`
@@ -105,6 +105,113 @@
 - Captura de bandeira passa a receber placar, progresso, donos e relógio pelo snapshot v3.
 - Slots abandonados voltam à IA e as salas oficiais passam de 5v5 para 4v4.
 - O catálogo in-game usa a mesma versão v8 do pacote de áudio baixado no build.
+
+## [2.1.0-alpha.108] — 2026-10-18
+
+### Mudado
+- fix(ui): painel de ranking alto rola em vez de cortar o VOLTAR (#822)
+- Integra o candidato final do fim de semana (#1004)
+- feat(analytics): medir funil de convites (#1007)
+- Integra entrada anônima e navegação Treta Pop (#1009)
+- test: acompanha a entrada direta nas réguas
+- test: alinha smoke ao jogo anônimo
+- feat: integra a experiência visual do jogo
+- fix(analytics): preservar referência em convites de sala
+- feat(analytics): medir funil de convites
+- test: refresh viewmodel scoreboards
+- fix: clear integration candidate gates
+- fix: preserve profile and legacy browser gates
+- fix: alinha gates ao carregamento lazy
+- test(items): refresh per-body fit evidence
+- fix(items): require per-character wearable profiles
+- fix: fecha fit urbano em todos os jogáveis
+- docs: registra evidência do catálogo urbano
+- test: fecha cobertura do catálogo urbano
+- feat: captura matriz urbana candidata
+- feat: monta cena urbana nos corpos
+- fix: adapta proxies aos esqueletos reais
+- fix(items): refit red Oval 90
+- feat: complete procedural rigid catalog families
+- chore: correct rigid preview agent attribution
+- Adiciona catálogo urbano e fila Mint
+- feat: add procedural urban apparel fit proxies
+- feat: add procedural urban rigid previews
+- test(items): reject missing landmarks explicitly
+- test(items): recapture corrected eyewear fits
+- fix(items): calibrate eyewear to visible eye line
+- test(items): pin candidate fit evidence
+- test(items): add hash-pinned fit matrix gate
+- feat(wearables): version procedural cap candidate
+- feat(items): import measured eyewear candidates
+- fix(camera): impede oclusão do jogador local
+- fix: aguarda mapa sob demanda no botdiag
+- fix(viewmodels): mantém faca pública sem catálogo privado
+- Mantém o ping legível em sala lotada
+- Evita sobreposição da resenha no lobby
+- Torna réguas de perfil e social resilientes
+- Torna a régua da loja resiliente ao servidor local
+- Faz o mutante de sobreposição cobrir o resultado
+- Destrava retorno da régua do lobby
+- fix(integration): preserva contrato canônico dos viewmodels
+- test(viewmodels): record firearm framing measurements
+- test(viewmodels): enforce side-view firearm contract
+- feat(viewmodels): centralize firearm framing
+- test: cobre ordem do carregamento lazy
+- fix: carrega mapas antes de construir cenas
+- Atualiza índice de arquitetura da cadência
+- test: fecha pipeline de skins rastreáveis
+- feat: unifica receitas de skins de arma
+- feat: cria motor determinístico de skins
+- feat(gloves): publish complete glove manifest
+- feat(gloves): add final rig packages
+- feat(gloves): add fifth 3p rig package batch
+- feat(gloves): add fourth 3p rig package batch
+- feat(gloves): add third 3p rig package batch
+- feat(gloves): add second 3p rig package batch
+- feat(gloves): add first 3p rig package batch
+- feat(gloves): add census verifier and mutants
+- feat(gloves): add deterministic rig extractor
+- Alinha capturas sociais à Treta Pop
+- Fecha paleta e escopo da tela de servidores
+- docs(character-kit): registra fronteiras da fábrica vestível
+- feat(character-kit): generaliza ciclo de vida por slot
+- feat(character-kit): censa famílias e matriz de wearables
+- Regenera índices da integração social
+- Liga réguas sociais ao portão focado
+- Isola pedido de amizade no placar Treta Pop
+- Fecha convite social real na Treta Pop
+- Trava legado e identidade no botão do placar
+- Faz a régua exercer o compartilhamento nativo
+- Adiciona pedido de amizade pelo placar
+- Adiciona convite de amigos por rede social
+- Regenera as contagens da documentação
+- Adiciona pedido de amizade pelo placar
+- docs: registra gates finais do incidente de login
+- test: estabiliza aceite browser do convite de login
+- docs(social): close main reconciliation checkpoint
+- docs(social): record PR and deploy gate result
+- docs: refresh generated source counts for social recovery
+- docs(social): record guest recovery checkpoint
+- fix(social): recover from stale guest proof without duplicate actions
+- Regenera as contagens da documentação
+- Adiciona convite de amigos por rede social
+- Measure the two-line nick on the new profile card
+- Add nick limit and 32-W layout rulers
+- Wrap long nicks in community cards
+- Ellipsize long names in the killfeed
+- Wrap long killer names in the death panel
+- Document the 32-character nick limit
+- Fit 32-character nicks on badge and profile card
+- Accept nicks up to 32 characters in the client
+- Escape player names in killfeed and death panel
+- Regenerate docs after the header trim
+- Fit the contagem.js header in two lines
+- Regenerate docs for contagem.js
+- Count five main.js call sites in contagem CT9
+- Gate contagem with a mutant-checked regua
+- Count load, splash, match and MP milestones
+- Add contagem.js aggregate counter with no identifier
+- Route /api/count straight to the backend
 
 ## [2.1.0-alpha.107] — 2026-10-18
 
