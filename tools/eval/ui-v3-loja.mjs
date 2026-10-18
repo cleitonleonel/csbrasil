@@ -46,6 +46,8 @@ const MUTANTES = {
   'quest-sem-icone': [(u) => u.pathname === '/js/tp/loja.js', (t) => t.replace('${QUEST_ICONES[c.dataset.quest]||QUEST_ICONE_GERAL}', "''")],
   'icone-igual': [(u) => u.pathname === '/js/tp/loja.js', (t) => t.replace('QUEST_ICONES[c.dataset.quest]||', '')],
   'visita-so-no-evento': [(u) => u.pathname === '/js/treta-store.js', (t) => t.replace("  if(estadoDaUrl(location.href)?.secao==='loja')storeVisit();", '')],
+  'convite-sem-chegada': [(u) => u.pathname === '/js/treta-store.js', (t) => t.replace('  trackInviteLanding();', '')],
+  'convite-sem-consentimento': [(u) => u.pathname === '/js/treta-store.js', (t) => t.replace("const inviteEvent=async event=>{\n  if(!window.__csPrivacy?.allowed())return false;", 'const inviteEvent=async event=>{')],
 };
 
 const aplicados = new Set();
@@ -74,7 +76,7 @@ function fixture(page, conta) {
     const url = new URL(route.request().url());
     let dados = null; try { dados = route.request().postDataJSON(); } catch { /* GET */ }
     if (url.pathname === '/api/treta') {
-      if (dados?.action === 'analytics') {
+      if (dados?.action === 'analytics' || dados?.action === 'invite-analytics') {
         conta.analytics.push(dados);
         return route.fulfill({ json: { ok: true, stored: true } });
       }
@@ -89,7 +91,7 @@ function fixture(page, conta) {
   });
 }
 
-async function abrir({ w = 1536, h = 1024, flag = true, lang = 'pt', mutante = '', intro = true, toque = false } = {}) {
+async function abrir({ w = 1536, h = 1024, flag = true, lang = 'pt', mutante = '', intro = true, toque = false, invite = '' } = {}) {
   const conta = { inventario: [{ skin_id: 'janja', equipped: true }, { skin_id: 'lula-cyborg', equipped: false }], equipou: [], analytics: [] };
   const page = await browser.newPage({ viewport: { width: w, height: h }, hasTouch: toque, isMobile: toque });
   const erros = [];
@@ -102,7 +104,10 @@ async function abrir({ w = 1536, h = 1024, flag = true, lang = 'pt', mutante = '
   }, [lang, intro]);
   await preparar(page, mutante);
   await fixture(page, conta);
-  await page.goto(`${BASE}/loja?${flag ? 'ui=v3&' : ''}lang=${lang}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+  const params = new URLSearchParams({ lang });
+  if (flag) params.set('ui', 'v3');
+  if (invite) params.set('treta', invite);
+  await page.goto(`${BASE}/loja?${params}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
   const splash = page.locator('#boot-splash');
   if (await splash.isVisible().catch(() => false)) {
     if (flag && mutante !== 'sem-flag') {
@@ -304,6 +309,25 @@ async function secaoTelas(mutante, add) {
   add('LJ9', !falhas.length, falhas.length ? falhas.join('; ') : `${VIEWPORTS.map(([w, h]) => `${w}×${h}`).join(', ')}: sem rolagem lateral, cartões sem sobrepor, primeiro cartão na tela, toque ≥ 44 px no celular`);
 }
 
+async function secaoConvite(mutante, add) {
+  const code = '00000000-0000-4000-8000-000000000001';
+  const { page, conta } = await abrir({ mutante, invite: code });
+  await page.locator('.tp-loja__convite').click();
+  await page.waitForTimeout(700);
+  const eventos = conta.analytics.filter((evento) => evento.action === 'invite-analytics');
+  const landing = eventos.filter((evento) => evento.event === 'landing').length;
+  const cta = eventos.filter((evento) => evento.event === 'cta').length;
+  const saida = eventos.filter((evento) => evento.event === 'copied' || evento.event === 'manual').length;
+  await page.evaluate(() => window.__csPrivacy.set(false));
+  const antes = eventos.length;
+  await page.locator('.tp-loja__convite').click();
+  await page.waitForTimeout(300);
+  const depois = conta.analytics.filter((evento) => evento.action === 'invite-analytics').length;
+  add('LJ16', landing === 1 && cta === 1 && saida === 1 && depois === antes,
+    `convite: ${landing} chegada(s), ${cta} CTA(s), ${saida} saída(s), ${depois - antes} evento(s) após retirar consentimento`);
+  await page.close();
+}
+
 async function secaoLegado(mutante, add) {
   const out = [];
   for (const [w, h] of [[1536, 1024], [844, 390]]) {
@@ -321,7 +345,7 @@ async function secaoLegado(mutante, add) {
 }
 
 const SECOES = { v3: [secaoV3, ['LJ1', 'LJ3', 'LJ4', 'LJ5', 'LJ7', 'LJ8', 'LJ12', 'LJ13', 'LJ14', 'LJ15']], modal: [secaoModal, ['LJ2']], idioma: [secaoIdioma, ['LJ10']],
-  telas: [secaoTelas, ['LJ9']], legado: [secaoLegado, ['LJ11']] };
+  telas: [secaoTelas, ['LJ9']], convite: [secaoConvite, ['LJ16']], legado: [secaoLegado, ['LJ11']] };
 
 async function medir(mutante = '', alvo = '') {
   const r = [];
@@ -332,7 +356,7 @@ async function medir(mutante = '', alvo = '') {
 
 const MUT = [['risco-dobrado', 'LJ1'], ['modal-sozinho', 'LJ2'], ['titulo-sem-anton', 'LJ3'], ['raridade-inventada', 'LJ4'], ['preco-local', 'LJ5'],
   ['dois-primarios', 'LJ7'], ['slot-inventado', 'LJ8'], ['grade-larga', 'LJ9'], ['alvo-pequeno', 'LJ9'], ['en-vaza', 'LJ10'], ['sem-flag', 'LJ11'], ['meta-fixa', 'LJ12'],
-  ['quest-sem-icone', 'LJ14'], ['icone-igual', 'LJ14'], ['visita-so-no-evento', 'LJ15']];
+  ['quest-sem-icone', 'LJ14'], ['icone-igual', 'LJ14'], ['visita-so-no-evento', 'LJ15'], ['convite-sem-chegada', 'LJ16'], ['convite-sem-consentimento', 'LJ16']];
 let sair = 0;
 if (process.argv.includes('--mutantes')) {
   for (const [mut, alvo] of MUT.filter(([m]) => !process.env.SO || process.env.SO === m)) {
